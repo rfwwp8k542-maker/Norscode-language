@@ -181,6 +181,9 @@ funksjon start() -> heltall {
     la expr_norsk_modulo: tekst = sh.disasm_uttrykk("17 modulo 5")
     assert_eq(expr_norsk_modulo, "0: PUSH 17\n1: PUSH 5\n2: MOD\n3: PRINT\n4: HALT\n")
 
+    la expr_norsk_ganget_med: tekst = sh.disasm_uttrykk("3 ganget med 4")
+    assert_eq(expr_norsk_ganget_med, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n")
+
     la expr_bool_literals: tekst = sh.disasm_uttrykk("sann&&usann||!usann")
     assert_eq(expr_bool_literals, "0: PUSH 1\n1: PUSH 0\n2: AND\n3: PUSH 0\n4: NOT\n5: OR\n6: PRINT\n7: HALT\n")
 
@@ -391,6 +394,9 @@ funksjon start() -> heltall {
 
     la script_norsk_mod: tekst = sh.disasm_skript("la x=17;la y=5;returner x mod y")
     assert_eq(script_norsk_mod, "0: PUSH 17\n1: PUSH 5\n2: MOD\n3: PRINT\n4: HALT\n")
+
+    la script_norsk_ganget_med: tekst = sh.disasm_skript("la x=3;la y=4;returner x ganget med y")
+    assert_eq(script_norsk_ganget_med, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n")
 
     la script_c: tekst = sh.kompiler_skript_til_c("x=2;y=x+5;y*2")
     assert_ne(script_c, "")

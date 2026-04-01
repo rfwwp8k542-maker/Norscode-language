@@ -796,6 +796,9 @@ funksjon uttrykk_til_ops_og_verdier_med_miljo(tokens: liste_tekst, navn: liste_t
         hvis (i + 1 < lengde(tokens) og tok_raw == "delt" og tokens[i + 1] == "pa") {
             tok = "/"
             tok_step = 2
+        } ellers hvis (i + 1 < lengde(tokens) og tok_raw == "ganget" og tokens[i + 1] == "med") {
+            tok = "*"
+            tok_step = 2
         } ellers hvis (tok_raw == "pluss") {
             tok = "+"
             tok_step = 1
