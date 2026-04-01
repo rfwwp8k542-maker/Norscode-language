@@ -1188,6 +1188,10 @@ char * selfhost__compiler__uttrykk_til_ops_og_verdier_med_miljo(nl_list_text* to
             tok = "er";
             tok_step = 2;
         }
+        else if ((((i + 1) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "ikke")) && nl_streq(tokens->data[(i + 1)], "lik")) {
+            tok = "ikke_er";
+            tok_step = 2;
+        }
         else if ((((i + 1) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "er")) && nl_streq(tokens->data[(i + 1)], "ikke")) {
             tok = "ikke_er";
             tok_step = 2;
@@ -2097,6 +2101,8 @@ int start() {
     nl_assert_eq_text(expr_norsk_cmp_phrase6, "0: PUSH 3\n1: PUSH 4\n2: LT\n3: PRINT\n4: HALT\n");
     char * expr_norsk_cmp_phrase7 = selfhost__compiler__disasm_uttrykk("4 er storre eller lik 4");
     nl_assert_eq_text(expr_norsk_cmp_phrase7, "0: PUSH 4\n1: PUSH 4\n2: LT\n3: NOT\n4: PRINT\n5: HALT\n");
+    char * expr_norsk_cmp_phrase8 = selfhost__compiler__disasm_uttrykk("7 ikke lik 8");
+    nl_assert_eq_text(expr_norsk_cmp_phrase8, "0: PUSH 7\n1: PUSH 8\n2: EQ\n3: NOT\n4: PRINT\n5: HALT\n");
     nl_list_text* env_navn = nl_list_text_new();
     nl_list_text_push(env_navn, "x");
     nl_list_text_push(env_navn, "y");
@@ -2168,6 +2174,8 @@ int start() {
     nl_assert_eq_text(script_norsk_cmp_phrase3, "0: PUSH 3\n1: PUSH 3\n2: EQ\n3: JZ 6\n4: PUSH 1\n5: JMP 8\n6: LABEL 6\n7: PUSH 0\n8: LABEL 8\n9: PRINT\n10: HALT\n");
     char * script_norsk_cmp_phrase4 = selfhost__compiler__disasm_skript("la x=3;la y=4;hvis x er mindre enn y da 1 ellers 0");
     nl_assert_eq_text(script_norsk_cmp_phrase4, "0: PUSH 3\n1: PUSH 4\n2: LT\n3: JZ 6\n4: PUSH 1\n5: JMP 8\n6: LABEL 6\n7: PUSH 0\n8: LABEL 8\n9: PRINT\n10: HALT\n");
+    char * script_norsk_cmp_phrase5 = selfhost__compiler__disasm_skript("la x=3;la y=4;hvis x ikke lik y da 1 ellers 0");
+    nl_assert_eq_text(script_norsk_cmp_phrase5, "0: PUSH 3\n1: PUSH 4\n2: EQ\n3: NOT\n4: JZ 7\n5: PUSH 1\n6: JMP 9\n7: LABEL 7\n8: PUSH 0\n9: LABEL 9\n10: PRINT\n11: HALT\n");
     char * script_c = selfhost__compiler__kompiler_skript_til_c("x=2;y=x+5;y*2");
     nl_assert_ne_text(script_c, "");
     char * script_err1 = selfhost__compiler__disasm_skript("x=2+3");
