@@ -972,6 +972,9 @@ funksjon uttrykk_til_ops_og_verdier_med_miljo(tokens: liste_tekst, navn: liste_t
         } ellers hvis (i + 1 < lengde(tokens) og (tok_raw == "legg" eller tok_raw == "legge" eller tok_raw == "legges") og n1 == "sammen") {
             tok = "+"
             tok_step = 2
+        } ellers hvis (tok_raw == "legg" eller tok_raw == "legge" eller tok_raw == "legges") {
+            tok = "+"
+            tok_step = 1
         } ellers hvis (tok_raw == "trekk_fra" eller tok_raw == "trekke_fra" eller tok_raw == "trekkes_fra" eller tok_raw == "minus_fra" eller tok_raw == "minuseres_fra" eller tok_raw == "subtraher_fra" eller tok_raw == "subtraherer_fra" eller tok_raw == "subtraheres_fra" eller tok_raw == "subtrahert_fra") {
             tok = "-"
             tok_step = 1
