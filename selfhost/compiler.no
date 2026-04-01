@@ -948,10 +948,10 @@ funksjon uttrykk_til_ops_og_verdier_med_miljo(tokens: liste_tekst, navn: liste_t
         } ellers hvis (i + 1 < lengde(tokens) og (tok_raw == "plusser" eller tok_raw == "plusses" eller tok_raw == "pluses" eller tok_raw == "plusse" eller tok_raw == "adder" eller tok_raw == "addere" eller tok_raw == "adderer" eller tok_raw == "adderes" eller tok_raw == "summer" eller tok_raw == "summerer" eller tok_raw == "summeres") og n1 == "med") {
             tok = "+"
             tok_step = 2
-        } ellers hvis (tok_raw == "legg_til" eller tok_raw == "legges_til") {
+        } ellers hvis (tok_raw == "legg_til" eller tok_raw == "legge_til" eller tok_raw == "legges_til") {
             tok = "+"
             tok_step = 1
-        } ellers hvis (i + 1 < lengde(tokens) og (tok_raw == "legg" eller tok_raw == "legges") og n1 == "til") {
+        } ellers hvis (i + 1 < lengde(tokens) og (tok_raw == "legg" eller tok_raw == "legge" eller tok_raw == "legges") og n1 == "til") {
             tok = "+"
             tok_step = 2
         } ellers hvis (tok_raw == "legg_sammen" eller tok_raw == "legges_sammen") {
