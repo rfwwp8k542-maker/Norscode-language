@@ -845,6 +845,9 @@ funksjon uttrykk_til_ops_og_verdier_med_miljo(tokens: liste_tekst, navn: liste_t
         hvis (tok_raw == "delt_pa") {
             tok = "/"
             tok_step = 1
+        } ellers hvis (tok_raw == "delt_med") {
+            tok = "/"
+            tok_step = 1
         } ellers hvis (i + 1 < lengde(tokens) og tok_raw == "delt" og n1 == "pa") {
             tok = "/"
             tok_step = 2
