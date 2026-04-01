@@ -172,6 +172,9 @@ funksjon start() -> heltall {
     la expr_norsk_minus_med_underscore: tekst = sh.disasm_uttrykk("10 minus_med 3")
     assert_eq(expr_norsk_minus_med_underscore, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n")
 
+    la expr_norsk_minusmed_kompakt: tekst = sh.disasm_uttrykk("10 minusmed 3")
+    assert_eq(expr_norsk_minusmed_kompakt, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n")
+
     la expr_norsk_minuseres_med: tekst = sh.disasm_uttrykk("10 minuseres med 3")
     assert_eq(expr_norsk_minuseres_med, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n")
 
@@ -417,6 +420,9 @@ funksjon start() -> heltall {
 
     la expr_norsk_minus_fra_underscore: tekst = sh.disasm_uttrykk("10 minus_fra 3")
     assert_eq(expr_norsk_minus_fra_underscore, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n")
+
+    la expr_norsk_minusfra_kompakt: tekst = sh.disasm_uttrykk("10 minusfra 3")
+    assert_eq(expr_norsk_minusfra_kompakt, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n")
 
     la expr_norsk_minuseres_fra: tekst = sh.disasm_uttrykk("10 minuseres fra 3")
     assert_eq(expr_norsk_minuseres_fra, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n")
@@ -1541,6 +1547,9 @@ funksjon start() -> heltall {
     la script_norsk_minus_fra_underscore: tekst = sh.disasm_skript("la x=10;la y=3;returner x minus_fra y")
     assert_eq(script_norsk_minus_fra_underscore, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n")
 
+    la script_norsk_minusfra_kompakt: tekst = sh.disasm_skript("la x=10;la y=3;returner x minusfra y")
+    assert_eq(script_norsk_minusfra_kompakt, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n")
+
     la script_norsk_minuseres_fra: tekst = sh.disasm_skript("la x=10;la y=3;returner x minuseres fra y")
     assert_eq(script_norsk_minuseres_fra, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n")
 
@@ -1576,6 +1585,9 @@ funksjon start() -> heltall {
 
     la script_norsk_minus_med_underscore: tekst = sh.disasm_skript("la x=10;la y=3;returner x minus_med y")
     assert_eq(script_norsk_minus_med_underscore, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n")
+
+    la script_norsk_minusmed_kompakt: tekst = sh.disasm_skript("la x=10;la y=3;returner x minusmed y")
+    assert_eq(script_norsk_minusmed_kompakt, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n")
 
     la script_norsk_minuseres_med: tekst = sh.disasm_skript("la x=10;la y=3;returner x minuseres med y")
     assert_eq(script_norsk_minuseres_med, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n")
