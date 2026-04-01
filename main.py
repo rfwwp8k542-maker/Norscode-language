@@ -1277,6 +1277,106 @@ def verify_lockfile():
     return lock_path, ok, results
 
 
+def migrate_names(apply_changes: bool = False) -> dict:
+    config_path = _find_project_config()
+    project_dir = config_path.parent.resolve()
+    actions: list[dict] = []
+
+    def record_file_migration(legacy_name: str, primary_name: str):
+        legacy = (project_dir / legacy_name).resolve()
+        primary = (project_dir / primary_name).resolve()
+        if not legacy.exists():
+            actions.append(
+                {
+                    "kind": "file",
+                    "legacy": str(legacy),
+                    "primary": str(primary),
+                    "status": "skipped",
+                    "reason": "legacy mangler",
+                }
+            )
+            return
+        if primary.exists():
+            actions.append(
+                {
+                    "kind": "file",
+                    "legacy": str(legacy),
+                    "primary": str(primary),
+                    "status": "skipped",
+                    "reason": "primary finnes allerede",
+                }
+            )
+            return
+        if apply_changes:
+            shutil.copy2(legacy, primary)
+            status = "copied"
+        else:
+            status = "planned"
+        actions.append(
+            {
+                "kind": "file",
+                "legacy": str(legacy),
+                "primary": str(primary),
+                "status": status,
+            }
+        )
+
+    def record_dir_migration(legacy_name: str, primary_name: str):
+        legacy = (project_dir / legacy_name).resolve()
+        primary = (project_dir / primary_name).resolve()
+        if not legacy.exists():
+            actions.append(
+                {
+                    "kind": "dir",
+                    "legacy": str(legacy),
+                    "primary": str(primary),
+                    "status": "skipped",
+                    "reason": "legacy mangler",
+                }
+            )
+            return
+        if primary.exists():
+            actions.append(
+                {
+                    "kind": "dir",
+                    "legacy": str(legacy),
+                    "primary": str(primary),
+                    "status": "skipped",
+                    "reason": "primary finnes allerede",
+                }
+            )
+            return
+        if apply_changes:
+            shutil.copytree(legacy, primary)
+            status = "copied"
+        else:
+            status = "planned"
+        actions.append(
+            {
+                "kind": "dir",
+                "legacy": str(legacy),
+                "primary": str(primary),
+                "status": status,
+            }
+        )
+
+    record_file_migration(LEGACY_PROJECT_CONFIG_NAME, PROJECT_CONFIG_NAME)
+    record_file_migration(LEGACY_LOCKFILE_NAME, LOCKFILE_NAME)
+    record_dir_migration(".norsklang", ".norcode")
+
+    copied = sum(1 for a in actions if a["status"] == "copied")
+    planned = sum(1 for a in actions if a["status"] == "planned")
+    skipped = sum(1 for a in actions if a["status"] == "skipped")
+    return {
+        "project_dir": str(project_dir),
+        "applied": apply_changes,
+        "copied": copied,
+        "planned": planned,
+        "skipped": skipped,
+        "actions": actions,
+    }
+
+
 def _resolve_dependency_from_registry(
     dep_name: str,
     registry_hit: dict,
@@ -2169,6 +2269,10 @@ def main():
     registry_mirror_cmd.add_argument("--output", help="Output-fil for mirror (default: build/registry_mirror.json)")
     registry_mirror_cmd.add_argument("--json", action="store_true", help="Skriv resultat som JSON")
 
+    migrate_names_cmd = sub.add_parser("migrate-names", help="Migrer legacy navn (norsklang*) til NorCode-navn")
+    migrate_names_cmd.add_argument("--apply", action="store_true", help="Utfør migrering (default er dry-run)")
+    migrate_names_cmd.add_argument("--json", action="store_true", help="Skriv resultat som JSON")
+
     release = sub.add_parser("release", help="Forbered release (versjonsbump + changelog)")
     release.add_argument("--bump", choices=["major", "minor", "patch"], default="patch", help="Type semver-bump")
     release.add_argument("--version", help="Sett eksakt versjon (overstyrer --bump)")
@@ -2571,6 +2675,30 @@ def main():
             else:
                 print(f"Mirror: {payload['output']}")
                 print(f"Pakker: {payload['count']}")
+
+        elif args.cmd == "migrate-names":
+            payload = migrate_names(apply_changes=args.apply)
+            if args.json:
+                print(json.dumps(payload, ensure_ascii=False, indent=2))
+            else:
+                mode = "apply" if args.apply else "dry-run"
+                print(f"Prosjekt: {payload['project_dir']}")
+                print(f"Modus: {mode}")
+                for action in payload["actions"]:
+                    reason = action.get("reason")
+                    if reason:
+                        print(
+                            f"  {action['kind']}: {action['legacy']} -> {action['primary']} "
+                            f"[{action['status']}: {reason}]"
+                        )
+                    else:
+                        print(
+                            f"  {action['kind']}: {action['legacy']} -> {action['primary']} "
+                            f"[{action['status']}]"
+                        )
+                print(
+                    f"Oppsummert: copied={payload['copied']} planned={payload['planned']} skipped={payload['skipped']}"
+                )
 
         elif args.cmd == "release":
             payload = prepare_release(

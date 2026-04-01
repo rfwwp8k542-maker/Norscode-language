@@ -41,6 +41,12 @@ python3 -m norsklang --help
 # og videresender til NorCode-CLI.
 # Ved bruk av legacy-filer (`norsklang.toml`, `norsklang.lock`, `.norsklang/`)
 # vises også et kort migreringsvarsel.
+
+# Planlegg navnemigrering (dry-run):
+norcode migrate-names
+
+# Utfør navnemigrering:
+norcode migrate-names --apply
 ```
 
 ### 0b. Bygg og publiser pakke
