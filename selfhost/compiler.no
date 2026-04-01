@@ -77,6 +77,12 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "deler_på" eller tok == "deler_paa") {
         returner "deler_pa"
     }
+    hvis (tok == "dele_seg_på" eller tok == "dele_seg_paa") {
+        returner "dele_seg_pa"
+    }
+    hvis (tok == "deler_seg_på" eller tok == "deler_seg_paa") {
+        returner "deler_seg_pa"
+    }
     hvis (tok == "divider_på" eller tok == "divider_paa") {
         returner "divider_pa"
     }
