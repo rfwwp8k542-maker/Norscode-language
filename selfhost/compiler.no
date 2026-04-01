@@ -114,10 +114,16 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "sant") {
         returner "sann"
     }
+    hvis (tok == "true") {
+        returner "sann"
+    }
     hvis (tok == "ja") {
         returner "sann"
     }
     hvis (tok == "usant") {
+        returner "usann"
+    }
+    hvis (tok == "false") {
         returner "usann"
     }
     hvis (tok == "nei") {
