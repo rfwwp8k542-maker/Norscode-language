@@ -1384,6 +1384,52 @@ def migrate_names(apply_changes: bool = False, cleanup_legacy: bool = False) -> 
                     }
                 )
                 continue
+            if kind == "dir":
+                if not legacy.is_dir() or not primary.is_dir():
+                    actions.append(
+                        {
+                            "kind": f"cleanup-{kind}",
+                            "legacy": str(legacy),
+                            "primary": str(primary),
+                            "status": "skipped",
+                            "reason": "type mismatch",
+                        }
+                    )
+                    continue
+                if _hash_directory(legacy) != _hash_directory(primary):
+                    actions.append(
+                        {
+                            "kind": f"cleanup-{kind}",
+                            "legacy": str(legacy),
+                            "primary": str(primary),
+                            "status": "skipped",
+                            "reason": "primary avviker",
+                        }
+                    )
+                    continue
+            else:
+                if not legacy.is_file() or not primary.is_file():
+                    actions.append(
+                        {
+                            "kind": f"cleanup-{kind}",
+                            "legacy": str(legacy),
+                            "primary": str(primary),
+                            "status": "skipped",
+                            "reason": "type mismatch",
+                        }
+                    )
+                    continue
+                if _hash_file(legacy) != _hash_file(primary):
+                    actions.append(
+                        {
+                            "kind": f"cleanup-{kind}",
+                            "legacy": str(legacy),
+                            "primary": str(primary),
+                            "status": "skipped",
+                            "reason": "primary avviker",
+                        }
+                    )
+                    continue
             if apply_changes:
                 if kind == "dir":
                     shutil.rmtree(legacy)

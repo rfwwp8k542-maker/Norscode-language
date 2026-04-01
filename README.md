@@ -50,6 +50,9 @@ norcode migrate-names --apply
 
 # Utfør migrering og rydd bort legacy-filer:
 norcode migrate-names --apply --cleanup
+
+# Sikkerhet:
+# --cleanup fjerner bare legacy-ressurser når innholdet matcher NorCode-ressursen.
 ```
 
 ### 0b. Bygg og publiser pakke
