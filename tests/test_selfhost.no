@@ -430,6 +430,12 @@ funksjon start() -> heltall {
     la expr_norsk_mod: tekst = sh.disasm_uttrykk("17 mod 5")
     assert_eq(expr_norsk_mod, "0: PUSH 17\n1: PUSH 5\n2: MOD\n3: PRINT\n4: HALT\n")
 
+    la expr_norsk_mod_av: tekst = sh.disasm_uttrykk("17 mod_av 5")
+    assert_eq(expr_norsk_mod_av, "0: PUSH 17\n1: PUSH 5\n2: MOD\n3: PRINT\n4: HALT\n")
+
+    la expr_norsk_mod_av_phrase: tekst = sh.disasm_uttrykk("17 mod av 5")
+    assert_eq(expr_norsk_mod_av_phrase, "0: PUSH 17\n1: PUSH 5\n2: MOD\n3: PRINT\n4: HALT\n")
+
     la expr_norsk_modulo: tekst = sh.disasm_uttrykk("17 modulo 5")
     assert_eq(expr_norsk_modulo, "0: PUSH 17\n1: PUSH 5\n2: MOD\n3: PRINT\n4: HALT\n")
 
@@ -441,6 +447,12 @@ funksjon start() -> heltall {
 
     la expr_norsk_modul: tekst = sh.disasm_uttrykk("17 modul 5")
     assert_eq(expr_norsk_modul, "0: PUSH 17\n1: PUSH 5\n2: MOD\n3: PRINT\n4: HALT\n")
+
+    la expr_norsk_modul_av: tekst = sh.disasm_uttrykk("17 modul_av 5")
+    assert_eq(expr_norsk_modul_av, "0: PUSH 17\n1: PUSH 5\n2: MOD\n3: PRINT\n4: HALT\n")
+
+    la expr_norsk_modul_av_phrase: tekst = sh.disasm_uttrykk("17 modul av 5")
+    assert_eq(expr_norsk_modul_av_phrase, "0: PUSH 17\n1: PUSH 5\n2: MOD\n3: PRINT\n4: HALT\n")
 
     la expr_norsk_modulus: tekst = sh.disasm_uttrykk("17 modulus 5")
     assert_eq(expr_norsk_modulus, "0: PUSH 17\n1: PUSH 5\n2: MOD\n3: PRINT\n4: HALT\n")
@@ -1553,6 +1565,12 @@ funksjon start() -> heltall {
     la script_norsk_mod: tekst = sh.disasm_skript("la x=17;la y=5;returner x mod y")
     assert_eq(script_norsk_mod, "0: PUSH 17\n1: PUSH 5\n2: MOD\n3: PRINT\n4: HALT\n")
 
+    la script_norsk_mod_av: tekst = sh.disasm_skript("la x=17;la y=5;returner x mod_av y")
+    assert_eq(script_norsk_mod_av, "0: PUSH 17\n1: PUSH 5\n2: MOD\n3: PRINT\n4: HALT\n")
+
+    la script_norsk_mod_av_phrase: tekst = sh.disasm_skript("la x=17;la y=5;returner x mod av y")
+    assert_eq(script_norsk_mod_av_phrase, "0: PUSH 17\n1: PUSH 5\n2: MOD\n3: PRINT\n4: HALT\n")
+
     la script_norsk_modulo_av: tekst = sh.disasm_skript("la x=17;la y=5;returner x modulo_av y")
     assert_eq(script_norsk_modulo_av, "0: PUSH 17\n1: PUSH 5\n2: MOD\n3: PRINT\n4: HALT\n")
 
@@ -1561,6 +1579,12 @@ funksjon start() -> heltall {
 
     la script_norsk_modul: tekst = sh.disasm_skript("la x=17;la y=5;returner x modul y")
     assert_eq(script_norsk_modul, "0: PUSH 17\n1: PUSH 5\n2: MOD\n3: PRINT\n4: HALT\n")
+
+    la script_norsk_modul_av: tekst = sh.disasm_skript("la x=17;la y=5;returner x modul_av y")
+    assert_eq(script_norsk_modul_av, "0: PUSH 17\n1: PUSH 5\n2: MOD\n3: PRINT\n4: HALT\n")
+
+    la script_norsk_modul_av_phrase: tekst = sh.disasm_skript("la x=17;la y=5;returner x modul av y")
+    assert_eq(script_norsk_modul_av_phrase, "0: PUSH 17\n1: PUSH 5\n2: MOD\n3: PRINT\n4: HALT\n")
 
     la script_norsk_modulus: tekst = sh.disasm_skript("la x=17;la y=5;returner x modulus y")
     assert_eq(script_norsk_modulus, "0: PUSH 17\n1: PUSH 5\n2: MOD\n3: PRINT\n4: HALT\n")
