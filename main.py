@@ -11,6 +11,7 @@ import sys
 import tarfile
 import time
 import tomllib
+import urllib.parse
 import urllib.request
 import uuid
 import zipfile
@@ -50,6 +51,7 @@ PROJECT_CONFIG_NAME = "norsklang.toml"
 PYPROJECT_NAME = "pyproject.toml"
 CHANGELOG_NAME = "CHANGELOG.md"
 LOCKFILE_NAME = "norsklang.lock"
+REMOTE_REGISTRY_CACHE = ".norsklang/registry/remote_index.json"
 SEMVER_RE = re.compile(r"^\d+\.\d+\.\d+$")
 
 
@@ -116,11 +118,375 @@ def _load_toml(path: Path) -> dict:
         raise RuntimeError(f"Kunne ikke lese TOML {path}: {exc}") from exc
 
 
+def _load_security_policy(config_path: Path) -> dict:
+    data = _load_toml(config_path)
+    sec = data.get("security", {})
+    if not isinstance(sec, dict):
+        sec = {}
+
+    def to_set(key: str) -> set[str]:
+        raw = sec.get(key, [])
+        if isinstance(raw, list):
+            return {str(x).strip().lower() for x in raw if isinstance(x, str) and str(x).strip()}
+        return set()
+
+    return {
+        "trusted_git_hosts": to_set("trusted_git_hosts"),
+        "trusted_url_hosts": to_set("trusted_url_hosts"),
+        "trusted_registry_sha256": (
+            str(sec.get("trusted_registry_sha256")).strip().lower()
+            if isinstance(sec.get("trusted_registry_sha256"), str) and str(sec.get("trusted_registry_sha256")).strip()
+            else None
+        ),
+    }
+
+
+def _verify_registry_integrity(config_path: Path, registry_file: Path):
+    policy = _load_security_policy(config_path)
+    expected = policy.get("trusted_registry_sha256")
+    if expected is None:
+        return
+
+    if not _is_valid_sha256(expected):
+        raise RuntimeError("Ugyldig [security].trusted_registry_sha256 i norsklang.toml")
+
+    if not registry_file.exists():
+        raise RuntimeError(f"Registry-fil mangler, men trusted_registry_sha256 er satt: {registry_file}")
+
+    actual = _hash_file(registry_file).lower()
+    if actual != expected:
+        raise RuntimeError(
+            f"Registry-integritet feilet: expected {expected}, actual {actual} ({registry_file})"
+        )
+
+
+def _extract_git_host(git_url: str) -> str | None:
+    raw = git_url.strip()
+    if not raw:
+        return None
+    parsed = urllib.parse.urlparse(raw)
+    if parsed.scheme and parsed.hostname:
+        return parsed.hostname.lower()
+    if "@" in raw and ":" in raw and "://" not in raw:
+        after_at = raw.split("@", 1)[1]
+        host = after_at.split(":", 1)[0].strip().lower()
+        return host or None
+    return None
+
+
+def _extract_url_host(url: str) -> str | None:
+    parsed = urllib.parse.urlparse(url)
+    if parsed.scheme == "file":
+        return "file"
+    if parsed.hostname:
+        return parsed.hostname.lower()
+    return None
+
+
+def _host_matches(host: str, allowlist: set[str]) -> bool:
+    if host in allowlist:
+        return True
+    for allowed in allowlist:
+        if allowed.startswith("*.") and host.endswith(allowed[1:]):
+            return True
+    return False
+
+
+def _enforce_trusted_source(kind: str, source: str, security_policy: dict, allow_untrusted: bool = False):
+    if allow_untrusted:
+        return
+
+    if kind == "git":
+        allowlist = security_policy.get("trusted_git_hosts", set())
+        if not allowlist:
+            return
+        host = _extract_git_host(source)
+        if host is None:
+            local_path = Path(source).expanduser()
+            if local_path.exists():
+                return
+            raise RuntimeError(f"Git-kilde kan ikke verifiseres mot trusted hosts: {source}")
+        if not _host_matches(host, allowlist):
+            raise RuntimeError(f"Git-host ikke tillatt av security policy: {host}")
+        return
+
+    if kind == "url":
+        allowlist = security_policy.get("trusted_url_hosts", set())
+        if not allowlist:
+            return
+        host = _extract_url_host(source)
+        if host is None:
+            raise RuntimeError(f"URL-kilde kan ikke verifiseres mot trusted hosts: {source}")
+        if host == "file":
+            return
+        if not _host_matches(host, allowlist):
+            raise RuntimeError(f"URL-host ikke tillatt av security policy: {host}")
+        return
+
+
 def _normalize_registry_path(raw_path: str, relative_to: Path) -> Path:
     path = Path(raw_path).expanduser()
     if path.is_absolute():
         return path.resolve()
     return (relative_to / path).resolve()
+
+
+def _semver_key(version: str) -> tuple[int, int, int]:
+    if not SEMVER_RE.match(version):
+        return (-1, -1, -1)
+    a, b, c = version.split(".")
+    return int(a), int(b), int(c)
+
+
+def _parse_registry_entry(name: str, value: object) -> dict | None:
+    if isinstance(value, str):
+        return {"kind": "path", "path": value, "description": None, "version": None, "name": name}
+
+    if not isinstance(value, dict):
+        return None
+
+    description = value.get("description")
+    version = value.get("version")
+    if isinstance(value.get("path"), str):
+        return {
+            "kind": "path",
+            "path": value["path"],
+            "description": description,
+            "version": version if isinstance(version, str) else None,
+            "name": name,
+        }
+    if isinstance(value.get("git"), str):
+        return {
+            "kind": "git",
+            "git": value["git"],
+            "ref": value.get("ref") if isinstance(value.get("ref"), str) else None,
+            "description": description,
+            "version": version if isinstance(version, str) else None,
+            "name": name,
+        }
+    if isinstance(value.get("url"), str):
+        return {
+            "kind": "url",
+            "url": value["url"],
+            "description": description,
+            "version": version if isinstance(version, str) else None,
+            "name": name,
+        }
+    return None
+
+
+def _select_remote_version(package_name: str, package_obj: dict) -> dict | None:
+    versions = package_obj.get("versions")
+    if not isinstance(versions, dict) or not versions:
+        return _parse_registry_entry(package_name, package_obj)
+
+    latest = package_obj.get("latest")
+    selected_version = latest if isinstance(latest, str) and latest in versions else None
+    if selected_version is None:
+        candidates = sorted((v for v in versions.keys() if isinstance(v, str)), key=_semver_key, reverse=True)
+        selected_version = candidates[0] if candidates else None
+    if selected_version is None:
+        return None
+
+    entry = _parse_registry_entry(package_name, versions[selected_version])
+    if entry is None:
+        return None
+    entry["version"] = selected_version
+    return entry
+
+
+def _load_registry_source_text(source: str, project_dir: Path, security_policy: dict, allow_untrusted: bool) -> tuple[str, str]:
+    if "://" in source:
+        parsed = urllib.parse.urlparse(source)
+        scheme = parsed.scheme.lower()
+        if scheme in ("http", "https", "file"):
+            _enforce_trusted_source("url", source, security_policy, allow_untrusted=allow_untrusted)
+            with urllib.request.urlopen(source) as resp:
+                text = resp.read().decode("utf-8")
+            return source, text
+        raise RuntimeError(f"Ukjent registry source scheme: {scheme}")
+
+    source_path = Path(source).expanduser()
+    if not source_path.is_absolute():
+        source_path = (project_dir / source_path).resolve()
+    if not source_path.exists():
+        raise RuntimeError(f"Fant ikke registry source-fil: {source_path}")
+    return str(source_path), source_path.read_text(encoding="utf-8")
+
+
+def _parse_remote_registry_text(source_name: str, text: str) -> dict[str, dict]:
+    data = None
+    try:
+        data = json.loads(text)
+    except Exception:
+        try:
+            data = tomllib.loads(text)
+        except Exception as exc:
+            raise RuntimeError(f"Ugyldig registry-format i {source_name}: {exc}") from exc
+
+    if not isinstance(data, dict):
+        raise RuntimeError(f"Ugyldig registry-rot i {source_name}: forventet objekt/tabell")
+
+    raw_packages = data.get("packages", {})
+    if not isinstance(raw_packages, dict):
+        raise RuntimeError(f"Ugyldig packages-seksjon i {source_name}")
+
+    out: dict[str, dict] = {}
+    for pkg_name, pkg_obj in raw_packages.items():
+        if not isinstance(pkg_name, str):
+            continue
+        entry = _select_remote_version(pkg_name, pkg_obj)
+        if entry is None:
+            continue
+        entry["source"] = source_name
+        out[pkg_name] = entry
+    return out
+
+
+def _remote_registry_cache_path(project_dir: Path) -> Path:
+    return (project_dir / REMOTE_REGISTRY_CACHE).resolve()
+
+
+def _load_remote_registry_cache(project_dir: Path) -> dict[str, dict]:
+    cache_path = _remote_registry_cache_path(project_dir)
+    if not cache_path.exists():
+        return {}
+    try:
+        payload = json.loads(cache_path.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+    entries = payload.get("entries", {})
+    if not isinstance(entries, dict):
+        return {}
+    out = {}
+    for name, obj in entries.items():
+        if isinstance(name, str) and isinstance(obj, dict):
+            out[name] = obj
+    return out
+
+
+def registry_sync(
+    source_override: str | None = None,
+    allow_untrusted: bool = False,
+    require_all: bool = False,
+    fallback_to_cache: bool = True,
+):
+    config_path = _find_project_config()
+    project_dir = config_path.parent.resolve()
+    security_policy = _load_security_policy(config_path)
+    project_toml = _load_toml(config_path)
+    registry_section = project_toml.get("registry", {}) if isinstance(project_toml.get("registry", {}), dict) else {}
+    configured_sources = registry_section.get("sources", [])
+
+    sources: list[str]
+    if source_override:
+        sources = [source_override]
+    elif isinstance(configured_sources, list):
+        sources = [s for s in configured_sources if isinstance(s, str) and s.strip()]
+    else:
+        sources = []
+
+    if not sources:
+        raise RuntimeError("Ingen registry-kilder satt. Bruk [registry].sources eller --source")
+
+    merged: dict[str, dict] = {}
+    used_sources: list[str] = []
+    failed_sources: list[dict] = []
+    for src in sources:
+        try:
+            source_name, text = _load_registry_source_text(src, project_dir, security_policy, allow_untrusted=allow_untrusted)
+            entries = _parse_remote_registry_text(source_name, text)
+        except Exception as exc:
+            failed_sources.append({"source": src, "error": str(exc)})
+            if require_all:
+                raise RuntimeError(f"Registry-sync feilet for {src}: {exc}") from exc
+            continue
+
+        for name, entry in entries.items():
+            prev = merged.get(name)
+            if prev is None:
+                merged[name] = entry
+                continue
+            prev_v = prev.get("version")
+            cur_v = entry.get("version")
+            if isinstance(cur_v, str) and isinstance(prev_v, str):
+                if _semver_key(cur_v) > _semver_key(prev_v):
+                    merged[name] = entry
+            else:
+                merged[name] = entry
+        used_sources.append(source_name)
+
+    cache_path = _remote_registry_cache_path(project_dir)
+    cache_path.parent.mkdir(parents=True, exist_ok=True)
+
+    stale_fallback_used = False
+    if not merged and failed_sources and fallback_to_cache and cache_path.exists():
+        merged = _load_remote_registry_cache(project_dir)
+        stale_fallback_used = True
+
+    if not merged and failed_sources:
+        raise RuntimeError("Registry-sync feilet: ingen vellykkede kilder og ingen brukbar cache")
+
+    payload = {
+        "version": 1,
+        "synced_at": dt.datetime.now(dt.timezone.utc).isoformat(),
+        "sources": used_sources,
+        "entries": merged,
+        "failed_sources": failed_sources,
+        "stale_fallback_used": stale_fallback_used,
+    }
+    cache_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return {
+        "cache": str(cache_path),
+        "sources": used_sources,
+        "count": len(merged),
+        "failed_sources": failed_sources,
+        "stale_fallback_used": stale_fallback_used,
+    }
+
+
+def registry_mirror(output_file: str | None = None):
+    config_path = _find_project_config()
+    project_dir = config_path.parent.resolve()
+    entries = _read_registry_entries(config_path)
+    mirror_path = (Path(output_file).expanduser() if output_file else project_dir / "build" / "registry_mirror.json")
+    if not mirror_path.is_absolute():
+        mirror_path = (project_dir / mirror_path).resolve()
+    mirror_path.parent.mkdir(parents=True, exist_ok=True)
+
+    packages = {}
+    for name, meta in sorted(entries.items(), key=lambda item: item[0]):
+        row = {"description": meta.get("description")}
+        if isinstance(meta.get("version"), str):
+            row["version"] = meta["version"]
+        if isinstance(meta.get("source"), str):
+            row["source"] = meta["source"]
+
+        kind = meta.get("kind")
+        if kind == "path":
+            p = meta.get("path")
+            if isinstance(p, Path):
+                row["path"] = str(p)
+            elif isinstance(p, str):
+                row["path"] = p
+        elif kind == "git":
+            row["git"] = meta.get("git")
+            if isinstance(meta.get("ref"), str):
+                row["ref"] = meta["ref"]
+        elif kind == "url":
+            row["url"] = meta.get("url")
+        packages[name] = row
+
+    payload = {
+        "format_version": 1,
+        "generated_at": dt.datetime.now(dt.timezone.utc).isoformat(),
+        "packages": packages,
+    }
+    mirror_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return {
+        "output": str(mirror_path),
+        "count": len(packages),
+    }
 
 
 def _extract_package_map(raw: object) -> dict[str, dict]:
@@ -181,6 +547,7 @@ def _read_registry_entries(project_config_path: Path) -> dict[str, dict]:
     # 2) External registry file: packages/registry.toml
     registry_file = project_dir / "packages" / "registry.toml"
     if registry_file.exists():
+        _verify_registry_integrity(project_config_path, registry_file)
         registry_toml = _load_toml(registry_file)
         top_packages = _extract_package_map(registry_toml.get("packages"))
         for name, meta in top_packages.items():
@@ -232,6 +599,40 @@ def _read_registry_entries(project_config_path: Path) -> dict[str, dict]:
                     "description": meta.get("description"),
                     "source": str(registry_file),
                 }
+
+    # 3) Synkronisert remote cache (overskriver ikke lokale entries)
+    remote_entries = _load_remote_registry_cache(project_dir)
+    for name, meta in remote_entries.items():
+        if name in entries:
+            continue
+        if not isinstance(meta, dict):
+            continue
+        kind = meta.get("kind")
+        if kind == "path" and isinstance(meta.get("path"), str):
+            entries[name] = {
+                "kind": "path",
+                "path": _normalize_registry_path(meta["path"], project_dir),
+                "description": meta.get("description"),
+                "source": meta.get("source", "remote-cache"),
+                "version": meta.get("version"),
+            }
+        elif kind == "git" and isinstance(meta.get("git"), str):
+            entries[name] = {
+                "kind": "git",
+                "git": meta["git"],
+                "ref": meta.get("ref"),
+                "description": meta.get("description"),
+                "source": meta.get("source", "remote-cache"),
+                "version": meta.get("version"),
+            }
+        elif kind == "url" and isinstance(meta.get("url"), str):
+            entries[name] = {
+                "kind": "url",
+                "url": meta["url"],
+                "description": meta.get("description"),
+                "source": meta.get("source", "remote-cache"),
+                "version": meta.get("version"),
+            }
 
     return entries
 
@@ -291,6 +692,78 @@ def _upsert_dependency(config_path: Path, dep_name: str, dep_value: str) -> bool
     return changed
 
 
+def _upsert_section_string_value(config_path: Path, section: str, key: str, value: str) -> bool:
+    lines = config_path.read_text(encoding="utf-8").splitlines()
+    rendered = f'{key} = "{value}"'
+    section_header = f"[{section}]"
+
+    sec_start = None
+    sec_end = len(lines)
+    for idx, line in enumerate(lines):
+        stripped = line.strip()
+        if stripped == section_header:
+            sec_start = idx
+            continue
+        if sec_start is not None and stripped.startswith("[") and stripped.endswith("]"):
+            sec_end = idx
+            break
+
+    changed = False
+    if sec_start is None:
+        if lines and lines[-1].strip() != "":
+            lines.append("")
+        lines.append(section_header)
+        lines.append(rendered)
+        changed = True
+    else:
+        existing_idx = None
+        for idx in range(sec_start + 1, sec_end):
+            stripped = lines[idx].strip()
+            if not stripped or stripped.startswith("#") or "=" not in stripped:
+                continue
+            cur_key, _cur_val = stripped.split("=", 1)
+            if cur_key.strip() == key:
+                existing_idx = idx
+                break
+        if existing_idx is not None:
+            if lines[existing_idx].strip() != rendered:
+                lines[existing_idx] = rendered
+                changed = True
+        else:
+            lines.insert(sec_end, rendered)
+            changed = True
+
+    if changed:
+        config_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return changed
+
+
+def registry_sign(write_config: bool = False):
+    config_path = _find_project_config()
+    project_dir = config_path.parent.resolve()
+    registry_path = (project_dir / "packages" / "registry.toml").resolve()
+    if not registry_path.exists():
+        raise RuntimeError(f"Fant ikke registry-fil: {registry_path}")
+
+    digest = _hash_file(registry_path).lower()
+    changed = False
+    if write_config:
+        changed = _upsert_section_string_value(
+            config_path,
+            section="security",
+            key="trusted_registry_sha256",
+            value=digest,
+        )
+
+    return {
+        "registry": str(registry_path),
+        "sha256": digest,
+        "config": str(config_path),
+        "written_to_config": write_config,
+        "config_changed": changed,
+    }
+
+
 def list_registry_packages():
     config_path = _find_project_config()
     entries = _read_registry_entries(config_path)
@@ -328,6 +801,10 @@ def _hash_file(path: Path) -> str:
                 break
             h.update(chunk)
     return h.hexdigest()
+
+
+def _is_valid_sha256(value: str) -> bool:
+    return bool(re.fullmatch(r"[0-9a-fA-F]{64}", value))
 
 
 def _hash_directory(path: Path) -> str:
@@ -497,7 +974,13 @@ def _fetch_git_to_cache(project_dir: Path, package_name: str, git_url: str, git_
     return _find_cached_package_root(target)
 
 
-def _fetch_url_to_cache(project_dir: Path, package_name: str, source_url: str, refresh: bool) -> Path:
+def _fetch_url_to_cache(
+    project_dir: Path,
+    package_name: str,
+    source_url: str,
+    refresh: bool,
+    expected_sha256: str | None = None,
+) -> Path:
     cache_dir = _cache_base_dir(project_dir) / "url"
     cache_dir.mkdir(parents=True, exist_ok=True)
     short = hashlib.sha1(source_url.encode("utf-8")).hexdigest()[:12]
@@ -515,6 +998,11 @@ def _fetch_url_to_cache(project_dir: Path, package_name: str, source_url: str, r
         filename = Path(source_url.split("?")[0]).name or "package.tar.gz"
         archive_path = archives_dir / filename
         urllib.request.urlretrieve(source_url, archive_path)
+        archive_digest = _hash_file(archive_path)
+        if expected_sha256 is not None and archive_digest.lower() != expected_sha256.lower():
+            raise RuntimeError(
+                f"SHA256 mismatch for {source_url}: expected {expected_sha256.lower()} got {archive_digest.lower()}"
+            )
 
         lower_name = filename.lower()
         if lower_name.endswith(".zip"):
@@ -537,10 +1025,13 @@ def add_dependency(
     fetch: bool = False,
     refresh: bool = False,
     pin: bool = False,
+    expected_sha256: str | None = None,
+    allow_untrusted: bool = False,
 ):
     config_path = _find_project_config()
     project_dir = config_path.parent.resolve()
     registry_entries = _read_registry_entries(config_path)
+    security_policy = _load_security_policy(config_path)
 
     if git_url and tarball_url:
         raise RuntimeError("Bruk enten --git eller --url, ikke begge")
@@ -550,6 +1041,10 @@ def add_dependency(
         raise RuntimeError("--ref krever --git")
     if pin and git_url and not git_ref:
         raise RuntimeError("--pin krever --ref når --git brukes")
+    if expected_sha256 is not None and not _is_valid_sha256(expected_sha256):
+        raise RuntimeError("--sha256 må være 64 hex-tegn")
+    if expected_sha256 is not None and not fetch:
+        raise RuntimeError("--sha256 krever --fetch")
 
     path_like = any(sep in package for sep in ("/", "\\")) or package.startswith(".")
     dep_kind = "path"
@@ -558,6 +1053,7 @@ def add_dependency(
 
     if git_url:
         dep_name = dep_name_override or package
+        _enforce_trusted_source("git", git_url, security_policy, allow_untrusted=allow_untrusted)
         dep_kind = "git"
         dep_value = _render_git_dependency(git_url, git_ref)
         package_name = dep_name
@@ -568,11 +1064,18 @@ def add_dependency(
             package_name = _parse_project_name_from_toml(cached_root / PROJECT_CONFIG_NAME) or cached_root.name
     elif tarball_url:
         dep_name = dep_name_override or package
+        _enforce_trusted_source("url", tarball_url, security_policy, allow_untrusted=allow_untrusted)
         dep_kind = "url"
         dep_value = _render_url_dependency(tarball_url)
         package_name = dep_name
         if fetch:
-            cached_root = _fetch_url_to_cache(project_dir, dep_name, tarball_url, refresh=refresh)
+            cached_root = _fetch_url_to_cache(
+                project_dir,
+                dep_name,
+                tarball_url,
+                refresh=refresh,
+                expected_sha256=expected_sha256,
+            )
             dep_kind = "path"
             dep_value = _to_project_relative_path(cached_root, project_dir)
             package_name = _parse_project_name_from_toml(cached_root / PROJECT_CONFIG_NAME) or cached_root.name
@@ -600,6 +1103,7 @@ def add_dependency(
             elif registry_hit.get("kind") == "git":
                 if pin and not registry_hit.get("ref"):
                     raise RuntimeError(f"Registry-pakke '{package}' mangler låst git-ref (bruk pakke med ref eller uten --pin)")
+                _enforce_trusted_source("git", registry_hit["git"], security_policy, allow_untrusted=allow_untrusted)
                 dep_kind = "git"
                 dep_value = _render_git_dependency(registry_hit["git"], registry_hit.get("ref"))
                 package_name = dep_name
@@ -615,11 +1119,18 @@ def add_dependency(
                     dep_value = _to_project_relative_path(cached_root, project_dir)
                     package_name = _parse_project_name_from_toml(cached_root / PROJECT_CONFIG_NAME) or cached_root.name
             elif registry_hit.get("kind") == "url":
+                _enforce_trusted_source("url", registry_hit["url"], security_policy, allow_untrusted=allow_untrusted)
                 dep_kind = "url"
                 dep_value = _render_url_dependency(registry_hit["url"])
                 package_name = dep_name
                 if fetch:
-                    cached_root = _fetch_url_to_cache(project_dir, dep_name, registry_hit["url"], refresh=refresh)
+                    cached_root = _fetch_url_to_cache(
+                        project_dir,
+                        dep_name,
+                        registry_hit["url"],
+                        refresh=refresh,
+                        expected_sha256=expected_sha256,
+                    )
                     dep_kind = "path"
                     dep_value = _to_project_relative_path(cached_root, project_dir)
                     package_name = _parse_project_name_from_toml(cached_root / PROJECT_CONFIG_NAME) or cached_root.name
@@ -642,6 +1153,64 @@ def add_dependency(
     return config_path, dep_name, dep_value, package_name, dep_kind, changed
 
 
+def verify_lockfile():
+    lock_path = Path(LOCKFILE_NAME).resolve()
+    if not lock_path.exists():
+        return lock_path, False, [{"name": "*", "status": "mangler lockfile"}]
+
+    try:
+        lock = json.loads(lock_path.read_text(encoding="utf-8"))
+    except Exception as exc:
+        return lock_path, False, [{"name": "*", "status": f"ugyldig lockfile: {exc}"}]
+
+    deps = lock.get("dependencies", {})
+    if not isinstance(deps, dict):
+        return lock_path, False, [{"name": "*", "status": "ugyldig dependencies i lockfile"}]
+
+    results = []
+    ok = True
+    for name, entry in sorted(deps.items(), key=lambda item: item[0]):
+        if not isinstance(entry, dict):
+            results.append({"name": name, "status": "ugyldig entry"})
+            ok = False
+            continue
+
+        kind = entry.get("kind")
+        resolved = entry.get("resolved", {})
+        if kind == "path":
+            path_str = resolved.get("path") if isinstance(resolved, dict) else None
+            expected_digest = resolved.get("digest_sha256") if isinstance(resolved, dict) else None
+            if not isinstance(path_str, str):
+                results.append({"name": name, "status": "mangler path i lock"})
+                ok = False
+                continue
+
+            path = Path(path_str)
+            if not path.exists():
+                results.append({"name": name, "status": f"mangler path: {path}"})
+                ok = False
+                continue
+
+            if isinstance(expected_digest, str):
+                actual = _hash_directory(path) if path.is_dir() else _hash_file(path)
+                if actual != expected_digest:
+                    results.append({"name": name, "status": "digest mismatch"})
+                    ok = False
+                    continue
+            results.append({"name": name, "status": "ok"})
+        elif kind == "git":
+            ref = resolved.get("ref") if isinstance(resolved, dict) else None
+            pinned = bool(ref)
+            results.append({"name": name, "status": "ok" if pinned else "advarsel: upinnet git-ref"})
+        elif kind == "url":
+            results.append({"name": name, "status": "ok"})
+        else:
+            results.append({"name": name, "status": f"ukjent kind: {kind}"})
+            ok = False
+
+    return lock_path, ok, results
+
+
 def _resolve_dependency_from_registry(
     dep_name: str,
     registry_hit: dict,
@@ -649,6 +1218,8 @@ def _resolve_dependency_from_registry(
     fetch: bool,
     refresh: bool,
     pin: bool,
+    security_policy: dict,
+    allow_untrusted: bool,
 ) -> tuple[str, str]:
     kind = registry_hit.get("kind")
     if kind == "path":
@@ -659,6 +1230,7 @@ def _resolve_dependency_from_registry(
     if kind == "git":
         if pin and not registry_hit.get("ref"):
             raise RuntimeError(f"Registry-pakke '{dep_name}' mangler låst git-ref (bruk pakke med ref eller uten --pin)")
+        _enforce_trusted_source("git", registry_hit["git"], security_policy, allow_untrusted=allow_untrusted)
         if fetch:
             cached_root = _fetch_git_to_cache(
                 project_dir,
@@ -671,6 +1243,7 @@ def _resolve_dependency_from_registry(
         return "git", _render_git_dependency(registry_hit["git"], registry_hit.get("ref"))
 
     if kind == "url":
+        _enforce_trusted_source("url", registry_hit["url"], security_policy, allow_untrusted=allow_untrusted)
         if fetch:
             cached_root = _fetch_url_to_cache(project_dir, dep_name, registry_hit["url"], refresh=refresh)
             return "path", _to_project_relative_path(cached_root, project_dir)
@@ -686,11 +1259,13 @@ def update_dependencies(
     fetch: bool = False,
     refresh: bool = False,
     with_lock: bool = False,
+    allow_untrusted: bool = False,
 ):
     config_path = _find_project_config()
     project_dir = config_path.parent.resolve()
     deps = _parse_dependencies_from_toml(config_path)
     registry_entries = _read_registry_entries(config_path)
+    security_policy = _load_security_policy(config_path)
 
     if package is not None:
         if package not in deps:
@@ -726,6 +1301,8 @@ def update_dependencies(
             fetch=fetch,
             refresh=refresh,
             pin=pin,
+            security_policy=security_policy,
+            allow_untrusted=allow_untrusted,
         )
 
         if current == desired:
@@ -1468,6 +2045,8 @@ def main():
     add.add_argument("--fetch", action="store_true", help="Last ned/cach ekstern Git/URL-kilde til lokal mappe")
     add.add_argument("--refresh", action="store_true", help="Tving ny nedlasting ved --fetch")
     add.add_argument("--pin", action="store_true", help="Krev låst versjon/ref for ekstern kilde")
+    add.add_argument("--sha256", help="Forventet SHA256 for URL-arkiv ved --fetch")
+    add.add_argument("--allow-untrusted", action="store_true", help="Overstyr trusted host-policy for denne kommandoen")
 
     debug = sub.add_parser("debug", help="Vis debug-info (tokens/AST/symboler) for en .no-fil")
     debug.add_argument("file")
@@ -1496,6 +2075,7 @@ def main():
 
     lock = sub.add_parser("lock", help="Generer dependency lockfile (norsklang.lock)")
     lock.add_argument("--check", action="store_true", help="Feil hvis lockfile er manglende/utdatert")
+    lock.add_argument("--verify", action="store_true", help="Verifiser path-digests i eksisterende lockfile")
     lock.add_argument("--json", action="store_true", help="Skriv lock-resultat som JSON")
 
     update = sub.add_parser("update", help="Oppdater dependencies fra registry")
@@ -1506,6 +2086,22 @@ def main():
     update.add_argument("--fetch", action="store_true", help="Materialiser registry git/url-kilder til lokal cache")
     update.add_argument("--refresh", action="store_true", help="Tving ny nedlasting ved --fetch")
     update.add_argument("--lock", action="store_true", help="Regenerer lockfile etter oppdatering")
+    update.add_argument("--allow-untrusted", action="store_true", help="Overstyr trusted host-policy for denne kommandoen")
+
+    registry_sign_cmd = sub.add_parser("registry-sign", help="Beregn/pinn SHA256 for packages/registry.toml")
+    registry_sign_cmd.add_argument("--write-config", action="store_true", help="Skriv hash til [security].trusted_registry_sha256")
+    registry_sign_cmd.add_argument("--json", action="store_true", help="Skriv resultat som JSON")
+
+    registry_sync_cmd = sub.add_parser("registry-sync", help="Synkroniser remote registry-indeks til lokal cache")
+    registry_sync_cmd.add_argument("--source", help="Overstyr registry source for denne kjøringen")
+    registry_sync_cmd.add_argument("--allow-untrusted", action="store_true", help="Overstyr trusted host-policy for denne kommandoen")
+    registry_sync_cmd.add_argument("--require-all", action="store_true", help="Feil hvis en eneste source feiler")
+    registry_sync_cmd.add_argument("--no-fallback", action="store_true", help="Ikke bruk eksisterende cache ved source-feil")
+    registry_sync_cmd.add_argument("--json", action="store_true", help="Skriv resultat som JSON")
+
+    registry_mirror_cmd = sub.add_parser("registry-mirror", help="Bygg distribuerbar registry-speilfil fra lokale+remote entries")
+    registry_mirror_cmd.add_argument("--output", help="Output-fil for mirror (default: build/registry_mirror.json)")
+    registry_mirror_cmd.add_argument("--json", action="store_true", help="Skriv resultat som JSON")
 
     release = sub.add_parser("release", help="Forbered release (versjonsbump + changelog)")
     release.add_argument("--bump", choices=["major", "minor", "patch"], default="patch", help="Type semver-bump")
@@ -1549,6 +2145,8 @@ def main():
                     for name, meta in sorted(entries.items(), key=lambda item: item[0]):
                         desc = meta.get("description")
                         desc_text = f" - {desc}" if isinstance(desc, str) and desc.strip() else ""
+                        version_text = f" @ {meta.get('version')}" if isinstance(meta.get("version"), str) else ""
+                        source_text = f" [{meta.get('source')}]" if isinstance(meta.get("source"), str) else ""
                         if meta.get("kind") == "path":
                             target = str(meta["path"])
                         elif meta.get("kind") == "git":
@@ -1557,7 +2155,7 @@ def main():
                             target = _render_url_dependency(meta["url"])
                         else:
                             target = "<ukjent>"
-                        print(f"  {name} => {target}{desc_text}")
+                        print(f"  {name}{version_text} => {target}{source_text}{desc_text}")
                 return
 
             if not args.package:
@@ -1573,6 +2171,8 @@ def main():
                 fetch=args.fetch,
                 refresh=args.refresh,
                 pin=args.pin,
+                expected_sha256=args.sha256,
+                allow_untrusted=args.allow_untrusted,
             )
             print(f"Konfig: {config_path}")
             print(f"Pakke: {package_name}")
@@ -1812,14 +2412,26 @@ def main():
                 print(json.dumps(payload, ensure_ascii=False, indent=2))
 
         elif args.cmd == "lock":
-            lock_path, ok, status = generate_lockfile(check_only=args.check)
-            if args.json:
-                print(json.dumps({"lockfile": str(lock_path), "ok": ok, "status": status, "check": args.check}, ensure_ascii=False, indent=2))
+            if args.verify:
+                lock_path, ok, results = verify_lockfile()
+                if args.json:
+                    print(json.dumps({"lockfile": str(lock_path), "ok": ok, "verify": True, "results": results}, ensure_ascii=False, indent=2))
+                else:
+                    print(f"Lockfile: {lock_path}")
+                    print("Verify:")
+                    for row in results:
+                        print(f"  {row['name']}: {row['status']}")
+                if not ok:
+                    sys.exit(1)
             else:
-                print(f"Lockfile: {lock_path}")
-                print(f"Status: {status}")
-            if args.check and not ok:
-                sys.exit(1)
+                lock_path, ok, status = generate_lockfile(check_only=args.check)
+                if args.json:
+                    print(json.dumps({"lockfile": str(lock_path), "ok": ok, "status": status, "check": args.check}, ensure_ascii=False, indent=2))
+                else:
+                    print(f"Lockfile: {lock_path}")
+                    print(f"Status: {status}")
+                if args.check and not ok:
+                    sys.exit(1)
 
         elif args.cmd == "update":
             payload = update_dependencies(
@@ -1829,6 +2441,7 @@ def main():
                 fetch=args.fetch,
                 refresh=args.refresh,
                 with_lock=args.lock,
+                allow_untrusted=args.allow_untrusted,
             )
             if args.json:
                 print(json.dumps(payload, ensure_ascii=False, indent=2))
@@ -1851,6 +2464,47 @@ def main():
                     print(f"Lockfile: {payload['lock']['path']} ({payload['lock']['status']})")
             if args.check and payload["updated"] > 0:
                 sys.exit(1)
+
+        elif args.cmd == "registry-sign":
+            payload = registry_sign(write_config=args.write_config)
+            if args.json:
+                print(json.dumps(payload, ensure_ascii=False, indent=2))
+            else:
+                print(f"Registry: {payload['registry']}")
+                print(f"SHA256: {payload['sha256']}")
+                if payload["written_to_config"]:
+                    print(f"Konfig: {payload['config']}")
+                    print("Status: oppdatert" if payload["config_changed"] else "Status: uendret")
+
+        elif args.cmd == "registry-sync":
+            payload = registry_sync(
+                source_override=args.source,
+                allow_untrusted=args.allow_untrusted,
+                require_all=args.require_all,
+                fallback_to_cache=not args.no_fallback,
+            )
+            if args.json:
+                print(json.dumps(payload, ensure_ascii=False, indent=2))
+            else:
+                print(f"Cache: {payload['cache']}")
+                print(f"Kilder: {len(payload['sources'])}")
+                for src in payload["sources"]:
+                    print(f"  - {src}")
+                print(f"Pakker i cache: {payload['count']}")
+                if payload.get("failed_sources"):
+                    print("Feilede kilder:")
+                    for row in payload["failed_sources"]:
+                        print(f"  - {row['source']}: {row['error']}")
+                if payload.get("stale_fallback_used"):
+                    print("Fallback: bruker eksisterende cache")
+
+        elif args.cmd == "registry-mirror":
+            payload = registry_mirror(output_file=args.output)
+            if args.json:
+                print(json.dumps(payload, ensure_ascii=False, indent=2))
+            else:
+                print(f"Mirror: {payload['output']}")
+                print(f"Pakker: {payload['count']}")
 
         elif args.cmd == "release":
             payload = prepare_release(

@@ -13,7 +13,7 @@
       "specifier": "./packages/butikk"
     }
   },
-  "generated_at": "2026-04-01T18:14:52.959945+00:00",
+  "generated_at": "2026-04-01T18:32:05.546727+00:00",
   "lock_version": 1,
   "project": {
     "entry": "app.no",

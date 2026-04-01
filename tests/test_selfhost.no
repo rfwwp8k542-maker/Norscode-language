@@ -133,6 +133,21 @@ funksjon start() -> heltall {
     la dis_src_bad: tekst = sh.disasm_fra_kilde_strict("PUSH x\nHALT")
     assert_eq(dis_src_bad, "/* feil: ugyldig heltallsargument x */")
 
+    la expr_dis: tekst = sh.disasm_uttrykk("2 + 3 * 4")
+    assert_eq(expr_dis, "0: PUSH 2\n1: PUSH 3\n2: PUSH 4\n3: MUL\n4: ADD\n5: PRINT\n6: HALT\n")
+
+    la expr_dis_paren: tekst = sh.disasm_uttrykk("( 2 + 3 ) * 4")
+    assert_eq(expr_dis_paren, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PUSH 4\n4: MUL\n5: PRINT\n6: HALT\n")
+
+    la expr_c: tekst = sh.kompiler_uttrykk_til_c("10 + 32")
+    assert_ne(expr_c, "")
+
+    la expr_err: tekst = sh.disasm_uttrykk("2 +")
+    assert_eq(expr_err, "/* feil: uttrykket avsluttes med operator */")
+
+    la expr_err2: tekst = sh.disasm_uttrykk("2 + )")
+    assert_eq(expr_err2, "/* feil: mangler verdi før ) */")
+
     la linjer: liste_tekst = ["", "PUSH", "11", "PUSH", "4", "SUB", "PRINT", "HALT"]
     la c3: tekst = sh.kompiler_fra_linjer(linjer)
     assert_ne(c3, "")

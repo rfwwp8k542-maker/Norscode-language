@@ -55,6 +55,52 @@ funksjon er_heltall_token(tok: tekst) -> bool {
     returner tekst_fra_heltall(n) == tok
 }
 
+funksjon er_operator_token(tok: tekst) -> bool {
+    hvis (tok == "+" eller tok == "-" eller tok == "*" eller tok == "/" eller tok == "%") {
+        returner sann
+    }
+    returner usann
+}
+
+funksjon operator_precedens(tok: tekst) -> heltall {
+    hvis (tok == "*" eller tok == "/" eller tok == "%") {
+        returner 2
+    }
+    hvis (tok == "+" eller tok == "-") {
+        returner 1
+    }
+    returner 0
+}
+
+funksjon operator_til_opcode(tok: tekst) -> tekst {
+    hvis (tok == "+") {
+        returner "ADD"
+    }
+    hvis (tok == "-") {
+        returner "SUB"
+    }
+    hvis (tok == "*") {
+        returner "MUL"
+    }
+    hvis (tok == "/") {
+        returner "DIV"
+    }
+    hvis (tok == "%") {
+        returner "MOD"
+    }
+    returner ""
+}
+
+funksjon emitter_operator(ops: liste_tekst, verdier: liste_heltall, op: tekst) -> bool {
+    la opcode: tekst = operator_til_opcode(op)
+    hvis (opcode == "") {
+        returner usann
+    }
+    legg_til(ops, opcode)
+    legg_til(verdier, 0)
+    returner sann
+}
+
 funksjon stack_behov(op: tekst) -> heltall {
     hvis (op == "ADD" eller op == "SUB" eller op == "MUL" eller op == "DIV" eller op == "MOD") {
         returner 2
@@ -415,4 +461,154 @@ funksjon disasm_fra_kilde(kilde: tekst) -> tekst {
 funksjon disasm_fra_kilde_strict(kilde: tekst) -> tekst {
     la tokens: liste_tekst = tokeniser_enkel(kilde)
     returner disasm_fra_tokens_strict(tokens)
+}
+
+funksjon uttrykk_til_ops_og_verdier(tokens: liste_tekst, ops: liste_tekst, verdier: liste_heltall) -> tekst {
+    la operatorer: liste_tekst = [""]
+    la i: heltall = 0
+    la forventer_verdi: bool = sann
+
+    fjern_indeks(operatorer, 0)
+
+    mens (i < lengde(tokens)) {
+        la tok: tekst = tokens[i]
+
+        hvis (tok == "") {
+            i = i + 1
+            fortsett
+        }
+
+        hvis (er_heltall_token(tok)) {
+            hvis (forventer_verdi == usann) {
+                returner "/* feil: mangler operator før verdi " + tok + " */"
+            }
+            legg_til(ops, "PUSH")
+            legg_til(verdier, heltall_fra_tekst(tok))
+            forventer_verdi = usann
+            i = i + 1
+            fortsett
+        }
+
+        hvis (tok == "(") {
+            hvis (forventer_verdi == usann) {
+                returner "/* feil: mangler operator før ( */"
+            }
+            legg_til(operatorer, tok)
+            i = i + 1
+            fortsett
+        }
+
+        hvis (tok == ")") {
+            hvis (forventer_verdi) {
+                returner "/* feil: mangler verdi før ) */"
+            }
+            la fant_parantes: bool = usann
+            mens (lengde(operatorer) > 0) {
+                la top_idx: heltall = lengde(operatorer) - 1
+                la top: tekst = operatorer[top_idx]
+                fjern_indeks(operatorer, top_idx)
+                hvis (top == "(") {
+                    fant_parantes = sann
+                    bryt
+                }
+                hvis (emitter_operator(ops, verdier, top) == usann) {
+                    returner "/* feil: ukjent operator " + top + " */"
+                }
+            }
+            hvis (fant_parantes == usann) {
+                returner "/* feil: ) uten matchende ( */"
+            }
+            forventer_verdi = usann
+            i = i + 1
+            fortsett
+        }
+
+        hvis (er_operator_token(tok)) {
+            hvis (forventer_verdi) {
+                returner "/* feil: mangler verdi før operator " + tok + " */"
+            }
+            mens (lengde(operatorer) > 0) {
+                la top_idx2: heltall = lengde(operatorer) - 1
+                la top2: tekst = operatorer[top_idx2]
+                hvis (top2 == "(") {
+                    bryt
+                }
+                hvis (operator_precedens(top2) < operator_precedens(tok)) {
+                    bryt
+                }
+                fjern_indeks(operatorer, top_idx2)
+                hvis (emitter_operator(ops, verdier, top2) == usann) {
+                    returner "/* feil: ukjent operator " + top2 + " */"
+                }
+            }
+            legg_til(operatorer, tok)
+            forventer_verdi = sann
+            i = i + 1
+            fortsett
+        }
+
+        returner "/* feil: ukjent token i uttrykk " + tok + " */"
+    }
+
+    hvis (forventer_verdi) {
+        returner "/* feil: uttrykket avsluttes med operator */"
+    }
+
+    mens (lengde(operatorer) > 0) {
+        la top_idx3: heltall = lengde(operatorer) - 1
+        la top3: tekst = operatorer[top_idx3]
+        fjern_indeks(operatorer, top_idx3)
+        hvis (top3 == "(") {
+            returner "/* feil: mangler ) i uttrykk */"
+        }
+        hvis (emitter_operator(ops, verdier, top3) == usann) {
+            returner "/* feil: ukjent operator " + top3 + " */"
+        }
+    }
+
+    returner ""
+}
+
+funksjon disasm_uttrykk(kilde: tekst) -> tekst {
+    la tokens: liste_tekst = del_ord(kilde)
+    la ops: liste_tekst = [""]
+    la verdier: liste_heltall = [0]
+    la feil: tekst = ""
+
+    fjern_indeks(ops, 0)
+    fjern_indeks(verdier, 0)
+
+    feil = uttrykk_til_ops_og_verdier(tokens, ops, verdier)
+    hvis (feil != "") {
+        returner feil
+    }
+
+    legg_til(ops, "PRINT")
+    legg_til(verdier, 0)
+    legg_til(ops, "HALT")
+    legg_til(verdier, 0)
+
+    returner disasm_program(ops, verdier)
+}
+
+funksjon kompiler_uttrykk_til_c(kilde: tekst) -> tekst {
+    la tokens: liste_tekst = del_ord(kilde)
+    la ops: liste_tekst = [""]
+    la verdier: liste_heltall = [0]
+    la feil: tekst = ""
+
+    fjern_indeks(ops, 0)
+    fjern_indeks(verdier, 0)
+
+    feil = uttrykk_til_ops_og_verdier(tokens, ops, verdier)
+    hvis (feil != "") {
+        returner feil
+    }
+
+    legg_til(ops, "PRINT")
+    legg_til(verdier, 0)
+    legg_til(ops, "HALT")
+    legg_til(verdier, 0)
+
+    returner kompiler_til_c(ops, verdier)
 }

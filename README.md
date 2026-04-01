@@ -131,6 +131,12 @@ python3 main.py add demo_git --fetch --refresh
 
 # Krev låst git-ref ved add
 python3 main.py add minpakke --git https://github.com/org/repo.git --ref v1.2.0 --pin
+
+# Verifiser URL-arkiv med SHA256 ved fetch
+python3 main.py add minpakke --url https://example.com/mypkg-1.2.0.tar.gz --fetch --sha256 <sha256>
+
+# Overstyr trusted host-policy for én kommando
+python3 main.py add minpakke --url https://ukjent.example/pkg.tar.gz --allow-untrusted
 ```
 
 Registry kan defineres i `packages/registry.toml`:
@@ -153,6 +159,51 @@ url = "https://example.com/mypkg-1.2.0.tar.gz"
 description = "Hent pakke fra URL"
 ```
 
+Trusted host-policy kan settes i `norsklang.toml`:
+
+```toml
+[security]
+trusted_git_hosts = ["github.com", "*.github.com"]
+trusted_url_hosts = ["example.com"]
+```
+
+For integritets-pinning av registry metadata:
+
+```bash
+# Beregn SHA256 for packages/registry.toml
+python3 main.py registry-sign
+
+# Skriv SHA256 inn i norsklang.toml (security.trusted_registry_sha256)
+python3 main.py registry-sign --write-config
+```
+
+Remote registry-indeks kan konfigureres i `norsklang.toml`:
+
+```toml
+[registry]
+sources = ["packages/remote_registry_example.json"]
+```
+
+Synkroniser indeks til lokal cache:
+
+```bash
+python3 main.py registry-sync
+python3 main.py registry-sync --json
+
+# Feil hvis en source feiler
+python3 main.py registry-sync --require-all
+
+# Tillat delvis sync og fallback til gammel cache
+python3 main.py registry-sync
+```
+
+Bygg distribuerbar speilfil:
+
+```bash
+python3 main.py registry-mirror
+python3 main.py registry-mirror --output build/registry_mirror.json
+```
+
 Cache for eksterne pakker lagres under `.norsklang/cache/`.
 Modul-loaderen leser `[dependencies]` i `norsklang.toml` automatisk ved `bruk ...`.
 Modul-loaderen bruker også en in-memory parse-cache per fil (med mtime/size-sjekk) for raskere test/bygg-kjøringer.
@@ -165,6 +216,9 @@ python3 main.py lock
 
 # CI-sjekk: feiler hvis lockfile mangler/er utdatert
 python3 main.py lock --check
+
+# Verifiser lockfile mot faktiske path-digests
+python3 main.py lock --verify
 ```
 
 ### 5c. Oppgrader dependencies
@@ -181,6 +235,9 @@ python3 main.py update --check
 
 # Oppdater + regenerer lockfile
 python3 main.py update --lock
+
+# Overstyr trusted host-policy for én oppdateringskjøring
+python3 main.py update --allow-untrusted
 ```
 
 ### 6. Debug tools
@@ -297,8 +354,8 @@ Vi har startet en tidlig selv-hosting bane i `selfhost/`:
 
 Neste steg:
 
-- Utvide selv-hosting til full parser
-- Signatur/verifisering av eksterne pakker
+- Utvide selv-hosting til full parser (påbegynt: uttrykksparser med precedens og parenteser i `selfhost/compiler.no`)
+- Selv-hosting lexer/token-strøm med bedre syntaksfeil og posisjonsinfo
 
 ---
 
