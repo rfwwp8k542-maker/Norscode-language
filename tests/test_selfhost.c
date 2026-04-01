@@ -1438,7 +1438,18 @@ char * selfhost__compiler__disasm_uttrykk(char * kilde) {
     char * feil = "";
     nl_list_text_remove(ops, 0);
     nl_list_int_remove(verdier, 0);
-    feil = selfhost__compiler__uttrykk_til_ops_og_verdier(tokens, ops, verdier);
+    if ((nl_list_text_len(tokens) > 0) && nl_streq(tokens->data[0], "hvis")) {
+        nl_list_text* navn = nl_list_text_new();
+        nl_list_text_push(navn, "");
+        nl_list_int* miljo_verdier = nl_list_int_new();
+        nl_list_int_push(miljo_verdier, 0);
+        nl_list_text_remove(navn, 0);
+        nl_list_int_remove(miljo_verdier, 0);
+        feil = selfhost__compiler__bygg_hvis_da_ellers_ops_med_miljo(tokens, navn, miljo_verdier, ops, verdier);
+    }
+    else {
+        feil = selfhost__compiler__uttrykk_til_ops_og_verdier(tokens, ops, verdier);
+    }
     if (!(nl_streq(feil, ""))) {
         return feil;
     }
@@ -1459,7 +1470,12 @@ char * selfhost__compiler__disasm_uttrykk_med_miljo(char * kilde, nl_list_text* 
     char * feil = "";
     nl_list_text_remove(ops, 0);
     nl_list_int_remove(verdier, 0);
-    feil = selfhost__compiler__uttrykk_til_ops_og_verdier_med_miljo(tokens, navn, miljo_verdier, ops, verdier);
+    if ((nl_list_text_len(tokens) > 0) && nl_streq(tokens->data[0], "hvis")) {
+        feil = selfhost__compiler__bygg_hvis_da_ellers_ops_med_miljo(tokens, navn, miljo_verdier, ops, verdier);
+    }
+    else {
+        feil = selfhost__compiler__uttrykk_til_ops_og_verdier_med_miljo(tokens, navn, miljo_verdier, ops, verdier);
+    }
     if (!(nl_streq(feil, ""))) {
         return feil;
     }
@@ -1480,7 +1496,18 @@ char * selfhost__compiler__kompiler_uttrykk_til_c(char * kilde) {
     char * feil = "";
     nl_list_text_remove(ops, 0);
     nl_list_int_remove(verdier, 0);
-    feil = selfhost__compiler__uttrykk_til_ops_og_verdier(tokens, ops, verdier);
+    if ((nl_list_text_len(tokens) > 0) && nl_streq(tokens->data[0], "hvis")) {
+        nl_list_text* navn = nl_list_text_new();
+        nl_list_text_push(navn, "");
+        nl_list_int* miljo_verdier = nl_list_int_new();
+        nl_list_int_push(miljo_verdier, 0);
+        nl_list_text_remove(navn, 0);
+        nl_list_int_remove(miljo_verdier, 0);
+        feil = selfhost__compiler__bygg_hvis_da_ellers_ops_med_miljo(tokens, navn, miljo_verdier, ops, verdier);
+    }
+    else {
+        feil = selfhost__compiler__uttrykk_til_ops_og_verdier(tokens, ops, verdier);
+    }
     if (!(nl_streq(feil, ""))) {
         return feil;
     }
@@ -1726,7 +1753,12 @@ char * selfhost__compiler__kompiler_uttrykk_til_c_med_miljo(char * kilde, nl_lis
     char * feil = "";
     nl_list_text_remove(ops, 0);
     nl_list_int_remove(verdier, 0);
-    feil = selfhost__compiler__uttrykk_til_ops_og_verdier_med_miljo(tokens, navn, miljo_verdier, ops, verdier);
+    if ((nl_list_text_len(tokens) > 0) && nl_streq(tokens->data[0], "hvis")) {
+        feil = selfhost__compiler__bygg_hvis_da_ellers_ops_med_miljo(tokens, navn, miljo_verdier, ops, verdier);
+    }
+    else {
+        feil = selfhost__compiler__uttrykk_til_ops_og_verdier_med_miljo(tokens, navn, miljo_verdier, ops, verdier);
+    }
     if (!(nl_streq(feil, ""))) {
         return feil;
     }
@@ -1972,6 +2004,12 @@ int start() {
     nl_assert_eq_text(expr_env, "0: PUSH 7\n1: PUSH 2\n2: MUL\n3: PUSH 3\n4: ADD\n5: PRINT\n6: HALT\n");
     char * expr_env_c = selfhost__compiler__kompiler_uttrykk_til_c_med_miljo("x+y", env_navn, env_verdier);
     nl_assert_ne_text(expr_env_c, "");
+    char * expr_hvis = selfhost__compiler__disasm_uttrykk("hvis 1==1 da 7 ellers 9");
+    nl_assert_eq_text(expr_hvis, "0: PUSH 1\n1: PUSH 1\n2: EQ\n3: JZ 6\n4: PUSH 7\n5: JMP 8\n6: LABEL 6\n7: PUSH 9\n8: LABEL 8\n9: PRINT\n10: HALT\n");
+    char * expr_hvis_env = selfhost__compiler__disasm_uttrykk_med_miljo("hvis x>y da x ellers y", env_navn, env_verdier);
+    nl_assert_eq_text(expr_hvis_env, "0: PUSH 7\n1: PUSH 3\n2: GT\n3: JZ 6\n4: PUSH 7\n5: JMP 8\n6: LABEL 6\n7: PUSH 3\n8: LABEL 8\n9: PRINT\n10: HALT\n");
+    char * expr_hvis_c = selfhost__compiler__kompiler_uttrykk_til_c("hvis 1==1 da 7 ellers 9");
+    nl_assert_ne_text(expr_hvis_c, "");
     char * expr_err = selfhost__compiler__disasm_uttrykk("2 +");
     nl_assert_eq_text(expr_err, "/* feil: uttrykket avsluttes med operator */");
     char * expr_err2 = selfhost__compiler__disasm_uttrykk("2 + )");

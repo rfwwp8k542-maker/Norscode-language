@@ -180,6 +180,15 @@ funksjon start() -> heltall {
     la expr_env_c: tekst = sh.kompiler_uttrykk_til_c_med_miljo("x+y", env_navn, env_verdier)
     assert_ne(expr_env_c, "")
 
+    la expr_hvis: tekst = sh.disasm_uttrykk("hvis 1==1 da 7 ellers 9")
+    assert_eq(expr_hvis, "0: PUSH 1\n1: PUSH 1\n2: EQ\n3: JZ 6\n4: PUSH 7\n5: JMP 8\n6: LABEL 6\n7: PUSH 9\n8: LABEL 8\n9: PRINT\n10: HALT\n")
+
+    la expr_hvis_env: tekst = sh.disasm_uttrykk_med_miljo("hvis x>y da x ellers y", env_navn, env_verdier)
+    assert_eq(expr_hvis_env, "0: PUSH 7\n1: PUSH 3\n2: GT\n3: JZ 6\n4: PUSH 7\n5: JMP 8\n6: LABEL 6\n7: PUSH 3\n8: LABEL 8\n9: PRINT\n10: HALT\n")
+
+    la expr_hvis_c: tekst = sh.kompiler_uttrykk_til_c("hvis 1==1 da 7 ellers 9")
+    assert_ne(expr_hvis_c, "")
+
     la expr_err: tekst = sh.disasm_uttrykk("2 +")
     assert_eq(expr_err, "/* feil: uttrykket avsluttes med operator */")
 
