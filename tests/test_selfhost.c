@@ -2257,6 +2257,8 @@ int start() {
     nl_assert_eq_text(expr_norsk_modulo, "0: PUSH 17\n1: PUSH 5\n2: MOD\n3: PRINT\n4: HALT\n");
     char * expr_norsk_ganget_med = selfhost__compiler__disasm_uttrykk("3 ganget med 4");
     nl_assert_eq_text(expr_norsk_ganget_med, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n");
+    char * expr_norsk_ganget_med_underscore = selfhost__compiler__disasm_uttrykk("3 ganget_med 4");
+    nl_assert_eq_text(expr_norsk_ganget_med_underscore, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n");
     char * expr_norsk_delt_med = selfhost__compiler__disasm_uttrykk("8 delt med 2");
     nl_assert_eq_text(expr_norsk_delt_med, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * expr_norsk_delt_paa_utf8 = selfhost__compiler__disasm_uttrykk("8 delt på 2");
@@ -2297,8 +2299,12 @@ int start() {
     nl_assert_eq_text(expr_norsk_cmp_phrase12, "0: PUSH 4\n1: PUSH 4\n2: LT\n3: NOT\n4: PRINT\n5: HALT\n");
     char * expr_norsk_cmp_phrase13 = selfhost__compiler__disasm_uttrykk("7 er lik med 7");
     nl_assert_eq_text(expr_norsk_cmp_phrase13, "0: PUSH 7\n1: PUSH 7\n2: EQ\n3: PRINT\n4: HALT\n");
+    char * expr_norsk_cmp_phrase13_underscore = selfhost__compiler__disasm_uttrykk("7 er_lik_med 7");
+    nl_assert_eq_text(expr_norsk_cmp_phrase13_underscore, "0: PUSH 7\n1: PUSH 7\n2: EQ\n3: PRINT\n4: HALT\n");
     char * expr_norsk_cmp_phrase14 = selfhost__compiler__disasm_uttrykk("7 ikke lik med 8");
     nl_assert_eq_text(expr_norsk_cmp_phrase14, "0: PUSH 7\n1: PUSH 8\n2: EQ\n3: NOT\n4: PRINT\n5: HALT\n");
+    char * expr_norsk_cmp_phrase14_underscore = selfhost__compiler__disasm_uttrykk("7 ikke_lik_med 8");
+    nl_assert_eq_text(expr_norsk_cmp_phrase14_underscore, "0: PUSH 7\n1: PUSH 8\n2: EQ\n3: NOT\n4: PRINT\n5: HALT\n");
     char * expr_norsk_cmp_phrase15 = selfhost__compiler__disasm_uttrykk("7 er ikke lik med 8");
     nl_assert_eq_text(expr_norsk_cmp_phrase15, "0: PUSH 7\n1: PUSH 8\n2: EQ\n3: NOT\n4: PRINT\n5: HALT\n");
     char * expr_norsk_cmp_phrase16 = selfhost__compiler__disasm_uttrykk("7 lik 7");
@@ -2398,8 +2404,12 @@ int start() {
     nl_assert_eq_text(script_norsk_cmp_phrase7, "0: PUSH 4\n1: PUSH 4\n2: LT\n3: NOT\n4: JZ 7\n5: PUSH 1\n6: JMP 9\n7: LABEL 7\n8: PUSH 0\n9: LABEL 9\n10: PRINT\n11: HALT\n");
     char * script_norsk_cmp_phrase8 = selfhost__compiler__disasm_skript("la x=7;la y=8;hvis x er ikke lik med y da 1 ellers 0");
     nl_assert_eq_text(script_norsk_cmp_phrase8, "0: PUSH 7\n1: PUSH 8\n2: EQ\n3: NOT\n4: JZ 7\n5: PUSH 1\n6: JMP 9\n7: LABEL 7\n8: PUSH 0\n9: LABEL 9\n10: PRINT\n11: HALT\n");
+    char * script_norsk_cmp_phrase8_underscore = selfhost__compiler__disasm_skript("la x=7;la y=8;hvis x ikke_lik_med y da 1 ellers 0");
+    nl_assert_eq_text(script_norsk_cmp_phrase8_underscore, "0: PUSH 7\n1: PUSH 8\n2: EQ\n3: NOT\n4: JZ 7\n5: PUSH 1\n6: JMP 9\n7: LABEL 7\n8: PUSH 0\n9: LABEL 9\n10: PRINT\n11: HALT\n");
     char * script_norsk_cmp_phrase9 = selfhost__compiler__disasm_skript("la x=7;la y=7;hvis x lik y da 1 ellers 0");
     nl_assert_eq_text(script_norsk_cmp_phrase9, "0: PUSH 7\n1: PUSH 7\n2: EQ\n3: JZ 6\n4: PUSH 1\n5: JMP 8\n6: LABEL 6\n7: PUSH 0\n8: LABEL 8\n9: PRINT\n10: HALT\n");
+    char * script_norsk_cmp_phrase9_underscore = selfhost__compiler__disasm_skript("la x=7;la y=7;hvis x er_lik_med y da 1 ellers 0");
+    nl_assert_eq_text(script_norsk_cmp_phrase9_underscore, "0: PUSH 7\n1: PUSH 7\n2: EQ\n3: JZ 6\n4: PUSH 1\n5: JMP 8\n6: LABEL 6\n7: PUSH 0\n8: LABEL 8\n9: PRINT\n10: HALT\n");
     char * script_norsk_cmp_phrase10 = selfhost__compiler__disasm_skript("la x=7;la y=8;hvis x ulik med y da 1 ellers 0");
     nl_assert_eq_text(script_norsk_cmp_phrase10, "0: PUSH 7\n1: PUSH 8\n2: EQ\n3: NOT\n4: JZ 7\n5: PUSH 1\n6: JMP 9\n7: LABEL 7\n8: PUSH 0\n9: LABEL 9\n10: PRINT\n11: HALT\n");
     char * script_norsk_cmp_phrase11 = selfhost__compiler__disasm_skript("la x=3;la y=4;hvis x mindre lik y da 1 ellers 0");
@@ -2422,6 +2432,8 @@ int start() {
     nl_assert_eq_text(script_norsk_mod, "0: PUSH 17\n1: PUSH 5\n2: MOD\n3: PRINT\n4: HALT\n");
     char * script_norsk_ganget_med = selfhost__compiler__disasm_skript("la x=3;la y=4;returner x ganget med y");
     nl_assert_eq_text(script_norsk_ganget_med, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n");
+    char * script_norsk_ganget_med_underscore = selfhost__compiler__disasm_skript("la x=3;la y=4;returner x ganget_med y");
+    nl_assert_eq_text(script_norsk_ganget_med_underscore, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n");
     char * script_norsk_delt_med = selfhost__compiler__disasm_skript("la x=8;la y=2;returner x delt med y");
     nl_assert_eq_text(script_norsk_delt_med, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * script_norsk_delt_paa_utf8 = selfhost__compiler__disasm_skript("la x=8;la y=2;returner x delt på y");
