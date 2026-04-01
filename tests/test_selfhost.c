@@ -1204,15 +1204,23 @@ char * selfhost__compiler__uttrykk_til_ops_og_verdier_med_miljo(nl_list_text* to
             tok = "storre_eller_lik";
             tok_step = 3;
         }
+        else if ((((((i + 3) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "er")) && nl_streq(tokens->data[(i + 1)], "mindre")) && nl_streq(tokens->data[(i + 2)], "enn")) && nl_streq(tokens->data[(i + 3)], "lik")) {
+            tok = "mindre_eller_lik";
+            tok_step = 4;
+        }
+        else if ((((((i + 3) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "er")) && nl_streq(tokens->data[(i + 1)], "storre")) && nl_streq(tokens->data[(i + 2)], "enn")) && nl_streq(tokens->data[(i + 3)], "lik")) {
+            tok = "storre_eller_lik";
+            tok_step = 4;
+        }
         else if ((((((i + 2) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "er")) && nl_streq(tokens->data[(i + 1)], "ikke")) && nl_streq(tokens->data[(i + 2)], "lik")) && (((i + 3) >= nl_list_text_len(tokens)) || !(nl_streq(tokens->data[(i + 3)], "med")))) {
             tok = "ikke_er";
             tok_step = 3;
         }
-        else if (((((i + 2) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "er")) && nl_streq(tokens->data[(i + 1)], "mindre")) && nl_streq(tokens->data[(i + 2)], "enn")) {
+        else if ((((((i + 2) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "er")) && nl_streq(tokens->data[(i + 1)], "mindre")) && nl_streq(tokens->data[(i + 2)], "enn")) && (((i + 3) >= nl_list_text_len(tokens)) || !(nl_streq(tokens->data[(i + 3)], "lik")))) {
             tok = "mindre_enn";
             tok_step = 3;
         }
-        else if (((((i + 2) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "er")) && nl_streq(tokens->data[(i + 1)], "storre")) && nl_streq(tokens->data[(i + 2)], "enn")) {
+        else if ((((((i + 2) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "er")) && nl_streq(tokens->data[(i + 1)], "storre")) && nl_streq(tokens->data[(i + 2)], "enn")) && (((i + 3) >= nl_list_text_len(tokens)) || !(nl_streq(tokens->data[(i + 3)], "lik")))) {
             tok = "storre_enn";
             tok_step = 3;
         }
@@ -2197,6 +2205,8 @@ int start() {
     nl_assert_eq_text(expr_norsk_cmp_phrase20, "0: PUSH 4\n1: PUSH 4\n2: LT\n3: NOT\n4: PRINT\n5: HALT\n");
     char * expr_norsk_cmp_phrase21 = selfhost__compiler__disasm_uttrykk("3 mindre enn lik 4");
     nl_assert_eq_text(expr_norsk_cmp_phrase21, "0: PUSH 3\n1: PUSH 4\n2: GT\n3: NOT\n4: PRINT\n5: HALT\n");
+    char * expr_norsk_cmp_phrase22 = selfhost__compiler__disasm_uttrykk("4 er storre enn lik 4");
+    nl_assert_eq_text(expr_norsk_cmp_phrase22, "0: PUSH 4\n1: PUSH 4\n2: LT\n3: NOT\n4: PRINT\n5: HALT\n");
     nl_list_text* env_navn = nl_list_text_new();
     nl_list_text_push(env_navn, "x");
     nl_list_text_push(env_navn, "y");
@@ -2286,6 +2296,8 @@ int start() {
     nl_assert_eq_text(script_norsk_cmp_phrase12, "0: PUSH 4\n1: PUSH 4\n2: LT\n3: NOT\n4: JZ 7\n5: PUSH 1\n6: JMP 9\n7: LABEL 7\n8: PUSH 0\n9: LABEL 9\n10: PRINT\n11: HALT\n");
     char * script_norsk_cmp_phrase13 = selfhost__compiler__disasm_skript("la x=3;la y=4;hvis x storre enn lik y da 1 ellers 0");
     nl_assert_eq_text(script_norsk_cmp_phrase13, "0: PUSH 3\n1: PUSH 4\n2: LT\n3: NOT\n4: JZ 7\n5: PUSH 1\n6: JMP 9\n7: LABEL 7\n8: PUSH 0\n9: LABEL 9\n10: PRINT\n11: HALT\n");
+    char * script_norsk_cmp_phrase14 = selfhost__compiler__disasm_skript("la x=4;la y=4;hvis x er storre enn lik y da 1 ellers 0");
+    nl_assert_eq_text(script_norsk_cmp_phrase14, "0: PUSH 4\n1: PUSH 4\n2: LT\n3: NOT\n4: JZ 7\n5: PUSH 1\n6: JMP 9\n7: LABEL 7\n8: PUSH 0\n9: LABEL 9\n10: PRINT\n11: HALT\n");
     char * script_c = selfhost__compiler__kompiler_skript_til_c("x=2;y=x+5;y*2");
     nl_assert_ne_text(script_c, "");
     char * script_err1 = selfhost__compiler__disasm_skript("x=2+3");
