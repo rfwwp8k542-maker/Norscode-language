@@ -592,17 +592,26 @@ char * selfhost__compiler__demo_program() {
     return "";
 }
 
-char * selfhost__compiler__kompiler_fra_tokens(nl_list_text* tokens) {
-    nl_list_text* ops = nl_list_text_new();
-    nl_list_text_push(ops, "HALT");
-    nl_list_int* verdier = nl_list_int_new();
-    nl_list_int_push(verdier, 0);
+char * selfhost__compiler__token_pos(int pos) {
+    return nl_concat("token ", nl_int_to_text(pos));
+    return "";
+}
+
+char * selfhost__compiler__parse_tokens_til_ops(nl_list_text* tokens, nl_list_text* ops, nl_list_int* verdier, int strict) {
     int i = 0;
+    nl_list_text_remove(ops, 0);
+    nl_list_int_remove(verdier, 0);
     while (i < nl_list_text_len(tokens)) {
         char * op = tokens->data[i];
+        if (strict && (selfhost__compiler__op_kjent(op) == 0)) {
+            return nl_concat(nl_concat(nl_concat(nl_concat("/* feil: ukjent opcode ", op), " ved "), selfhost__compiler__token_pos(i)), " */");
+        }
         if ((((((nl_streq(op, "PUSH") || nl_streq(op, "LABEL")) || nl_streq(op, "JMP")) || nl_streq(op, "JZ")) || nl_streq(op, "STORE")) || nl_streq(op, "LOAD")) || nl_streq(op, "CALL")) {
             if ((i + 1) >= nl_list_text_len(tokens)) {
-                return "/* feil: op mangler verdi */";
+                return nl_concat(nl_concat("/* feil: op mangler verdi ved ", selfhost__compiler__token_pos(i)), " */");
+            }
+            if (strict && (selfhost__compiler__er_heltall_token(tokens->data[(i + 1)]) == 0)) {
+                return nl_concat(nl_concat(nl_concat(nl_concat("/* feil: ugyldig heltallsargument ", tokens->data[(i + 1)]), " ved "), selfhost__compiler__token_pos((i + 1))), " */");
             }
             nl_list_text_push(ops, op);
             nl_list_int_push(verdier, nl_text_to_int(tokens->data[(i + 1)]));
@@ -614,8 +623,19 @@ char * selfhost__compiler__kompiler_fra_tokens(nl_list_text* tokens) {
             i = (i + 1);
         }
     }
-    nl_list_text_remove(ops, 0);
-    nl_list_int_remove(verdier, 0);
+    return "";
+    return "";
+}
+
+char * selfhost__compiler__kompiler_fra_tokens(nl_list_text* tokens) {
+    nl_list_text* ops = nl_list_text_new();
+    nl_list_text_push(ops, "HALT");
+    nl_list_int* verdier = nl_list_int_new();
+    nl_list_int_push(verdier, 0);
+    char * feil = selfhost__compiler__parse_tokens_til_ops(tokens, ops, verdier, 0);
+    if (!(nl_streq(feil, ""))) {
+        return feil;
+    }
     return selfhost__compiler__kompiler_til_c(ops, verdier);
     return "";
 }
@@ -625,25 +645,10 @@ char * selfhost__compiler__disasm_fra_tokens(nl_list_text* tokens) {
     nl_list_text_push(ops, "HALT");
     nl_list_int* verdier = nl_list_int_new();
     nl_list_int_push(verdier, 0);
-    int i = 0;
-    while (i < nl_list_text_len(tokens)) {
-        char * op = tokens->data[i];
-        if ((((((nl_streq(op, "PUSH") || nl_streq(op, "LABEL")) || nl_streq(op, "JMP")) || nl_streq(op, "JZ")) || nl_streq(op, "STORE")) || nl_streq(op, "LOAD")) || nl_streq(op, "CALL")) {
-            if ((i + 1) >= nl_list_text_len(tokens)) {
-                return "/* feil: op mangler verdi */";
-            }
-            nl_list_text_push(ops, op);
-            nl_list_int_push(verdier, nl_text_to_int(tokens->data[(i + 1)]));
-            i = (i + 2);
-        }
-        else {
-            nl_list_text_push(ops, op);
-            nl_list_int_push(verdier, 0);
-            i = (i + 1);
-        }
+    char * feil = selfhost__compiler__parse_tokens_til_ops(tokens, ops, verdier, 0);
+    if (!(nl_streq(feil, ""))) {
+        return feil;
     }
-    nl_list_text_remove(ops, 0);
-    nl_list_int_remove(verdier, 0);
     return selfhost__compiler__disasm_program(ops, verdier);
     return "";
 }
@@ -653,32 +658,24 @@ char * selfhost__compiler__disasm_fra_tokens_strict(nl_list_text* tokens) {
     nl_list_text_push(ops, "HALT");
     nl_list_int* verdier = nl_list_int_new();
     nl_list_int_push(verdier, 0);
-    int i = 0;
-    while (i < nl_list_text_len(tokens)) {
-        char * op = tokens->data[i];
-        if (selfhost__compiler__op_kjent(op) == 0) {
-            return nl_concat(nl_concat("/* feil: ukjent opcode ", op), " */");
-        }
-        if (selfhost__compiler__op_krever_arg(op)) {
-            if ((i + 1) >= nl_list_text_len(tokens)) {
-                return "/* feil: op mangler verdi */";
-            }
-            if (selfhost__compiler__er_heltall_token(tokens->data[(i + 1)]) == 0) {
-                return nl_concat(nl_concat("/* feil: ugyldig heltallsargument ", tokens->data[(i + 1)]), " */");
-            }
-            nl_list_text_push(ops, op);
-            nl_list_int_push(verdier, nl_text_to_int(tokens->data[(i + 1)]));
-            i = (i + 2);
-        }
-        else {
-            nl_list_text_push(ops, op);
-            nl_list_int_push(verdier, 0);
-            i = (i + 1);
-        }
+    char * feil = selfhost__compiler__parse_tokens_til_ops(tokens, ops, verdier, 1);
+    if (!(nl_streq(feil, ""))) {
+        return feil;
     }
-    nl_list_text_remove(ops, 0);
-    nl_list_int_remove(verdier, 0);
     return selfhost__compiler__disasm_program(ops, verdier);
+    return "";
+}
+
+char * selfhost__compiler__kompiler_fra_tokens_strict(nl_list_text* tokens) {
+    nl_list_text* ops = nl_list_text_new();
+    nl_list_text_push(ops, "HALT");
+    nl_list_int* verdier = nl_list_int_new();
+    nl_list_int_push(verdier, 0);
+    char * feil = selfhost__compiler__parse_tokens_til_ops(tokens, ops, verdier, 1);
+    if (!(nl_streq(feil, ""))) {
+        return feil;
+    }
+    return selfhost__compiler__kompiler_til_c(ops, verdier);
     return "";
 }
 
@@ -733,6 +730,12 @@ char * selfhost__compiler__disasm_fra_kilde(char * kilde) {
 char * selfhost__compiler__disasm_fra_kilde_strict(char * kilde) {
     nl_list_text* tokens = nl_tokenize_simple(kilde);
     return selfhost__compiler__disasm_fra_tokens_strict(tokens);
+    return "";
+}
+
+char * selfhost__compiler__kompiler_fra_kilde_strict(char * kilde) {
+    nl_list_text* tokens = nl_tokenize_simple(kilde);
+    return selfhost__compiler__kompiler_fra_tokens_strict(tokens);
     return "";
 }
 
@@ -1072,7 +1075,11 @@ int start() {
     char * dis_src_strict = selfhost__compiler__disasm_fra_kilde_strict("PUSH 3\nPUSH 4\nADD\nHALT");
     nl_assert_eq_text(dis_src_strict, "0: PUSH 3\n1: PUSH 4\n2: ADD\n3: HALT\n");
     char * dis_src_bad = selfhost__compiler__disasm_fra_kilde_strict("PUSH x\nHALT");
-    nl_assert_eq_text(dis_src_bad, "/* feil: ugyldig heltallsargument x */");
+    nl_assert_eq_text(dis_src_bad, "/* feil: ugyldig heltallsargument x ved token 1 */");
+    char * dis_src_bad_opcode = selfhost__compiler__disasm_fra_kilde_strict("PUHS 1\nHALT");
+    nl_assert_eq_text(dis_src_bad_opcode, "/* feil: ukjent opcode PUHS ved token 0 */");
+    char * c_src_bad = selfhost__compiler__kompiler_fra_kilde_strict("PUSH 2\nPUSH q\nADD\nHALT");
+    nl_assert_eq_text(c_src_bad, "/* feil: ugyldig heltallsargument q ved token 3 */");
     char * expr_dis = selfhost__compiler__disasm_uttrykk("2 + 3 * 4");
     nl_assert_eq_text(expr_dis, "0: PUSH 2\n1: PUSH 3\n2: PUSH 4\n3: MUL\n4: ADD\n5: PRINT\n6: HALT\n");
     char * expr_dis_paren = selfhost__compiler__disasm_uttrykk("( 2 + 3 ) * 4");
