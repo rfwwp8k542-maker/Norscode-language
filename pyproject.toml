@@ -35,13 +35,13 @@ dev = [
 ]
 
 [project.scripts]
-norcode = "norsklang.cli:main_cli"
-norsklang = "norsklang.cli:main_cli"
-nl = "norsklang.cli:main_cli"
+norcode = "norcode.cli:main_cli"
+norsklang = "norcode.cli:main_cli"
+nl = "norcode.cli:main_cli"
 
 [tool.setuptools]
 py-modules = ["main"]
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["compiler*", "norsklang*"]
+include = ["compiler*", "norsklang*", "norcode*"]
