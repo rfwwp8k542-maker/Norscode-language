@@ -967,6 +967,25 @@ char * selfhost__compiler__append_ops(nl_list_text* dst_ops, nl_list_int* dst_ve
     return "";
 }
 
+char * selfhost__compiler__append_ops_med_offset(nl_list_text* dst_ops, nl_list_int* dst_verdier, nl_list_text* src_ops, nl_list_int* src_verdier, int offset) {
+    if (nl_list_text_len(src_ops) != nl_list_int_len(src_verdier)) {
+        return "/* feil: append_ops_med_offset krever like lengder */";
+    }
+    int i = 0;
+    while (i < nl_list_text_len(src_ops)) {
+        char * op = src_ops->data[i];
+        int v = src_verdier->data[i];
+        if ((nl_streq(op, "JMP") || nl_streq(op, "JZ")) || nl_streq(op, "LABEL")) {
+            v = (v + offset);
+        }
+        nl_list_text_push(dst_ops, op);
+        nl_list_int_push(dst_verdier, v);
+        i = (i + 1);
+    }
+    return "";
+    return "";
+}
+
 char * selfhost__compiler__parse_tokens_til_ops(nl_list_text* tokens, nl_list_text* ops, nl_list_int* verdier, int strict) {
     int i = 0;
     nl_list_text_remove(ops, 0);
@@ -1265,6 +1284,7 @@ char * selfhost__compiler__bygg_hvis_da_ellers_ops_med_miljo(nl_list_text* token
         return "/* feil: intern hvis-parser forventer 'hvis' */";
     }
     int depth = 0;
+    int nested_if_etter_da = 0;
     int da_idx = (-(1));
     int ellers_idx = (-(1));
     int i = 1;
@@ -1282,9 +1302,17 @@ char * selfhost__compiler__bygg_hvis_da_ellers_ops_med_miljo(nl_list_text* token
         else if (((depth == 0) && nl_streq(tok, "da")) && (da_idx < 0)) {
             da_idx = i;
         }
+        else if (((depth == 0) && (da_idx >= 0)) && nl_streq(tok, "hvis")) {
+            nested_if_etter_da = (nested_if_etter_da + 1);
+        }
         else if (((depth == 0) && nl_streq(tok, "ellers")) && (da_idx >= 0)) {
-            ellers_idx = i;
-            break;
+            if (nested_if_etter_da > 0) {
+                nested_if_etter_da = (nested_if_etter_da - 1);
+            }
+            else {
+                ellers_idx = i;
+                break;
+            }
         }
         i = (i + 1);
     }
@@ -1383,7 +1411,7 @@ char * selfhost__compiler__bygg_hvis_da_ellers_ops_med_miljo(nl_list_text* token
     int l_end = (((ncond + 3) + nthen) + nelse);
     nl_list_text_push(out_ops, "JZ");
     nl_list_int_push(out_verdier, l_else);
-    feil = selfhost__compiler__append_ops(out_ops, out_verdier, then_ops, then_verdier);
+    feil = selfhost__compiler__append_ops_med_offset(out_ops, out_verdier, then_ops, then_verdier, (ncond + 1));
     if (!(nl_streq(feil, ""))) {
         return feil;
     }
@@ -1391,7 +1419,7 @@ char * selfhost__compiler__bygg_hvis_da_ellers_ops_med_miljo(nl_list_text* token
     nl_list_int_push(out_verdier, l_end);
     nl_list_text_push(out_ops, "LABEL");
     nl_list_int_push(out_verdier, l_else);
-    feil = selfhost__compiler__append_ops(out_ops, out_verdier, else_ops, else_verdier);
+    feil = selfhost__compiler__append_ops_med_offset(out_ops, out_verdier, else_ops, else_verdier, ((ncond + 3) + nthen));
     if (!(nl_streq(feil, ""))) {
         return feil;
     }
@@ -1984,8 +2012,7 @@ int start() {
     char * script_returner_hvis = selfhost__compiler__disasm_skript("la x=0;returner hvis x==1 da 10 ellers 20");
     nl_assert_eq_text(script_returner_hvis, "0: PUSH 0\n1: PUSH 1\n2: EQ\n3: JZ 6\n4: PUSH 10\n5: JMP 8\n6: LABEL 6\n7: PUSH 20\n8: LABEL 8\n9: PRINT\n10: HALT\n");
     char * script_nested_hvis = selfhost__compiler__disasm_skript("la x=1;hvis x==1 da hvis x==1 da 10 ellers 11 ellers 20");
-    nl_assert_ne_text(script_nested_hvis, "/* feil: ukjent token/navn i uttrykk hvis ved token 0 */");
-    nl_assert_ne_text(script_nested_hvis, "");
+    nl_assert_eq_text(script_nested_hvis, "0: PUSH 1\n1: PUSH 1\n2: EQ\n3: JZ 14\n4: PUSH 1\n5: PUSH 1\n6: EQ\n7: JZ 10\n8: PUSH 10\n9: JMP 12\n10: LABEL 10\n11: PUSH 11\n12: LABEL 12\n13: JMP 16\n14: LABEL 14\n15: PUSH 20\n16: LABEL 16\n17: PRINT\n18: HALT\n");
     char * script_norsk_ops = selfhost__compiler__disasm_skript("x=sann;y=ikke usann;x og y");
     nl_assert_eq_text(script_norsk_ops, "0: PUSH 1\n1: PUSH 1\n2: AND\n3: PRINT\n4: HALT\n");
     char * script_c = selfhost__compiler__kompiler_skript_til_c("x=2;y=x+5;y*2");

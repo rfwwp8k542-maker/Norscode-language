@@ -629,6 +629,24 @@ funksjon append_ops(dst_ops: liste_tekst, dst_verdier: liste_heltall, src_ops: l
     returner ""
 }
 
+funksjon append_ops_med_offset(dst_ops: liste_tekst, dst_verdier: liste_heltall, src_ops: liste_tekst, src_verdier: liste_heltall, offset: heltall) -> tekst {
+    hvis (lengde(src_ops) != lengde(src_verdier)) {
+        returner "/* feil: append_ops_med_offset krever like lengder */"
+    }
+    la i: heltall = 0
+    mens (i < lengde(src_ops)) {
+        la op: tekst = src_ops[i]
+        la v: heltall = src_verdier[i]
+        hvis (op == "JMP" eller op == "JZ" eller op == "LABEL") {
+            v = v + offset
+        }
+        legg_til(dst_ops, op)
+        legg_til(dst_verdier, v)
+        i = i + 1
+    }
+    returner ""
+}
+
 funksjon parse_tokens_til_ops(tokens: liste_tekst, ops: liste_tekst, verdier: liste_heltall, strict: bool) -> tekst {
     la i: heltall = 0
 
@@ -916,6 +934,7 @@ funksjon bygg_hvis_da_ellers_ops_med_miljo(tokens: liste_tekst, navn: liste_teks
     }
 
     la depth: heltall = 0
+    la nested_if_etter_da: heltall = 0
     la da_idx: heltall = -1
     la ellers_idx: heltall = -1
     la i: heltall = 1
@@ -931,9 +950,15 @@ funksjon bygg_hvis_da_ellers_ops_med_miljo(tokens: liste_tekst, navn: liste_teks
             }
         } ellers hvis (depth == 0 og tok == "da" og da_idx < 0) {
             da_idx = i
+        } ellers hvis (depth == 0 og da_idx >= 0 og tok == "hvis") {
+            nested_if_etter_da = nested_if_etter_da + 1
         } ellers hvis (depth == 0 og tok == "ellers" og da_idx >= 0) {
-            ellers_idx = i
-            bryt
+            hvis (nested_if_etter_da > 0) {
+                nested_if_etter_da = nested_if_etter_da - 1
+            } ellers {
+                ellers_idx = i
+                bryt
+            }
         }
         i = i + 1
     }
@@ -1032,7 +1057,7 @@ funksjon bygg_hvis_da_ellers_ops_med_miljo(tokens: liste_tekst, navn: liste_teks
     legg_til(out_ops, "JZ")
     legg_til(out_verdier, l_else)
 
-    feil = append_ops(out_ops, out_verdier, then_ops, then_verdier)
+    feil = append_ops_med_offset(out_ops, out_verdier, then_ops, then_verdier, ncond + 1)
     hvis (feil != "") {
         returner feil
     }
@@ -1042,7 +1067,7 @@ funksjon bygg_hvis_da_ellers_ops_med_miljo(tokens: liste_tekst, navn: liste_teks
     legg_til(out_ops, "LABEL")
     legg_til(out_verdier, l_else)
 
-    feil = append_ops(out_ops, out_verdier, else_ops, else_verdier)
+    feil = append_ops_med_offset(out_ops, out_verdier, else_ops, else_verdier, ncond + 3 + nthen)
     hvis (feil != "") {
         returner feil
     }
