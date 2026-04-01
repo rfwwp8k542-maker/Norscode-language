@@ -202,6 +202,9 @@ funksjon start() -> heltall {
     la expr_norsk_resten_av: tekst = sh.disasm_uttrykk("17 resten_av 5")
     assert_eq(expr_norsk_resten_av, "0: PUSH 17\n1: PUSH 5\n2: MOD\n3: PRINT\n4: HALT\n")
 
+    la expr_norsk_resten_av_phrase: tekst = sh.disasm_uttrykk("17 resten av 5")
+    assert_eq(expr_norsk_resten_av_phrase, "0: PUSH 17\n1: PUSH 5\n2: MOD\n3: PRINT\n4: HALT\n")
+
     la expr_norsk_ganget_med: tekst = sh.disasm_uttrykk("3 ganget med 4")
     assert_eq(expr_norsk_ganget_med, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n")
 
@@ -610,6 +613,9 @@ funksjon start() -> heltall {
 
     la script_norsk_resten_av: tekst = sh.disasm_skript("la x=17;la y=5;returner x resten_av y")
     assert_eq(script_norsk_resten_av, "0: PUSH 17\n1: PUSH 5\n2: MOD\n3: PRINT\n4: HALT\n")
+
+    la script_norsk_resten_av_phrase: tekst = sh.disasm_skript("la x=17;la y=5;returner x resten av y")
+    assert_eq(script_norsk_resten_av_phrase, "0: PUSH 17\n1: PUSH 5\n2: MOD\n3: PRINT\n4: HALT\n")
 
     la script_norsk_ganget_med: tekst = sh.disasm_skript("la x=3;la y=4;returner x ganget med y")
     assert_eq(script_norsk_ganget_med, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n")
