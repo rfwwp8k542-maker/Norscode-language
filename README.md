@@ -39,6 +39,8 @@ python3 -m norsklang --help
 # Merk:
 # Legacy-aliasene `norsklang` og `python3 -m norsklang` viser et kort varsel
 # og videresender til NorCode-CLI.
+# Ved bruk av legacy-filer (`norsklang.toml`, `norsklang.lock`, `.norsklang/`)
+# vises også et kort migreringsvarsel.
 ```
 
 ### 0b. Bygg og publiser pakke

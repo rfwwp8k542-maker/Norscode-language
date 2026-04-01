@@ -58,6 +58,14 @@ LOCKFILE_NAMES = (LOCKFILE_NAME, LEGACY_LOCKFILE_NAME)
 REMOTE_REGISTRY_CACHE = ".norcode/registry/remote_index.json"
 LEGACY_REMOTE_REGISTRY_CACHE = ".norsklang/registry/remote_index.json"
 SEMVER_RE = re.compile(r"^\d+\.\d+\.\d+$")
+_LEGACY_WARNINGS_EMITTED: set[str] = set()
+
+
+def _warn_legacy_once(key: str, message: str):
+    if key in _LEGACY_WARNINGS_EMITTED:
+        return
+    _LEGACY_WARNINGS_EMITTED.add(key)
+    print(message, file=sys.stderr)
 
 
 def _find_existing_project_config_in_dir(base: Path) -> Path | None:
@@ -77,6 +85,11 @@ def _find_project_config(start_dir: Path | None = None) -> Path:
     for candidate_dir in (base, *base.parents):
         candidate = _find_existing_project_config_in_dir(candidate_dir)
         if candidate is not None:
+            if candidate.name == LEGACY_PROJECT_CONFIG_NAME:
+                _warn_legacy_once(
+                    "legacy-config",
+                    "Merk: bruker legacy konfig 'norsklang.toml'. Bytt til 'norcode.toml'.",
+                )
             return candidate
     raise RuntimeError(
         f"Fant ikke {_project_config_display_names()} i denne mappen eller overliggende mapper"
@@ -367,6 +380,10 @@ def _remote_registry_cache_path(project_dir: Path) -> Path:
     legacy = (project_dir / LEGACY_REMOTE_REGISTRY_CACHE).resolve()
     if primary.exists() or not legacy.exists():
         return primary
+    _warn_legacy_once(
+        "legacy-registry-cache",
+        "Merk: bruker legacy cache '.norsklang/'. Migrer til '.norcode/'.",
+    )
     return legacy
 
 
@@ -947,6 +964,10 @@ def _cache_base_dir(project_dir: Path) -> Path:
     legacy = (project_dir / ".norsklang" / "cache").resolve()
     if primary.exists() or not legacy.exists():
         return primary
+    _warn_legacy_once(
+        "legacy-cache",
+        "Merk: bruker legacy cache '.norsklang/cache'. Migrer til '.norcode/cache'.",
+    )
     return legacy
 
 
@@ -1195,6 +1216,11 @@ def verify_lockfile():
         if candidate.exists():
             lock_path = candidate
             break
+    if lock_path.name == LEGACY_LOCKFILE_NAME:
+        _warn_legacy_once(
+            "legacy-lockfile",
+            "Merk: bruker legacy lockfile 'norsklang.lock'. Bytt til 'norcode.lock'.",
+        )
     if not lock_path.exists():
         return lock_path, False, [{"name": "*", "status": "mangler lockfile"}]
 
