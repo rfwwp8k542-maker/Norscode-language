@@ -1011,10 +1011,10 @@ funksjon uttrykk_til_ops_og_verdier_med_miljo(tokens: liste_tekst, navn: liste_t
         } ellers hvis (tok_raw == "gang" eller tok_raw == "gange" eller tok_raw == "ganget" eller tok_raw == "ganger" eller tok_raw == "ganges" eller tok_raw == "multipliser" eller tok_raw == "multiplisere" eller tok_raw == "multipliserer" eller tok_raw == "multiplisert" eller tok_raw == "multipliseres") {
             tok = "*"
             tok_step = 1
-        } ellers hvis (i + 1 < lengde(tokens) og (tok_raw == "rest" eller tok_raw == "resten") og n1 == "av") {
+        } ellers hvis (i + 1 < lengde(tokens) og (tok_raw == "rest" eller tok_raw == "resten" eller tok_raw == "modulus") og n1 == "av") {
             tok = "%"
             tok_step = 2
-        } ellers hvis (tok_raw == "mod" eller tok_raw == "modulo" eller tok_raw == "modul" eller tok_raw == "modulus" eller tok_raw == "rest" eller tok_raw == "rest_av" eller tok_raw == "resten_av") {
+        } ellers hvis (tok_raw == "mod" eller tok_raw == "modulo" eller tok_raw == "modul" eller tok_raw == "modulus" eller tok_raw == "modulus_av" eller tok_raw == "rest" eller tok_raw == "rest_av" eller tok_raw == "resten_av") {
             tok = "%"
             tok_step = 1
         } ellers hvis (i + 3 < lengde(tokens) og tok_raw == "mindre" og n1 == "enn" og n2 == "eller" og n3 == "lik") {
