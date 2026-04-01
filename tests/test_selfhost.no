@@ -238,6 +238,9 @@ funksjon start() -> heltall {
     la expr_norsk_subtrahert_med_underscore: tekst = sh.disasm_uttrykk("10 subtrahert_med 3")
     assert_eq(expr_norsk_subtrahert_med_underscore, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n")
 
+    la expr_norsk_subtrahertmed_kompakt: tekst = sh.disasm_uttrykk("10 subtrahertmed 3")
+    assert_eq(expr_norsk_subtrahertmed_kompakt, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n")
+
     la expr_norsk_trekk: tekst = sh.disasm_uttrykk("10 trekk 3")
     assert_eq(expr_norsk_trekk, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n")
 
@@ -477,6 +480,9 @@ funksjon start() -> heltall {
 
     la expr_norsk_subtrahert_fra_underscore: tekst = sh.disasm_uttrykk("10 subtrahert_fra 3")
     assert_eq(expr_norsk_subtrahert_fra_underscore, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n")
+
+    la expr_norsk_subtrahertfra_kompakt: tekst = sh.disasm_uttrykk("10 subtrahertfra 3")
+    assert_eq(expr_norsk_subtrahertfra_kompakt, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n")
 
     la expr_norsk_div: tekst = sh.disasm_uttrykk("8 delt pa 2")
     assert_eq(expr_norsk_div, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
@@ -1616,6 +1622,9 @@ funksjon start() -> heltall {
     la script_norsk_subtrahert_fra_underscore: tekst = sh.disasm_skript("la x=10;la y=3;returner x subtrahert_fra y")
     assert_eq(script_norsk_subtrahert_fra_underscore, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n")
 
+    la script_norsk_subtrahertfra_kompakt: tekst = sh.disasm_skript("la x=10;la y=3;returner x subtrahertfra y")
+    assert_eq(script_norsk_subtrahertfra_kompakt, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n")
+
     la script_norsk_minus_med: tekst = sh.disasm_skript("la x=10;la y=3;returner x minus med y")
     assert_eq(script_norsk_minus_med, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n")
 
@@ -1699,6 +1708,9 @@ funksjon start() -> heltall {
 
     la script_norsk_subtrahert_med_underscore: tekst = sh.disasm_skript("la x=10;la y=3;returner x subtrahert_med y")
     assert_eq(script_norsk_subtrahert_med_underscore, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n")
+
+    la script_norsk_subtrahertmed_kompakt: tekst = sh.disasm_skript("la x=10;la y=3;returner x subtrahertmed y")
+    assert_eq(script_norsk_subtrahertmed_kompakt, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n")
 
     la script_norsk_mod: tekst = sh.disasm_skript("la x=17;la y=5;returner x mod y")
     assert_eq(script_norsk_mod, "0: PUSH 17\n1: PUSH 5\n2: MOD\n3: PRINT\n4: HALT\n")

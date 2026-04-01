@@ -2459,6 +2459,8 @@ int start() {
     nl_assert_eq_text(expr_norsk_subtrahert_med, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n");
     char * expr_norsk_subtrahert_med_underscore = selfhost__compiler__disasm_uttrykk("10 subtrahert_med 3");
     nl_assert_eq_text(expr_norsk_subtrahert_med_underscore, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n");
+    char * expr_norsk_subtrahertmed_kompakt = selfhost__compiler__disasm_uttrykk("10 subtrahertmed 3");
+    nl_assert_eq_text(expr_norsk_subtrahertmed_kompakt, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n");
     char * expr_norsk_trekk = selfhost__compiler__disasm_uttrykk("10 trekk 3");
     nl_assert_eq_text(expr_norsk_trekk, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n");
     char * expr_norsk_trekke = selfhost__compiler__disasm_uttrykk("10 trekke 3");
@@ -2619,6 +2621,8 @@ int start() {
     nl_assert_eq_text(expr_norsk_subtrahert_fra, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n");
     char * expr_norsk_subtrahert_fra_underscore = selfhost__compiler__disasm_uttrykk("10 subtrahert_fra 3");
     nl_assert_eq_text(expr_norsk_subtrahert_fra_underscore, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n");
+    char * expr_norsk_subtrahertfra_kompakt = selfhost__compiler__disasm_uttrykk("10 subtrahertfra 3");
+    nl_assert_eq_text(expr_norsk_subtrahertfra_kompakt, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n");
     char * expr_norsk_div = selfhost__compiler__disasm_uttrykk("8 delt pa 2");
     nl_assert_eq_text(expr_norsk_div, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * expr_norsk_mod = selfhost__compiler__disasm_uttrykk("17 mod 5");
@@ -3386,6 +3390,8 @@ int start() {
     nl_assert_eq_text(script_norsk_subtrahert_fra, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n");
     char * script_norsk_subtrahert_fra_underscore = selfhost__compiler__disasm_skript("la x=10;la y=3;returner x subtrahert_fra y");
     nl_assert_eq_text(script_norsk_subtrahert_fra_underscore, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n");
+    char * script_norsk_subtrahertfra_kompakt = selfhost__compiler__disasm_skript("la x=10;la y=3;returner x subtrahertfra y");
+    nl_assert_eq_text(script_norsk_subtrahertfra_kompakt, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n");
     char * script_norsk_minus_med = selfhost__compiler__disasm_skript("la x=10;la y=3;returner x minus med y");
     nl_assert_eq_text(script_norsk_minus_med, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n");
     char * script_norsk_minus_med_underscore = selfhost__compiler__disasm_skript("la x=10;la y=3;returner x minus_med y");
@@ -3442,6 +3448,8 @@ int start() {
     nl_assert_eq_text(script_norsk_subtrahert_med, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n");
     char * script_norsk_subtrahert_med_underscore = selfhost__compiler__disasm_skript("la x=10;la y=3;returner x subtrahert_med y");
     nl_assert_eq_text(script_norsk_subtrahert_med_underscore, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n");
+    char * script_norsk_subtrahertmed_kompakt = selfhost__compiler__disasm_skript("la x=10;la y=3;returner x subtrahertmed y");
+    nl_assert_eq_text(script_norsk_subtrahertmed_kompakt, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n");
     char * script_norsk_mod = selfhost__compiler__disasm_skript("la x=17;la y=5;returner x mod y");
     nl_assert_eq_text(script_norsk_mod, "0: PUSH 17\n1: PUSH 5\n2: MOD\n3: PRINT\n4: HALT\n");
     char * script_norsk_mod_av = selfhost__compiler__disasm_skript("la x=17;la y=5;returner x mod_av y");
