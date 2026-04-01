@@ -71,6 +71,15 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "deles_på" eller tok == "deles_paa") {
         returner "deles_pa"
     }
+    hvis (tok == "divider_på" eller tok == "divider_paa") {
+        returner "divider_pa"
+    }
+    hvis (tok == "dividerer_på" eller tok == "dividerer_paa") {
+        returner "dividerer_pa"
+    }
+    hvis (tok == "dividert_på" eller tok == "dividert_paa") {
+        returner "dividert_pa"
+    }
     hvis (tok == "divideres_på" eller tok == "divideres_paa") {
         returner "divideres_pa"
     }
@@ -900,13 +909,13 @@ funksjon uttrykk_til_ops_og_verdier_med_miljo(tokens: liste_tekst, navn: liste_t
             n4 = normaliser_norsk_token(tokens[i + 4])
         }
 
-        hvis (tok_raw == "delt_pa" eller tok_raw == "deler_pa" eller tok_raw == "dele_pa" eller tok_raw == "deles_pa" eller tok_raw == "divideres_pa") {
+        hvis (tok_raw == "delt_pa" eller tok_raw == "deler_pa" eller tok_raw == "dele_pa" eller tok_raw == "deles_pa" eller tok_raw == "divider_pa" eller tok_raw == "dividerer_pa" eller tok_raw == "dividert_pa" eller tok_raw == "divideres_pa") {
             tok = "/"
             tok_step = 1
         } ellers hvis (tok_raw == "delt_med" eller tok_raw == "dele_med" eller tok_raw == "deler_med" eller tok_raw == "deles_med" eller tok_raw == "divider_med" eller tok_raw == "dividerer_med" eller tok_raw == "dividert_med" eller tok_raw == "divideres_med" eller tok_raw == "del_med") {
             tok = "/"
             tok_step = 1
-        } ellers hvis (i + 1 < lengde(tokens) og (tok_raw == "delt" eller tok_raw == "deler" eller tok_raw == "dele" eller tok_raw == "deles" eller tok_raw == "divideres") og (n1 == "pa" eller n1 == "paa")) {
+        } ellers hvis (i + 1 < lengde(tokens) og (tok_raw == "delt" eller tok_raw == "deler" eller tok_raw == "dele" eller tok_raw == "deles" eller tok_raw == "divider" eller tok_raw == "dividerer" eller tok_raw == "dividert" eller tok_raw == "divideres") og (n1 == "pa" eller n1 == "paa")) {
             tok = "/"
             tok_step = 2
         } ellers hvis (i + 1 < lengde(tokens) og (tok_raw == "delt" eller tok_raw == "dele" eller tok_raw == "deler" eller tok_raw == "deles" eller tok_raw == "divider" eller tok_raw == "dividerer" eller tok_raw == "dividert" eller tok_raw == "divideres" eller tok_raw == "del") og n1 == "med") {
