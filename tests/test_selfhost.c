@@ -359,6 +359,9 @@ char * selfhost__compiler__normaliser_norsk_token(char * tok) {
     if (nl_streq(tok, "delt_på")) {
         return "delt_pa";
     }
+    if (nl_streq(tok, "delt_paa")) {
+        return "delt_pa";
+    }
     if (nl_streq(tok, "større")) {
         return "storre";
     }
@@ -1220,7 +1223,7 @@ char * selfhost__compiler__uttrykk_til_ops_og_verdier_med_miljo(nl_list_text* to
             tok = "/";
             tok_step = 1;
         }
-        else if ((((i + 1) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "delt")) && nl_streq(n1, "pa")) {
+        else if ((((i + 1) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "delt")) && (nl_streq(n1, "pa") || nl_streq(n1, "paa"))) {
             tok = "/";
             tok_step = 2;
         }
@@ -2288,6 +2291,10 @@ int start() {
     nl_assert_eq_text(expr_norsk_delt_paa_underscore_utf8, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * expr_norsk_delt_paa_underscore_ascii = selfhost__compiler__disasm_uttrykk("8 delt_pa 2");
     nl_assert_eq_text(expr_norsk_delt_paa_underscore_ascii, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
+    char * expr_norsk_delt_paa_double_a_phrase = selfhost__compiler__disasm_uttrykk("8 delt paa 2");
+    nl_assert_eq_text(expr_norsk_delt_paa_double_a_phrase, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
+    char * expr_norsk_delt_paa_double_a_underscore = selfhost__compiler__disasm_uttrykk("8 delt_paa 2");
+    nl_assert_eq_text(expr_norsk_delt_paa_double_a_underscore, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * expr_bool_literals = selfhost__compiler__disasm_uttrykk("sann&&usann||!usann");
     nl_assert_eq_text(expr_bool_literals, "0: PUSH 1\n1: PUSH 0\n2: AND\n3: PUSH 0\n4: NOT\n5: OR\n6: PRINT\n7: HALT\n");
     char * expr_norsk_ops = selfhost__compiler__disasm_uttrykk("sann og ikke usann eller usann");
@@ -2539,6 +2546,10 @@ int start() {
     nl_assert_eq_text(script_norsk_delt_paa_underscore_utf8, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * script_norsk_delt_paa_underscore_ascii = selfhost__compiler__disasm_skript("la x=8;la y=2;returner x delt_pa y");
     nl_assert_eq_text(script_norsk_delt_paa_underscore_ascii, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
+    char * script_norsk_delt_paa_double_a_phrase = selfhost__compiler__disasm_skript("la x=8;la y=2;returner x delt paa y");
+    nl_assert_eq_text(script_norsk_delt_paa_double_a_phrase, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
+    char * script_norsk_delt_paa_double_a_underscore = selfhost__compiler__disasm_skript("la x=8;la y=2;returner x delt_paa y");
+    nl_assert_eq_text(script_norsk_delt_paa_double_a_underscore, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * script_c = selfhost__compiler__kompiler_skript_til_c("x=2;y=x+5;y*2");
     nl_assert_ne_text(script_c, "");
     char * script_err1 = selfhost__compiler__disasm_skript("x=2+3");
