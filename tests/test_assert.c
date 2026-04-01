@@ -198,6 +198,17 @@ static nl_list_text *nl_tokenize_expression(const char *s) {
             nl_list_text_push(out, nl_strdup(token));
             continue;
         }
+        if (isalpha((unsigned char)c) || c == '_') {
+            char token[256];
+            int tlen = 0;
+            while (*p && (isalnum((unsigned char)*p) || *p == '_')) {
+                if (tlen < 255) { token[tlen++] = *p; }
+                p++;
+            }
+            token[tlen] = '\0';
+            nl_list_text_push(out, nl_strdup(token));
+            continue;
+        }
         if ((c == '&' && p[1] == '&') || (c == '|' && p[1] == '|') || (c == '=' && p[1] == '=') ||
             (c == '!' && p[1] == '=') || (c == '<' && p[1] == '=') || (c == '>' && p[1] == '=')) {
             char token[3];

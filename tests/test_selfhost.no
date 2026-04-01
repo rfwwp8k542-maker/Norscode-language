@@ -166,6 +166,9 @@ funksjon start() -> heltall {
     la expr_unary_minus: tekst = sh.disasm_uttrykk("-3+5")
     assert_eq(expr_unary_minus, "0: PUSH 3\n1: PUSH 0\n2: SWAP\n3: SUB\n4: PUSH 5\n5: ADD\n6: PRINT\n7: HALT\n")
 
+    la expr_bool_literals: tekst = sh.disasm_uttrykk("sann&&usann||!usann")
+    assert_eq(expr_bool_literals, "0: PUSH 1\n1: PUSH 0\n2: AND\n3: PUSH 0\n4: NOT\n5: OR\n6: PRINT\n7: HALT\n")
+
     la expr_err: tekst = sh.disasm_uttrykk("2 +")
     assert_eq(expr_err, "/* feil: uttrykket avsluttes med operator */")
 
@@ -173,7 +176,10 @@ funksjon start() -> heltall {
     assert_eq(expr_err2, "/* feil: mangler verdi før ) ved token 2 */")
 
     la expr_err3: tekst = sh.disasm_uttrykk("2+$")
-    assert_eq(expr_err3, "/* feil: ukjent token i uttrykk $ ved token 2 */")
+    assert_eq(expr_err3, "/* feil: ukjent token/navn i uttrykk $ ved token 2 */")
+
+    la expr_err4: tekst = sh.disasm_uttrykk("foo+1")
+    assert_eq(expr_err4, "/* feil: ukjent token/navn i uttrykk foo ved token 0 */")
 
     la linjer: liste_tekst = ["", "PUSH", "11", "PUSH", "4", "SUB", "PRINT", "HALT"]
     la c3: tekst = sh.kompiler_fra_linjer(linjer)

@@ -198,6 +198,17 @@ static nl_list_text *nl_tokenize_expression(const char *s) {
             nl_list_text_push(out, nl_strdup(token));
             continue;
         }
+        if (isalpha((unsigned char)c) || c == '_') {
+            char token[256];
+            int tlen = 0;
+            while (*p && (isalnum((unsigned char)*p) || *p == '_')) {
+                if (tlen < 255) { token[tlen++] = *p; }
+                p++;
+            }
+            token[tlen] = '\0';
+            nl_list_text_push(out, nl_strdup(token));
+            continue;
+        }
         if ((c == '&' && p[1] == '&') || (c == '|' && p[1] == '|') || (c == '=' && p[1] == '=') ||
             (c == '!' && p[1] == '=') || (c == '<' && p[1] == '=') || (c == '>' && p[1] == '=')) {
             char token[3];
@@ -883,6 +894,21 @@ char * selfhost__compiler__uttrykk_til_ops_og_verdier(nl_list_text* tokens, nl_l
             i = (i + 1);
             continue;
         }
+        if (nl_streq(tok, "sann") || nl_streq(tok, "usann")) {
+            if (forventer_verdi == 0) {
+                return nl_concat(nl_concat(nl_concat(nl_concat("/* feil: mangler operator før verdi ", tok), " ved "), selfhost__compiler__token_pos(i)), " */");
+            }
+            nl_list_text_push(ops, "PUSH");
+            if (nl_streq(tok, "sann")) {
+                nl_list_int_push(verdier, 1);
+            }
+            else {
+                nl_list_int_push(verdier, 0);
+            }
+            forventer_verdi = 0;
+            i = (i + 1);
+            continue;
+        }
         if (nl_streq(tok, "(")) {
             if (forventer_verdi == 0) {
                 return nl_concat(nl_concat("/* feil: mangler operator før ( ved ", selfhost__compiler__token_pos(i)), " */");
@@ -948,7 +974,7 @@ char * selfhost__compiler__uttrykk_til_ops_og_verdier(nl_list_text* tokens, nl_l
             i = (i + 1);
             continue;
         }
-        return nl_concat(nl_concat(nl_concat(nl_concat("/* feil: ukjent token i uttrykk ", tok), " ved "), selfhost__compiler__token_pos(i)), " */");
+        return nl_concat(nl_concat(nl_concat(nl_concat("/* feil: ukjent token/navn i uttrykk ", tok), " ved "), selfhost__compiler__token_pos(i)), " */");
     }
     if (forventer_verdi) {
         return "/* feil: uttrykket avsluttes med operator */";
@@ -1230,12 +1256,16 @@ int start() {
     nl_assert_eq_text(expr_unary_not, "0: PUSH 0\n1: NOT\n2: PUSH 0\n3: OR\n4: PRINT\n5: HALT\n");
     char * expr_unary_minus = selfhost__compiler__disasm_uttrykk("-3+5");
     nl_assert_eq_text(expr_unary_minus, "0: PUSH 3\n1: PUSH 0\n2: SWAP\n3: SUB\n4: PUSH 5\n5: ADD\n6: PRINT\n7: HALT\n");
+    char * expr_bool_literals = selfhost__compiler__disasm_uttrykk("sann&&usann||!usann");
+    nl_assert_eq_text(expr_bool_literals, "0: PUSH 1\n1: PUSH 0\n2: AND\n3: PUSH 0\n4: NOT\n5: OR\n6: PRINT\n7: HALT\n");
     char * expr_err = selfhost__compiler__disasm_uttrykk("2 +");
     nl_assert_eq_text(expr_err, "/* feil: uttrykket avsluttes med operator */");
     char * expr_err2 = selfhost__compiler__disasm_uttrykk("2 + )");
     nl_assert_eq_text(expr_err2, "/* feil: mangler verdi før ) ved token 2 */");
     char * expr_err3 = selfhost__compiler__disasm_uttrykk("2+$");
-    nl_assert_eq_text(expr_err3, "/* feil: ukjent token i uttrykk $ ved token 2 */");
+    nl_assert_eq_text(expr_err3, "/* feil: ukjent token/navn i uttrykk $ ved token 2 */");
+    char * expr_err4 = selfhost__compiler__disasm_uttrykk("foo+1");
+    nl_assert_eq_text(expr_err4, "/* feil: ukjent token/navn i uttrykk foo ved token 0 */");
     nl_list_text* linjer = nl_list_text_new();
     nl_list_text_push(linjer, "");
     nl_list_text_push(linjer, "PUSH");

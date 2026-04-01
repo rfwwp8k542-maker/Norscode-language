@@ -354,7 +354,7 @@ Vi har startet en tidlig selv-hosting bane i `selfhost/`:
 
 Neste steg:
 
-- Utvide selv-hosting til full parser (påbegynt: uttrykksparser med precedens/paranteser + sammenligning/logisk + unære operatorer + `tokeniser_uttrykk` i `selfhost/compiler.no`)
+- Utvide selv-hosting til full parser (påbegynt: uttrykksparser med precedens/paranteser + sammenligning/logisk + unære operatorer + bool-literaler + `tokeniser_uttrykk` i `selfhost/compiler.no`)
 - Selv-hosting lexer/token-strøm med bedre syntaksfeil og posisjonsinfo (påbegynt: strict-feil med token-posisjon)
 
 ---

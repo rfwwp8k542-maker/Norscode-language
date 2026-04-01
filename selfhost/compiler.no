@@ -554,6 +554,21 @@ funksjon uttrykk_til_ops_og_verdier(tokens: liste_tekst, ops: liste_tekst, verdi
             fortsett
         }
 
+        hvis (tok == "sann" eller tok == "usann") {
+            hvis (forventer_verdi == usann) {
+                returner "/* feil: mangler operator før verdi " + tok + " ved " + token_pos(i) + " */"
+            }
+            legg_til(ops, "PUSH")
+            hvis (tok == "sann") {
+                legg_til(verdier, 1)
+            } ellers {
+                legg_til(verdier, 0)
+            }
+            forventer_verdi = usann
+            i = i + 1
+            fortsett
+        }
+
         hvis (tok == "(") {
             hvis (forventer_verdi == usann) {
                 returner "/* feil: mangler operator før ( ved " + token_pos(i) + " */"
@@ -622,7 +637,7 @@ funksjon uttrykk_til_ops_og_verdier(tokens: liste_tekst, ops: liste_tekst, verdi
             fortsett
         }
 
-        returner "/* feil: ukjent token i uttrykk " + tok + " ved " + token_pos(i) + " */"
+        returner "/* feil: ukjent token/navn i uttrykk " + tok + " ved " + token_pos(i) + " */"
     }
 
     hvis (forventer_verdi) {

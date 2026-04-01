@@ -375,6 +375,21 @@ class CGenerator:
         self.emit("continue;")
         self.indent -= 1
         self.emit("}")
+        self.emit("if (isalpha((unsigned char)c) || c == '_') {")
+        self.indent += 1
+        self.emit("char token[256];")
+        self.emit("int tlen = 0;")
+        self.emit("while (*p && (isalnum((unsigned char)*p) || *p == '_')) {")
+        self.indent += 1
+        self.emit("if (tlen < 255) { token[tlen++] = *p; }")
+        self.emit("p++;")
+        self.indent -= 1
+        self.emit("}")
+        self.emit("token[tlen] = '\\0';")
+        self.emit("nl_list_text_push(out, nl_strdup(token));")
+        self.emit("continue;")
+        self.indent -= 1
+        self.emit("}")
         self.emit("if ((c == '&' && p[1] == '&') || (c == '|' && p[1] == '|') || (c == '=' && p[1] == '=') ||")
         self.emit("    (c == '!' && p[1] == '=') || (c == '<' && p[1] == '=') || (c == '>' && p[1] == '=')) {")
         self.indent += 1
