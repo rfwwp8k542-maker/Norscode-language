@@ -25,6 +25,7 @@ python3 -m pip install -e .
 python3 -m pip install -e . --no-build-isolation
 
 # Deretter kan du bruke:
+nor --help
 nc --help
 nl --help
 norcode --help

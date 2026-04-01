@@ -36,6 +36,7 @@ dev = [
 
 [project.scripts]
 norcode = "norcode.cli:main_cli"
+nor = "norcode.cli:main_cli"
 norsklang = "norcode.cli:main_cli"
 nl = "norcode.cli:main_cli"
 nc = "norcode.cli:main_cli"
