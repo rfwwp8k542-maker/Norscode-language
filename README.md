@@ -321,6 +321,9 @@ norcode ci
 
 # Maskinlesbar output
 norcode ci --json
+
+# Valgfri ekstra-sjekk for navnemigrering i CI
+norcode ci --check-names
 ```
 
 ---

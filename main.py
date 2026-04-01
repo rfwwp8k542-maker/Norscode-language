@@ -2224,11 +2224,12 @@ def summarize_test_results(results: list[dict]) -> dict:
     }
 
 
-def run_ci_pipeline(json_output: bool = False):
+def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
     payload = {
         "snapshot_check": {"ok": False, "updated": None},
         "parity_check": {"ok": False},
         "test_check": {"ok": False, "passed": 0, "failed": 0, "total": 0},
+        "name_migration_check": {"enabled": check_names, "ok": True, "needs_migration": False},
     }
 
     if not json_output:
@@ -2272,6 +2273,22 @@ def run_ci_pipeline(json_output: bool = False):
         raise RuntimeError("Testfeil i CI-pipeline")
     if not json_output:
         print("OK")
+
+    if check_names:
+        if not json_output:
+            print("[4/4] Name migration check")
+        migration = migrate_names(apply_changes=False, cleanup_legacy=True)
+        payload["name_migration_check"]["needs_migration"] = migration["needs_migration"]
+        payload["name_migration_check"]["ok"] = not migration["needs_migration"]
+        payload["name_migration_check"]["summary"] = {
+            "planned": migration["planned"],
+            "planned_remove": migration["planned_remove"],
+            "skipped": migration["skipped"],
+        }
+        if migration["needs_migration"]:
+            raise RuntimeError("Navnemigrering gjenstår (kjør: norcode migrate-names --apply --cleanup)")
+        if not json_output:
+            print("OK")
 
     return payload
 
@@ -2327,6 +2344,7 @@ def main():
 
     ci = sub.add_parser("ci", help="Kjør lokal CI-sekvens (snapshot, parity, test)")
     ci.add_argument("--json", action="store_true", help="Skriv CI-resultat som JSON")
+    ci.add_argument("--check-names", action="store_true", help="Inkluder sjekk for navnemigrering (legacy -> NorCode)")
 
     lock = sub.add_parser("lock", help="Generer dependency lockfile (norcode.lock)")
     lock.add_argument("--check", action="store_true", help="Feil hvis lockfile er manglende/utdatert")
@@ -2668,7 +2686,7 @@ def main():
                 print(f"Endringer skrevet: {updated}")
 
         elif args.cmd == "ci":
-            payload = run_ci_pipeline(json_output=args.json)
+            payload = run_ci_pipeline(json_output=args.json, check_names=args.check_names)
             if args.json:
                 print(json.dumps(payload, ensure_ascii=False, indent=2))
 
