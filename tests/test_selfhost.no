@@ -274,6 +274,9 @@ funksjon start() -> heltall {
     la expr_norsk_ops: tekst = sh.disasm_uttrykk("sann og ikke usann eller usann")
     assert_eq(expr_norsk_ops, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: AND\n4: PUSH 0\n5: OR\n6: PRINT\n7: HALT\n")
 
+    la expr_norsk_ops_ikkje: tekst = sh.disasm_uttrykk("sann og ikkje usann")
+    assert_eq(expr_norsk_ops_ikkje, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: AND\n4: PRINT\n5: HALT\n")
+
     la expr_norsk_ops_samt: tekst = sh.disasm_uttrykk("sann samt ikke usann")
     assert_eq(expr_norsk_ops_samt, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: AND\n4: PRINT\n5: HALT\n")
 
@@ -493,6 +496,9 @@ funksjon start() -> heltall {
 
     la script_norsk_ops: tekst = sh.disasm_skript("x=sann;y=ikke usann;x og y")
     assert_eq(script_norsk_ops, "0: PUSH 1\n1: PUSH 1\n2: AND\n3: PRINT\n4: HALT\n")
+
+    la script_norsk_ops_ikkje: tekst = sh.disasm_skript("x=sann;y=ikkje usann;x og y")
+    assert_eq(script_norsk_ops_ikkje, "0: PUSH 1\n1: PUSH 1\n2: AND\n3: PRINT\n4: HALT\n")
 
     la script_norsk_ops_samt: tekst = sh.disasm_skript("x=sann;y=ikke usann;x samt y")
     assert_eq(script_norsk_ops_samt, "0: PUSH 1\n1: PUSH 1\n2: AND\n3: PRINT\n4: HALT\n")

@@ -98,6 +98,9 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "ikke_lik" eller tok == "ikke_lik_med" eller tok == "er_ikke" eller tok == "er_ulik" eller tok == "ulik_med") {
         returner "ikke_er"
     }
+    hvis (tok == "ikkje") {
+        returner "ikke"
+    }
     hvis (tok == "er_lik" eller tok == "er_lik_med") {
         returner "er"
     }

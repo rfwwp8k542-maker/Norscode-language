@@ -395,6 +395,9 @@ char * selfhost__compiler__normaliser_norsk_token(char * tok) {
     if ((((nl_streq(tok, "ikke_lik") || nl_streq(tok, "ikke_lik_med")) || nl_streq(tok, "er_ikke")) || nl_streq(tok, "er_ulik")) || nl_streq(tok, "ulik_med")) {
         return "ikke_er";
     }
+    if (nl_streq(tok, "ikkje")) {
+        return "ikke";
+    }
     if (nl_streq(tok, "er_lik") || nl_streq(tok, "er_lik_med")) {
         return "er";
     }
@@ -2367,6 +2370,8 @@ int start() {
     nl_assert_eq_text(expr_bool_literals, "0: PUSH 1\n1: PUSH 0\n2: AND\n3: PUSH 0\n4: NOT\n5: OR\n6: PRINT\n7: HALT\n");
     char * expr_norsk_ops = selfhost__compiler__disasm_uttrykk("sann og ikke usann eller usann");
     nl_assert_eq_text(expr_norsk_ops, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: AND\n4: PUSH 0\n5: OR\n6: PRINT\n7: HALT\n");
+    char * expr_norsk_ops_ikkje = selfhost__compiler__disasm_uttrykk("sann og ikkje usann");
+    nl_assert_eq_text(expr_norsk_ops_ikkje, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: AND\n4: PRINT\n5: HALT\n");
     char * expr_norsk_ops_samt = selfhost__compiler__disasm_uttrykk("sann samt ikke usann");
     nl_assert_eq_text(expr_norsk_ops_samt, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: AND\n4: PRINT\n5: HALT\n");
     char * expr_norsk_cmp = selfhost__compiler__disasm_uttrykk("7 er 7 og 3 mindre_enn 4");
@@ -2522,6 +2527,8 @@ int start() {
     nl_assert_eq_text(script_nested_hvis, "0: PUSH 1\n1: PUSH 1\n2: EQ\n3: JZ 14\n4: PUSH 1\n5: PUSH 1\n6: EQ\n7: JZ 10\n8: PUSH 10\n9: JMP 12\n10: LABEL 10\n11: PUSH 11\n12: LABEL 12\n13: JMP 16\n14: LABEL 14\n15: PUSH 20\n16: LABEL 16\n17: PRINT\n18: HALT\n");
     char * script_norsk_ops = selfhost__compiler__disasm_skript("x=sann;y=ikke usann;x og y");
     nl_assert_eq_text(script_norsk_ops, "0: PUSH 1\n1: PUSH 1\n2: AND\n3: PRINT\n4: HALT\n");
+    char * script_norsk_ops_ikkje = selfhost__compiler__disasm_skript("x=sann;y=ikkje usann;x og y");
+    nl_assert_eq_text(script_norsk_ops_ikkje, "0: PUSH 1\n1: PUSH 1\n2: AND\n3: PRINT\n4: HALT\n");
     char * script_norsk_ops_samt = selfhost__compiler__disasm_skript("x=sann;y=ikke usann;x samt y");
     nl_assert_eq_text(script_norsk_ops_samt, "0: PUSH 1\n1: PUSH 1\n2: AND\n3: PRINT\n4: HALT\n");
     char * script_norsk_cmp = selfhost__compiler__disasm_skript("la x=3;la y=4;hvis x mindre_enn y da 1 ellers 0");
