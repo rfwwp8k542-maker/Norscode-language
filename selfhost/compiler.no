@@ -68,11 +68,26 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "større_enn") {
         returner "storre_enn"
     }
+    hvis (tok == "er_større_enn" eller tok == "er_storre_enn") {
+        returner "storre_enn"
+    }
     hvis (tok == "større_eller_lik") {
+        returner "storre_eller_lik"
+    }
+    hvis (tok == "er_større_eller_lik" eller tok == "er_storre_eller_lik") {
         returner "storre_eller_lik"
     }
     hvis (tok == "større_enn_eller_lik" eller tok == "storre_enn_eller_lik") {
         returner "storre_eller_lik"
+    }
+    hvis (tok == "er_større_enn_eller_lik" eller tok == "er_storre_enn_eller_lik") {
+        returner "storre_eller_lik"
+    }
+    hvis (tok == "er_mindre_enn") {
+        returner "mindre_enn"
+    }
+    hvis (tok == "er_mindre_eller_lik" eller tok == "er_mindre_enn_eller_lik") {
+        returner "mindre_eller_lik"
     }
     hvis (tok == "mindre_enn_eller_lik") {
         returner "mindre_eller_lik"
