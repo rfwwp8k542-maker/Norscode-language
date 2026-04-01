@@ -912,6 +912,12 @@ funksjon uttrykk_til_ops_og_verdier_med_miljo(tokens: liste_tekst, navn: liste_t
         } ellers hvis (i + 1 < lengde(tokens) og (tok_raw == "ganget" eller tok_raw == "gange" eller tok_raw == "ganger") og n1 == "med") {
             tok = "*"
             tok_step = 2
+        } ellers hvis (tok_raw == "pluss_med") {
+            tok = "+"
+            tok_step = 1
+        } ellers hvis (i + 1 < lengde(tokens) og tok_raw == "pluss" og n1 == "med") {
+            tok = "+"
+            tok_step = 2
         } ellers hvis (tok_raw == "pluss") {
             tok = "+"
             tok_step = 1
