@@ -984,12 +984,12 @@ funksjon uttrykk_til_ops_og_verdier_med_miljo(tokens: liste_tekst, navn: liste_t
         } ellers hvis (tok_raw == "ganger") {
             tok = "*"
             tok_step = 1
-        } ellers hvis (tok_raw == "mod" eller tok_raw == "modulo" eller tok_raw == "rest" eller tok_raw == "resten_av") {
-            tok = "%"
-            tok_step = 1
-        } ellers hvis (i + 1 < lengde(tokens) og tok_raw == "resten" og n1 == "av") {
+        } ellers hvis (i + 1 < lengde(tokens) og (tok_raw == "rest" eller tok_raw == "resten") og n1 == "av") {
             tok = "%"
             tok_step = 2
+        } ellers hvis (tok_raw == "mod" eller tok_raw == "modulo" eller tok_raw == "rest" eller tok_raw == "rest_av" eller tok_raw == "resten_av") {
+            tok = "%"
+            tok_step = 1
         } ellers hvis (i + 3 < lengde(tokens) og tok_raw == "mindre" og n1 == "enn" og n2 == "eller" og n3 == "lik") {
             tok = "mindre_eller_lik"
             tok_step = 4
