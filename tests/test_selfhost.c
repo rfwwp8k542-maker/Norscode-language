@@ -357,7 +357,7 @@ int selfhost__compiler__er_operator_token(char * tok) {
     if (((((nl_streq(tok, "==") || nl_streq(tok, "!=")) || nl_streq(tok, "<")) || nl_streq(tok, ">")) || nl_streq(tok, "<=")) || nl_streq(tok, ">=")) {
         return 1;
     }
-    if ((nl_streq(tok, "&&") || nl_streq(tok, "||")) || nl_streq(tok, "!")) {
+    if (((((nl_streq(tok, "&&") || nl_streq(tok, "||")) || nl_streq(tok, "!")) || nl_streq(tok, "og")) || nl_streq(tok, "eller")) || nl_streq(tok, "ikke")) {
         return 1;
     }
     return 0;
@@ -365,7 +365,7 @@ int selfhost__compiler__er_operator_token(char * tok) {
 }
 
 int selfhost__compiler__operator_precedens(char * tok) {
-    if (nl_streq(tok, "u!") || nl_streq(tok, "u-")) {
+    if ((nl_streq(tok, "u!") || nl_streq(tok, "u-")) || nl_streq(tok, "uikke")) {
         return 7;
     }
     if ((nl_streq(tok, "*") || nl_streq(tok, "/")) || nl_streq(tok, "%")) {
@@ -380,10 +380,10 @@ int selfhost__compiler__operator_precedens(char * tok) {
     if (nl_streq(tok, "==") || nl_streq(tok, "!=")) {
         return 3;
     }
-    if (nl_streq(tok, "&&")) {
+    if (nl_streq(tok, "&&") || nl_streq(tok, "og")) {
         return 2;
     }
-    if (nl_streq(tok, "||")) {
+    if (nl_streq(tok, "||") || nl_streq(tok, "eller")) {
         return 1;
     }
     return 0;
@@ -415,10 +415,10 @@ char * selfhost__compiler__operator_til_opcode(char * tok) {
     if (nl_streq(tok, ">")) {
         return "GT";
     }
-    if (nl_streq(tok, "&&")) {
+    if (nl_streq(tok, "&&") || nl_streq(tok, "og")) {
         return "AND";
     }
-    if (nl_streq(tok, "||")) {
+    if (nl_streq(tok, "||") || nl_streq(tok, "eller")) {
         return "OR";
     }
     return "";
@@ -426,7 +426,7 @@ char * selfhost__compiler__operator_til_opcode(char * tok) {
 }
 
 int selfhost__compiler__emitter_operator(nl_list_text* ops, nl_list_int* verdier, char * op) {
-    if (nl_streq(op, "u!")) {
+    if (nl_streq(op, "u!") || nl_streq(op, "uikke")) {
         nl_list_text_push(ops, "NOT");
         nl_list_int_push(verdier, 0);
         return 1;
@@ -1114,6 +1114,11 @@ char * selfhost__compiler__uttrykk_til_ops_og_verdier_med_miljo(nl_list_text* to
                     i = (i + 1);
                     continue;
                 }
+                if (nl_streq(tok, "ikke")) {
+                    nl_list_text_push(operatorer, "uikke");
+                    i = (i + 1);
+                    continue;
+                }
                 if (nl_streq(tok, "-")) {
                     nl_list_text_push(operatorer, "u-");
                     i = (i + 1);
@@ -1610,6 +1615,8 @@ int start() {
     nl_assert_eq_text(expr_unary_minus, "0: PUSH 3\n1: PUSH 0\n2: SWAP\n3: SUB\n4: PUSH 5\n5: ADD\n6: PRINT\n7: HALT\n");
     char * expr_bool_literals = selfhost__compiler__disasm_uttrykk("sann&&usann||!usann");
     nl_assert_eq_text(expr_bool_literals, "0: PUSH 1\n1: PUSH 0\n2: AND\n3: PUSH 0\n4: NOT\n5: OR\n6: PRINT\n7: HALT\n");
+    char * expr_norsk_ops = selfhost__compiler__disasm_uttrykk("sann og ikke usann eller usann");
+    nl_assert_eq_text(expr_norsk_ops, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: AND\n4: PUSH 0\n5: OR\n6: PRINT\n7: HALT\n");
     nl_list_text* env_navn = nl_list_text_new();
     nl_list_text_push(env_navn, "x");
     nl_list_text_push(env_navn, "y");
@@ -1639,6 +1646,8 @@ int start() {
     nl_assert_eq_text(expr_env_err2, "/* feil: navn/miljø-verdier må ha samme lengde */");
     char * script_dis = selfhost__compiler__disasm_skript("x=2+3;y=x*4;y+1");
     nl_assert_eq_text(script_dis, "0: PUSH 20\n1: PUSH 1\n2: ADD\n3: PRINT\n4: HALT\n");
+    char * script_norsk_ops = selfhost__compiler__disasm_skript("x=sann;y=ikke usann;x og y");
+    nl_assert_eq_text(script_norsk_ops, "0: PUSH 1\n1: PUSH 1\n2: AND\n3: PRINT\n4: HALT\n");
     char * script_c = selfhost__compiler__kompiler_skript_til_c("x=2;y=x+5;y*2");
     nl_assert_ne_text(script_c, "");
     char * script_err1 = selfhost__compiler__disasm_skript("x=2+3");
