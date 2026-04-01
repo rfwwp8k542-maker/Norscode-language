@@ -921,10 +921,10 @@ funksjon uttrykk_til_ops_og_verdier_med_miljo(tokens: liste_tekst, navn: liste_t
         } ellers hvis (tok_raw == "pluss") {
             tok = "+"
             tok_step = 1
-        } ellers hvis (tok_raw == "plusser_med") {
+        } ellers hvis (tok_raw == "plusser_med" eller tok_raw == "adder_med" eller tok_raw == "adderer_med") {
             tok = "+"
             tok_step = 1
-        } ellers hvis (i + 1 < lengde(tokens) og tok_raw == "plusser" og n1 == "med") {
+        } ellers hvis (i + 1 < lengde(tokens) og (tok_raw == "plusser" eller tok_raw == "adder" eller tok_raw == "adderer") og n1 == "med") {
             tok = "+"
             tok_step = 2
         } ellers hvis (tok_raw == "legg_til") {
