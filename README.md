@@ -355,7 +355,7 @@ Vi har startet en tidlig selv-hosting bane i `selfhost/`:
 Neste steg:
 
 - Utvide selv-hosting til full parser (påbegynt: uttrykksparser + mini-skriptparser med `la`/`sett`/`returner`, compound assignment (`+=`, `-=`, `*=`, `/=`, `%=`), nestede `hvis ... da ... ellers ...` (uttrykk + assignment), tomme statements (`;`) og norske operator-ord (`og/eller/ikke`, `er/ikke_er`, `mindre_enn`/`storre_enn`) inkludert fraser med mellomrom (`mindre enn`, `ikke er`) i `selfhost/compiler.no`)
-- Selv-hosting lexer/token-strøm med bedre syntaksfeil og posisjonsinfo (utvidet: mini-skriptparser-feil + uttrykksparser-feil inkluderer token-posisjon)
+- Selv-hosting lexer/token-strøm med bedre syntaksfeil og posisjonsinfo (utvidet: mini-skriptparser-feil + uttrykksparser-feil + `hvis`-parser-feil inkluderer token-posisjon)
 
 ---
 

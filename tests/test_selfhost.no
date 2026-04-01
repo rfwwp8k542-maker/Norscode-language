@@ -306,10 +306,13 @@ funksjon start() -> heltall {
     assert_eq(script_err13, "/* feil: variabel 'x' er ikke deklarert for '+=' ved token 0 */")
 
     la script_err10: tekst = sh.disasm_skript("hvis 1==1 10 ellers 20")
-    assert_eq(script_err10, "/* feil: hvis-uttrykk mangler 'da' */")
+    assert_eq(script_err10, "/* feil: hvis-uttrykk mangler 'da' ved token 0 */")
 
     la script_err11: tekst = sh.disasm_skript("hvis 1==1 da 10")
-    assert_eq(script_err11, "/* feil: hvis-uttrykk mangler 'ellers' */")
+    assert_eq(script_err11, "/* feil: hvis-uttrykk mangler 'ellers' ved token 4 */")
+
+    la script_err14: tekst = sh.disasm_skript("hvis (1==1 da 10 ellers 20")
+    assert_eq(script_err14, "/* feil: mangler ) i hvis-uttrykk ved token 1 */")
 
     la linjer: liste_tekst = ["", "PUSH", "11", "PUSH", "4", "SUB", "PRINT", "HALT"]
     la c3: tekst = sh.kompiler_fra_linjer(linjer)

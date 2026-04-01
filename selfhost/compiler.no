@@ -980,24 +980,29 @@ funksjon uttrykk_til_ops_og_verdier(tokens: liste_tekst, ops: liste_tekst, verdi
 
 funksjon bygg_hvis_da_ellers_ops_med_miljo(tokens: liste_tekst, navn: liste_tekst, miljo_verdier: liste_heltall, out_ops: liste_tekst, out_verdier: liste_heltall) -> tekst {
     hvis (lengde(tokens) == 0 eller tokens[0] != "hvis") {
-        returner "/* feil: intern hvis-parser forventer 'hvis' */"
+        returner "/* feil: intern hvis-parser forventer 'hvis' ved token 0 */"
     }
 
     la depth: heltall = 0
+    la paren_pos: liste_heltall = [0]
     la nested_if_etter_da: heltall = 0
     la da_idx: heltall = -1
     la ellers_idx: heltall = -1
     la i: heltall = 1
 
+    fjern_indeks(paren_pos, 0)
+
     mens (i < lengde(tokens)) {
         la tok: tekst = tokens[i]
         hvis (tok == "(") {
             depth = depth + 1
+            legg_til(paren_pos, i)
         } ellers hvis (tok == ")") {
             depth = depth - 1
             hvis (depth < 0) {
-                returner "/* feil: ) uten matchende ( i hvis-uttrykk */"
+                returner "/* feil: ) uten matchende ( i hvis-uttrykk ved " + token_pos(i) + " */"
             }
+            fjern_indeks(paren_pos, lengde(paren_pos) - 1)
         } ellers hvis (depth == 0 og tok == "da" og da_idx < 0) {
             da_idx = i
         } ellers hvis (depth == 0 og da_idx >= 0 og tok == "hvis") {
@@ -1014,13 +1019,13 @@ funksjon bygg_hvis_da_ellers_ops_med_miljo(tokens: liste_tekst, navn: liste_teks
     }
 
     hvis (depth != 0) {
-        returner "/* feil: mangler ) i hvis-uttrykk */"
+        returner "/* feil: mangler ) i hvis-uttrykk ved " + token_pos(paren_pos[lengde(paren_pos) - 1]) + " */"
     }
     hvis (da_idx < 0) {
-        returner "/* feil: hvis-uttrykk mangler 'da' */"
+        returner "/* feil: hvis-uttrykk mangler 'da' ved " + token_pos(0) + " */"
     }
     hvis (ellers_idx < 0) {
-        returner "/* feil: hvis-uttrykk mangler 'ellers' */"
+        returner "/* feil: hvis-uttrykk mangler 'ellers' ved " + token_pos(da_idx) + " */"
     }
 
     la cond_tokens: liste_tekst = [""]
@@ -1047,13 +1052,13 @@ funksjon bygg_hvis_da_ellers_ops_med_miljo(tokens: liste_tekst, navn: liste_teks
     }
 
     hvis (lengde(cond_tokens) == 0) {
-        returner "/* feil: hvis-uttrykk mangler betingelse */"
+        returner "/* feil: hvis-uttrykk mangler betingelse ved " + token_pos(0) + " */"
     }
     hvis (lengde(then_tokens) == 0) {
-        returner "/* feil: hvis-uttrykk mangler uttrykk etter 'da' */"
+        returner "/* feil: hvis-uttrykk mangler uttrykk etter 'da' ved " + token_pos(da_idx) + " */"
     }
     hvis (lengde(else_tokens) == 0) {
-        returner "/* feil: hvis-uttrykk mangler uttrykk etter 'ellers' */"
+        returner "/* feil: hvis-uttrykk mangler uttrykk etter 'ellers' ved " + token_pos(ellers_idx) + " */"
     }
 
     la cond_ops: liste_tekst = [""]

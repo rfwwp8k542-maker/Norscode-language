@@ -1333,23 +1333,28 @@ char * selfhost__compiler__uttrykk_til_ops_og_verdier(nl_list_text* tokens, nl_l
 
 char * selfhost__compiler__bygg_hvis_da_ellers_ops_med_miljo(nl_list_text* tokens, nl_list_text* navn, nl_list_int* miljo_verdier, nl_list_text* out_ops, nl_list_int* out_verdier) {
     if ((nl_list_text_len(tokens) == 0) || !(nl_streq(tokens->data[0], "hvis"))) {
-        return "/* feil: intern hvis-parser forventer 'hvis' */";
+        return "/* feil: intern hvis-parser forventer 'hvis' ved token 0 */";
     }
     int depth = 0;
+    nl_list_int* paren_pos = nl_list_int_new();
+    nl_list_int_push(paren_pos, 0);
     int nested_if_etter_da = 0;
     int da_idx = (-(1));
     int ellers_idx = (-(1));
     int i = 1;
+    nl_list_int_remove(paren_pos, 0);
     while (i < nl_list_text_len(tokens)) {
         char * tok = tokens->data[i];
         if (nl_streq(tok, "(")) {
             depth = (depth + 1);
+            nl_list_int_push(paren_pos, i);
         }
         else if (nl_streq(tok, ")")) {
             depth = (depth - 1);
             if (depth < 0) {
-                return "/* feil: ) uten matchende ( i hvis-uttrykk */";
+                return nl_concat(nl_concat("/* feil: ) uten matchende ( i hvis-uttrykk ved ", selfhost__compiler__token_pos(i)), " */");
             }
+            nl_list_int_remove(paren_pos, (nl_list_int_len(paren_pos) - 1));
         }
         else if (((depth == 0) && nl_streq(tok, "da")) && (da_idx < 0)) {
             da_idx = i;
@@ -1369,13 +1374,13 @@ char * selfhost__compiler__bygg_hvis_da_ellers_ops_med_miljo(nl_list_text* token
         i = (i + 1);
     }
     if (depth != 0) {
-        return "/* feil: mangler ) i hvis-uttrykk */";
+        return nl_concat(nl_concat("/* feil: mangler ) i hvis-uttrykk ved ", selfhost__compiler__token_pos(paren_pos->data[(nl_list_int_len(paren_pos) - 1)])), " */");
     }
     if (da_idx < 0) {
-        return "/* feil: hvis-uttrykk mangler 'da' */";
+        return nl_concat(nl_concat("/* feil: hvis-uttrykk mangler 'da' ved ", selfhost__compiler__token_pos(0)), " */");
     }
     if (ellers_idx < 0) {
-        return "/* feil: hvis-uttrykk mangler 'ellers' */";
+        return nl_concat(nl_concat("/* feil: hvis-uttrykk mangler 'ellers' ved ", selfhost__compiler__token_pos(da_idx)), " */");
     }
     nl_list_text* cond_tokens = nl_list_text_new();
     nl_list_text_push(cond_tokens, "");
@@ -1402,13 +1407,13 @@ char * selfhost__compiler__bygg_hvis_da_ellers_ops_med_miljo(nl_list_text* token
         i = (i + 1);
     }
     if (nl_list_text_len(cond_tokens) == 0) {
-        return "/* feil: hvis-uttrykk mangler betingelse */";
+        return nl_concat(nl_concat("/* feil: hvis-uttrykk mangler betingelse ved ", selfhost__compiler__token_pos(0)), " */");
     }
     if (nl_list_text_len(then_tokens) == 0) {
-        return "/* feil: hvis-uttrykk mangler uttrykk etter 'da' */";
+        return nl_concat(nl_concat("/* feil: hvis-uttrykk mangler uttrykk etter 'da' ved ", selfhost__compiler__token_pos(da_idx)), " */");
     }
     if (nl_list_text_len(else_tokens) == 0) {
-        return "/* feil: hvis-uttrykk mangler uttrykk etter 'ellers' */";
+        return nl_concat(nl_concat("/* feil: hvis-uttrykk mangler uttrykk etter 'ellers' ved ", selfhost__compiler__token_pos(ellers_idx)), " */");
     }
     nl_list_text* cond_ops = nl_list_text_new();
     nl_list_text_push(cond_ops, "");
@@ -2144,9 +2149,11 @@ int start() {
     char * script_err13 = selfhost__compiler__disasm_skript("x+=1;returner x");
     nl_assert_eq_text(script_err13, "/* feil: variabel 'x' er ikke deklarert for '+=' ved token 0 */");
     char * script_err10 = selfhost__compiler__disasm_skript("hvis 1==1 10 ellers 20");
-    nl_assert_eq_text(script_err10, "/* feil: hvis-uttrykk mangler 'da' */");
+    nl_assert_eq_text(script_err10, "/* feil: hvis-uttrykk mangler 'da' ved token 0 */");
     char * script_err11 = selfhost__compiler__disasm_skript("hvis 1==1 da 10");
-    nl_assert_eq_text(script_err11, "/* feil: hvis-uttrykk mangler 'ellers' */");
+    nl_assert_eq_text(script_err11, "/* feil: hvis-uttrykk mangler 'ellers' ved token 4 */");
+    char * script_err14 = selfhost__compiler__disasm_skript("hvis (1==1 da 10 ellers 20");
+    nl_assert_eq_text(script_err14, "/* feil: mangler ) i hvis-uttrykk ved token 1 */");
     nl_list_text* linjer = nl_list_text_new();
     nl_list_text_push(linjer, "");
     nl_list_text_push(linjer, "PUSH");
