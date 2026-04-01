@@ -546,6 +546,19 @@ funksjon eval_ops_til_verdi(ops: liste_tekst, verdier: liste_heltall, resultat: 
     returner ""
 }
 
+funksjon append_ops(dst_ops: liste_tekst, dst_verdier: liste_heltall, src_ops: liste_tekst, src_verdier: liste_heltall) -> tekst {
+    hvis (lengde(src_ops) != lengde(src_verdier)) {
+        returner "/* feil: append_ops krever like lengder */"
+    }
+    la i: heltall = 0
+    mens (i < lengde(src_ops)) {
+        legg_til(dst_ops, src_ops[i])
+        legg_til(dst_verdier, src_verdier[i])
+        i = i + 1
+    }
+    returner ""
+}
+
 funksjon parse_tokens_til_ops(tokens: liste_tekst, ops: liste_tekst, verdier: liste_heltall, strict: bool) -> tekst {
     la i: heltall = 0
 
@@ -827,6 +840,140 @@ funksjon uttrykk_til_ops_og_verdier(tokens: liste_tekst, ops: liste_tekst, verdi
     returner uttrykk_til_ops_og_verdier_med_miljo(tokens, navn, miljo_verdier, ops, verdier)
 }
 
+funksjon bygg_hvis_da_ellers_ops_med_miljo(tokens: liste_tekst, navn: liste_tekst, miljo_verdier: liste_heltall, out_ops: liste_tekst, out_verdier: liste_heltall) -> tekst {
+    hvis (lengde(tokens) == 0 eller tokens[0] != "hvis") {
+        returner "/* feil: intern hvis-parser forventer 'hvis' */"
+    }
+
+    la depth: heltall = 0
+    la da_idx: heltall = -1
+    la ellers_idx: heltall = -1
+    la i: heltall = 1
+
+    mens (i < lengde(tokens)) {
+        la tok: tekst = tokens[i]
+        hvis (tok == "(") {
+            depth = depth + 1
+        } ellers hvis (tok == ")") {
+            depth = depth - 1
+            hvis (depth < 0) {
+                returner "/* feil: ) uten matchende ( i hvis-uttrykk */"
+            }
+        } ellers hvis (depth == 0 og tok == "da" og da_idx < 0) {
+            da_idx = i
+        } ellers hvis (depth == 0 og tok == "ellers" og da_idx >= 0) {
+            ellers_idx = i
+            bryt
+        }
+        i = i + 1
+    }
+
+    hvis (depth != 0) {
+        returner "/* feil: mangler ) i hvis-uttrykk */"
+    }
+    hvis (da_idx < 0) {
+        returner "/* feil: hvis-uttrykk mangler 'da' */"
+    }
+    hvis (ellers_idx < 0) {
+        returner "/* feil: hvis-uttrykk mangler 'ellers' */"
+    }
+
+    la cond_tokens: liste_tekst = [""]
+    la then_tokens: liste_tekst = [""]
+    la else_tokens: liste_tekst = [""]
+    fjern_indeks(cond_tokens, 0)
+    fjern_indeks(then_tokens, 0)
+    fjern_indeks(else_tokens, 0)
+
+    i = 1
+    mens (i < da_idx) {
+        legg_til(cond_tokens, tokens[i])
+        i = i + 1
+    }
+    i = da_idx + 1
+    mens (i < ellers_idx) {
+        legg_til(then_tokens, tokens[i])
+        i = i + 1
+    }
+    i = ellers_idx + 1
+    mens (i < lengde(tokens)) {
+        legg_til(else_tokens, tokens[i])
+        i = i + 1
+    }
+
+    hvis (lengde(cond_tokens) == 0) {
+        returner "/* feil: hvis-uttrykk mangler betingelse */"
+    }
+    hvis (lengde(then_tokens) == 0) {
+        returner "/* feil: hvis-uttrykk mangler uttrykk etter 'da' */"
+    }
+    hvis (lengde(else_tokens) == 0) {
+        returner "/* feil: hvis-uttrykk mangler uttrykk etter 'ellers' */"
+    }
+
+    la cond_ops: liste_tekst = [""]
+    la cond_verdier: liste_heltall = [0]
+    la then_ops: liste_tekst = [""]
+    la then_verdier: liste_heltall = [0]
+    la else_ops: liste_tekst = [""]
+    la else_verdier: liste_heltall = [0]
+    fjern_indeks(cond_ops, 0)
+    fjern_indeks(cond_verdier, 0)
+    fjern_indeks(then_ops, 0)
+    fjern_indeks(then_verdier, 0)
+    fjern_indeks(else_ops, 0)
+    fjern_indeks(else_verdier, 0)
+
+    la feil: tekst = uttrykk_til_ops_og_verdier_med_miljo(cond_tokens, navn, miljo_verdier, cond_ops, cond_verdier)
+    hvis (feil != "") {
+        returner feil
+    }
+    feil = uttrykk_til_ops_og_verdier_med_miljo(then_tokens, navn, miljo_verdier, then_ops, then_verdier)
+    hvis (feil != "") {
+        returner feil
+    }
+    feil = uttrykk_til_ops_og_verdier_med_miljo(else_tokens, navn, miljo_verdier, else_ops, else_verdier)
+    hvis (feil != "") {
+        returner feil
+    }
+
+    fjern_indeks(out_ops, 0)
+    fjern_indeks(out_verdier, 0)
+
+    feil = append_ops(out_ops, out_verdier, cond_ops, cond_verdier)
+    hvis (feil != "") {
+        returner feil
+    }
+
+    la ncond: heltall = lengde(cond_ops)
+    la nthen: heltall = lengde(then_ops)
+    la nelse: heltall = lengde(else_ops)
+    la l_else: heltall = ncond + 2 + nthen
+    la l_end: heltall = ncond + 3 + nthen + nelse
+
+    legg_til(out_ops, "JZ")
+    legg_til(out_verdier, l_else)
+
+    feil = append_ops(out_ops, out_verdier, then_ops, then_verdier)
+    hvis (feil != "") {
+        returner feil
+    }
+
+    legg_til(out_ops, "JMP")
+    legg_til(out_verdier, l_end)
+    legg_til(out_ops, "LABEL")
+    legg_til(out_verdier, l_else)
+
+    feil = append_ops(out_ops, out_verdier, else_ops, else_verdier)
+    hvis (feil != "") {
+        returner feil
+    }
+
+    legg_til(out_ops, "LABEL")
+    legg_til(out_verdier, l_end)
+    returner ""
+}
+
 funksjon disasm_uttrykk(kilde: tekst) -> tekst {
     la tokens: liste_tekst = tokeniser_uttrykk(kilde)
     la ops: liste_tekst = [""]
@@ -1019,7 +1166,12 @@ funksjon skript_til_ops_og_verdier(tokens: liste_tekst, navn: liste_tekst, miljo
             }
         }
 
-        la final_feil: tekst = uttrykk_til_ops_og_verdier_med_miljo(final_tokens, navn, miljo_verdier, out_ops, out_verdier)
+        la final_feil: tekst = ""
+        hvis (lengde(final_tokens) > 0 og final_tokens[0] == "hvis") {
+            final_feil = bygg_hvis_da_ellers_ops_med_miljo(final_tokens, navn, miljo_verdier, out_ops, out_verdier)
+        } ellers {
+            final_feil = uttrykk_til_ops_og_verdier_med_miljo(final_tokens, navn, miljo_verdier, out_ops, out_verdier)
+        }
         hvis (final_feil != "") {
             returner final_feil
         }
