@@ -1152,6 +1152,10 @@ char * selfhost__compiler__uttrykk_til_ops_og_verdier_med_miljo(nl_list_text* to
             tok = "/";
             tok_step = 2;
         }
+        else if ((((i + 1) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "delt")) && nl_streq(tokens->data[(i + 1)], "med")) {
+            tok = "/";
+            tok_step = 2;
+        }
         else if ((((i + 1) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "ganget")) && nl_streq(tokens->data[(i + 1)], "med")) {
             tok = "*";
             tok_step = 2;
@@ -2196,6 +2200,8 @@ int start() {
     nl_assert_eq_text(expr_norsk_modulo, "0: PUSH 17\n1: PUSH 5\n2: MOD\n3: PRINT\n4: HALT\n");
     char * expr_norsk_ganget_med = selfhost__compiler__disasm_uttrykk("3 ganget med 4");
     nl_assert_eq_text(expr_norsk_ganget_med, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n");
+    char * expr_norsk_delt_med = selfhost__compiler__disasm_uttrykk("8 delt med 2");
+    nl_assert_eq_text(expr_norsk_delt_med, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * expr_bool_literals = selfhost__compiler__disasm_uttrykk("sann&&usann||!usann");
     nl_assert_eq_text(expr_bool_literals, "0: PUSH 1\n1: PUSH 0\n2: AND\n3: PUSH 0\n4: NOT\n5: OR\n6: PRINT\n7: HALT\n");
     char * expr_norsk_ops = selfhost__compiler__disasm_uttrykk("sann og ikke usann eller usann");
@@ -2347,6 +2353,8 @@ int start() {
     nl_assert_eq_text(script_norsk_mod, "0: PUSH 17\n1: PUSH 5\n2: MOD\n3: PRINT\n4: HALT\n");
     char * script_norsk_ganget_med = selfhost__compiler__disasm_skript("la x=3;la y=4;returner x ganget med y");
     nl_assert_eq_text(script_norsk_ganget_med, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n");
+    char * script_norsk_delt_med = selfhost__compiler__disasm_skript("la x=8;la y=2;returner x delt med y");
+    nl_assert_eq_text(script_norsk_delt_med, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * script_c = selfhost__compiler__kompiler_skript_til_c("x=2;y=x+5;y*2");
     nl_assert_ne_text(script_c, "");
     char * script_err1 = selfhost__compiler__disasm_skript("x=2+3");
