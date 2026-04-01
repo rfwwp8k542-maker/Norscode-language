@@ -114,7 +114,13 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "sant") {
         returner "sann"
     }
+    hvis (tok == "ja") {
+        returner "sann"
+    }
     hvis (tok == "usant") {
+        returner "usann"
+    }
+    hvis (tok == "nei") {
         returner "usann"
     }
     hvis (tok == "er_lik" eller tok == "er_lik_med") {

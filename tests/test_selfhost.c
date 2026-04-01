@@ -410,7 +410,13 @@ char * selfhost__compiler__normaliser_norsk_token(char * tok) {
     if (nl_streq(tok, "sant")) {
         return "sann";
     }
+    if (nl_streq(tok, "ja")) {
+        return "sann";
+    }
     if (nl_streq(tok, "usant")) {
+        return "usann";
+    }
+    if (nl_streq(tok, "nei")) {
         return "usann";
     }
     if (nl_streq(tok, "er_lik") || nl_streq(tok, "er_lik_med")) {
@@ -2405,6 +2411,8 @@ int start() {
     nl_assert_eq_text(expr_bool_literals_sant, "0: PUSH 1\n1: PUSH 0\n2: AND\n3: PRINT\n4: HALT\n");
     char * expr_bool_literals_usant = selfhost__compiler__disasm_uttrykk("sant&&usant");
     nl_assert_eq_text(expr_bool_literals_usant, "0: PUSH 1\n1: PUSH 0\n2: AND\n3: PRINT\n4: HALT\n");
+    char * expr_bool_literals_ja_nei = selfhost__compiler__disasm_uttrykk("ja&&nei");
+    nl_assert_eq_text(expr_bool_literals_ja_nei, "0: PUSH 1\n1: PUSH 0\n2: AND\n3: PRINT\n4: HALT\n");
     char * expr_norsk_ops = selfhost__compiler__disasm_uttrykk("sann og ikke usann eller usann");
     nl_assert_eq_text(expr_norsk_ops, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: AND\n4: PUSH 0\n5: OR\n6: PRINT\n7: HALT\n");
     char * expr_norsk_ops_enten = selfhost__compiler__disasm_uttrykk("usann enten sann");
@@ -2588,6 +2596,8 @@ int start() {
     nl_assert_eq_text(script_norsk_ops_sant, "0: PUSH 1\n1: PUSH 1\n2: AND\n3: PRINT\n4: HALT\n");
     char * script_norsk_ops_usant = selfhost__compiler__disasm_skript("x=sant;y=ikke usant;x og y");
     nl_assert_eq_text(script_norsk_ops_usant, "0: PUSH 1\n1: PUSH 1\n2: AND\n3: PRINT\n4: HALT\n");
+    char * script_norsk_ops_ja_nei = selfhost__compiler__disasm_skript("x=ja;y=ikke nei;x og y");
+    nl_assert_eq_text(script_norsk_ops_ja_nei, "0: PUSH 1\n1: PUSH 1\n2: AND\n3: PRINT\n4: HALT\n");
     char * script_norsk_ops_ikkje = selfhost__compiler__disasm_skript("x=sann;y=ikkje usann;x og y");
     nl_assert_eq_text(script_norsk_ops_ikkje, "0: PUSH 1\n1: PUSH 1\n2: AND\n3: PRINT\n4: HALT\n");
     char * script_norsk_ops_samt = selfhost__compiler__disasm_skript("x=sann;y=ikke usann;x samt y");
