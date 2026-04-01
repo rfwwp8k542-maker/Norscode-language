@@ -187,6 +187,12 @@ funksjon start() -> heltall {
     la expr_norsk_ganget_med_underscore: tekst = sh.disasm_uttrykk("3 ganget_med 4")
     assert_eq(expr_norsk_ganget_med_underscore, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n")
 
+    la expr_norsk_gange_med: tekst = sh.disasm_uttrykk("3 gange med 4")
+    assert_eq(expr_norsk_gange_med, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n")
+
+    la expr_norsk_gange_med_underscore: tekst = sh.disasm_uttrykk("3 gange_med 4")
+    assert_eq(expr_norsk_gange_med_underscore, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n")
+
     la expr_norsk_delt_med: tekst = sh.disasm_uttrykk("8 delt med 2")
     assert_eq(expr_norsk_delt_med, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
 
@@ -556,6 +562,12 @@ funksjon start() -> heltall {
 
     la script_norsk_ganget_med_underscore: tekst = sh.disasm_skript("la x=3;la y=4;returner x ganget_med y")
     assert_eq(script_norsk_ganget_med_underscore, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n")
+
+    la script_norsk_gange_med: tekst = sh.disasm_skript("la x=3;la y=4;returner x gange med y")
+    assert_eq(script_norsk_gange_med, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n")
+
+    la script_norsk_gange_med_underscore: tekst = sh.disasm_skript("la x=3;la y=4;returner x gange_med y")
+    assert_eq(script_norsk_gange_med_underscore, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n")
 
     la script_norsk_delt_med: tekst = sh.disasm_skript("la x=8;la y=2;returner x delt med y")
     assert_eq(script_norsk_delt_med, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
