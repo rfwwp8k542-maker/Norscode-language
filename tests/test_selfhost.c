@@ -2312,6 +2312,8 @@ int start() {
     nl_assert_eq_text(expr_norsk_cmp_phrase6_underscore, "0: PUSH 3\n1: PUSH 4\n2: LT\n3: PRINT\n4: HALT\n");
     char * expr_norsk_cmp_phrase6_underscore_lte = selfhost__compiler__disasm_uttrykk("3 er_mindre_eller_lik 4");
     nl_assert_eq_text(expr_norsk_cmp_phrase6_underscore_lte, "0: PUSH 3\n1: PUSH 4\n2: GT\n3: NOT\n4: PRINT\n5: HALT\n");
+    char * expr_norsk_cmp_phrase6_underscore_lte_enn = selfhost__compiler__disasm_uttrykk("3 er_mindre_enn_eller_lik 4");
+    nl_assert_eq_text(expr_norsk_cmp_phrase6_underscore_lte_enn, "0: PUSH 3\n1: PUSH 4\n2: GT\n3: NOT\n4: PRINT\n5: HALT\n");
     char * expr_norsk_cmp_phrase7 = selfhost__compiler__disasm_uttrykk("4 er storre eller lik 4");
     nl_assert_eq_text(expr_norsk_cmp_phrase7, "0: PUSH 4\n1: PUSH 4\n2: LT\n3: NOT\n4: PRINT\n5: HALT\n");
     char * expr_norsk_cmp_phrase7_underscore = selfhost__compiler__disasm_uttrykk("4 er_storre_eller_lik 4");
@@ -2451,6 +2453,8 @@ int start() {
     nl_assert_eq_text(script_norsk_cmp_phrase4_underscore, "0: PUSH 3\n1: PUSH 4\n2: LT\n3: JZ 6\n4: PUSH 1\n5: JMP 8\n6: LABEL 6\n7: PUSH 0\n8: LABEL 8\n9: PRINT\n10: HALT\n");
     char * script_norsk_cmp_phrase4_underscore_lte = selfhost__compiler__disasm_skript("la x=3;la y=4;hvis x er_mindre_eller_lik y da 1 ellers 0");
     nl_assert_eq_text(script_norsk_cmp_phrase4_underscore_lte, "0: PUSH 3\n1: PUSH 4\n2: GT\n3: NOT\n4: JZ 7\n5: PUSH 1\n6: JMP 9\n7: LABEL 7\n8: PUSH 0\n9: LABEL 9\n10: PRINT\n11: HALT\n");
+    char * script_norsk_cmp_phrase4_underscore_lte_enn = selfhost__compiler__disasm_skript("la x=3;la y=4;hvis x er_mindre_enn_eller_lik y da 1 ellers 0");
+    nl_assert_eq_text(script_norsk_cmp_phrase4_underscore_lte_enn, "0: PUSH 3\n1: PUSH 4\n2: GT\n3: NOT\n4: JZ 7\n5: PUSH 1\n6: JMP 9\n7: LABEL 7\n8: PUSH 0\n9: LABEL 9\n10: PRINT\n11: HALT\n");
     char * script_norsk_cmp_phrase5 = selfhost__compiler__disasm_skript("la x=3;la y=4;hvis x ikke lik y da 1 ellers 0");
     nl_assert_eq_text(script_norsk_cmp_phrase5, "0: PUSH 3\n1: PUSH 4\n2: EQ\n3: NOT\n4: JZ 7\n5: PUSH 1\n6: JMP 9\n7: LABEL 7\n8: PUSH 0\n9: LABEL 9\n10: PRINT\n11: HALT\n");
     char * script_norsk_cmp_phrase6 = selfhost__compiler__disasm_skript("la x=3;la y=4;hvis x er ulik y da 1 ellers 0");
