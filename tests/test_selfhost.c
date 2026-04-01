@@ -1326,11 +1326,11 @@ char * selfhost__compiler__uttrykk_til_ops_og_verdier_med_miljo(nl_list_text* to
             tok = "+";
             tok_step = 2;
         }
-        else if ((((nl_streq(tok_raw, "trekk_fra") || nl_streq(tok_raw, "trekke_fra")) || nl_streq(tok_raw, "trekkes_fra")) || nl_streq(tok_raw, "minus_fra")) || nl_streq(tok_raw, "minuseres_fra")) {
+        else if (((((((nl_streq(tok_raw, "trekk_fra") || nl_streq(tok_raw, "trekke_fra")) || nl_streq(tok_raw, "trekkes_fra")) || nl_streq(tok_raw, "minus_fra")) || nl_streq(tok_raw, "minuseres_fra")) || nl_streq(tok_raw, "subtraher_fra")) || nl_streq(tok_raw, "subtraherer_fra")) || nl_streq(tok_raw, "subtraheres_fra")) {
             tok = "-";
             tok_step = 1;
         }
-        else if ((((i + 1) < nl_list_text_len(tokens)) && ((((nl_streq(tok_raw, "trekk") || nl_streq(tok_raw, "trekke")) || nl_streq(tok_raw, "trekkes")) || nl_streq(tok_raw, "minus")) || nl_streq(tok_raw, "minuseres"))) && nl_streq(n1, "fra")) {
+        else if ((((i + 1) < nl_list_text_len(tokens)) && (((((((nl_streq(tok_raw, "trekk") || nl_streq(tok_raw, "trekke")) || nl_streq(tok_raw, "trekkes")) || nl_streq(tok_raw, "minus")) || nl_streq(tok_raw, "minuseres")) || nl_streq(tok_raw, "subtraher")) || nl_streq(tok_raw, "subtraherer")) || nl_streq(tok_raw, "subtraheres"))) && nl_streq(n1, "fra")) {
             tok = "-";
             tok_step = 2;
         }
@@ -2486,6 +2486,18 @@ int start() {
     nl_assert_eq_text(expr_norsk_minuseres_fra, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n");
     char * expr_norsk_minuseres_fra_underscore = selfhost__compiler__disasm_uttrykk("10 minuseres_fra 3");
     nl_assert_eq_text(expr_norsk_minuseres_fra_underscore, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n");
+    char * expr_norsk_subtraher_fra = selfhost__compiler__disasm_uttrykk("10 subtraher fra 3");
+    nl_assert_eq_text(expr_norsk_subtraher_fra, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n");
+    char * expr_norsk_subtraher_fra_underscore = selfhost__compiler__disasm_uttrykk("10 subtraher_fra 3");
+    nl_assert_eq_text(expr_norsk_subtraher_fra_underscore, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n");
+    char * expr_norsk_subtraherer_fra = selfhost__compiler__disasm_uttrykk("10 subtraherer fra 3");
+    nl_assert_eq_text(expr_norsk_subtraherer_fra, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n");
+    char * expr_norsk_subtraherer_fra_underscore = selfhost__compiler__disasm_uttrykk("10 subtraherer_fra 3");
+    nl_assert_eq_text(expr_norsk_subtraherer_fra_underscore, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n");
+    char * expr_norsk_subtraheres_fra = selfhost__compiler__disasm_uttrykk("10 subtraheres fra 3");
+    nl_assert_eq_text(expr_norsk_subtraheres_fra, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n");
+    char * expr_norsk_subtraheres_fra_underscore = selfhost__compiler__disasm_uttrykk("10 subtraheres_fra 3");
+    nl_assert_eq_text(expr_norsk_subtraheres_fra_underscore, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n");
     char * expr_norsk_div = selfhost__compiler__disasm_uttrykk("8 delt pa 2");
     nl_assert_eq_text(expr_norsk_div, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * expr_norsk_mod = selfhost__compiler__disasm_uttrykk("17 mod 5");
@@ -3019,6 +3031,18 @@ int start() {
     nl_assert_eq_text(script_norsk_minuseres_fra, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n");
     char * script_norsk_minuseres_fra_underscore = selfhost__compiler__disasm_skript("la x=10;la y=3;returner x minuseres_fra y");
     nl_assert_eq_text(script_norsk_minuseres_fra_underscore, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n");
+    char * script_norsk_subtraher_fra = selfhost__compiler__disasm_skript("la x=10;la y=3;returner x subtraher fra y");
+    nl_assert_eq_text(script_norsk_subtraher_fra, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n");
+    char * script_norsk_subtraher_fra_underscore = selfhost__compiler__disasm_skript("la x=10;la y=3;returner x subtraher_fra y");
+    nl_assert_eq_text(script_norsk_subtraher_fra_underscore, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n");
+    char * script_norsk_subtraherer_fra = selfhost__compiler__disasm_skript("la x=10;la y=3;returner x subtraherer fra y");
+    nl_assert_eq_text(script_norsk_subtraherer_fra, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n");
+    char * script_norsk_subtraherer_fra_underscore = selfhost__compiler__disasm_skript("la x=10;la y=3;returner x subtraherer_fra y");
+    nl_assert_eq_text(script_norsk_subtraherer_fra_underscore, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n");
+    char * script_norsk_subtraheres_fra = selfhost__compiler__disasm_skript("la x=10;la y=3;returner x subtraheres fra y");
+    nl_assert_eq_text(script_norsk_subtraheres_fra, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n");
+    char * script_norsk_subtraheres_fra_underscore = selfhost__compiler__disasm_skript("la x=10;la y=3;returner x subtraheres_fra y");
+    nl_assert_eq_text(script_norsk_subtraheres_fra_underscore, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n");
     char * script_norsk_minus_med = selfhost__compiler__disasm_skript("la x=10;la y=3;returner x minus med y");
     nl_assert_eq_text(script_norsk_minus_med, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n");
     char * script_norsk_minus_med_underscore = selfhost__compiler__disasm_skript("la x=10;la y=3;returner x minus_med y");

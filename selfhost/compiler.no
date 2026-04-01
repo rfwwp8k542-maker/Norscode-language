@@ -957,10 +957,10 @@ funksjon uttrykk_til_ops_og_verdier_med_miljo(tokens: liste_tekst, navn: liste_t
         } ellers hvis (i + 1 < lengde(tokens) og (tok_raw == "legg" eller tok_raw == "legges") og n1 == "sammen") {
             tok = "+"
             tok_step = 2
-        } ellers hvis (tok_raw == "trekk_fra" eller tok_raw == "trekke_fra" eller tok_raw == "trekkes_fra" eller tok_raw == "minus_fra" eller tok_raw == "minuseres_fra") {
+        } ellers hvis (tok_raw == "trekk_fra" eller tok_raw == "trekke_fra" eller tok_raw == "trekkes_fra" eller tok_raw == "minus_fra" eller tok_raw == "minuseres_fra" eller tok_raw == "subtraher_fra" eller tok_raw == "subtraherer_fra" eller tok_raw == "subtraheres_fra") {
             tok = "-"
             tok_step = 1
-        } ellers hvis (i + 1 < lengde(tokens) og (tok_raw == "trekk" eller tok_raw == "trekke" eller tok_raw == "trekkes" eller tok_raw == "minus" eller tok_raw == "minuseres") og n1 == "fra") {
+        } ellers hvis (i + 1 < lengde(tokens) og (tok_raw == "trekk" eller tok_raw == "trekke" eller tok_raw == "trekkes" eller tok_raw == "minus" eller tok_raw == "minuseres" eller tok_raw == "subtraher" eller tok_raw == "subtraherer" eller tok_raw == "subtraheres") og n1 == "fra") {
             tok = "-"
             tok_step = 2
         } ellers hvis (tok_raw == "minus_med" eller tok_raw == "minuseres_med" eller tok_raw == "trekk_med" eller tok_raw == "trekke_med" eller tok_raw == "trekkes_med" eller tok_raw == "subtraher_med" eller tok_raw == "subtraherer_med" eller tok_raw == "subtraheres_med") {
