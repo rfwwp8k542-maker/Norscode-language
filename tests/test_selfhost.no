@@ -415,6 +415,15 @@ funksjon start() -> heltall {
     la expr_norsk_cmp_er_ikke_alias: tekst = sh.disasm_uttrykk("7 er_ikke 8")
     assert_eq(expr_norsk_cmp_er_ikke_alias, "0: PUSH 7\n1: PUSH 8\n2: EQ\n3: NOT\n4: PRINT\n5: HALT\n")
 
+    la expr_norsk_cmp_ikkje_er_alias: tekst = sh.disasm_uttrykk("7 ikkje_er 8")
+    assert_eq(expr_norsk_cmp_ikkje_er_alias, "0: PUSH 7\n1: PUSH 8\n2: EQ\n3: NOT\n4: PRINT\n5: HALT\n")
+
+    la expr_norsk_cmp_ikkje_lik_alias: tekst = sh.disasm_uttrykk("7 ikkje_lik 8")
+    assert_eq(expr_norsk_cmp_ikkje_lik_alias, "0: PUSH 7\n1: PUSH 8\n2: EQ\n3: NOT\n4: PRINT\n5: HALT\n")
+
+    la expr_norsk_cmp_ikkje_lik_med_alias: tekst = sh.disasm_uttrykk("7 ikkje_lik_med 8")
+    assert_eq(expr_norsk_cmp_ikkje_lik_med_alias, "0: PUSH 7\n1: PUSH 8\n2: EQ\n3: NOT\n4: PRINT\n5: HALT\n")
+
     la expr_norsk_cmp_phrase22: tekst = sh.disasm_uttrykk("4 er storre enn lik 4")
     assert_eq(expr_norsk_cmp_phrase22, "0: PUSH 4\n1: PUSH 4\n2: LT\n3: NOT\n4: PRINT\n5: HALT\n")
 
@@ -613,6 +622,15 @@ funksjon start() -> heltall {
 
     la script_norsk_cmp_er_ikke_alias: tekst = sh.disasm_skript("la x=7;la y=8;hvis x er_ikke y da 1 ellers 0")
     assert_eq(script_norsk_cmp_er_ikke_alias, "0: PUSH 7\n1: PUSH 8\n2: EQ\n3: NOT\n4: JZ 7\n5: PUSH 1\n6: JMP 9\n7: LABEL 7\n8: PUSH 0\n9: LABEL 9\n10: PRINT\n11: HALT\n")
+
+    la script_norsk_cmp_ikkje_er_alias: tekst = sh.disasm_skript("la x=7;la y=8;hvis x ikkje_er y da 1 ellers 0")
+    assert_eq(script_norsk_cmp_ikkje_er_alias, "0: PUSH 7\n1: PUSH 8\n2: EQ\n3: NOT\n4: JZ 7\n5: PUSH 1\n6: JMP 9\n7: LABEL 7\n8: PUSH 0\n9: LABEL 9\n10: PRINT\n11: HALT\n")
+
+    la script_norsk_cmp_ikkje_lik_alias: tekst = sh.disasm_skript("la x=7;la y=8;hvis x ikkje_lik y da 1 ellers 0")
+    assert_eq(script_norsk_cmp_ikkje_lik_alias, "0: PUSH 7\n1: PUSH 8\n2: EQ\n3: NOT\n4: JZ 7\n5: PUSH 1\n6: JMP 9\n7: LABEL 7\n8: PUSH 0\n9: LABEL 9\n10: PRINT\n11: HALT\n")
+
+    la script_norsk_cmp_ikkje_lik_med_alias: tekst = sh.disasm_skript("la x=7;la y=8;hvis x ikkje_lik_med y da 1 ellers 0")
+    assert_eq(script_norsk_cmp_ikkje_lik_med_alias, "0: PUSH 7\n1: PUSH 8\n2: EQ\n3: NOT\n4: JZ 7\n5: PUSH 1\n6: JMP 9\n7: LABEL 7\n8: PUSH 0\n9: LABEL 9\n10: PRINT\n11: HALT\n")
 
     la script_unary_plus: tekst = sh.disasm_skript("la x=2;returner +x")
     assert_eq(script_unary_plus, "0: PUSH 2\n1: PRINT\n2: HALT\n")

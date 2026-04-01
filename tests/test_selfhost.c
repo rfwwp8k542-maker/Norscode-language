@@ -392,7 +392,7 @@ char * selfhost__compiler__normaliser_norsk_token(char * tok) {
     if (nl_streq(tok, "mindre_enn_eller_lik")) {
         return "mindre_eller_lik";
     }
-    if ((((nl_streq(tok, "ikke_lik") || nl_streq(tok, "ikke_lik_med")) || nl_streq(tok, "er_ikke")) || nl_streq(tok, "er_ulik")) || nl_streq(tok, "ulik_med")) {
+    if (((((((nl_streq(tok, "ikke_lik") || nl_streq(tok, "ikke_lik_med")) || nl_streq(tok, "er_ikke")) || nl_streq(tok, "er_ulik")) || nl_streq(tok, "ulik_med")) || nl_streq(tok, "ikkje_lik")) || nl_streq(tok, "ikkje_lik_med")) || nl_streq(tok, "ikkje_er")) {
         return "ikke_er";
     }
     if (nl_streq(tok, "ikkje")) {
@@ -2464,6 +2464,12 @@ int start() {
     nl_assert_eq_text(expr_norsk_cmp_phrase21, "0: PUSH 3\n1: PUSH 4\n2: GT\n3: NOT\n4: PRINT\n5: HALT\n");
     char * expr_norsk_cmp_er_ikke_alias = selfhost__compiler__disasm_uttrykk("7 er_ikke 8");
     nl_assert_eq_text(expr_norsk_cmp_er_ikke_alias, "0: PUSH 7\n1: PUSH 8\n2: EQ\n3: NOT\n4: PRINT\n5: HALT\n");
+    char * expr_norsk_cmp_ikkje_er_alias = selfhost__compiler__disasm_uttrykk("7 ikkje_er 8");
+    nl_assert_eq_text(expr_norsk_cmp_ikkje_er_alias, "0: PUSH 7\n1: PUSH 8\n2: EQ\n3: NOT\n4: PRINT\n5: HALT\n");
+    char * expr_norsk_cmp_ikkje_lik_alias = selfhost__compiler__disasm_uttrykk("7 ikkje_lik 8");
+    nl_assert_eq_text(expr_norsk_cmp_ikkje_lik_alias, "0: PUSH 7\n1: PUSH 8\n2: EQ\n3: NOT\n4: PRINT\n5: HALT\n");
+    char * expr_norsk_cmp_ikkje_lik_med_alias = selfhost__compiler__disasm_uttrykk("7 ikkje_lik_med 8");
+    nl_assert_eq_text(expr_norsk_cmp_ikkje_lik_med_alias, "0: PUSH 7\n1: PUSH 8\n2: EQ\n3: NOT\n4: PRINT\n5: HALT\n");
     char * expr_norsk_cmp_phrase22 = selfhost__compiler__disasm_uttrykk("4 er storre enn lik 4");
     nl_assert_eq_text(expr_norsk_cmp_phrase22, "0: PUSH 4\n1: PUSH 4\n2: LT\n3: NOT\n4: PRINT\n5: HALT\n");
     nl_list_text* env_navn = nl_list_text_new();
@@ -2605,6 +2611,12 @@ int start() {
     nl_assert_eq_text(script_norsk_cmp_underscore_ascii, "0: PUSH 3\n1: PUSH 4\n2: GT\n3: NOT\n4: JZ 7\n5: PUSH 1\n6: JMP 9\n7: LABEL 7\n8: PUSH 0\n9: LABEL 9\n10: PRINT\n11: HALT\n");
     char * script_norsk_cmp_er_ikke_alias = selfhost__compiler__disasm_skript("la x=7;la y=8;hvis x er_ikke y da 1 ellers 0");
     nl_assert_eq_text(script_norsk_cmp_er_ikke_alias, "0: PUSH 7\n1: PUSH 8\n2: EQ\n3: NOT\n4: JZ 7\n5: PUSH 1\n6: JMP 9\n7: LABEL 7\n8: PUSH 0\n9: LABEL 9\n10: PRINT\n11: HALT\n");
+    char * script_norsk_cmp_ikkje_er_alias = selfhost__compiler__disasm_skript("la x=7;la y=8;hvis x ikkje_er y da 1 ellers 0");
+    nl_assert_eq_text(script_norsk_cmp_ikkje_er_alias, "0: PUSH 7\n1: PUSH 8\n2: EQ\n3: NOT\n4: JZ 7\n5: PUSH 1\n6: JMP 9\n7: LABEL 7\n8: PUSH 0\n9: LABEL 9\n10: PRINT\n11: HALT\n");
+    char * script_norsk_cmp_ikkje_lik_alias = selfhost__compiler__disasm_skript("la x=7;la y=8;hvis x ikkje_lik y da 1 ellers 0");
+    nl_assert_eq_text(script_norsk_cmp_ikkje_lik_alias, "0: PUSH 7\n1: PUSH 8\n2: EQ\n3: NOT\n4: JZ 7\n5: PUSH 1\n6: JMP 9\n7: LABEL 7\n8: PUSH 0\n9: LABEL 9\n10: PRINT\n11: HALT\n");
+    char * script_norsk_cmp_ikkje_lik_med_alias = selfhost__compiler__disasm_skript("la x=7;la y=8;hvis x ikkje_lik_med y da 1 ellers 0");
+    nl_assert_eq_text(script_norsk_cmp_ikkje_lik_med_alias, "0: PUSH 7\n1: PUSH 8\n2: EQ\n3: NOT\n4: JZ 7\n5: PUSH 1\n6: JMP 9\n7: LABEL 7\n8: PUSH 0\n9: LABEL 9\n10: PRINT\n11: HALT\n");
     char * script_unary_plus = selfhost__compiler__disasm_skript("la x=2;returner +x");
     nl_assert_eq_text(script_unary_plus, "0: PUSH 2\n1: PRINT\n2: HALT\n");
     char * script_norsk_arith = selfhost__compiler__disasm_skript("la x=2;la y=3;returner x pluss y ganger 4");
