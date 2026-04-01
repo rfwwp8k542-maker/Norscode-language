@@ -1284,11 +1284,11 @@ char * selfhost__compiler__uttrykk_til_ops_og_verdier_med_miljo(nl_list_text* to
             tok = "+";
             tok_step = 1;
         }
-        else if ((nl_streq(tok_raw, "plusser_med") || nl_streq(tok_raw, "adder_med")) || nl_streq(tok_raw, "adderer_med")) {
+        else if ((((nl_streq(tok_raw, "plusser_med") || nl_streq(tok_raw, "adder_med")) || nl_streq(tok_raw, "adderer_med")) || nl_streq(tok_raw, "summer_med")) || nl_streq(tok_raw, "summerer_med")) {
             tok = "+";
             tok_step = 1;
         }
-        else if ((((i + 1) < nl_list_text_len(tokens)) && ((nl_streq(tok_raw, "plusser") || nl_streq(tok_raw, "adder")) || nl_streq(tok_raw, "adderer"))) && nl_streq(n1, "med")) {
+        else if ((((i + 1) < nl_list_text_len(tokens)) && ((((nl_streq(tok_raw, "plusser") || nl_streq(tok_raw, "adder")) || nl_streq(tok_raw, "adderer")) || nl_streq(tok_raw, "summer")) || nl_streq(tok_raw, "summerer"))) && nl_streq(n1, "med")) {
             tok = "+";
             tok_step = 2;
         }
@@ -2392,6 +2392,14 @@ int start() {
     nl_assert_eq_text(expr_norsk_adderer_med, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
     char * expr_norsk_adderer_med_underscore = selfhost__compiler__disasm_uttrykk("2 adderer_med 3");
     nl_assert_eq_text(expr_norsk_adderer_med_underscore, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
+    char * expr_norsk_summer_med = selfhost__compiler__disasm_uttrykk("2 summer med 3");
+    nl_assert_eq_text(expr_norsk_summer_med, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
+    char * expr_norsk_summer_med_underscore = selfhost__compiler__disasm_uttrykk("2 summer_med 3");
+    nl_assert_eq_text(expr_norsk_summer_med_underscore, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
+    char * expr_norsk_summerer_med = selfhost__compiler__disasm_uttrykk("2 summerer med 3");
+    nl_assert_eq_text(expr_norsk_summerer_med, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
+    char * expr_norsk_summerer_med_underscore = selfhost__compiler__disasm_uttrykk("2 summerer_med 3");
+    nl_assert_eq_text(expr_norsk_summerer_med_underscore, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
     char * expr_norsk_trekk_fra = selfhost__compiler__disasm_uttrykk("10 trekk fra 3");
     nl_assert_eq_text(expr_norsk_trekk_fra, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n");
     char * expr_norsk_trekk_fra_underscore = selfhost__compiler__disasm_uttrykk("10 trekk_fra 3");
@@ -2813,6 +2821,14 @@ int start() {
     nl_assert_eq_text(script_norsk_adderer_med, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
     char * script_norsk_adderer_med_underscore = selfhost__compiler__disasm_skript("la x=2;la y=3;returner x adderer_med y");
     nl_assert_eq_text(script_norsk_adderer_med_underscore, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
+    char * script_norsk_summer_med = selfhost__compiler__disasm_skript("la x=2;la y=3;returner x summer med y");
+    nl_assert_eq_text(script_norsk_summer_med, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
+    char * script_norsk_summer_med_underscore = selfhost__compiler__disasm_skript("la x=2;la y=3;returner x summer_med y");
+    nl_assert_eq_text(script_norsk_summer_med_underscore, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
+    char * script_norsk_summerer_med = selfhost__compiler__disasm_skript("la x=2;la y=3;returner x summerer med y");
+    nl_assert_eq_text(script_norsk_summerer_med, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
+    char * script_norsk_summerer_med_underscore = selfhost__compiler__disasm_skript("la x=2;la y=3;returner x summerer_med y");
+    nl_assert_eq_text(script_norsk_summerer_med_underscore, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
     char * script_norsk_trekk_fra = selfhost__compiler__disasm_skript("la x=10;la y=3;returner x trekk fra y");
     nl_assert_eq_text(script_norsk_trekk_fra, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n");
     char * script_norsk_trekk_fra_underscore = selfhost__compiler__disasm_skript("la x=10;la y=3;returner x trekk_fra y");
