@@ -31,6 +31,10 @@ nl --help
 norcode --help
 # Legacy alias fungerer fortsatt:
 norsklang --help
+
+# Modul-kjøring:
+python3 -m norcode --help
+python3 -m norsklang --help
 ```
 
 ### 0b. Bygg og publiser pakke
