@@ -59,6 +59,9 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "på") {
         returner "pa"
     }
+    hvis (tok == "delt_på") {
+        returner "delt_pa"
+    }
     hvis (tok == "større") {
         returner "storre"
     }
@@ -67,6 +70,18 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     }
     hvis (tok == "større_eller_lik") {
         returner "storre_eller_lik"
+    }
+    hvis (tok == "større_enn_eller_lik" eller tok == "storre_enn_eller_lik") {
+        returner "storre_eller_lik"
+    }
+    hvis (tok == "mindre_enn_eller_lik") {
+        returner "mindre_eller_lik"
+    }
+    hvis (tok == "ikke_lik" eller tok == "ikke_lik_med" eller tok == "er_ikke") {
+        returner "ikke_er"
+    }
+    hvis (tok == "er_lik" eller tok == "er_lik_med") {
+        returner "er"
     }
     returner tok
 }
@@ -827,12 +842,18 @@ funksjon uttrykk_til_ops_og_verdier_med_miljo(tokens: liste_tekst, navn: liste_t
             n4 = normaliser_norsk_token(tokens[i + 4])
         }
 
-        hvis (i + 1 < lengde(tokens) og tok_raw == "delt" og n1 == "pa") {
+        hvis (tok_raw == "delt_pa") {
+            tok = "/"
+            tok_step = 1
+        } ellers hvis (i + 1 < lengde(tokens) og tok_raw == "delt" og n1 == "pa") {
             tok = "/"
             tok_step = 2
         } ellers hvis (i + 1 < lengde(tokens) og tok_raw == "delt" og n1 == "med") {
             tok = "/"
             tok_step = 2
+        } ellers hvis (tok_raw == "ganget_med") {
+            tok = "*"
+            tok_step = 1
         } ellers hvis (i + 1 < lengde(tokens) og tok_raw == "ganget" og n1 == "med") {
             tok = "*"
             tok_step = 2

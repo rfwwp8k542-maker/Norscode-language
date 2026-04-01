@@ -356,6 +356,9 @@ char * selfhost__compiler__normaliser_norsk_token(char * tok) {
     if (nl_streq(tok, "på")) {
         return "pa";
     }
+    if (nl_streq(tok, "delt_på")) {
+        return "delt_pa";
+    }
     if (nl_streq(tok, "større")) {
         return "storre";
     }
@@ -364,6 +367,18 @@ char * selfhost__compiler__normaliser_norsk_token(char * tok) {
     }
     if (nl_streq(tok, "større_eller_lik")) {
         return "storre_eller_lik";
+    }
+    if (nl_streq(tok, "større_enn_eller_lik") || nl_streq(tok, "storre_enn_eller_lik")) {
+        return "storre_eller_lik";
+    }
+    if (nl_streq(tok, "mindre_enn_eller_lik")) {
+        return "mindre_eller_lik";
+    }
+    if ((nl_streq(tok, "ikke_lik") || nl_streq(tok, "ikke_lik_med")) || nl_streq(tok, "er_ikke")) {
+        return "ikke_er";
+    }
+    if (nl_streq(tok, "er_lik") || nl_streq(tok, "er_lik_med")) {
+        return "er";
     }
     return tok;
     return "";
@@ -1182,13 +1197,21 @@ char * selfhost__compiler__uttrykk_til_ops_og_verdier_med_miljo(nl_list_text* to
         if ((i + 4) < nl_list_text_len(tokens)) {
             n4 = selfhost__compiler__normaliser_norsk_token(tokens->data[(i + 4)]);
         }
-        if ((((i + 1) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "delt")) && nl_streq(n1, "pa")) {
+        if (nl_streq(tok_raw, "delt_pa")) {
+            tok = "/";
+            tok_step = 1;
+        }
+        else if ((((i + 1) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "delt")) && nl_streq(n1, "pa")) {
             tok = "/";
             tok_step = 2;
         }
         else if ((((i + 1) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "delt")) && nl_streq(n1, "med")) {
             tok = "/";
             tok_step = 2;
+        }
+        else if (nl_streq(tok_raw, "ganget_med")) {
+            tok = "*";
+            tok_step = 1;
         }
         else if ((((i + 1) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "ganget")) && nl_streq(n1, "med")) {
             tok = "*";
@@ -2238,6 +2261,8 @@ int start() {
     nl_assert_eq_text(expr_norsk_delt_med, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * expr_norsk_delt_paa_utf8 = selfhost__compiler__disasm_uttrykk("8 delt på 2");
     nl_assert_eq_text(expr_norsk_delt_paa_utf8, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
+    char * expr_norsk_delt_paa_underscore_utf8 = selfhost__compiler__disasm_uttrykk("8 delt_på 2");
+    nl_assert_eq_text(expr_norsk_delt_paa_underscore_utf8, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * expr_bool_literals = selfhost__compiler__disasm_uttrykk("sann&&usann||!usann");
     nl_assert_eq_text(expr_bool_literals, "0: PUSH 1\n1: PUSH 0\n2: AND\n3: PUSH 0\n4: NOT\n5: OR\n6: PRINT\n7: HALT\n");
     char * expr_norsk_ops = selfhost__compiler__disasm_uttrykk("sann og ikke usann eller usann");
@@ -2288,6 +2313,8 @@ int start() {
     nl_assert_eq_text(expr_norsk_cmp_phrase20, "0: PUSH 4\n1: PUSH 4\n2: LT\n3: NOT\n4: PRINT\n5: HALT\n");
     char * expr_norsk_cmp_phrase_utf8 = selfhost__compiler__disasm_uttrykk("4 er større enn eller lik 4");
     nl_assert_eq_text(expr_norsk_cmp_phrase_utf8, "0: PUSH 4\n1: PUSH 4\n2: LT\n3: NOT\n4: PRINT\n5: HALT\n");
+    char * expr_norsk_cmp_underscore_utf8 = selfhost__compiler__disasm_uttrykk("4 større_enn_eller_lik 4");
+    nl_assert_eq_text(expr_norsk_cmp_underscore_utf8, "0: PUSH 4\n1: PUSH 4\n2: LT\n3: NOT\n4: PRINT\n5: HALT\n");
     char * expr_norsk_cmp_phrase21 = selfhost__compiler__disasm_uttrykk("3 mindre enn lik 4");
     nl_assert_eq_text(expr_norsk_cmp_phrase21, "0: PUSH 3\n1: PUSH 4\n2: GT\n3: NOT\n4: PRINT\n5: HALT\n");
     char * expr_norsk_cmp_phrase22 = selfhost__compiler__disasm_uttrykk("4 er storre enn lik 4");
@@ -2385,6 +2412,8 @@ int start() {
     nl_assert_eq_text(script_norsk_cmp_phrase14, "0: PUSH 4\n1: PUSH 4\n2: LT\n3: NOT\n4: JZ 7\n5: PUSH 1\n6: JMP 9\n7: LABEL 7\n8: PUSH 0\n9: LABEL 9\n10: PRINT\n11: HALT\n");
     char * script_norsk_cmp_phrase_utf8 = selfhost__compiler__disasm_skript("la x=4;la y=4;hvis x er større enn eller lik y da 1 ellers 0");
     nl_assert_eq_text(script_norsk_cmp_phrase_utf8, "0: PUSH 4\n1: PUSH 4\n2: LT\n3: NOT\n4: JZ 7\n5: PUSH 1\n6: JMP 9\n7: LABEL 7\n8: PUSH 0\n9: LABEL 9\n10: PRINT\n11: HALT\n");
+    char * script_norsk_cmp_underscore_utf8 = selfhost__compiler__disasm_skript("la x=4;la y=4;hvis x større_enn_eller_lik y da 1 ellers 0");
+    nl_assert_eq_text(script_norsk_cmp_underscore_utf8, "0: PUSH 4\n1: PUSH 4\n2: LT\n3: NOT\n4: JZ 7\n5: PUSH 1\n6: JMP 9\n7: LABEL 7\n8: PUSH 0\n9: LABEL 9\n10: PRINT\n11: HALT\n");
     char * script_unary_plus = selfhost__compiler__disasm_skript("la x=2;returner +x");
     nl_assert_eq_text(script_unary_plus, "0: PUSH 2\n1: PRINT\n2: HALT\n");
     char * script_norsk_arith = selfhost__compiler__disasm_skript("la x=2;la y=3;returner x pluss y ganger 4");
@@ -2397,6 +2426,8 @@ int start() {
     nl_assert_eq_text(script_norsk_delt_med, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * script_norsk_delt_paa_utf8 = selfhost__compiler__disasm_skript("la x=8;la y=2;returner x delt på y");
     nl_assert_eq_text(script_norsk_delt_paa_utf8, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
+    char * script_norsk_delt_paa_underscore_utf8 = selfhost__compiler__disasm_skript("la x=8;la y=2;returner x delt_på y");
+    nl_assert_eq_text(script_norsk_delt_paa_underscore_utf8, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * script_c = selfhost__compiler__kompiler_skript_til_c("x=2;y=x+5;y*2");
     nl_assert_ne_text(script_c, "");
     char * script_err1 = selfhost__compiler__disasm_skript("x=2+3");
