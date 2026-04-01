@@ -161,7 +161,7 @@ static nl_list_text *nl_tokenize_simple(const char *s) {
             in_comment = 1;
             continue;
         }
-        if (isalnum((unsigned char)c) || c == '_' || c == '-') {
+        if (isalnum((unsigned char)c) || c == '_' || c == '-' || (unsigned char)c >= 128) {
             if (tlen < 255) { token[tlen++] = c; }
             continue;
         }
@@ -198,10 +198,10 @@ static nl_list_text *nl_tokenize_expression(const char *s) {
             nl_list_text_push(out, nl_strdup(token));
             continue;
         }
-        if (isalpha((unsigned char)c) || c == '_') {
+        if (isalpha((unsigned char)c) || c == '_' || (unsigned char)c >= 128) {
             char token[256];
             int tlen = 0;
-            while (*p && (isalnum((unsigned char)*p) || *p == '_')) {
+            while (*p && (isalnum((unsigned char)*p) || *p == '_' || (unsigned char)*p >= 128)) {
                 if (tlen < 255) { token[tlen++] = *p; }
                 p++;
             }
@@ -350,6 +350,23 @@ int selfhost__compiler__er_heltall_token(char * tok) {
     int n = nl_text_to_int(tok);
     return nl_streq(nl_int_to_text(n), tok);
     return 0;
+}
+
+char * selfhost__compiler__normaliser_norsk_token(char * tok) {
+    if (nl_streq(tok, "på")) {
+        return "pa";
+    }
+    if (nl_streq(tok, "større")) {
+        return "storre";
+    }
+    if (nl_streq(tok, "større_enn")) {
+        return "storre_enn";
+    }
+    if (nl_streq(tok, "større_eller_lik")) {
+        return "storre_eller_lik";
+    }
+    return tok;
+    return "";
 }
 
 int selfhost__compiler__er_operator_token(char * tok) {
@@ -1146,17 +1163,34 @@ char * selfhost__compiler__uttrykk_til_ops_og_verdier_med_miljo(nl_list_text* to
     }
     while (i < nl_list_text_len(tokens)) {
         char * tok_raw = tokens->data[i];
+        tok_raw = selfhost__compiler__normaliser_norsk_token(tok_raw);
         char * tok = tok_raw;
         int tok_step = 1;
-        if ((((i + 1) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "delt")) && nl_streq(tokens->data[(i + 1)], "pa")) {
+        char * n1 = "";
+        char * n2 = "";
+        char * n3 = "";
+        char * n4 = "";
+        if ((i + 1) < nl_list_text_len(tokens)) {
+            n1 = selfhost__compiler__normaliser_norsk_token(tokens->data[(i + 1)]);
+        }
+        if ((i + 2) < nl_list_text_len(tokens)) {
+            n2 = selfhost__compiler__normaliser_norsk_token(tokens->data[(i + 2)]);
+        }
+        if ((i + 3) < nl_list_text_len(tokens)) {
+            n3 = selfhost__compiler__normaliser_norsk_token(tokens->data[(i + 3)]);
+        }
+        if ((i + 4) < nl_list_text_len(tokens)) {
+            n4 = selfhost__compiler__normaliser_norsk_token(tokens->data[(i + 4)]);
+        }
+        if ((((i + 1) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "delt")) && nl_streq(n1, "pa")) {
             tok = "/";
             tok_step = 2;
         }
-        else if ((((i + 1) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "delt")) && nl_streq(tokens->data[(i + 1)], "med")) {
+        else if ((((i + 1) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "delt")) && nl_streq(n1, "med")) {
             tok = "/";
             tok_step = 2;
         }
-        else if ((((i + 1) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "ganget")) && nl_streq(tokens->data[(i + 1)], "med")) {
+        else if ((((i + 1) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "ganget")) && nl_streq(n1, "med")) {
             tok = "*";
             tok_step = 2;
         }
@@ -1176,111 +1210,111 @@ char * selfhost__compiler__uttrykk_til_ops_og_verdier_med_miljo(nl_list_text* to
             tok = "%";
             tok_step = 1;
         }
-        else if ((((((i + 3) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "mindre")) && nl_streq(tokens->data[(i + 1)], "enn")) && nl_streq(tokens->data[(i + 2)], "eller")) && nl_streq(tokens->data[(i + 3)], "lik")) {
+        else if ((((((i + 3) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "mindre")) && nl_streq(n1, "enn")) && nl_streq(n2, "eller")) && nl_streq(n3, "lik")) {
             tok = "mindre_eller_lik";
             tok_step = 4;
         }
-        else if ((((((i + 3) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "storre")) && nl_streq(tokens->data[(i + 1)], "enn")) && nl_streq(tokens->data[(i + 2)], "eller")) && nl_streq(tokens->data[(i + 3)], "lik")) {
+        else if ((((((i + 3) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "storre")) && nl_streq(n1, "enn")) && nl_streq(n2, "eller")) && nl_streq(n3, "lik")) {
             tok = "storre_eller_lik";
             tok_step = 4;
         }
-        else if (((((((i + 4) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "er")) && nl_streq(tokens->data[(i + 1)], "mindre")) && nl_streq(tokens->data[(i + 2)], "enn")) && nl_streq(tokens->data[(i + 3)], "eller")) && nl_streq(tokens->data[(i + 4)], "lik")) {
+        else if (((((((i + 4) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "er")) && nl_streq(n1, "mindre")) && nl_streq(n2, "enn")) && nl_streq(n3, "eller")) && nl_streq(n4, "lik")) {
             tok = "mindre_eller_lik";
             tok_step = 5;
         }
-        else if (((((((i + 4) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "er")) && nl_streq(tokens->data[(i + 1)], "storre")) && nl_streq(tokens->data[(i + 2)], "enn")) && nl_streq(tokens->data[(i + 3)], "eller")) && nl_streq(tokens->data[(i + 4)], "lik")) {
+        else if (((((((i + 4) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "er")) && nl_streq(n1, "storre")) && nl_streq(n2, "enn")) && nl_streq(n3, "eller")) && nl_streq(n4, "lik")) {
             tok = "storre_eller_lik";
             tok_step = 5;
         }
-        else if (((((i + 1) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "mindre")) && nl_streq(tokens->data[(i + 1)], "enn")) && (((i + 2) >= nl_list_text_len(tokens)) || !(nl_streq(tokens->data[(i + 2)], "lik")))) {
+        else if (((((i + 1) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "mindre")) && nl_streq(n1, "enn")) && (((i + 2) >= nl_list_text_len(tokens)) || !(nl_streq(n2, "lik")))) {
             tok = "mindre_enn";
             tok_step = 2;
         }
-        else if (((((i + 1) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "storre")) && nl_streq(tokens->data[(i + 1)], "enn")) && (((i + 2) >= nl_list_text_len(tokens)) || !(nl_streq(tokens->data[(i + 2)], "lik")))) {
+        else if (((((i + 1) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "storre")) && nl_streq(n1, "enn")) && (((i + 2) >= nl_list_text_len(tokens)) || !(nl_streq(n2, "lik")))) {
             tok = "storre_enn";
             tok_step = 2;
         }
-        else if (((((i + 2) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "mindre")) && nl_streq(tokens->data[(i + 1)], "eller")) && nl_streq(tokens->data[(i + 2)], "lik")) {
+        else if (((((i + 2) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "mindre")) && nl_streq(n1, "eller")) && nl_streq(n2, "lik")) {
             tok = "mindre_eller_lik";
             tok_step = 3;
         }
-        else if (((((i + 2) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "storre")) && nl_streq(tokens->data[(i + 1)], "eller")) && nl_streq(tokens->data[(i + 2)], "lik")) {
+        else if (((((i + 2) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "storre")) && nl_streq(n1, "eller")) && nl_streq(n2, "lik")) {
             tok = "storre_eller_lik";
             tok_step = 3;
         }
-        else if (((((i + 2) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "mindre")) && nl_streq(tokens->data[(i + 1)], "enn")) && nl_streq(tokens->data[(i + 2)], "lik")) {
+        else if (((((i + 2) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "mindre")) && nl_streq(n1, "enn")) && nl_streq(n2, "lik")) {
             tok = "mindre_eller_lik";
             tok_step = 3;
         }
-        else if (((((i + 2) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "storre")) && nl_streq(tokens->data[(i + 1)], "enn")) && nl_streq(tokens->data[(i + 2)], "lik")) {
+        else if (((((i + 2) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "storre")) && nl_streq(n1, "enn")) && nl_streq(n2, "lik")) {
             tok = "storre_eller_lik";
             tok_step = 3;
         }
-        else if ((((i + 1) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "mindre")) && nl_streq(tokens->data[(i + 1)], "lik")) {
+        else if ((((i + 1) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "mindre")) && nl_streq(n1, "lik")) {
             tok = "mindre_eller_lik";
             tok_step = 2;
         }
-        else if ((((i + 1) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "storre")) && nl_streq(tokens->data[(i + 1)], "lik")) {
+        else if ((((i + 1) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "storre")) && nl_streq(n1, "lik")) {
             tok = "storre_eller_lik";
             tok_step = 2;
         }
-        else if (((((i + 2) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "er")) && nl_streq(tokens->data[(i + 1)], "mindre")) && nl_streq(tokens->data[(i + 2)], "lik")) {
+        else if (((((i + 2) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "er")) && nl_streq(n1, "mindre")) && nl_streq(n2, "lik")) {
             tok = "mindre_eller_lik";
             tok_step = 3;
         }
-        else if (((((i + 2) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "er")) && nl_streq(tokens->data[(i + 1)], "storre")) && nl_streq(tokens->data[(i + 2)], "lik")) {
+        else if (((((i + 2) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "er")) && nl_streq(n1, "storre")) && nl_streq(n2, "lik")) {
             tok = "storre_eller_lik";
             tok_step = 3;
         }
-        else if ((((((i + 3) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "er")) && nl_streq(tokens->data[(i + 1)], "mindre")) && nl_streq(tokens->data[(i + 2)], "enn")) && nl_streq(tokens->data[(i + 3)], "lik")) {
+        else if ((((((i + 3) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "er")) && nl_streq(n1, "mindre")) && nl_streq(n2, "enn")) && nl_streq(n3, "lik")) {
             tok = "mindre_eller_lik";
             tok_step = 4;
         }
-        else if ((((((i + 3) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "er")) && nl_streq(tokens->data[(i + 1)], "storre")) && nl_streq(tokens->data[(i + 2)], "enn")) && nl_streq(tokens->data[(i + 3)], "lik")) {
+        else if ((((((i + 3) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "er")) && nl_streq(n1, "storre")) && nl_streq(n2, "enn")) && nl_streq(n3, "lik")) {
             tok = "storre_eller_lik";
             tok_step = 4;
         }
-        else if ((((((i + 2) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "er")) && nl_streq(tokens->data[(i + 1)], "ikke")) && nl_streq(tokens->data[(i + 2)], "lik")) && (((i + 3) >= nl_list_text_len(tokens)) || !(nl_streq(tokens->data[(i + 3)], "med")))) {
+        else if ((((((i + 2) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "er")) && nl_streq(n1, "ikke")) && nl_streq(n2, "lik")) && (((i + 3) >= nl_list_text_len(tokens)) || !(nl_streq(n3, "med")))) {
             tok = "ikke_er";
             tok_step = 3;
         }
-        else if ((((((i + 2) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "er")) && nl_streq(tokens->data[(i + 1)], "mindre")) && nl_streq(tokens->data[(i + 2)], "enn")) && (((i + 3) >= nl_list_text_len(tokens)) || !(nl_streq(tokens->data[(i + 3)], "lik")))) {
+        else if ((((((i + 2) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "er")) && nl_streq(n1, "mindre")) && nl_streq(n2, "enn")) && (((i + 3) >= nl_list_text_len(tokens)) || !(nl_streq(n3, "lik")))) {
             tok = "mindre_enn";
             tok_step = 3;
         }
-        else if ((((((i + 2) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "er")) && nl_streq(tokens->data[(i + 1)], "storre")) && nl_streq(tokens->data[(i + 2)], "enn")) && (((i + 3) >= nl_list_text_len(tokens)) || !(nl_streq(tokens->data[(i + 3)], "lik")))) {
+        else if ((((((i + 2) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "er")) && nl_streq(n1, "storre")) && nl_streq(n2, "enn")) && (((i + 3) >= nl_list_text_len(tokens)) || !(nl_streq(n3, "lik")))) {
             tok = "storre_enn";
             tok_step = 3;
         }
-        else if ((((((i + 3) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "er")) && nl_streq(tokens->data[(i + 1)], "mindre")) && nl_streq(tokens->data[(i + 2)], "eller")) && nl_streq(tokens->data[(i + 3)], "lik")) {
+        else if ((((((i + 3) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "er")) && nl_streq(n1, "mindre")) && nl_streq(n2, "eller")) && nl_streq(n3, "lik")) {
             tok = "mindre_eller_lik";
             tok_step = 4;
         }
-        else if ((((((i + 3) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "er")) && nl_streq(tokens->data[(i + 1)], "storre")) && nl_streq(tokens->data[(i + 2)], "eller")) && nl_streq(tokens->data[(i + 3)], "lik")) {
+        else if ((((((i + 3) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "er")) && nl_streq(n1, "storre")) && nl_streq(n2, "eller")) && nl_streq(n3, "lik")) {
             tok = "storre_eller_lik";
             tok_step = 4;
         }
-        else if ((((((i + 3) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "er")) && nl_streq(tokens->data[(i + 1)], "ikke")) && nl_streq(tokens->data[(i + 2)], "lik")) && nl_streq(tokens->data[(i + 3)], "med")) {
+        else if ((((((i + 3) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "er")) && nl_streq(n1, "ikke")) && nl_streq(n2, "lik")) && nl_streq(n3, "med")) {
             tok = "ikke_er";
             tok_step = 4;
         }
-        else if (((((i + 2) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "ikke")) && nl_streq(tokens->data[(i + 1)], "lik")) && nl_streq(tokens->data[(i + 2)], "med")) {
+        else if (((((i + 2) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "ikke")) && nl_streq(n1, "lik")) && nl_streq(n2, "med")) {
             tok = "ikke_er";
             tok_step = 3;
         }
-        else if (((((i + 2) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "er")) && nl_streq(tokens->data[(i + 1)], "lik")) && nl_streq(tokens->data[(i + 2)], "med")) {
+        else if (((((i + 2) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "er")) && nl_streq(n1, "lik")) && nl_streq(n2, "med")) {
             tok = "er";
             tok_step = 3;
         }
-        else if ((((i + 1) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "er")) && nl_streq(tokens->data[(i + 1)], "ulik")) {
+        else if ((((i + 1) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "er")) && nl_streq(n1, "ulik")) {
             tok = "ikke_er";
             tok_step = 2;
         }
-        else if ((((i + 1) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "er")) && nl_streq(tokens->data[(i + 1)], "lik")) {
+        else if ((((i + 1) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "er")) && nl_streq(n1, "lik")) {
             tok = "er";
             tok_step = 2;
         }
-        else if ((((i + 1) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "ulik")) && nl_streq(tokens->data[(i + 1)], "med")) {
+        else if ((((i + 1) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "ulik")) && nl_streq(n1, "med")) {
             tok = "ikke_er";
             tok_step = 2;
         }
@@ -1292,15 +1326,15 @@ char * selfhost__compiler__uttrykk_til_ops_og_verdier_med_miljo(nl_list_text* to
             tok = "ikke_er";
             tok_step = 1;
         }
-        else if ((((i + 1) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "ikke")) && nl_streq(tokens->data[(i + 1)], "lik")) {
+        else if ((((i + 1) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "ikke")) && nl_streq(n1, "lik")) {
             tok = "ikke_er";
             tok_step = 2;
         }
-        else if ((((i + 1) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "er")) && nl_streq(tokens->data[(i + 1)], "ikke")) {
+        else if ((((i + 1) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "er")) && nl_streq(n1, "ikke")) {
             tok = "ikke_er";
             tok_step = 2;
         }
-        else if ((((i + 1) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "ikke")) && nl_streq(tokens->data[(i + 1)], "er")) {
+        else if ((((i + 1) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "ikke")) && nl_streq(n1, "er")) {
             tok = "ikke_er";
             tok_step = 2;
         }
@@ -2202,6 +2236,8 @@ int start() {
     nl_assert_eq_text(expr_norsk_ganget_med, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n");
     char * expr_norsk_delt_med = selfhost__compiler__disasm_uttrykk("8 delt med 2");
     nl_assert_eq_text(expr_norsk_delt_med, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
+    char * expr_norsk_delt_paa_utf8 = selfhost__compiler__disasm_uttrykk("8 delt på 2");
+    nl_assert_eq_text(expr_norsk_delt_paa_utf8, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * expr_bool_literals = selfhost__compiler__disasm_uttrykk("sann&&usann||!usann");
     nl_assert_eq_text(expr_bool_literals, "0: PUSH 1\n1: PUSH 0\n2: AND\n3: PUSH 0\n4: NOT\n5: OR\n6: PRINT\n7: HALT\n");
     char * expr_norsk_ops = selfhost__compiler__disasm_uttrykk("sann og ikke usann eller usann");
@@ -2250,6 +2286,8 @@ int start() {
     nl_assert_eq_text(expr_norsk_cmp_phrase19, "0: PUSH 4\n1: PUSH 4\n2: LT\n3: NOT\n4: PRINT\n5: HALT\n");
     char * expr_norsk_cmp_phrase20 = selfhost__compiler__disasm_uttrykk("4 er storre lik 4");
     nl_assert_eq_text(expr_norsk_cmp_phrase20, "0: PUSH 4\n1: PUSH 4\n2: LT\n3: NOT\n4: PRINT\n5: HALT\n");
+    char * expr_norsk_cmp_phrase_utf8 = selfhost__compiler__disasm_uttrykk("4 er større enn eller lik 4");
+    nl_assert_eq_text(expr_norsk_cmp_phrase_utf8, "0: PUSH 4\n1: PUSH 4\n2: LT\n3: NOT\n4: PRINT\n5: HALT\n");
     char * expr_norsk_cmp_phrase21 = selfhost__compiler__disasm_uttrykk("3 mindre enn lik 4");
     nl_assert_eq_text(expr_norsk_cmp_phrase21, "0: PUSH 3\n1: PUSH 4\n2: GT\n3: NOT\n4: PRINT\n5: HALT\n");
     char * expr_norsk_cmp_phrase22 = selfhost__compiler__disasm_uttrykk("4 er storre enn lik 4");

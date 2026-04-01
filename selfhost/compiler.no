@@ -55,6 +55,22 @@ funksjon er_heltall_token(tok: tekst) -> bool {
     returner tekst_fra_heltall(n) == tok
 }
 
+funksjon normaliser_norsk_token(tok: tekst) -> tekst {
+    hvis (tok == "på") {
+        returner "pa"
+    }
+    hvis (tok == "større") {
+        returner "storre"
+    }
+    hvis (tok == "større_enn") {
+        returner "storre_enn"
+    }
+    hvis (tok == "større_eller_lik") {
+        returner "storre_eller_lik"
+    }
+    returner tok
+}
+
 funksjon er_operator_token(tok: tekst) -> bool {
     hvis (tok == "+" eller tok == "-" eller tok == "*" eller tok == "/" eller tok == "%") {
         returner sann
@@ -790,16 +806,34 @@ funksjon uttrykk_til_ops_og_verdier_med_miljo(tokens: liste_tekst, navn: liste_t
 
     mens (i < lengde(tokens)) {
         la tok_raw: tekst = tokens[i]
+        tok_raw = normaliser_norsk_token(tok_raw)
         la tok: tekst = tok_raw
         la tok_step: heltall = 1
+        la n1: tekst = ""
+        la n2: tekst = ""
+        la n3: tekst = ""
+        la n4: tekst = ""
 
-        hvis (i + 1 < lengde(tokens) og tok_raw == "delt" og tokens[i + 1] == "pa") {
+        hvis (i + 1 < lengde(tokens)) {
+            n1 = normaliser_norsk_token(tokens[i + 1])
+        }
+        hvis (i + 2 < lengde(tokens)) {
+            n2 = normaliser_norsk_token(tokens[i + 2])
+        }
+        hvis (i + 3 < lengde(tokens)) {
+            n3 = normaliser_norsk_token(tokens[i + 3])
+        }
+        hvis (i + 4 < lengde(tokens)) {
+            n4 = normaliser_norsk_token(tokens[i + 4])
+        }
+
+        hvis (i + 1 < lengde(tokens) og tok_raw == "delt" og n1 == "pa") {
             tok = "/"
             tok_step = 2
-        } ellers hvis (i + 1 < lengde(tokens) og tok_raw == "delt" og tokens[i + 1] == "med") {
+        } ellers hvis (i + 1 < lengde(tokens) og tok_raw == "delt" og n1 == "med") {
             tok = "/"
             tok_step = 2
-        } ellers hvis (i + 1 < lengde(tokens) og tok_raw == "ganget" og tokens[i + 1] == "med") {
+        } ellers hvis (i + 1 < lengde(tokens) og tok_raw == "ganget" og n1 == "med") {
             tok = "*"
             tok_step = 2
         } ellers hvis (tok_raw == "pluss") {
@@ -814,85 +848,85 @@ funksjon uttrykk_til_ops_og_verdier_med_miljo(tokens: liste_tekst, navn: liste_t
         } ellers hvis (tok_raw == "mod" eller tok_raw == "modulo") {
             tok = "%"
             tok_step = 1
-        } ellers hvis (i + 3 < lengde(tokens) og tok_raw == "mindre" og tokens[i + 1] == "enn" og tokens[i + 2] == "eller" og tokens[i + 3] == "lik") {
+        } ellers hvis (i + 3 < lengde(tokens) og tok_raw == "mindre" og n1 == "enn" og n2 == "eller" og n3 == "lik") {
             tok = "mindre_eller_lik"
             tok_step = 4
-        } ellers hvis (i + 3 < lengde(tokens) og tok_raw == "storre" og tokens[i + 1] == "enn" og tokens[i + 2] == "eller" og tokens[i + 3] == "lik") {
+        } ellers hvis (i + 3 < lengde(tokens) og tok_raw == "storre" og n1 == "enn" og n2 == "eller" og n3 == "lik") {
             tok = "storre_eller_lik"
             tok_step = 4
-        } ellers hvis (i + 4 < lengde(tokens) og tok_raw == "er" og tokens[i + 1] == "mindre" og tokens[i + 2] == "enn" og tokens[i + 3] == "eller" og tokens[i + 4] == "lik") {
+        } ellers hvis (i + 4 < lengde(tokens) og tok_raw == "er" og n1 == "mindre" og n2 == "enn" og n3 == "eller" og n4 == "lik") {
             tok = "mindre_eller_lik"
             tok_step = 5
-        } ellers hvis (i + 4 < lengde(tokens) og tok_raw == "er" og tokens[i + 1] == "storre" og tokens[i + 2] == "enn" og tokens[i + 3] == "eller" og tokens[i + 4] == "lik") {
+        } ellers hvis (i + 4 < lengde(tokens) og tok_raw == "er" og n1 == "storre" og n2 == "enn" og n3 == "eller" og n4 == "lik") {
             tok = "storre_eller_lik"
             tok_step = 5
-        } ellers hvis (i + 1 < lengde(tokens) og tok_raw == "mindre" og tokens[i + 1] == "enn" og (i + 2 >= lengde(tokens) eller tokens[i + 2] != "lik")) {
+        } ellers hvis (i + 1 < lengde(tokens) og tok_raw == "mindre" og n1 == "enn" og (i + 2 >= lengde(tokens) eller n2 != "lik")) {
             tok = "mindre_enn"
             tok_step = 2
-        } ellers hvis (i + 1 < lengde(tokens) og tok_raw == "storre" og tokens[i + 1] == "enn" og (i + 2 >= lengde(tokens) eller tokens[i + 2] != "lik")) {
+        } ellers hvis (i + 1 < lengde(tokens) og tok_raw == "storre" og n1 == "enn" og (i + 2 >= lengde(tokens) eller n2 != "lik")) {
             tok = "storre_enn"
             tok_step = 2
-        } ellers hvis (i + 2 < lengde(tokens) og tok_raw == "mindre" og tokens[i + 1] == "eller" og tokens[i + 2] == "lik") {
+        } ellers hvis (i + 2 < lengde(tokens) og tok_raw == "mindre" og n1 == "eller" og n2 == "lik") {
             tok = "mindre_eller_lik"
             tok_step = 3
-        } ellers hvis (i + 2 < lengde(tokens) og tok_raw == "storre" og tokens[i + 1] == "eller" og tokens[i + 2] == "lik") {
+        } ellers hvis (i + 2 < lengde(tokens) og tok_raw == "storre" og n1 == "eller" og n2 == "lik") {
             tok = "storre_eller_lik"
             tok_step = 3
-        } ellers hvis (i + 2 < lengde(tokens) og tok_raw == "mindre" og tokens[i + 1] == "enn" og tokens[i + 2] == "lik") {
+        } ellers hvis (i + 2 < lengde(tokens) og tok_raw == "mindre" og n1 == "enn" og n2 == "lik") {
             tok = "mindre_eller_lik"
             tok_step = 3
-        } ellers hvis (i + 2 < lengde(tokens) og tok_raw == "storre" og tokens[i + 1] == "enn" og tokens[i + 2] == "lik") {
+        } ellers hvis (i + 2 < lengde(tokens) og tok_raw == "storre" og n1 == "enn" og n2 == "lik") {
             tok = "storre_eller_lik"
             tok_step = 3
-        } ellers hvis (i + 1 < lengde(tokens) og tok_raw == "mindre" og tokens[i + 1] == "lik") {
+        } ellers hvis (i + 1 < lengde(tokens) og tok_raw == "mindre" og n1 == "lik") {
             tok = "mindre_eller_lik"
             tok_step = 2
-        } ellers hvis (i + 1 < lengde(tokens) og tok_raw == "storre" og tokens[i + 1] == "lik") {
+        } ellers hvis (i + 1 < lengde(tokens) og tok_raw == "storre" og n1 == "lik") {
             tok = "storre_eller_lik"
             tok_step = 2
-        } ellers hvis (i + 2 < lengde(tokens) og tok_raw == "er" og tokens[i + 1] == "mindre" og tokens[i + 2] == "lik") {
+        } ellers hvis (i + 2 < lengde(tokens) og tok_raw == "er" og n1 == "mindre" og n2 == "lik") {
             tok = "mindre_eller_lik"
             tok_step = 3
-        } ellers hvis (i + 2 < lengde(tokens) og tok_raw == "er" og tokens[i + 1] == "storre" og tokens[i + 2] == "lik") {
+        } ellers hvis (i + 2 < lengde(tokens) og tok_raw == "er" og n1 == "storre" og n2 == "lik") {
             tok = "storre_eller_lik"
             tok_step = 3
-        } ellers hvis (i + 3 < lengde(tokens) og tok_raw == "er" og tokens[i + 1] == "mindre" og tokens[i + 2] == "enn" og tokens[i + 3] == "lik") {
+        } ellers hvis (i + 3 < lengde(tokens) og tok_raw == "er" og n1 == "mindre" og n2 == "enn" og n3 == "lik") {
             tok = "mindre_eller_lik"
             tok_step = 4
-        } ellers hvis (i + 3 < lengde(tokens) og tok_raw == "er" og tokens[i + 1] == "storre" og tokens[i + 2] == "enn" og tokens[i + 3] == "lik") {
+        } ellers hvis (i + 3 < lengde(tokens) og tok_raw == "er" og n1 == "storre" og n2 == "enn" og n3 == "lik") {
             tok = "storre_eller_lik"
             tok_step = 4
-        } ellers hvis (i + 2 < lengde(tokens) og tok_raw == "er" og tokens[i + 1] == "ikke" og tokens[i + 2] == "lik" og (i + 3 >= lengde(tokens) eller tokens[i + 3] != "med")) {
+        } ellers hvis (i + 2 < lengde(tokens) og tok_raw == "er" og n1 == "ikke" og n2 == "lik" og (i + 3 >= lengde(tokens) eller n3 != "med")) {
             tok = "ikke_er"
             tok_step = 3
-        } ellers hvis (i + 2 < lengde(tokens) og tok_raw == "er" og tokens[i + 1] == "mindre" og tokens[i + 2] == "enn" og (i + 3 >= lengde(tokens) eller tokens[i + 3] != "lik")) {
+        } ellers hvis (i + 2 < lengde(tokens) og tok_raw == "er" og n1 == "mindre" og n2 == "enn" og (i + 3 >= lengde(tokens) eller n3 != "lik")) {
             tok = "mindre_enn"
             tok_step = 3
-        } ellers hvis (i + 2 < lengde(tokens) og tok_raw == "er" og tokens[i + 1] == "storre" og tokens[i + 2] == "enn" og (i + 3 >= lengde(tokens) eller tokens[i + 3] != "lik")) {
+        } ellers hvis (i + 2 < lengde(tokens) og tok_raw == "er" og n1 == "storre" og n2 == "enn" og (i + 3 >= lengde(tokens) eller n3 != "lik")) {
             tok = "storre_enn"
             tok_step = 3
-        } ellers hvis (i + 3 < lengde(tokens) og tok_raw == "er" og tokens[i + 1] == "mindre" og tokens[i + 2] == "eller" og tokens[i + 3] == "lik") {
+        } ellers hvis (i + 3 < lengde(tokens) og tok_raw == "er" og n1 == "mindre" og n2 == "eller" og n3 == "lik") {
             tok = "mindre_eller_lik"
             tok_step = 4
-        } ellers hvis (i + 3 < lengde(tokens) og tok_raw == "er" og tokens[i + 1] == "storre" og tokens[i + 2] == "eller" og tokens[i + 3] == "lik") {
+        } ellers hvis (i + 3 < lengde(tokens) og tok_raw == "er" og n1 == "storre" og n2 == "eller" og n3 == "lik") {
             tok = "storre_eller_lik"
             tok_step = 4
-        } ellers hvis (i + 3 < lengde(tokens) og tok_raw == "er" og tokens[i + 1] == "ikke" og tokens[i + 2] == "lik" og tokens[i + 3] == "med") {
+        } ellers hvis (i + 3 < lengde(tokens) og tok_raw == "er" og n1 == "ikke" og n2 == "lik" og n3 == "med") {
             tok = "ikke_er"
             tok_step = 4
-        } ellers hvis (i + 2 < lengde(tokens) og tok_raw == "ikke" og tokens[i + 1] == "lik" og tokens[i + 2] == "med") {
+        } ellers hvis (i + 2 < lengde(tokens) og tok_raw == "ikke" og n1 == "lik" og n2 == "med") {
             tok = "ikke_er"
             tok_step = 3
-        } ellers hvis (i + 2 < lengde(tokens) og tok_raw == "er" og tokens[i + 1] == "lik" og tokens[i + 2] == "med") {
+        } ellers hvis (i + 2 < lengde(tokens) og tok_raw == "er" og n1 == "lik" og n2 == "med") {
             tok = "er"
             tok_step = 3
-        } ellers hvis (i + 1 < lengde(tokens) og tok_raw == "er" og tokens[i + 1] == "ulik") {
+        } ellers hvis (i + 1 < lengde(tokens) og tok_raw == "er" og n1 == "ulik") {
             tok = "ikke_er"
             tok_step = 2
-        } ellers hvis (i + 1 < lengde(tokens) og tok_raw == "er" og tokens[i + 1] == "lik") {
+        } ellers hvis (i + 1 < lengde(tokens) og tok_raw == "er" og n1 == "lik") {
             tok = "er"
             tok_step = 2
-        } ellers hvis (i + 1 < lengde(tokens) og tok_raw == "ulik" og tokens[i + 1] == "med") {
+        } ellers hvis (i + 1 < lengde(tokens) og tok_raw == "ulik" og n1 == "med") {
             tok = "ikke_er"
             tok_step = 2
         } ellers hvis (tok_raw == "lik") {
@@ -901,13 +935,13 @@ funksjon uttrykk_til_ops_og_verdier_med_miljo(tokens: liste_tekst, navn: liste_t
         } ellers hvis (tok_raw == "ulik") {
             tok = "ikke_er"
             tok_step = 1
-        } ellers hvis (i + 1 < lengde(tokens) og tok_raw == "ikke" og tokens[i + 1] == "lik") {
+        } ellers hvis (i + 1 < lengde(tokens) og tok_raw == "ikke" og n1 == "lik") {
             tok = "ikke_er"
             tok_step = 2
-        } ellers hvis (i + 1 < lengde(tokens) og tok_raw == "er" og tokens[i + 1] == "ikke") {
+        } ellers hvis (i + 1 < lengde(tokens) og tok_raw == "er" og n1 == "ikke") {
             tok = "ikke_er"
             tok_step = 2
-        } ellers hvis (i + 1 < lengde(tokens) og tok_raw == "ikke" og tokens[i + 1] == "er") {
+        } ellers hvis (i + 1 < lengde(tokens) og tok_raw == "ikke" og n1 == "er") {
             tok = "ikke_er"
             tok_step = 2
         }

@@ -323,7 +323,7 @@ class CGenerator:
         self.emit("continue;")
         self.indent -= 1
         self.emit("}")
-        self.emit("if (isalnum((unsigned char)c) || c == '_' || c == '-') {")
+        self.emit("if (isalnum((unsigned char)c) || c == '_' || c == '-' || (unsigned char)c >= 128) {")
         self.indent += 1
         self.emit("if (tlen < 255) { token[tlen++] = c; }")
         self.emit("continue;")
@@ -375,11 +375,11 @@ class CGenerator:
         self.emit("continue;")
         self.indent -= 1
         self.emit("}")
-        self.emit("if (isalpha((unsigned char)c) || c == '_') {")
+        self.emit("if (isalpha((unsigned char)c) || c == '_' || (unsigned char)c >= 128) {")
         self.indent += 1
         self.emit("char token[256];")
         self.emit("int tlen = 0;")
-        self.emit("while (*p && (isalnum((unsigned char)*p) || *p == '_')) {")
+        self.emit("while (*p && (isalnum((unsigned char)*p) || *p == '_' || (unsigned char)*p >= 128)) {")
         self.indent += 1
         self.emit("if (tlen < 255) { token[tlen++] = *p; }")
         self.emit("p++;")

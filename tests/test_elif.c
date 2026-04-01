@@ -161,7 +161,7 @@ static nl_list_text *nl_tokenize_simple(const char *s) {
             in_comment = 1;
             continue;
         }
-        if (isalnum((unsigned char)c) || c == '_' || c == '-') {
+        if (isalnum((unsigned char)c) || c == '_' || c == '-' || (unsigned char)c >= 128) {
             if (tlen < 255) { token[tlen++] = c; }
             continue;
         }
@@ -198,10 +198,10 @@ static nl_list_text *nl_tokenize_expression(const char *s) {
             nl_list_text_push(out, nl_strdup(token));
             continue;
         }
-        if (isalpha((unsigned char)c) || c == '_') {
+        if (isalpha((unsigned char)c) || c == '_' || (unsigned char)c >= 128) {
             char token[256];
             int tlen = 0;
-            while (*p && (isalnum((unsigned char)*p) || *p == '_')) {
+            while (*p && (isalnum((unsigned char)*p) || *p == '_' || (unsigned char)*p >= 128)) {
                 if (tlen < 255) { token[tlen++] = *p; }
                 p++;
             }
