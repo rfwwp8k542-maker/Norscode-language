@@ -132,6 +132,9 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "er_lik" eller tok == "er_lik_med") {
         returner "er"
     }
+    hvis (tok == "lik_med") {
+        returner "er"
+    }
     returner tok
 }
 
