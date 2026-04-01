@@ -184,6 +184,12 @@ funksjon start() -> heltall {
     la expr_norsk_subtraherer_med_underscore: tekst = sh.disasm_uttrykk("10 subtraherer_med 3")
     assert_eq(expr_norsk_subtraherer_med_underscore, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n")
 
+    la expr_norsk_subtraheres_med: tekst = sh.disasm_uttrykk("10 subtraheres med 3")
+    assert_eq(expr_norsk_subtraheres_med, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n")
+
+    la expr_norsk_subtraheres_med_underscore: tekst = sh.disasm_uttrykk("10 subtraheres_med 3")
+    assert_eq(expr_norsk_subtraheres_med_underscore, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n")
+
     la expr_unary_plus: tekst = sh.disasm_uttrykk("+3+5")
     assert_eq(expr_unary_plus, "0: PUSH 3\n1: PUSH 5\n2: ADD\n3: PRINT\n4: HALT\n")
 
@@ -931,6 +937,12 @@ funksjon start() -> heltall {
 
     la script_norsk_subtraherer_med_underscore: tekst = sh.disasm_skript("la x=10;la y=3;returner x subtraherer_med y")
     assert_eq(script_norsk_subtraherer_med_underscore, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n")
+
+    la script_norsk_subtraheres_med: tekst = sh.disasm_skript("la x=10;la y=3;returner x subtraheres med y")
+    assert_eq(script_norsk_subtraheres_med, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n")
+
+    la script_norsk_subtraheres_med_underscore: tekst = sh.disasm_skript("la x=10;la y=3;returner x subtraheres_med y")
+    assert_eq(script_norsk_subtraheres_med_underscore, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n")
 
     la script_norsk_mod: tekst = sh.disasm_skript("la x=17;la y=5;returner x mod y")
     assert_eq(script_norsk_mod, "0: PUSH 17\n1: PUSH 5\n2: MOD\n3: PRINT\n4: HALT\n")
