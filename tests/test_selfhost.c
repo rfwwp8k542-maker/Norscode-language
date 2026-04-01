@@ -1245,21 +1245,35 @@ char * selfhost__compiler__skript_til_ops_og_verdier(nl_list_text* tokens, nl_li
     nl_list_text_remove(out_ops, 0);
     nl_list_int_remove(out_verdier, 0);
     while (i < nl_list_text_len(tokens)) {
-        if (nl_streq(tokens->data[i], "")) {
+        nl_list_text* stmt_tokens = nl_list_text_new();
+        nl_list_text_push(stmt_tokens, "");
+        int stmt_start = i;
+        int stmt_has_semicolon = 0;
+        nl_list_text_remove(stmt_tokens, 0);
+        while ((i < nl_list_text_len(tokens)) && !(nl_streq(tokens->data[i], ";"))) {
+            if (!(nl_streq(tokens->data[i], ""))) {
+                nl_list_text_push(stmt_tokens, tokens->data[i]);
+            }
             i = (i + 1);
+        }
+        if ((i < nl_list_text_len(tokens)) && nl_streq(tokens->data[i], ";")) {
+            stmt_has_semicolon = 1;
+            i = (i + 1);
+        }
+        if (nl_list_text_len(stmt_tokens) == 0) {
             continue;
         }
-        int ass_start = i;
+        int ass_start = 0;
         int har_la = 0;
-        if (nl_streq(tokens->data[ass_start], "la")) {
+        if (nl_streq(stmt_tokens->data[ass_start], "la")) {
             har_la = 1;
             ass_start = (ass_start + 1);
         }
-        if (har_la && (ass_start >= nl_list_text_len(tokens))) {
+        if (har_la && (ass_start >= nl_list_text_len(stmt_tokens))) {
             return "/* feil: 'la' må etterfølges av variabelnavn */";
         }
-        if ((((ass_start + 1) < nl_list_text_len(tokens)) && selfhost__compiler__er_navn_token(tokens->data[ass_start])) && nl_streq(tokens->data[(ass_start + 1)], "=")) {
-            char * varnavn = tokens->data[ass_start];
+        if ((((ass_start + 1) < nl_list_text_len(stmt_tokens)) && selfhost__compiler__er_navn_token(stmt_tokens->data[ass_start])) && nl_streq(stmt_tokens->data[(ass_start + 1)], "=")) {
+            char * varnavn = stmt_tokens->data[ass_start];
             nl_list_text* expr_tokens = nl_list_text_new();
             nl_list_text_push(expr_tokens, "");
             nl_list_text* expr_ops = nl_list_text_new();
@@ -1274,15 +1288,15 @@ char * selfhost__compiler__skript_til_ops_og_verdier(nl_list_text* tokens, nl_li
             nl_list_text_remove(expr_ops, 0);
             nl_list_int_remove(expr_verdier, 0);
             nl_list_int_remove(eval_resultat, 0);
-            while ((j < nl_list_text_len(tokens)) && !(nl_streq(tokens->data[j], ";"))) {
-                nl_list_text_push(expr_tokens, tokens->data[j]);
+            while (j < nl_list_text_len(stmt_tokens)) {
+                nl_list_text_push(expr_tokens, stmt_tokens->data[j]);
                 j = (j + 1);
-            }
-            if (j >= nl_list_text_len(tokens)) {
-                return nl_concat(nl_concat("/* feil: mangler ';' etter assignment til ", varnavn), " */");
             }
             if (nl_list_text_len(expr_tokens) == 0) {
                 return nl_concat(nl_concat("/* feil: tomt uttrykk i assignment til ", varnavn), " */");
+            }
+            if (stmt_has_semicolon == 0) {
+                return nl_concat(nl_concat("/* feil: mangler ';' etter assignment til ", varnavn), " */");
             }
             feil = selfhost__compiler__uttrykk_til_ops_og_verdier_med_miljo(expr_tokens, navn, miljo_verdier, expr_ops, expr_verdier);
             if (!(nl_streq(feil, ""))) {
@@ -1300,31 +1314,22 @@ char * selfhost__compiler__skript_til_ops_og_verdier(nl_list_text* tokens, nl_li
                 nl_list_text_push(navn, varnavn);
                 nl_list_int_push(miljo_verdier, eval_resultat->data[0]);
             }
-            i = (j + 1);
             continue;
         }
         if (har_la) {
             return "/* feil: ugyldig deklarasjon etter 'la' */";
         }
-        nl_list_text* final_tokens = nl_list_text_new();
-        nl_list_text_push(final_tokens, "");
-        int k = i;
-        nl_list_text_remove(final_tokens, 0);
-        while (k < nl_list_text_len(tokens)) {
-            if (nl_streq(tokens->data[k], ";")) {
-                return "/* feil: uventet ';' i sluttuttrykk */";
-            }
-            nl_list_text_push(final_tokens, tokens->data[k]);
-            k = (k + 1);
-        }
-        if (nl_list_text_len(final_tokens) == 0) {
-            return "/* feil: tomt sluttuttrykk */";
-        }
-        char * final_feil = selfhost__compiler__uttrykk_til_ops_og_verdier_med_miljo(final_tokens, navn, miljo_verdier, out_ops, out_verdier);
+        char * final_feil = selfhost__compiler__uttrykk_til_ops_og_verdier_med_miljo(stmt_tokens, navn, miljo_verdier, out_ops, out_verdier);
         if (!(nl_streq(final_feil, ""))) {
             return final_feil;
         }
         fant_sluttuttrykk = 1;
+        while (i < nl_list_text_len(tokens)) {
+            if (!(nl_streq(tokens->data[i], ";")) && !(nl_streq(tokens->data[i], ""))) {
+                return nl_concat(nl_concat("/* feil: kun siste statement kan være uttrykk (token ", nl_int_to_text(i)), ") */");
+            }
+            i = (i + 1);
+        }
         break;
     }
     if (fant_sluttuttrykk == 0) {
@@ -1660,20 +1665,26 @@ int start() {
     nl_assert_eq_text(script_dis, "0: PUSH 20\n1: PUSH 1\n2: ADD\n3: PRINT\n4: HALT\n");
     char * script_la_dis = selfhost__compiler__disasm_skript("la x=2+3;la y=x*4;y+1");
     nl_assert_eq_text(script_la_dis, "0: PUSH 20\n1: PUSH 1\n2: ADD\n3: PRINT\n4: HALT\n");
+    char * script_trailing_semicolon = selfhost__compiler__disasm_skript("x=2;y=3;x+y;");
+    nl_assert_eq_text(script_trailing_semicolon, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
+    char * script_empty_statements = selfhost__compiler__disasm_skript(";;la x=2;;x+1;;");
+    nl_assert_eq_text(script_empty_statements, "0: PUSH 2\n1: PUSH 1\n2: ADD\n3: PRINT\n4: HALT\n");
     char * script_norsk_ops = selfhost__compiler__disasm_skript("x=sann;y=ikke usann;x og y");
     nl_assert_eq_text(script_norsk_ops, "0: PUSH 1\n1: PUSH 1\n2: AND\n3: PRINT\n4: HALT\n");
     char * script_c = selfhost__compiler__kompiler_skript_til_c("x=2;y=x+5;y*2");
     nl_assert_ne_text(script_c, "");
     char * script_err1 = selfhost__compiler__disasm_skript("x=2+3");
     nl_assert_eq_text(script_err1, "/* feil: mangler ';' etter assignment til x */");
-    char * script_err2 = selfhost__compiler__disasm_skript("x=2;;x+1");
-    nl_assert_eq_text(script_err2, "/* feil: uventet ';' i sluttuttrykk */");
+    char * script_skip_empty = selfhost__compiler__disasm_skript("x=2;;x+1");
+    nl_assert_eq_text(script_skip_empty, "0: PUSH 2\n1: PUSH 1\n2: ADD\n3: PRINT\n4: HALT\n");
     char * script_err3 = selfhost__compiler__disasm_skript("x=2+3;");
     nl_assert_eq_text(script_err3, "/* feil: skriptet mangler sluttuttrykk */");
     char * script_err4 = selfhost__compiler__disasm_skript("la ;x+1");
-    nl_assert_eq_text(script_err4, "/* feil: ugyldig deklarasjon etter 'la' */");
+    nl_assert_eq_text(script_err4, "/* feil: 'la' må etterfølges av variabelnavn */");
     char * script_err5 = selfhost__compiler__disasm_skript("la x;x+1");
     nl_assert_eq_text(script_err5, "/* feil: ugyldig deklarasjon etter 'la' */");
+    char * script_err6 = selfhost__compiler__disasm_skript("1+1; y=2; y");
+    nl_assert_eq_text(script_err6, "/* feil: kun siste statement kan være uttrykk (token 4) */");
     nl_list_text* linjer = nl_list_text_new();
     nl_list_text_push(linjer, "");
     nl_list_text_push(linjer, "PUSH");

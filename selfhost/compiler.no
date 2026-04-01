@@ -901,25 +901,40 @@ funksjon skript_til_ops_og_verdier(tokens: liste_tekst, navn: liste_tekst, miljo
     fjern_indeks(out_verdier, 0)
 
     mens (i < lengde(tokens)) {
-        hvis (tokens[i] == "") {
+        la stmt_tokens: liste_tekst = [""]
+        la stmt_start: heltall = i
+        la stmt_has_semicolon: bool = usann
+
+        fjern_indeks(stmt_tokens, 0)
+        mens (i < lengde(tokens) og tokens[i] != ";") {
+            hvis (tokens[i] != "") {
+                legg_til(stmt_tokens, tokens[i])
+            }
             i = i + 1
+        }
+        hvis (i < lengde(tokens) og tokens[i] == ";") {
+            stmt_has_semicolon = sann
+            i = i + 1
+        }
+
+        hvis (lengde(stmt_tokens) == 0) {
             fortsett
         }
 
-        la ass_start: heltall = i
+        la ass_start: heltall = 0
         la har_la: bool = usann
 
-        hvis (tokens[ass_start] == "la") {
+        hvis (stmt_tokens[ass_start] == "la") {
             har_la = sann
             ass_start = ass_start + 1
         }
 
-        hvis (har_la og ass_start >= lengde(tokens)) {
+        hvis (har_la og ass_start >= lengde(stmt_tokens)) {
             returner "/* feil: 'la' må etterfølges av variabelnavn */"
         }
 
-        hvis (ass_start + 1 < lengde(tokens) og er_navn_token(tokens[ass_start]) og tokens[ass_start + 1] == "=") {
-            la varnavn: tekst = tokens[ass_start]
+        hvis (ass_start + 1 < lengde(stmt_tokens) og er_navn_token(stmt_tokens[ass_start]) og stmt_tokens[ass_start + 1] == "=") {
+            la varnavn: tekst = stmt_tokens[ass_start]
             la expr_tokens: liste_tekst = [""]
             la expr_ops: liste_tekst = [""]
             la expr_verdier: liste_heltall = [0]
@@ -932,16 +947,16 @@ funksjon skript_til_ops_og_verdier(tokens: liste_tekst, navn: liste_tekst, miljo
             fjern_indeks(expr_verdier, 0)
             fjern_indeks(eval_resultat, 0)
 
-            mens (j < lengde(tokens) og tokens[j] != ";") {
-                legg_til(expr_tokens, tokens[j])
+            mens (j < lengde(stmt_tokens)) {
+                legg_til(expr_tokens, stmt_tokens[j])
                 j = j + 1
             }
 
-            hvis (j >= lengde(tokens)) {
-                returner "/* feil: mangler ';' etter assignment til " + varnavn + " */"
-            }
             hvis (lengde(expr_tokens) == 0) {
                 returner "/* feil: tomt uttrykk i assignment til " + varnavn + " */"
+            }
+            hvis (stmt_has_semicolon == usann) {
+                returner "/* feil: mangler ';' etter assignment til " + varnavn + " */"
             }
 
             feil = uttrykk_til_ops_og_verdier_med_miljo(expr_tokens, navn, miljo_verdier, expr_ops, expr_verdier)
@@ -961,8 +976,6 @@ funksjon skript_til_ops_og_verdier(tokens: liste_tekst, navn: liste_tekst, miljo
                 legg_til(navn, varnavn)
                 legg_til(miljo_verdier, eval_resultat[0])
             }
-
-            i = j + 1
             fortsett
         }
 
@@ -970,25 +983,18 @@ funksjon skript_til_ops_og_verdier(tokens: liste_tekst, navn: liste_tekst, miljo
             returner "/* feil: ugyldig deklarasjon etter 'la' */"
         }
 
-        la final_tokens: liste_tekst = [""]
-        la k: heltall = i
-        fjern_indeks(final_tokens, 0)
-        mens (k < lengde(tokens)) {
-            hvis (tokens[k] == ";") {
-                returner "/* feil: uventet ';' i sluttuttrykk */"
-            }
-            legg_til(final_tokens, tokens[k])
-            k = k + 1
-        }
-        hvis (lengde(final_tokens) == 0) {
-            returner "/* feil: tomt sluttuttrykk */"
-        }
-
-        la final_feil: tekst = uttrykk_til_ops_og_verdier_med_miljo(final_tokens, navn, miljo_verdier, out_ops, out_verdier)
+        la final_feil: tekst = uttrykk_til_ops_og_verdier_med_miljo(stmt_tokens, navn, miljo_verdier, out_ops, out_verdier)
         hvis (final_feil != "") {
             returner final_feil
         }
         fant_sluttuttrykk = sann
+
+        mens (i < lengde(tokens)) {
+            hvis (tokens[i] != ";" og tokens[i] != "") {
+                returner "/* feil: kun siste statement kan være uttrykk (token " + tekst_fra_heltall(i) + ") */"
+            }
+            i = i + 1
+        }
         bryt
     }
 
