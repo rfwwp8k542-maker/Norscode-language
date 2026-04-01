@@ -330,17 +330,29 @@ funksjon demo_program() -> tekst {
     returner kompiler_til_c(ops, verdier)
 }
 
-funksjon kompiler_fra_tokens(tokens: liste_tekst) -> tekst {
-    la ops: liste_tekst = ["HALT"]
-    la verdier: liste_heltall = [0]
+funksjon token_pos(pos: heltall) -> tekst {
+    returner "token " + tekst_fra_heltall(pos)
+}
+
+funksjon parse_tokens_til_ops(tokens: liste_tekst, ops: liste_tekst, verdier: liste_heltall, strict: bool) -> tekst {
     la i: heltall = 0
+
+    fjern_indeks(ops, 0)
+    fjern_indeks(verdier, 0)
 
     mens (i < lengde(tokens)) {
         la op: tekst = tokens[i]
 
+        hvis (strict og op_kjent(op) == usann) {
+            returner "/* feil: ukjent opcode " + op + " ved " + token_pos(i) + " */"
+        }
+
         hvis (op == "PUSH" eller op == "LABEL" eller op == "JMP" eller op == "JZ" eller op == "STORE" eller op == "LOAD" eller op == "CALL") {
             hvis (i + 1 >= lengde(tokens)) {
-                returner "/* feil: op mangler verdi */"
+                returner "/* feil: op mangler verdi ved " + token_pos(i) + " */"
+            }
+            hvis (strict og er_heltall_token(tokens[i + 1]) == usann) {
+                returner "/* feil: ugyldig heltallsargument " + tokens[i + 1] + " ved " + token_pos(i + 1) + " */"
             }
             legg_til(ops, op)
             legg_til(verdier, heltall_fra_tekst(tokens[i + 1]))
@@ -352,71 +364,47 @@ funksjon kompiler_fra_tokens(tokens: liste_tekst) -> tekst {
         }
     }
 
-    fjern_indeks(ops, 0)
-    fjern_indeks(verdier, 0)
+    returner ""
+}
 
+funksjon kompiler_fra_tokens(tokens: liste_tekst) -> tekst {
+    la ops: liste_tekst = ["HALT"]
+    la verdier: liste_heltall = [0]
+    la feil: tekst = parse_tokens_til_ops(tokens, ops, verdier, usann)
+    hvis (feil != "") {
+        returner feil
+    }
     returner kompiler_til_c(ops, verdier)
 }
 
 funksjon disasm_fra_tokens(tokens: liste_tekst) -> tekst {
     la ops: liste_tekst = ["HALT"]
     la verdier: liste_heltall = [0]
-    la i: heltall = 0
-
-    mens (i < lengde(tokens)) {
-        la op: tekst = tokens[i]
-
-        hvis (op == "PUSH" eller op == "LABEL" eller op == "JMP" eller op == "JZ" eller op == "STORE" eller op == "LOAD" eller op == "CALL") {
-            hvis (i + 1 >= lengde(tokens)) {
-                returner "/* feil: op mangler verdi */"
-            }
-            legg_til(ops, op)
-            legg_til(verdier, heltall_fra_tekst(tokens[i + 1]))
-            i = i + 2
-        } ellers {
-            legg_til(ops, op)
-            legg_til(verdier, 0)
-            i = i + 1
-        }
+    la feil: tekst = parse_tokens_til_ops(tokens, ops, verdier, usann)
+    hvis (feil != "") {
+        returner feil
     }
-
-    fjern_indeks(ops, 0)
-    fjern_indeks(verdier, 0)
     returner disasm_program(ops, verdier)
 }
 
 funksjon disasm_fra_tokens_strict(tokens: liste_tekst) -> tekst {
     la ops: liste_tekst = ["HALT"]
     la verdier: liste_heltall = [0]
-    la i: heltall = 0
-
-    mens (i < lengde(tokens)) {
-        la op: tekst = tokens[i]
-
-        hvis (op_kjent(op) == usann) {
-            returner "/* feil: ukjent opcode " + op + " */"
-        }
-
-        hvis (op_krever_arg(op)) {
-            hvis (i + 1 >= lengde(tokens)) {
-                returner "/* feil: op mangler verdi */"
-            }
-            hvis (er_heltall_token(tokens[i + 1]) == usann) {
-                returner "/* feil: ugyldig heltallsargument " + tokens[i + 1] + " */"
-            }
-            legg_til(ops, op)
-            legg_til(verdier, heltall_fra_tekst(tokens[i + 1]))
-            i = i + 2
-        } ellers {
-            legg_til(ops, op)
-            legg_til(verdier, 0)
-            i = i + 1
-        }
+    la feil: tekst = parse_tokens_til_ops(tokens, ops, verdier, sann)
+    hvis (feil != "") {
+        returner feil
     }
-
-    fjern_indeks(ops, 0)
-    fjern_indeks(verdier, 0)
     returner disasm_program(ops, verdier)
+}
+
+funksjon kompiler_fra_tokens_strict(tokens: liste_tekst) -> tekst {
+    la ops: liste_tekst = ["HALT"]
+    la verdier: liste_heltall = [0]
+    la feil: tekst = parse_tokens_til_ops(tokens, ops, verdier, sann)
+    hvis (feil != "") {
+        returner feil
+    }
+    returner kompiler_til_c(ops, verdier)
 }
 
 funksjon disasm_fra_linjer(linjer: liste_tekst) -> tekst {
@@ -461,6 +449,11 @@ funksjon disasm_fra_kilde(kilde: tekst) -> tekst {
 funksjon disasm_fra_kilde_strict(kilde: tekst) -> tekst {
     la tokens: liste_tekst = tokeniser_enkel(kilde)
     returner disasm_fra_tokens_strict(tokens)
+}
+
+funksjon kompiler_fra_kilde_strict(kilde: tekst) -> tekst {
+    la tokens: liste_tekst = tokeniser_enkel(kilde)
+    returner kompiler_fra_tokens_strict(tokens)
 }
 
 funksjon uttrykk_til_ops_og_verdier(tokens: liste_tekst, ops: liste_tekst, verdier: liste_heltall) -> tekst {

@@ -131,7 +131,13 @@ funksjon start() -> heltall {
     assert_eq(dis_src_strict, "0: PUSH 3\n1: PUSH 4\n2: ADD\n3: HALT\n")
 
     la dis_src_bad: tekst = sh.disasm_fra_kilde_strict("PUSH x\nHALT")
-    assert_eq(dis_src_bad, "/* feil: ugyldig heltallsargument x */")
+    assert_eq(dis_src_bad, "/* feil: ugyldig heltallsargument x ved token 1 */")
+
+    la dis_src_bad_opcode: tekst = sh.disasm_fra_kilde_strict("PUHS 1\nHALT")
+    assert_eq(dis_src_bad_opcode, "/* feil: ukjent opcode PUHS ved token 0 */")
+
+    la c_src_bad: tekst = sh.kompiler_fra_kilde_strict("PUSH 2\nPUSH q\nADD\nHALT")
+    assert_eq(c_src_bad, "/* feil: ugyldig heltallsargument q ved token 3 */")
 
     la expr_dis: tekst = sh.disasm_uttrykk("2 + 3 * 4")
     assert_eq(expr_dis, "0: PUSH 2\n1: PUSH 3\n2: PUSH 4\n3: MUL\n4: ADD\n5: PRINT\n6: HALT\n")

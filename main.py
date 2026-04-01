@@ -1658,14 +1658,14 @@ def parse_ir_tokens(tokens: list[str], strict: bool = False) -> list[str]:
     while i < len(tokens):
         op = tokens[i]
         if strict and op not in IR_ALL_OPS:
-            raise RuntimeError(f"/* feil: ukjent opcode {op} */")
+            raise RuntimeError(f"/* feil: ukjent opcode {op} ved token {i} */")
         if op in IR_OPS_WITH_ARG:
             if i + 1 >= len(tokens):
-                raise RuntimeError("/* feil: op mangler verdi */")
+                raise RuntimeError(f"/* feil: op mangler verdi ved token {i} */")
             arg_token = tokens[i + 1]
             if strict:
                 if not is_selfhost_int_token(arg_token):
-                    raise RuntimeError(f"/* feil: ugyldig heltallsargument {arg_token} */")
+                    raise RuntimeError(f"/* feil: ugyldig heltallsargument {arg_token} ved token {i + 1} */")
                 arg_value = int(arg_token)
             else:
                 arg_value = parse_selfhost_int(arg_token)

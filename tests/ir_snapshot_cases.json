@@ -25,12 +25,12 @@
     {
       "name": "strict_bad_opcode",
       "source": "FOO\nHALT\n",
-      "expected_error": "/* feil: ukjent opcode FOO */"
+      "expected_error": "/* feil: ukjent opcode FOO ved token 0 */"
     },
     {
       "name": "strict_bad_int",
       "source": "PUSH 03\nHALT\n",
-      "expected_error": "/* feil: ugyldig heltallsargument 03 */"
+      "expected_error": "/* feil: ugyldig heltallsargument 03 ved token 1 */"
     }
   ]
 }
