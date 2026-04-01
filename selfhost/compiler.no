@@ -906,14 +906,26 @@ funksjon skript_til_ops_og_verdier(tokens: liste_tekst, navn: liste_tekst, miljo
             fortsett
         }
 
-        hvis (i + 1 < lengde(tokens) og er_navn_token(tokens[i]) og tokens[i + 1] == "=") {
-            la varnavn: tekst = tokens[i]
+        la ass_start: heltall = i
+        la har_la: bool = usann
+
+        hvis (tokens[ass_start] == "la") {
+            har_la = sann
+            ass_start = ass_start + 1
+        }
+
+        hvis (har_la og ass_start >= lengde(tokens)) {
+            returner "/* feil: 'la' må etterfølges av variabelnavn */"
+        }
+
+        hvis (ass_start + 1 < lengde(tokens) og er_navn_token(tokens[ass_start]) og tokens[ass_start + 1] == "=") {
+            la varnavn: tekst = tokens[ass_start]
             la expr_tokens: liste_tekst = [""]
             la expr_ops: liste_tekst = [""]
             la expr_verdier: liste_heltall = [0]
             la eval_resultat: liste_heltall = [0]
             la feil: tekst = ""
-            la j: heltall = i + 2
+            la j: heltall = ass_start + 2
 
             fjern_indeks(expr_tokens, 0)
             fjern_indeks(expr_ops, 0)
@@ -952,6 +964,10 @@ funksjon skript_til_ops_og_verdier(tokens: liste_tekst, navn: liste_tekst, miljo
 
             i = j + 1
             fortsett
+        }
+
+        hvis (har_la) {
+            returner "/* feil: ugyldig deklarasjon etter 'la' */"
         }
 
         la final_tokens: liste_tekst = [""]

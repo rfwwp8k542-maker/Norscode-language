@@ -1249,8 +1249,17 @@ char * selfhost__compiler__skript_til_ops_og_verdier(nl_list_text* tokens, nl_li
             i = (i + 1);
             continue;
         }
-        if ((((i + 1) < nl_list_text_len(tokens)) && selfhost__compiler__er_navn_token(tokens->data[i])) && nl_streq(tokens->data[(i + 1)], "=")) {
-            char * varnavn = tokens->data[i];
+        int ass_start = i;
+        int har_la = 0;
+        if (nl_streq(tokens->data[ass_start], "la")) {
+            har_la = 1;
+            ass_start = (ass_start + 1);
+        }
+        if (har_la && (ass_start >= nl_list_text_len(tokens))) {
+            return "/* feil: 'la' må etterfølges av variabelnavn */";
+        }
+        if ((((ass_start + 1) < nl_list_text_len(tokens)) && selfhost__compiler__er_navn_token(tokens->data[ass_start])) && nl_streq(tokens->data[(ass_start + 1)], "=")) {
+            char * varnavn = tokens->data[ass_start];
             nl_list_text* expr_tokens = nl_list_text_new();
             nl_list_text_push(expr_tokens, "");
             nl_list_text* expr_ops = nl_list_text_new();
@@ -1260,7 +1269,7 @@ char * selfhost__compiler__skript_til_ops_og_verdier(nl_list_text* tokens, nl_li
             nl_list_int* eval_resultat = nl_list_int_new();
             nl_list_int_push(eval_resultat, 0);
             char * feil = "";
-            int j = (i + 2);
+            int j = (ass_start + 2);
             nl_list_text_remove(expr_tokens, 0);
             nl_list_text_remove(expr_ops, 0);
             nl_list_int_remove(expr_verdier, 0);
@@ -1293,6 +1302,9 @@ char * selfhost__compiler__skript_til_ops_og_verdier(nl_list_text* tokens, nl_li
             }
             i = (j + 1);
             continue;
+        }
+        if (har_la) {
+            return "/* feil: ugyldig deklarasjon etter 'la' */";
         }
         nl_list_text* final_tokens = nl_list_text_new();
         nl_list_text_push(final_tokens, "");
@@ -1646,6 +1658,8 @@ int start() {
     nl_assert_eq_text(expr_env_err2, "/* feil: navn/miljø-verdier må ha samme lengde */");
     char * script_dis = selfhost__compiler__disasm_skript("x=2+3;y=x*4;y+1");
     nl_assert_eq_text(script_dis, "0: PUSH 20\n1: PUSH 1\n2: ADD\n3: PRINT\n4: HALT\n");
+    char * script_la_dis = selfhost__compiler__disasm_skript("la x=2+3;la y=x*4;y+1");
+    nl_assert_eq_text(script_la_dis, "0: PUSH 20\n1: PUSH 1\n2: ADD\n3: PRINT\n4: HALT\n");
     char * script_norsk_ops = selfhost__compiler__disasm_skript("x=sann;y=ikke usann;x og y");
     nl_assert_eq_text(script_norsk_ops, "0: PUSH 1\n1: PUSH 1\n2: AND\n3: PRINT\n4: HALT\n");
     char * script_c = selfhost__compiler__kompiler_skript_til_c("x=2;y=x+5;y*2");
@@ -1656,6 +1670,10 @@ int start() {
     nl_assert_eq_text(script_err2, "/* feil: uventet ';' i sluttuttrykk */");
     char * script_err3 = selfhost__compiler__disasm_skript("x=2+3;");
     nl_assert_eq_text(script_err3, "/* feil: skriptet mangler sluttuttrykk */");
+    char * script_err4 = selfhost__compiler__disasm_skript("la ;x+1");
+    nl_assert_eq_text(script_err4, "/* feil: ugyldig deklarasjon etter 'la' */");
+    char * script_err5 = selfhost__compiler__disasm_skript("la x;x+1");
+    nl_assert_eq_text(script_err5, "/* feil: ugyldig deklarasjon etter 'la' */");
     nl_list_text* linjer = nl_list_text_new();
     nl_list_text_push(linjer, "");
     nl_list_text_push(linjer, "PUSH");

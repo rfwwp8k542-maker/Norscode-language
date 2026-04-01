@@ -203,6 +203,9 @@ funksjon start() -> heltall {
     la script_dis: tekst = sh.disasm_skript("x=2+3;y=x*4;y+1")
     assert_eq(script_dis, "0: PUSH 20\n1: PUSH 1\n2: ADD\n3: PRINT\n4: HALT\n")
 
+    la script_la_dis: tekst = sh.disasm_skript("la x=2+3;la y=x*4;y+1")
+    assert_eq(script_la_dis, "0: PUSH 20\n1: PUSH 1\n2: ADD\n3: PRINT\n4: HALT\n")
+
     la script_norsk_ops: tekst = sh.disasm_skript("x=sann;y=ikke usann;x og y")
     assert_eq(script_norsk_ops, "0: PUSH 1\n1: PUSH 1\n2: AND\n3: PRINT\n4: HALT\n")
 
@@ -217,6 +220,12 @@ funksjon start() -> heltall {
 
     la script_err3: tekst = sh.disasm_skript("x=2+3;")
     assert_eq(script_err3, "/* feil: skriptet mangler sluttuttrykk */")
+
+    la script_err4: tekst = sh.disasm_skript("la ;x+1")
+    assert_eq(script_err4, "/* feil: ugyldig deklarasjon etter 'la' */")
+
+    la script_err5: tekst = sh.disasm_skript("la x;x+1")
+    assert_eq(script_err5, "/* feil: ugyldig deklarasjon etter 'la' */")
 
     la linjer: liste_tekst = ["", "PUSH", "11", "PUSH", "4", "SUB", "PRINT", "HALT"]
     la c3: tekst = sh.kompiler_fra_linjer(linjer)
