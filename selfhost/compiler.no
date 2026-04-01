@@ -981,7 +981,7 @@ funksjon uttrykk_til_ops_og_verdier_med_miljo(tokens: liste_tekst, navn: liste_t
         } ellers hvis (tok_raw == "minus") {
             tok = "-"
             tok_step = 1
-        } ellers hvis (tok_raw == "ganger") {
+        } ellers hvis (tok_raw == "gang" eller tok_raw == "gange" eller tok_raw == "ganget" eller tok_raw == "ganger" eller tok_raw == "ganges") {
             tok = "*"
             tok_step = 1
         } ellers hvis (i + 1 < lengde(tokens) og (tok_raw == "rest" eller tok_raw == "resten") og n1 == "av") {

@@ -451,6 +451,21 @@ funksjon start() -> heltall {
     la expr_norsk_gang_med_underscore: tekst = sh.disasm_uttrykk("3 gang_med 4")
     assert_eq(expr_norsk_gang_med_underscore, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n")
 
+    la expr_norsk_gang: tekst = sh.disasm_uttrykk("3 gang 4")
+    assert_eq(expr_norsk_gang, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n")
+
+    la expr_norsk_gange: tekst = sh.disasm_uttrykk("3 gange 4")
+    assert_eq(expr_norsk_gange, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n")
+
+    la expr_norsk_ganget: tekst = sh.disasm_uttrykk("3 ganget 4")
+    assert_eq(expr_norsk_ganget, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n")
+
+    la expr_norsk_ganger: tekst = sh.disasm_uttrykk("3 ganger 4")
+    assert_eq(expr_norsk_ganger, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n")
+
+    la expr_norsk_ganges: tekst = sh.disasm_uttrykk("3 ganges 4")
+    assert_eq(expr_norsk_ganges, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n")
+
     la expr_norsk_multipliser_med: tekst = sh.disasm_uttrykk("3 multipliser med 4")
     assert_eq(expr_norsk_multipliser_med, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n")
 
@@ -1375,6 +1390,21 @@ funksjon start() -> heltall {
 
     la script_norsk_gang_med_underscore: tekst = sh.disasm_skript("la x=3;la y=4;returner x gang_med y")
     assert_eq(script_norsk_gang_med_underscore, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n")
+
+    la script_norsk_gang: tekst = sh.disasm_skript("la x=3;la y=4;returner x gang y")
+    assert_eq(script_norsk_gang, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n")
+
+    la script_norsk_gange: tekst = sh.disasm_skript("la x=3;la y=4;returner x gange y")
+    assert_eq(script_norsk_gange, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n")
+
+    la script_norsk_ganget: tekst = sh.disasm_skript("la x=3;la y=4;returner x ganget y")
+    assert_eq(script_norsk_ganget, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n")
+
+    la script_norsk_ganger: tekst = sh.disasm_skript("la x=3;la y=4;returner x ganger y")
+    assert_eq(script_norsk_ganger, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n")
+
+    la script_norsk_ganges: tekst = sh.disasm_skript("la x=3;la y=4;returner x ganges y")
+    assert_eq(script_norsk_ganges, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n")
 
     la script_norsk_multipliser_med: tekst = sh.disasm_skript("la x=3;la y=4;returner x multipliser med y")
     assert_eq(script_norsk_multipliser_med, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n")
