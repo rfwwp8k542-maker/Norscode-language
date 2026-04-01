@@ -136,8 +136,8 @@ norcode add std_tekst
 norcode add std_liste
 norcode add std_io
 
-# Samme via launcher
-python3 nl add butikk
+# Samme via modul-kjøring
+python3 -m norcode add butikk
 
 # Legg til pakke fra vilkårlig sti
 norcode add ./packages/butikk
@@ -306,24 +306,20 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Snapshot check
-        run: norcode update-snapshots --check
-      - name: Engine parity check
-        run: norcode ir-disasm tests/ir_sample.nlir --diff --fail-on-warning
-      - name: Full test
-        run: norcode test
+      - name: Run NorCode CI checks
+        run: python3 -m norcode ci --check-names
 ```
 
 Lokal kjøring av samme sekvens:
 
 ```bash
-norcode ci
+python3 -m norcode ci
 
 # Maskinlesbar output
-norcode ci --json
+python3 -m norcode ci --json
 
 # Valgfri ekstra-sjekk for navnemigrering i CI
-norcode ci --check-names
+python3 -m norcode ci --check-names
 ```
 
 ---
