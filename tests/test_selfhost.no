@@ -218,6 +218,9 @@ funksjon start() -> heltall {
     la script_returner_semicolon: tekst = sh.disasm_skript("la x=2;returner x+3;")
     assert_eq(script_returner_semicolon, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n")
 
+    la script_sett_ok: tekst = sh.disasm_skript("la x=2;sett x=x+3;returner x")
+    assert_eq(script_sett_ok, "0: PUSH 5\n1: PRINT\n2: HALT\n")
+
     la script_norsk_ops: tekst = sh.disasm_skript("x=sann;y=ikke usann;x og y")
     assert_eq(script_norsk_ops, "0: PUSH 1\n1: PUSH 1\n2: AND\n3: PRINT\n4: HALT\n")
 
@@ -244,6 +247,12 @@ funksjon start() -> heltall {
 
     la script_err7: tekst = sh.disasm_skript("la x=1;returner")
     assert_eq(script_err7, "/* feil: 'returner' må etterfølges av uttrykk */")
+
+    la script_err8: tekst = sh.disasm_skript("sett x=1;returner 0")
+    assert_eq(script_err8, "/* feil: variabel 'x' er ikke deklarert (bruk 'la') */")
+
+    la script_err9: tekst = sh.disasm_skript("la x=1;la x=2;returner x")
+    assert_eq(script_err9, "/* feil: variabel 'x' er allerede deklarert */")
 
     la linjer: liste_tekst = ["", "PUSH", "11", "PUSH", "4", "SUB", "PRINT", "HALT"]
     la c3: tekst = sh.kompiler_fra_linjer(linjer)

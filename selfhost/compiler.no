@@ -923,14 +923,21 @@ funksjon skript_til_ops_og_verdier(tokens: liste_tekst, navn: liste_tekst, miljo
 
         la ass_start: heltall = 0
         la har_la: bool = usann
+        la har_sett: bool = usann
 
         hvis (stmt_tokens[ass_start] == "la") {
             har_la = sann
             ass_start = ass_start + 1
+        } ellers hvis (stmt_tokens[ass_start] == "sett") {
+            har_sett = sann
+            ass_start = ass_start + 1
         }
 
-        hvis (har_la og ass_start >= lengde(stmt_tokens)) {
-            returner "/* feil: 'la' må etterfølges av variabelnavn */"
+        hvis ((har_la eller har_sett) og ass_start >= lengde(stmt_tokens)) {
+            hvis (har_la) {
+                returner "/* feil: 'la' må etterfølges av variabelnavn */"
+            }
+            returner "/* feil: 'sett' må etterfølges av variabelnavn */"
         }
 
         hvis (ass_start + 1 < lengde(stmt_tokens) og er_navn_token(stmt_tokens[ass_start]) og stmt_tokens[ass_start + 1] == "=") {
@@ -970,6 +977,13 @@ funksjon skript_til_ops_og_verdier(tokens: liste_tekst, navn: liste_tekst, miljo
             }
 
             la idx: heltall = finn_navn_indeks(navn, varnavn)
+            hvis (har_la og idx >= 0) {
+                returner "/* feil: variabel '" + varnavn + "' er allerede deklarert */"
+            }
+            hvis (har_sett og idx < 0) {
+                returner "/* feil: variabel '" + varnavn + "' er ikke deklarert (bruk 'la') */"
+            }
+
             hvis (idx >= 0) {
                 sett_inn(miljo_verdier, idx, eval_resultat[0])
             } ellers {
@@ -981,6 +995,9 @@ funksjon skript_til_ops_og_verdier(tokens: liste_tekst, navn: liste_tekst, miljo
 
         hvis (har_la) {
             returner "/* feil: ugyldig deklarasjon etter 'la' */"
+        }
+        hvis (har_sett) {
+            returner "/* feil: ugyldig assignment etter 'sett' */"
         }
 
         la final_tokens: liste_tekst = [""]
