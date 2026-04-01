@@ -127,7 +127,7 @@ funksjon er_operator_token(tok: tekst) -> bool {
     hvis (tok == "er" eller tok == "ikke_er" eller tok == "mindre_enn" eller tok == "storre_enn" eller tok == "mindre_eller_lik" eller tok == "storre_eller_lik") {
         returner sann
     }
-    hvis (tok == "&&" eller tok == "||" eller tok == "!" eller tok == "og" eller tok == "samt" eller tok == "eller" eller tok == "ikke") {
+    hvis (tok == "&&" eller tok == "||" eller tok == "!" eller tok == "og" eller tok == "samt" eller tok == "eller" eller tok == "enten" eller tok == "ikke") {
         returner sann
     }
     returner usann
@@ -154,7 +154,7 @@ funksjon operator_precedens(tok: tekst) -> heltall {
     hvis (tok == "&&" eller tok == "og" eller tok == "samt") {
         returner 2
     }
-    hvis (tok == "||" eller tok == "eller") {
+    hvis (tok == "||" eller tok == "eller" eller tok == "enten") {
         returner 1
     }
     returner 0
@@ -188,7 +188,7 @@ funksjon operator_til_opcode(tok: tekst) -> tekst {
     hvis (tok == "&&" eller tok == "og" eller tok == "samt") {
         returner "AND"
     }
-    hvis (tok == "||" eller tok == "eller") {
+    hvis (tok == "||" eller tok == "eller" eller tok == "enten") {
         returner "OR"
     }
     returner ""
