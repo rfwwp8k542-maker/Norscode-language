@@ -1364,7 +1364,7 @@ char * selfhost__compiler__uttrykk_til_ops_og_verdier_med_miljo(nl_list_text* to
             tok = "%";
             tok_step = 2;
         }
-        else if ((((nl_streq(tok_raw, "mod") || nl_streq(tok_raw, "modulo")) || nl_streq(tok_raw, "rest")) || nl_streq(tok_raw, "rest_av")) || nl_streq(tok_raw, "resten_av")) {
+        else if (((((nl_streq(tok_raw, "mod") || nl_streq(tok_raw, "modulo")) || nl_streq(tok_raw, "modul")) || nl_streq(tok_raw, "rest")) || nl_streq(tok_raw, "rest_av")) || nl_streq(tok_raw, "resten_av")) {
             tok = "%";
             tok_step = 1;
         }
@@ -2538,6 +2538,8 @@ int start() {
     nl_assert_eq_text(expr_norsk_mod, "0: PUSH 17\n1: PUSH 5\n2: MOD\n3: PRINT\n4: HALT\n");
     char * expr_norsk_modulo = selfhost__compiler__disasm_uttrykk("17 modulo 5");
     nl_assert_eq_text(expr_norsk_modulo, "0: PUSH 17\n1: PUSH 5\n2: MOD\n3: PRINT\n4: HALT\n");
+    char * expr_norsk_modul = selfhost__compiler__disasm_uttrykk("17 modul 5");
+    nl_assert_eq_text(expr_norsk_modul, "0: PUSH 17\n1: PUSH 5\n2: MOD\n3: PRINT\n4: HALT\n");
     char * expr_norsk_rest = selfhost__compiler__disasm_uttrykk("17 rest 5");
     nl_assert_eq_text(expr_norsk_rest, "0: PUSH 17\n1: PUSH 5\n2: MOD\n3: PRINT\n4: HALT\n");
     char * expr_norsk_rest_av = selfhost__compiler__disasm_uttrykk("17 rest_av 5");
@@ -3161,6 +3163,8 @@ int start() {
     nl_assert_eq_text(script_norsk_subtrahert_med_underscore, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n");
     char * script_norsk_mod = selfhost__compiler__disasm_skript("la x=17;la y=5;returner x mod y");
     nl_assert_eq_text(script_norsk_mod, "0: PUSH 17\n1: PUSH 5\n2: MOD\n3: PRINT\n4: HALT\n");
+    char * script_norsk_modul = selfhost__compiler__disasm_skript("la x=17;la y=5;returner x modul y");
+    nl_assert_eq_text(script_norsk_modul, "0: PUSH 17\n1: PUSH 5\n2: MOD\n3: PRINT\n4: HALT\n");
     char * script_norsk_rest = selfhost__compiler__disasm_skript("la x=17;la y=5;returner x rest y");
     nl_assert_eq_text(script_norsk_rest, "0: PUSH 17\n1: PUSH 5\n2: MOD\n3: PRINT\n4: HALT\n");
     char * script_norsk_rest_av = selfhost__compiler__disasm_skript("la x=17;la y=5;returner x rest_av y");
