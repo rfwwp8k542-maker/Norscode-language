@@ -212,6 +212,12 @@ funksjon start() -> heltall {
     la script_empty_statements: tekst = sh.disasm_skript(";;la x=2;;x+1;;")
     assert_eq(script_empty_statements, "0: PUSH 2\n1: PUSH 1\n2: ADD\n3: PRINT\n4: HALT\n")
 
+    la script_returner: tekst = sh.disasm_skript("la x=2;returner x+3")
+    assert_eq(script_returner, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n")
+
+    la script_returner_semicolon: tekst = sh.disasm_skript("la x=2;returner x+3;")
+    assert_eq(script_returner_semicolon, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n")
+
     la script_norsk_ops: tekst = sh.disasm_skript("x=sann;y=ikke usann;x og y")
     assert_eq(script_norsk_ops, "0: PUSH 1\n1: PUSH 1\n2: AND\n3: PRINT\n4: HALT\n")
 
@@ -235,6 +241,9 @@ funksjon start() -> heltall {
 
     la script_err6: tekst = sh.disasm_skript("1+1; y=2; y")
     assert_eq(script_err6, "/* feil: kun siste statement kan være uttrykk (token 4) */")
+
+    la script_err7: tekst = sh.disasm_skript("la x=1;returner")
+    assert_eq(script_err7, "/* feil: 'returner' må etterfølges av uttrykk */")
 
     la linjer: liste_tekst = ["", "PUSH", "11", "PUSH", "4", "SUB", "PRINT", "HALT"]
     la c3: tekst = sh.kompiler_fra_linjer(linjer)

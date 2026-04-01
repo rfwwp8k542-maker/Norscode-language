@@ -983,7 +983,26 @@ funksjon skript_til_ops_og_verdier(tokens: liste_tekst, navn: liste_tekst, miljo
             returner "/* feil: ugyldig deklarasjon etter 'la' */"
         }
 
-        la final_feil: tekst = uttrykk_til_ops_og_verdier_med_miljo(stmt_tokens, navn, miljo_verdier, out_ops, out_verdier)
+        la final_tokens: liste_tekst = [""]
+        fjern_indeks(final_tokens, 0)
+        hvis (stmt_tokens[0] == "returner") {
+            la r: heltall = 1
+            mens (r < lengde(stmt_tokens)) {
+                legg_til(final_tokens, stmt_tokens[r])
+                r = r + 1
+            }
+            hvis (lengde(final_tokens) == 0) {
+                returner "/* feil: 'returner' må etterfølges av uttrykk */"
+            }
+        } ellers {
+            la r2: heltall = 0
+            mens (r2 < lengde(stmt_tokens)) {
+                legg_til(final_tokens, stmt_tokens[r2])
+                r2 = r2 + 1
+            }
+        }
+
+        la final_feil: tekst = uttrykk_til_ops_og_verdier_med_miljo(final_tokens, navn, miljo_verdier, out_ops, out_verdier)
         hvis (final_feil != "") {
             returner final_feil
         }

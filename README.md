@@ -354,7 +354,7 @@ Vi har startet en tidlig selv-hosting bane i `selfhost/`:
 
 Neste steg:
 
-- Utvide selv-hosting til full parser (påbegynt: uttrykksparser + mini-skriptparser med assignments/deklarasjoner (`x=...;`, `la x=...;`), tomme statements (`;`) og norske bool-operator-ord (`og/eller/ikke`) i `selfhost/compiler.no`)
+- Utvide selv-hosting til full parser (påbegynt: uttrykksparser + mini-skriptparser med assignments/deklarasjoner (`x=...;`, `la x=...;`), `returner <uttrykk>`, tomme statements (`;`) og norske bool-operator-ord (`og/eller/ikke`) i `selfhost/compiler.no`)
 - Selv-hosting lexer/token-strøm med bedre syntaksfeil og posisjonsinfo (påbegynt: strict-feil med token-posisjon)
 
 ---

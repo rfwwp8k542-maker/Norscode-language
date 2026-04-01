@@ -1319,7 +1319,27 @@ char * selfhost__compiler__skript_til_ops_og_verdier(nl_list_text* tokens, nl_li
         if (har_la) {
             return "/* feil: ugyldig deklarasjon etter 'la' */";
         }
-        char * final_feil = selfhost__compiler__uttrykk_til_ops_og_verdier_med_miljo(stmt_tokens, navn, miljo_verdier, out_ops, out_verdier);
+        nl_list_text* final_tokens = nl_list_text_new();
+        nl_list_text_push(final_tokens, "");
+        nl_list_text_remove(final_tokens, 0);
+        if (nl_streq(stmt_tokens->data[0], "returner")) {
+            int r = 1;
+            while (r < nl_list_text_len(stmt_tokens)) {
+                nl_list_text_push(final_tokens, stmt_tokens->data[r]);
+                r = (r + 1);
+            }
+            if (nl_list_text_len(final_tokens) == 0) {
+                return "/* feil: 'returner' må etterfølges av uttrykk */";
+            }
+        }
+        else {
+            int r2 = 0;
+            while (r2 < nl_list_text_len(stmt_tokens)) {
+                nl_list_text_push(final_tokens, stmt_tokens->data[r2]);
+                r2 = (r2 + 1);
+            }
+        }
+        char * final_feil = selfhost__compiler__uttrykk_til_ops_og_verdier_med_miljo(final_tokens, navn, miljo_verdier, out_ops, out_verdier);
         if (!(nl_streq(final_feil, ""))) {
             return final_feil;
         }
@@ -1669,6 +1689,10 @@ int start() {
     nl_assert_eq_text(script_trailing_semicolon, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
     char * script_empty_statements = selfhost__compiler__disasm_skript(";;la x=2;;x+1;;");
     nl_assert_eq_text(script_empty_statements, "0: PUSH 2\n1: PUSH 1\n2: ADD\n3: PRINT\n4: HALT\n");
+    char * script_returner = selfhost__compiler__disasm_skript("la x=2;returner x+3");
+    nl_assert_eq_text(script_returner, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
+    char * script_returner_semicolon = selfhost__compiler__disasm_skript("la x=2;returner x+3;");
+    nl_assert_eq_text(script_returner_semicolon, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
     char * script_norsk_ops = selfhost__compiler__disasm_skript("x=sann;y=ikke usann;x og y");
     nl_assert_eq_text(script_norsk_ops, "0: PUSH 1\n1: PUSH 1\n2: AND\n3: PRINT\n4: HALT\n");
     char * script_c = selfhost__compiler__kompiler_skript_til_c("x=2;y=x+5;y*2");
@@ -1685,6 +1709,8 @@ int start() {
     nl_assert_eq_text(script_err5, "/* feil: ugyldig deklarasjon etter 'la' */");
     char * script_err6 = selfhost__compiler__disasm_skript("1+1; y=2; y");
     nl_assert_eq_text(script_err6, "/* feil: kun siste statement kan være uttrykk (token 4) */");
+    char * script_err7 = selfhost__compiler__disasm_skript("la x=1;returner");
+    nl_assert_eq_text(script_err7, "/* feil: 'returner' må etterfølges av uttrykk */");
     nl_list_text* linjer = nl_list_text_new();
     nl_list_text_push(linjer, "");
     nl_list_text_push(linjer, "PUSH");
