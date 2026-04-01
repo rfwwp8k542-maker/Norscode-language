@@ -220,6 +220,18 @@ funksjon start() -> heltall {
     la expr_norsk_subtrahert_med_underscore: tekst = sh.disasm_uttrykk("10 subtrahert_med 3")
     assert_eq(expr_norsk_subtrahert_med_underscore, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n")
 
+    la expr_norsk_trekk: tekst = sh.disasm_uttrykk("10 trekk 3")
+    assert_eq(expr_norsk_trekk, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n")
+
+    la expr_norsk_trekke: tekst = sh.disasm_uttrykk("10 trekke 3")
+    assert_eq(expr_norsk_trekke, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n")
+
+    la expr_norsk_subtraher: tekst = sh.disasm_uttrykk("10 subtraher 3")
+    assert_eq(expr_norsk_subtraher, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n")
+
+    la expr_norsk_subtrahert: tekst = sh.disasm_uttrykk("10 subtrahert 3")
+    assert_eq(expr_norsk_subtrahert, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n")
+
     la expr_unary_plus: tekst = sh.disasm_uttrykk("+3+5")
     assert_eq(expr_unary_plus, "0: PUSH 3\n1: PUSH 5\n2: ADD\n3: PRINT\n4: HALT\n")
 
@@ -1327,6 +1339,18 @@ funksjon start() -> heltall {
 
     la script_norsk_trekke_med_underscore: tekst = sh.disasm_skript("la x=10;la y=3;returner x trekke_med y")
     assert_eq(script_norsk_trekke_med_underscore, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n")
+
+    la script_norsk_trekk: tekst = sh.disasm_skript("la x=10;la y=3;returner x trekk y")
+    assert_eq(script_norsk_trekk, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n")
+
+    la script_norsk_trekke: tekst = sh.disasm_skript("la x=10;la y=3;returner x trekke y")
+    assert_eq(script_norsk_trekke, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n")
+
+    la script_norsk_subtraher: tekst = sh.disasm_skript("la x=10;la y=3;returner x subtraher y")
+    assert_eq(script_norsk_subtraher, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n")
+
+    la script_norsk_subtrahert: tekst = sh.disasm_skript("la x=10;la y=3;returner x subtrahert y")
+    assert_eq(script_norsk_subtrahert, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n")
 
     la script_norsk_trekkes_med: tekst = sh.disasm_skript("la x=10;la y=3;returner x trekkes med y")
     assert_eq(script_norsk_trekkes_med, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n")

@@ -981,6 +981,9 @@ funksjon uttrykk_til_ops_og_verdier_med_miljo(tokens: liste_tekst, navn: liste_t
         } ellers hvis (i + 1 < lengde(tokens) og (tok_raw == "minus" eller tok_raw == "minuseres" eller tok_raw == "trekk" eller tok_raw == "trekke" eller tok_raw == "trekkes" eller tok_raw == "subtraher" eller tok_raw == "subtraherer" eller tok_raw == "subtraheres" eller tok_raw == "subtrahert") og n1 == "med") {
             tok = "-"
             tok_step = 2
+        } ellers hvis (tok_raw == "minus" eller tok_raw == "minuseres" eller tok_raw == "trekk" eller tok_raw == "trekke" eller tok_raw == "trekkes" eller tok_raw == "subtraher" eller tok_raw == "subtraherer" eller tok_raw == "subtraheres" eller tok_raw == "subtrahert") {
+            tok = "-"
+            tok_step = 1
         } ellers hvis (tok_raw == "minus") {
             tok = "-"
             tok_step = 1
