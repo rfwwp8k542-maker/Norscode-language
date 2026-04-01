@@ -221,6 +221,9 @@ funksjon start() -> heltall {
     la script_sett_ok: tekst = sh.disasm_skript("la x=2;sett x=x+3;returner x")
     assert_eq(script_sett_ok, "0: PUSH 5\n1: PRINT\n2: HALT\n")
 
+    la script_hvis_assignment: tekst = sh.disasm_skript("la x=hvis 1==1 da 7 ellers 9;returner x+1")
+    assert_eq(script_hvis_assignment, "0: PUSH 7\n1: PUSH 1\n2: ADD\n3: PRINT\n4: HALT\n")
+
     la script_hvis: tekst = sh.disasm_skript("la x=1;hvis x==1 da 10 ellers 20")
     assert_eq(script_hvis, "0: PUSH 1\n1: PUSH 1\n2: EQ\n3: JZ 6\n4: PUSH 10\n5: JMP 8\n6: LABEL 6\n7: PUSH 20\n8: LABEL 8\n9: PRINT\n10: HALT\n")
 

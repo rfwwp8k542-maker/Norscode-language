@@ -442,6 +442,38 @@ funksjon eval_ops_til_verdi(ops: liste_tekst, verdier: liste_heltall, resultat: 
         la op: tekst = ops[i]
         la v: heltall = verdier[i]
 
+        hvis (op == "LABEL") {
+            i = i + 1
+            fortsett
+        }
+
+        hvis (op == "JMP" eller op == "JZ") {
+            la target_label: heltall = v
+            la j: heltall = 0
+            la target_pc: heltall = -1
+            hvis (op == "JZ") {
+                hvis (lengde(stack) < 1) {
+                    returner "/* feil: eval stack-underflow ved JZ */"
+                }
+                hvis (stack[lengde(stack) - 1] != 0) {
+                    i = i + 1
+                    fortsett
+                }
+            }
+            mens (j < lengde(ops)) {
+                hvis (ops[j] == "LABEL" og verdier[j] == target_label) {
+                    target_pc = j
+                    bryt
+                }
+                j = j + 1
+            }
+            hvis (target_pc < 0) {
+                returner "/* feil: eval fant ikke label " + tekst_fra_heltall(target_label) + " */"
+            }
+            i = target_pc
+            fortsett
+        }
+
         hvis (op == "PUSH") {
             legg_til(stack, v)
             i = i + 1
@@ -531,17 +563,29 @@ funksjon eval_ops_til_verdi(ops: liste_tekst, verdier: liste_heltall, resultat: 
             fortsett
         }
 
+        hvis (op == "PRINT") {
+            hvis (lengde(stack) < 1) {
+                returner "/* feil: eval stack-underflow ved PRINT */"
+            }
+            i = i + 1
+            fortsett
+        }
+
+        hvis (op == "HALT") {
+            bryt
+        }
+
         returner "/* feil: eval støtter ikke op " + op + " */"
     }
 
-    hvis (lengde(stack) != 1) {
-        returner "/* feil: eval forventet én verdi, fikk " + tekst_fra_heltall(lengde(stack)) + " */"
+    hvis (lengde(stack) < 1) {
+        returner "/* feil: eval forventet minst én verdi, fikk 0 */"
     }
 
     hvis (lengde(resultat) == 0) {
-        legg_til(resultat, stack[0])
+        legg_til(resultat, stack[lengde(stack) - 1])
     } ellers {
-        sett_inn(resultat, 0, stack[0])
+        sett_inn(resultat, 0, stack[lengde(stack) - 1])
     }
     returner ""
 }
@@ -1121,7 +1165,11 @@ funksjon skript_til_ops_og_verdier(tokens: liste_tekst, navn: liste_tekst, miljo
                 returner "/* feil: mangler ';' etter assignment til " + varnavn + " */"
             }
 
-            feil = uttrykk_til_ops_og_verdier_med_miljo(expr_tokens, navn, miljo_verdier, expr_ops, expr_verdier)
+            hvis (lengde(expr_tokens) > 0 og expr_tokens[0] == "hvis") {
+                feil = bygg_hvis_da_ellers_ops_med_miljo(expr_tokens, navn, miljo_verdier, expr_ops, expr_verdier)
+            } ellers {
+                feil = uttrykk_til_ops_og_verdier_med_miljo(expr_tokens, navn, miljo_verdier, expr_ops, expr_verdier)
+            }
             hvis (feil != "") {
                 returner feil
             }

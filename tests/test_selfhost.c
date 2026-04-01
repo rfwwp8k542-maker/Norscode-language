@@ -767,6 +767,36 @@ char * selfhost__compiler__eval_ops_til_verdi(nl_list_text* ops, nl_list_int* ve
     while (i < nl_list_text_len(ops)) {
         char * op = ops->data[i];
         int v = verdier->data[i];
+        if (nl_streq(op, "LABEL")) {
+            i = (i + 1);
+            continue;
+        }
+        if (nl_streq(op, "JMP") || nl_streq(op, "JZ")) {
+            int target_label = v;
+            int j = 0;
+            int target_pc = (-(1));
+            if (nl_streq(op, "JZ")) {
+                if (nl_list_int_len(stack) < 1) {
+                    return "/* feil: eval stack-underflow ved JZ */";
+                }
+                if (stack->data[(nl_list_int_len(stack) - 1)] != 0) {
+                    i = (i + 1);
+                    continue;
+                }
+            }
+            while (j < nl_list_text_len(ops)) {
+                if (nl_streq(ops->data[j], "LABEL") && (verdier->data[j] == target_label)) {
+                    target_pc = j;
+                    break;
+                }
+                j = (j + 1);
+            }
+            if (target_pc < 0) {
+                return nl_concat(nl_concat("/* feil: eval fant ikke label ", nl_int_to_text(target_label)), " */");
+            }
+            i = target_pc;
+            continue;
+        }
         if (nl_streq(op, "PUSH")) {
             nl_list_int_push(stack, v);
             i = (i + 1);
@@ -868,16 +898,26 @@ char * selfhost__compiler__eval_ops_til_verdi(nl_list_text* ops, nl_list_int* ve
             i = (i + 1);
             continue;
         }
+        if (nl_streq(op, "PRINT")) {
+            if (nl_list_int_len(stack) < 1) {
+                return "/* feil: eval stack-underflow ved PRINT */";
+            }
+            i = (i + 1);
+            continue;
+        }
+        if (nl_streq(op, "HALT")) {
+            break;
+        }
         return nl_concat(nl_concat("/* feil: eval støtter ikke op ", op), " */");
     }
-    if (nl_list_int_len(stack) != 1) {
-        return nl_concat(nl_concat("/* feil: eval forventet én verdi, fikk ", nl_int_to_text(nl_list_int_len(stack))), " */");
+    if (nl_list_int_len(stack) < 1) {
+        return "/* feil: eval forventet minst én verdi, fikk 0 */";
     }
     if (nl_list_int_len(resultat) == 0) {
-        nl_list_int_push(resultat, stack->data[0]);
+        nl_list_int_push(resultat, stack->data[(nl_list_int_len(stack) - 1)]);
     }
     else {
-        nl_list_int_set(resultat, 0, stack->data[0]);
+        nl_list_int_set(resultat, 0, stack->data[(nl_list_int_len(stack) - 1)]);
     }
     return "";
     return "";
@@ -1461,7 +1501,12 @@ char * selfhost__compiler__skript_til_ops_og_verdier(nl_list_text* tokens, nl_li
             if (stmt_has_semicolon == 0) {
                 return nl_concat(nl_concat("/* feil: mangler ';' etter assignment til ", varnavn), " */");
             }
-            feil = selfhost__compiler__uttrykk_til_ops_og_verdier_med_miljo(expr_tokens, navn, miljo_verdier, expr_ops, expr_verdier);
+            if ((nl_list_text_len(expr_tokens) > 0) && nl_streq(expr_tokens->data[0], "hvis")) {
+                feil = selfhost__compiler__bygg_hvis_da_ellers_ops_med_miljo(expr_tokens, navn, miljo_verdier, expr_ops, expr_verdier);
+            }
+            else {
+                feil = selfhost__compiler__uttrykk_til_ops_og_verdier_med_miljo(expr_tokens, navn, miljo_verdier, expr_ops, expr_verdier);
+            }
             if (!(nl_streq(feil, ""))) {
                 return feil;
             }
@@ -1873,6 +1918,8 @@ int start() {
     nl_assert_eq_text(script_returner_semicolon, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
     char * script_sett_ok = selfhost__compiler__disasm_skript("la x=2;sett x=x+3;returner x");
     nl_assert_eq_text(script_sett_ok, "0: PUSH 5\n1: PRINT\n2: HALT\n");
+    char * script_hvis_assignment = selfhost__compiler__disasm_skript("la x=hvis 1==1 da 7 ellers 9;returner x+1");
+    nl_assert_eq_text(script_hvis_assignment, "0: PUSH 7\n1: PUSH 1\n2: ADD\n3: PRINT\n4: HALT\n");
     char * script_hvis = selfhost__compiler__disasm_skript("la x=1;hvis x==1 da 10 ellers 20");
     nl_assert_eq_text(script_hvis, "0: PUSH 1\n1: PUSH 1\n2: EQ\n3: JZ 6\n4: PUSH 10\n5: JMP 8\n6: LABEL 6\n7: PUSH 20\n8: LABEL 8\n9: PRINT\n10: HALT\n");
     char * script_returner_hvis = selfhost__compiler__disasm_skript("la x=0;returner hvis x==1 da 10 ellers 20");
