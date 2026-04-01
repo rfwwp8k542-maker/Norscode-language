@@ -933,10 +933,10 @@ funksjon uttrykk_til_ops_og_verdier_med_miljo(tokens: liste_tekst, navn: liste_t
         } ellers hvis (i + 1 < lengde(tokens) og (tok_raw == "legg" eller tok_raw == "legges") og n1 == "til") {
             tok = "+"
             tok_step = 2
-        } ellers hvis (tok_raw == "legg_sammen") {
+        } ellers hvis (tok_raw == "legg_sammen" eller tok_raw == "legges_sammen") {
             tok = "+"
             tok_step = 1
-        } ellers hvis (i + 1 < lengde(tokens) og tok_raw == "legg" og n1 == "sammen") {
+        } ellers hvis (i + 1 < lengde(tokens) og (tok_raw == "legg" eller tok_raw == "legges") og n1 == "sammen") {
             tok = "+"
             tok_step = 2
         } ellers hvis (tok_raw == "trekk_fra" eller tok_raw == "trekke_fra" eller tok_raw == "trekkes_fra") {
