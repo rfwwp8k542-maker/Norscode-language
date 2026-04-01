@@ -928,11 +928,19 @@ funksjon bygg_hvis_da_ellers_ops_med_miljo(tokens: liste_tekst, navn: liste_teks
     hvis (feil != "") {
         returner feil
     }
-    feil = uttrykk_til_ops_og_verdier_med_miljo(then_tokens, navn, miljo_verdier, then_ops, then_verdier)
+    hvis (lengde(then_tokens) > 0 og then_tokens[0] == "hvis") {
+        feil = bygg_hvis_da_ellers_ops_med_miljo(then_tokens, navn, miljo_verdier, then_ops, then_verdier)
+    } ellers {
+        feil = uttrykk_til_ops_og_verdier_med_miljo(then_tokens, navn, miljo_verdier, then_ops, then_verdier)
+    }
     hvis (feil != "") {
         returner feil
     }
-    feil = uttrykk_til_ops_og_verdier_med_miljo(else_tokens, navn, miljo_verdier, else_ops, else_verdier)
+    hvis (lengde(else_tokens) > 0 og else_tokens[0] == "hvis") {
+        feil = bygg_hvis_da_ellers_ops_med_miljo(else_tokens, navn, miljo_verdier, else_ops, else_verdier)
+    } ellers {
+        feil = uttrykk_til_ops_og_verdier_med_miljo(else_tokens, navn, miljo_verdier, else_ops, else_verdier)
+    }
     hvis (feil != "") {
         returner feil
     }

@@ -1282,11 +1282,21 @@ char * selfhost__compiler__bygg_hvis_da_ellers_ops_med_miljo(nl_list_text* token
     if (!(nl_streq(feil, ""))) {
         return feil;
     }
-    feil = selfhost__compiler__uttrykk_til_ops_og_verdier_med_miljo(then_tokens, navn, miljo_verdier, then_ops, then_verdier);
+    if ((nl_list_text_len(then_tokens) > 0) && nl_streq(then_tokens->data[0], "hvis")) {
+        feil = selfhost__compiler__bygg_hvis_da_ellers_ops_med_miljo(then_tokens, navn, miljo_verdier, then_ops, then_verdier);
+    }
+    else {
+        feil = selfhost__compiler__uttrykk_til_ops_og_verdier_med_miljo(then_tokens, navn, miljo_verdier, then_ops, then_verdier);
+    }
     if (!(nl_streq(feil, ""))) {
         return feil;
     }
-    feil = selfhost__compiler__uttrykk_til_ops_og_verdier_med_miljo(else_tokens, navn, miljo_verdier, else_ops, else_verdier);
+    if ((nl_list_text_len(else_tokens) > 0) && nl_streq(else_tokens->data[0], "hvis")) {
+        feil = selfhost__compiler__bygg_hvis_da_ellers_ops_med_miljo(else_tokens, navn, miljo_verdier, else_ops, else_verdier);
+    }
+    else {
+        feil = selfhost__compiler__uttrykk_til_ops_og_verdier_med_miljo(else_tokens, navn, miljo_verdier, else_ops, else_verdier);
+    }
     if (!(nl_streq(feil, ""))) {
         return feil;
     }
@@ -1867,6 +1877,9 @@ int start() {
     nl_assert_eq_text(script_hvis, "0: PUSH 1\n1: PUSH 1\n2: EQ\n3: JZ 6\n4: PUSH 10\n5: JMP 8\n6: LABEL 6\n7: PUSH 20\n8: LABEL 8\n9: PRINT\n10: HALT\n");
     char * script_returner_hvis = selfhost__compiler__disasm_skript("la x=0;returner hvis x==1 da 10 ellers 20");
     nl_assert_eq_text(script_returner_hvis, "0: PUSH 0\n1: PUSH 1\n2: EQ\n3: JZ 6\n4: PUSH 10\n5: JMP 8\n6: LABEL 6\n7: PUSH 20\n8: LABEL 8\n9: PRINT\n10: HALT\n");
+    char * script_nested_hvis = selfhost__compiler__disasm_skript("la x=1;hvis x==1 da hvis x==1 da 10 ellers 11 ellers 20");
+    nl_assert_ne_text(script_nested_hvis, "/* feil: ukjent token/navn i uttrykk hvis ved token 0 */");
+    nl_assert_ne_text(script_nested_hvis, "");
     char * script_norsk_ops = selfhost__compiler__disasm_skript("x=sann;y=ikke usann;x og y");
     nl_assert_eq_text(script_norsk_ops, "0: PUSH 1\n1: PUSH 1\n2: AND\n3: PRINT\n4: HALT\n");
     char * script_c = selfhost__compiler__kompiler_skript_til_c("x=2;y=x+5;y*2");
