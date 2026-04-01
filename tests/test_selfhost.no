@@ -202,7 +202,7 @@ funksjon start() -> heltall {
     assert_ne(expr_hvis_c, "")
 
     la expr_err: tekst = sh.disasm_uttrykk("2 +")
-    assert_eq(expr_err, "/* feil: uttrykket avsluttes med operator */")
+    assert_eq(expr_err, "/* feil: uttrykket avsluttes med operator ved token 1 */")
 
     la expr_err2: tekst = sh.disasm_uttrykk("2 + )")
     assert_eq(expr_err2, "/* feil: mangler verdi før ) ved token 2 */")
@@ -220,6 +220,9 @@ funksjon start() -> heltall {
     la env_verdier_lang: liste_heltall = [1, 2]
     la expr_env_err2: tekst = sh.disasm_uttrykk_med_miljo("x+1", env_navn_kort, env_verdier_lang)
     assert_eq(expr_env_err2, "/* feil: navn/miljø-verdier må ha samme lengde */")
+
+    la expr_err5: tekst = sh.disasm_uttrykk("(2+3")
+    assert_eq(expr_err5, "/* feil: mangler ) i uttrykk ved token 0 */")
 
     la script_dis: tekst = sh.disasm_skript("x=2+3;y=x*4;y+1")
     assert_eq(script_dis, "0: PUSH 20\n1: PUSH 1\n2: ADD\n3: PRINT\n4: HALT\n")

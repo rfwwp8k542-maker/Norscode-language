@@ -776,10 +776,13 @@ funksjon kompiler_fra_kilde_strict(kilde: tekst) -> tekst {
 
 funksjon uttrykk_til_ops_og_verdier_med_miljo(tokens: liste_tekst, navn: liste_tekst, miljo_verdier: liste_heltall, ops: liste_tekst, verdier: liste_heltall) -> tekst {
     la operatorer: liste_tekst = [""]
+    la operator_pos: liste_heltall = [0]
     la i: heltall = 0
+    la siste_token: heltall = -1
     la forventer_verdi: bool = sann
 
     fjern_indeks(operatorer, 0)
+    fjern_indeks(operator_pos, 0)
 
     hvis (lengde(navn) != lengde(miljo_verdier)) {
         returner "/* feil: navn/miljø-verdier må ha samme lengde */"
@@ -819,6 +822,7 @@ funksjon uttrykk_til_ops_og_verdier_med_miljo(tokens: liste_tekst, navn: liste_t
             legg_til(ops, "PUSH")
             legg_til(verdier, heltall_fra_tekst(tok))
             forventer_verdi = usann
+            siste_token = i + tok_step - 1
             i = i + tok_step
             fortsett
         }
@@ -834,6 +838,7 @@ funksjon uttrykk_til_ops_og_verdier_med_miljo(tokens: liste_tekst, navn: liste_t
                 legg_til(verdier, 0)
             }
             forventer_verdi = usann
+            siste_token = i + tok_step - 1
             i = i + tok_step
             fortsett
         }
@@ -844,6 +849,7 @@ funksjon uttrykk_til_ops_og_verdier_med_miljo(tokens: liste_tekst, navn: liste_t
                 legg_til(ops, "PUSH")
                 legg_til(verdier, miljo_verdier[idx_navn])
                 forventer_verdi = usann
+                siste_token = i + tok_step - 1
                 i = i + tok_step
                 fortsett
             }
@@ -854,6 +860,8 @@ funksjon uttrykk_til_ops_og_verdier_med_miljo(tokens: liste_tekst, navn: liste_t
                 returner "/* feil: mangler operator før ( ved " + token_pos(i) + " */"
             }
             legg_til(operatorer, tok)
+            legg_til(operator_pos, i)
+            siste_token = i + tok_step - 1
             i = i + tok_step
             fortsett
         }
@@ -866,19 +874,22 @@ funksjon uttrykk_til_ops_og_verdier_med_miljo(tokens: liste_tekst, navn: liste_t
             mens (lengde(operatorer) > 0) {
                 la top_idx: heltall = lengde(operatorer) - 1
                 la top: tekst = operatorer[top_idx]
+                la top_pos: heltall = operator_pos[top_idx]
                 fjern_indeks(operatorer, top_idx)
+                fjern_indeks(operator_pos, top_idx)
                 hvis (top == "(") {
                     fant_parantes = sann
                     bryt
                 }
                 hvis (emitter_operator(ops, verdier, top) == usann) {
-                    returner "/* feil: ukjent operator " + top + " */"
+                    returner "/* feil: ukjent operator " + top + " ved " + token_pos(top_pos) + " */"
                 }
             }
             hvis (fant_parantes == usann) {
                 returner "/* feil: ) uten matchende ( ved " + token_pos(i) + " */"
             }
             forventer_verdi = usann
+            siste_token = i + tok_step - 1
             i = i + tok_step
             fortsett
         }
@@ -887,16 +898,22 @@ funksjon uttrykk_til_ops_og_verdier_med_miljo(tokens: liste_tekst, navn: liste_t
             hvis (forventer_verdi) {
                 hvis (tok == "!") {
                     legg_til(operatorer, "u!")
+                    legg_til(operator_pos, i)
+                    siste_token = i + tok_step - 1
                     i = i + tok_step
                     fortsett
                 }
                 hvis (tok == "ikke") {
                     legg_til(operatorer, "uikke")
+                    legg_til(operator_pos, i)
+                    siste_token = i + tok_step - 1
                     i = i + tok_step
                     fortsett
                 }
                 hvis (tok == "-") {
                     legg_til(operatorer, "u-")
+                    legg_til(operator_pos, i)
+                    siste_token = i + tok_step - 1
                     i = i + tok_step
                     fortsett
                 }
@@ -905,6 +922,7 @@ funksjon uttrykk_til_ops_og_verdier_med_miljo(tokens: liste_tekst, navn: liste_t
             mens (lengde(operatorer) > 0) {
                 la top_idx2: heltall = lengde(operatorer) - 1
                 la top2: tekst = operatorer[top_idx2]
+                la top2_pos: heltall = operator_pos[top_idx2]
                 hvis (top2 == "(") {
                     bryt
                 }
@@ -912,12 +930,15 @@ funksjon uttrykk_til_ops_og_verdier_med_miljo(tokens: liste_tekst, navn: liste_t
                     bryt
                 }
                 fjern_indeks(operatorer, top_idx2)
+                fjern_indeks(operator_pos, top_idx2)
                 hvis (emitter_operator(ops, verdier, top2) == usann) {
-                    returner "/* feil: ukjent operator " + top2 + " */"
+                    returner "/* feil: ukjent operator " + top2 + " ved " + token_pos(top2_pos) + " */"
                 }
             }
             legg_til(operatorer, tok)
+            legg_til(operator_pos, i)
             forventer_verdi = sann
+            siste_token = i + tok_step - 1
             i = i + tok_step
             fortsett
         }
@@ -926,18 +947,23 @@ funksjon uttrykk_til_ops_og_verdier_med_miljo(tokens: liste_tekst, navn: liste_t
     }
 
     hvis (forventer_verdi) {
+        hvis (siste_token >= 0) {
+            returner "/* feil: uttrykket avsluttes med operator ved " + token_pos(siste_token) + " */"
+        }
         returner "/* feil: uttrykket avsluttes med operator */"
     }
 
     mens (lengde(operatorer) > 0) {
         la top_idx3: heltall = lengde(operatorer) - 1
         la top3: tekst = operatorer[top_idx3]
+        la top3_pos: heltall = operator_pos[top_idx3]
         fjern_indeks(operatorer, top_idx3)
+        fjern_indeks(operator_pos, top_idx3)
         hvis (top3 == "(") {
-            returner "/* feil: mangler ) i uttrykk */"
+            returner "/* feil: mangler ) i uttrykk ved " + token_pos(top3_pos) + " */"
         }
         hvis (emitter_operator(ops, verdier, top3) == usann) {
-            returner "/* feil: ukjent operator " + top3 + " */"
+            returner "/* feil: ukjent operator " + top3 + " ved " + token_pos(top3_pos) + " */"
         }
     }
 
