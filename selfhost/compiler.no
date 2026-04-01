@@ -1205,9 +1205,9 @@ funksjon skript_til_ops_og_verdier(tokens: liste_tekst, navn: liste_tekst, miljo
 
         hvis ((har_la eller har_sett) og ass_start >= lengde(stmt_tokens)) {
             hvis (har_la) {
-                returner "/* feil: 'la' må etterfølges av variabelnavn */"
+                returner "/* feil: 'la' må etterfølges av variabelnavn ved " + token_pos(stmt_start) + " */"
             }
-            returner "/* feil: 'sett' må etterfølges av variabelnavn */"
+            returner "/* feil: 'sett' må etterfølges av variabelnavn ved " + token_pos(stmt_start) + " */"
         }
 
         hvis (ass_start + 1 < lengde(stmt_tokens) og er_navn_token(stmt_tokens[ass_start]) og er_assignment_op(stmt_tokens[ass_start + 1])) {
@@ -1231,19 +1231,19 @@ funksjon skript_til_ops_og_verdier(tokens: liste_tekst, navn: liste_tekst, miljo
             }
 
             hvis (lengde(expr_tokens) == 0) {
-                returner "/* feil: tomt uttrykk i assignment til " + varnavn + " */"
+                returner "/* feil: tomt uttrykk i assignment til " + varnavn + " ved " + token_pos(stmt_start) + " */"
             }
             hvis (stmt_has_semicolon == usann) {
-                returner "/* feil: mangler ';' etter assignment til " + varnavn + " */"
+                returner "/* feil: mangler ';' etter assignment til " + varnavn + " ved " + token_pos(stmt_start) + " */"
             }
 
             hvis (har_la og ass_op != "=") {
-                returner "/* feil: 'la' støtter kun '=' */"
+                returner "/* feil: 'la' støtter kun '=' ved " + token_pos(stmt_start) + " */"
             }
 
             la idx_pre: heltall = finn_navn_indeks(navn, varnavn)
             hvis (ass_op != "=" og idx_pre < 0) {
-                returner "/* feil: variabel '" + varnavn + "' er ikke deklarert for '" + ass_op + "' */"
+                returner "/* feil: variabel '" + varnavn + "' er ikke deklarert for '" + ass_op + "' ved " + token_pos(stmt_start) + " */"
             }
             hvis (ass_op != "=") {
                 la binop: tekst = assignment_op_til_binop(ass_op)
@@ -1280,10 +1280,10 @@ funksjon skript_til_ops_og_verdier(tokens: liste_tekst, navn: liste_tekst, miljo
 
             la idx: heltall = finn_navn_indeks(navn, varnavn)
             hvis (har_la og idx >= 0) {
-                returner "/* feil: variabel '" + varnavn + "' er allerede deklarert */"
+                returner "/* feil: variabel '" + varnavn + "' er allerede deklarert ved " + token_pos(stmt_start) + " */"
             }
             hvis (har_sett og idx < 0) {
-                returner "/* feil: variabel '" + varnavn + "' er ikke deklarert (bruk 'la') */"
+                returner "/* feil: variabel '" + varnavn + "' er ikke deklarert (bruk 'la') ved " + token_pos(stmt_start) + " */"
             }
 
             hvis (idx >= 0) {
@@ -1296,10 +1296,10 @@ funksjon skript_til_ops_og_verdier(tokens: liste_tekst, navn: liste_tekst, miljo
         }
 
         hvis (har_la) {
-            returner "/* feil: ugyldig deklarasjon etter 'la' */"
+            returner "/* feil: ugyldig deklarasjon etter 'la' ved " + token_pos(stmt_start) + " */"
         }
         hvis (har_sett) {
-            returner "/* feil: ugyldig assignment etter 'sett' */"
+            returner "/* feil: ugyldig assignment etter 'sett' ved " + token_pos(stmt_start) + " */"
         }
 
         la final_tokens: liste_tekst = [""]
@@ -1311,7 +1311,7 @@ funksjon skript_til_ops_og_verdier(tokens: liste_tekst, navn: liste_tekst, miljo
                 r = r + 1
             }
             hvis (lengde(final_tokens) == 0) {
-                returner "/* feil: 'returner' må etterfølges av uttrykk */"
+                returner "/* feil: 'returner' må etterfølges av uttrykk ved " + token_pos(stmt_start) + " */"
             }
         } ellers {
             la r2: heltall = 0

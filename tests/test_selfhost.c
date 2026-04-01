@@ -1556,9 +1556,9 @@ char * selfhost__compiler__skript_til_ops_og_verdier(nl_list_text* tokens, nl_li
         }
         if ((har_la || har_sett) && (ass_start >= nl_list_text_len(stmt_tokens))) {
             if (har_la) {
-                return "/* feil: 'la' må etterfølges av variabelnavn */";
+                return nl_concat(nl_concat("/* feil: 'la' må etterfølges av variabelnavn ved ", selfhost__compiler__token_pos(stmt_start)), " */");
             }
-            return "/* feil: 'sett' må etterfølges av variabelnavn */";
+            return nl_concat(nl_concat("/* feil: 'sett' må etterfølges av variabelnavn ved ", selfhost__compiler__token_pos(stmt_start)), " */");
         }
         if ((((ass_start + 1) < nl_list_text_len(stmt_tokens)) && selfhost__compiler__er_navn_token(stmt_tokens->data[ass_start])) && selfhost__compiler__er_assignment_op(stmt_tokens->data[(ass_start + 1)])) {
             char * varnavn = stmt_tokens->data[ass_start];
@@ -1582,17 +1582,17 @@ char * selfhost__compiler__skript_til_ops_og_verdier(nl_list_text* tokens, nl_li
                 j = (j + 1);
             }
             if (nl_list_text_len(expr_tokens) == 0) {
-                return nl_concat(nl_concat("/* feil: tomt uttrykk i assignment til ", varnavn), " */");
+                return nl_concat(nl_concat(nl_concat(nl_concat("/* feil: tomt uttrykk i assignment til ", varnavn), " ved "), selfhost__compiler__token_pos(stmt_start)), " */");
             }
             if (stmt_has_semicolon == 0) {
-                return nl_concat(nl_concat("/* feil: mangler ';' etter assignment til ", varnavn), " */");
+                return nl_concat(nl_concat(nl_concat(nl_concat("/* feil: mangler ';' etter assignment til ", varnavn), " ved "), selfhost__compiler__token_pos(stmt_start)), " */");
             }
             if (har_la && !(nl_streq(ass_op, "="))) {
-                return "/* feil: 'la' støtter kun '=' */";
+                return nl_concat(nl_concat("/* feil: 'la' støtter kun '=' ved ", selfhost__compiler__token_pos(stmt_start)), " */");
             }
             int idx_pre = selfhost__compiler__finn_navn_indeks(navn, varnavn);
             if (!(nl_streq(ass_op, "=")) && (idx_pre < 0)) {
-                return nl_concat(nl_concat(nl_concat(nl_concat("/* feil: variabel '", varnavn), "' er ikke deklarert for '"), ass_op), "' */");
+                return nl_concat(nl_concat(nl_concat(nl_concat(nl_concat(nl_concat("/* feil: variabel '", varnavn), "' er ikke deklarert for '"), ass_op), "' ved "), selfhost__compiler__token_pos(stmt_start)), " */");
             }
             if (!(nl_streq(ass_op, "="))) {
                 char * binop = selfhost__compiler__assignment_op_til_binop(ass_op);
@@ -1628,10 +1628,10 @@ char * selfhost__compiler__skript_til_ops_og_verdier(nl_list_text* tokens, nl_li
             }
             int idx = selfhost__compiler__finn_navn_indeks(navn, varnavn);
             if (har_la && (idx >= 0)) {
-                return nl_concat(nl_concat("/* feil: variabel '", varnavn), "' er allerede deklarert */");
+                return nl_concat(nl_concat(nl_concat(nl_concat("/* feil: variabel '", varnavn), "' er allerede deklarert ved "), selfhost__compiler__token_pos(stmt_start)), " */");
             }
             if (har_sett && (idx < 0)) {
-                return nl_concat(nl_concat("/* feil: variabel '", varnavn), "' er ikke deklarert (bruk 'la') */");
+                return nl_concat(nl_concat(nl_concat(nl_concat("/* feil: variabel '", varnavn), "' er ikke deklarert (bruk 'la') ved "), selfhost__compiler__token_pos(stmt_start)), " */");
             }
             if (idx >= 0) {
                 nl_list_int_set(miljo_verdier, idx, eval_resultat->data[0]);
@@ -1643,10 +1643,10 @@ char * selfhost__compiler__skript_til_ops_og_verdier(nl_list_text* tokens, nl_li
             continue;
         }
         if (har_la) {
-            return "/* feil: ugyldig deklarasjon etter 'la' */";
+            return nl_concat(nl_concat("/* feil: ugyldig deklarasjon etter 'la' ved ", selfhost__compiler__token_pos(stmt_start)), " */");
         }
         if (har_sett) {
-            return "/* feil: ugyldig assignment etter 'sett' */";
+            return nl_concat(nl_concat("/* feil: ugyldig assignment etter 'sett' ved ", selfhost__compiler__token_pos(stmt_start)), " */");
         }
         nl_list_text* final_tokens = nl_list_text_new();
         nl_list_text_push(final_tokens, "");
@@ -1658,7 +1658,7 @@ char * selfhost__compiler__skript_til_ops_og_verdier(nl_list_text* tokens, nl_li
                 r = (r + 1);
             }
             if (nl_list_text_len(final_tokens) == 0) {
-                return "/* feil: 'returner' må etterfølges av uttrykk */";
+                return nl_concat(nl_concat("/* feil: 'returner' må etterfølges av uttrykk ved ", selfhost__compiler__token_pos(stmt_start)), " */");
             }
         }
         else {
@@ -2056,27 +2056,27 @@ int start() {
     char * script_c = selfhost__compiler__kompiler_skript_til_c("x=2;y=x+5;y*2");
     nl_assert_ne_text(script_c, "");
     char * script_err1 = selfhost__compiler__disasm_skript("x=2+3");
-    nl_assert_eq_text(script_err1, "/* feil: mangler ';' etter assignment til x */");
+    nl_assert_eq_text(script_err1, "/* feil: mangler ';' etter assignment til x ved token 0 */");
     char * script_skip_empty = selfhost__compiler__disasm_skript("x=2;;x+1");
     nl_assert_eq_text(script_skip_empty, "0: PUSH 2\n1: PUSH 1\n2: ADD\n3: PRINT\n4: HALT\n");
     char * script_err3 = selfhost__compiler__disasm_skript("x=2+3;");
     nl_assert_eq_text(script_err3, "/* feil: skriptet mangler sluttuttrykk */");
     char * script_err4 = selfhost__compiler__disasm_skript("la ;x+1");
-    nl_assert_eq_text(script_err4, "/* feil: 'la' må etterfølges av variabelnavn */");
+    nl_assert_eq_text(script_err4, "/* feil: 'la' må etterfølges av variabelnavn ved token 0 */");
     char * script_err5 = selfhost__compiler__disasm_skript("la x;x+1");
-    nl_assert_eq_text(script_err5, "/* feil: ugyldig deklarasjon etter 'la' */");
+    nl_assert_eq_text(script_err5, "/* feil: ugyldig deklarasjon etter 'la' ved token 0 */");
     char * script_err6 = selfhost__compiler__disasm_skript("1+1; y=2; y");
     nl_assert_eq_text(script_err6, "/* feil: kun siste statement kan være uttrykk (token 4) */");
     char * script_err7 = selfhost__compiler__disasm_skript("la x=1;returner");
-    nl_assert_eq_text(script_err7, "/* feil: 'returner' må etterfølges av uttrykk */");
+    nl_assert_eq_text(script_err7, "/* feil: 'returner' må etterfølges av uttrykk ved token 5 */");
     char * script_err8 = selfhost__compiler__disasm_skript("sett x=1;returner 0");
-    nl_assert_eq_text(script_err8, "/* feil: variabel 'x' er ikke deklarert (bruk 'la') */");
+    nl_assert_eq_text(script_err8, "/* feil: variabel 'x' er ikke deklarert (bruk 'la') ved token 0 */");
     char * script_err9 = selfhost__compiler__disasm_skript("la x=1;la x=2;returner x");
-    nl_assert_eq_text(script_err9, "/* feil: variabel 'x' er allerede deklarert */");
+    nl_assert_eq_text(script_err9, "/* feil: variabel 'x' er allerede deklarert ved token 5 */");
     char * script_err12 = selfhost__compiler__disasm_skript("la x+=1;returner x");
-    nl_assert_eq_text(script_err12, "/* feil: 'la' støtter kun '=' */");
+    nl_assert_eq_text(script_err12, "/* feil: 'la' støtter kun '=' ved token 0 */");
     char * script_err13 = selfhost__compiler__disasm_skript("x+=1;returner x");
-    nl_assert_eq_text(script_err13, "/* feil: variabel 'x' er ikke deklarert for '+=' */");
+    nl_assert_eq_text(script_err13, "/* feil: variabel 'x' er ikke deklarert for '+=' ved token 0 */");
     char * script_err10 = selfhost__compiler__disasm_skript("hvis 1==1 10 ellers 20");
     nl_assert_eq_text(script_err10, "/* feil: hvis-uttrykk mangler 'da' */");
     char * script_err11 = selfhost__compiler__disasm_skript("hvis 1==1 da 10");
