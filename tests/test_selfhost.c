@@ -1148,7 +1148,23 @@ char * selfhost__compiler__uttrykk_til_ops_og_verdier_med_miljo(nl_list_text* to
         char * tok_raw = tokens->data[i];
         char * tok = tok_raw;
         int tok_step = 1;
-        if ((((((i + 3) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "mindre")) && nl_streq(tokens->data[(i + 1)], "enn")) && nl_streq(tokens->data[(i + 2)], "eller")) && nl_streq(tokens->data[(i + 3)], "lik")) {
+        if ((((i + 1) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "delt")) && nl_streq(tokens->data[(i + 1)], "pa")) {
+            tok = "/";
+            tok_step = 2;
+        }
+        else if (nl_streq(tok_raw, "pluss")) {
+            tok = "+";
+            tok_step = 1;
+        }
+        else if (nl_streq(tok_raw, "minus")) {
+            tok = "-";
+            tok_step = 1;
+        }
+        else if (nl_streq(tok_raw, "ganger")) {
+            tok = "*";
+            tok_step = 1;
+        }
+        else if ((((((i + 3) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "mindre")) && nl_streq(tokens->data[(i + 1)], "enn")) && nl_streq(tokens->data[(i + 2)], "eller")) && nl_streq(tokens->data[(i + 3)], "lik")) {
             tok = "mindre_eller_lik";
             tok_step = 4;
         }
@@ -2162,6 +2178,10 @@ int start() {
     nl_assert_eq_text(expr_unary_minus, "0: PUSH 3\n1: PUSH 0\n2: SWAP\n3: SUB\n4: PUSH 5\n5: ADD\n6: PRINT\n7: HALT\n");
     char * expr_unary_plus = selfhost__compiler__disasm_uttrykk("+3+5");
     nl_assert_eq_text(expr_unary_plus, "0: PUSH 3\n1: PUSH 5\n2: ADD\n3: PRINT\n4: HALT\n");
+    char * expr_norsk_arith = selfhost__compiler__disasm_uttrykk("2 pluss 3 ganger 4");
+    nl_assert_eq_text(expr_norsk_arith, "0: PUSH 2\n1: PUSH 3\n2: PUSH 4\n3: MUL\n4: ADD\n5: PRINT\n6: HALT\n");
+    char * expr_norsk_div = selfhost__compiler__disasm_uttrykk("8 delt pa 2");
+    nl_assert_eq_text(expr_norsk_div, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * expr_bool_literals = selfhost__compiler__disasm_uttrykk("sann&&usann||!usann");
     nl_assert_eq_text(expr_bool_literals, "0: PUSH 1\n1: PUSH 0\n2: AND\n3: PUSH 0\n4: NOT\n5: OR\n6: PRINT\n7: HALT\n");
     char * expr_norsk_ops = selfhost__compiler__disasm_uttrykk("sann og ikke usann eller usann");
@@ -2307,6 +2327,8 @@ int start() {
     nl_assert_eq_text(script_norsk_cmp_phrase14, "0: PUSH 4\n1: PUSH 4\n2: LT\n3: NOT\n4: JZ 7\n5: PUSH 1\n6: JMP 9\n7: LABEL 7\n8: PUSH 0\n9: LABEL 9\n10: PRINT\n11: HALT\n");
     char * script_unary_plus = selfhost__compiler__disasm_skript("la x=2;returner +x");
     nl_assert_eq_text(script_unary_plus, "0: PUSH 2\n1: PRINT\n2: HALT\n");
+    char * script_norsk_arith = selfhost__compiler__disasm_skript("la x=2;la y=3;returner x pluss y ganger 4");
+    nl_assert_eq_text(script_norsk_arith, "0: PUSH 2\n1: PUSH 3\n2: PUSH 4\n3: MUL\n4: ADD\n5: PRINT\n6: HALT\n");
     char * script_c = selfhost__compiler__kompiler_skript_til_c("x=2;y=x+5;y*2");
     nl_assert_ne_text(script_c, "");
     char * script_err1 = selfhost__compiler__disasm_skript("x=2+3");

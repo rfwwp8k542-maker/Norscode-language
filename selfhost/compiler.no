@@ -793,7 +793,19 @@ funksjon uttrykk_til_ops_og_verdier_med_miljo(tokens: liste_tekst, navn: liste_t
         la tok: tekst = tok_raw
         la tok_step: heltall = 1
 
-        hvis (i + 3 < lengde(tokens) og tok_raw == "mindre" og tokens[i + 1] == "enn" og tokens[i + 2] == "eller" og tokens[i + 3] == "lik") {
+        hvis (i + 1 < lengde(tokens) og tok_raw == "delt" og tokens[i + 1] == "pa") {
+            tok = "/"
+            tok_step = 2
+        } ellers hvis (tok_raw == "pluss") {
+            tok = "+"
+            tok_step = 1
+        } ellers hvis (tok_raw == "minus") {
+            tok = "-"
+            tok_step = 1
+        } ellers hvis (tok_raw == "ganger") {
+            tok = "*"
+            tok_step = 1
+        } ellers hvis (i + 3 < lengde(tokens) og tok_raw == "mindre" og tokens[i + 1] == "enn" og tokens[i + 2] == "eller" og tokens[i + 3] == "lik") {
             tok = "mindre_eller_lik"
             tok_step = 4
         } ellers hvis (i + 3 < lengde(tokens) og tok_raw == "storre" og tokens[i + 1] == "enn" og tokens[i + 2] == "eller" og tokens[i + 3] == "lik") {
