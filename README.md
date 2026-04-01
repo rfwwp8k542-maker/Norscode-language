@@ -27,6 +27,8 @@ python3 -m pip install -e . --no-build-isolation
 # Deretter kan du bruke:
 nl --help
 norcode --help
+# Legacy alias fungerer fortsatt:
+norsklang --help
 ```
 
 ### 0b. Bygg og publiser pakke

@@ -1,1 +1,1 @@
-"""NorCode Python package."""
+"""Legacy compatibility package for NorCode."""

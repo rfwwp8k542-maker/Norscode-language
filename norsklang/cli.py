@@ -1,5 +1,1 @@
-from main import main
-
-
-def main_cli():
-    main()
+from norcode.cli import main_cli
