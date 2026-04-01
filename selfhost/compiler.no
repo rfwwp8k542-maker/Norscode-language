@@ -847,6 +847,9 @@ funksjon uttrykk_til_ops_og_verdier_med_miljo(tokens: liste_tekst, navn: liste_t
         } ellers hvis (i + 1 < lengde(tokens) og tok_raw == "er" og tokens[i + 1] == "lik") {
             tok = "er"
             tok_step = 2
+        } ellers hvis (i + 1 < lengde(tokens) og tok_raw == "ulik" og tokens[i + 1] == "med") {
+            tok = "ikke_er"
+            tok_step = 2
         } ellers hvis (tok_raw == "lik") {
             tok = "er"
             tok_step = 1
