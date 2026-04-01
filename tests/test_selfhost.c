@@ -1243,6 +1243,14 @@ char * selfhost__compiler__uttrykk_til_ops_og_verdier_med_miljo(nl_list_text* to
             tok = "+";
             tok_step = 1;
         }
+        else if (nl_streq(tok_raw, "trekk_fra")) {
+            tok = "-";
+            tok_step = 1;
+        }
+        else if ((((i + 1) < nl_list_text_len(tokens)) && (nl_streq(tok_raw, "trekk") || nl_streq(tok_raw, "trekke"))) && nl_streq(n1, "fra")) {
+            tok = "-";
+            tok_step = 2;
+        }
         else if (nl_streq(tok_raw, "minus")) {
             tok = "-";
             tok_step = 1;
@@ -2271,6 +2279,10 @@ int start() {
     nl_assert_eq_text(expr_unary_plus, "0: PUSH 3\n1: PUSH 5\n2: ADD\n3: PRINT\n4: HALT\n");
     char * expr_norsk_arith = selfhost__compiler__disasm_uttrykk("2 pluss 3 ganger 4");
     nl_assert_eq_text(expr_norsk_arith, "0: PUSH 2\n1: PUSH 3\n2: PUSH 4\n3: MUL\n4: ADD\n5: PRINT\n6: HALT\n");
+    char * expr_norsk_trekk_fra = selfhost__compiler__disasm_uttrykk("10 trekk fra 3");
+    nl_assert_eq_text(expr_norsk_trekk_fra, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n");
+    char * expr_norsk_trekk_fra_underscore = selfhost__compiler__disasm_uttrykk("10 trekk_fra 3");
+    nl_assert_eq_text(expr_norsk_trekk_fra_underscore, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n");
     char * expr_norsk_div = selfhost__compiler__disasm_uttrykk("8 delt pa 2");
     nl_assert_eq_text(expr_norsk_div, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * expr_norsk_mod = selfhost__compiler__disasm_uttrykk("17 mod 5");
@@ -2538,6 +2550,10 @@ int start() {
     nl_assert_eq_text(script_unary_plus, "0: PUSH 2\n1: PRINT\n2: HALT\n");
     char * script_norsk_arith = selfhost__compiler__disasm_skript("la x=2;la y=3;returner x pluss y ganger 4");
     nl_assert_eq_text(script_norsk_arith, "0: PUSH 2\n1: PUSH 3\n2: PUSH 4\n3: MUL\n4: ADD\n5: PRINT\n6: HALT\n");
+    char * script_norsk_trekk_fra = selfhost__compiler__disasm_skript("la x=10;la y=3;returner x trekk fra y");
+    nl_assert_eq_text(script_norsk_trekk_fra, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n");
+    char * script_norsk_trekk_fra_underscore = selfhost__compiler__disasm_skript("la x=10;la y=3;returner x trekk_fra y");
+    nl_assert_eq_text(script_norsk_trekk_fra_underscore, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n");
     char * script_norsk_mod = selfhost__compiler__disasm_skript("la x=17;la y=5;returner x mod y");
     nl_assert_eq_text(script_norsk_mod, "0: PUSH 17\n1: PUSH 5\n2: MOD\n3: PRINT\n4: HALT\n");
     char * script_norsk_ganget_med = selfhost__compiler__disasm_skript("la x=3;la y=4;returner x ganget med y");

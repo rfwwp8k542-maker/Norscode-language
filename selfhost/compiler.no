@@ -881,6 +881,12 @@ funksjon uttrykk_til_ops_og_verdier_med_miljo(tokens: liste_tekst, navn: liste_t
         } ellers hvis (tok_raw == "pluss") {
             tok = "+"
             tok_step = 1
+        } ellers hvis (tok_raw == "trekk_fra") {
+            tok = "-"
+            tok_step = 1
+        } ellers hvis (i + 1 < lengde(tokens) og (tok_raw == "trekk" eller tok_raw == "trekke") og n1 == "fra") {
+            tok = "-"
+            tok_step = 2
         } ellers hvis (tok_raw == "minus") {
             tok = "-"
             tok_step = 1
