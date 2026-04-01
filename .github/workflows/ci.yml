@@ -17,7 +17,7 @@ jobs:
           python-version: "3.12"
 
       - name: Run NorCode CI checks
-        run: python3 main.py ci --check-names
+        run: python3 -m norcode ci --check-names
 
       - name: Install packaging tools
         run: python3 -m pip install --upgrade build twine
@@ -40,7 +40,7 @@ jobs:
           python-version: "3.12"
 
       - name: Run NorCode CI checks
-        run: python3 main.py ci --check-names
+        run: python3 -m norcode ci --check-names
 
       - name: Install packaging tools
         run: python3 -m pip install --upgrade build twine
