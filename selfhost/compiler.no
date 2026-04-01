@@ -823,6 +823,12 @@ funksjon uttrykk_til_ops_og_verdier_med_miljo(tokens: liste_tekst, navn: liste_t
         } ellers hvis (i + 1 < lengde(tokens) og tok_raw == "storre" og tokens[i + 1] == "lik") {
             tok = "storre_eller_lik"
             tok_step = 2
+        } ellers hvis (i + 2 < lengde(tokens) og tok_raw == "er" og tokens[i + 1] == "mindre" og tokens[i + 2] == "lik") {
+            tok = "mindre_eller_lik"
+            tok_step = 3
+        } ellers hvis (i + 2 < lengde(tokens) og tok_raw == "er" og tokens[i + 1] == "storre" og tokens[i + 2] == "lik") {
+            tok = "storre_eller_lik"
+            tok_step = 3
         } ellers hvis (i + 2 < lengde(tokens) og tok_raw == "er" og tokens[i + 1] == "ikke" og tokens[i + 2] == "lik" og (i + 3 >= lengde(tokens) eller tokens[i + 3] != "med")) {
             tok = "ikke_er"
             tok_step = 3
