@@ -957,7 +957,7 @@ funksjon uttrykk_til_ops_og_verdier_med_miljo(tokens: liste_tekst, navn: liste_t
         } ellers hvis (i + 1 < lengde(tokens) og (tok_raw == "gang" eller tok_raw == "ganget" eller tok_raw == "gange" eller tok_raw == "ganger" eller tok_raw == "ganges" eller tok_raw == "multipliser" eller tok_raw == "multiplisere" eller tok_raw == "multipliserer" eller tok_raw == "multiplisert" eller tok_raw == "multipliseres") og n1 == "med") {
             tok = "*"
             tok_step = 2
-        } ellers hvis (tok_raw == "pluss_med" eller tok_raw == "plus_med") {
+        } ellers hvis (tok_raw == "pluss_med" eller tok_raw == "plussmed" eller tok_raw == "plus_med" eller tok_raw == "plusmed") {
             tok = "+"
             tok_step = 1
         } ellers hvis (i + 1 < lengde(tokens) og (tok_raw == "pluss" eller tok_raw == "plus") og n1 == "med") {
@@ -966,7 +966,7 @@ funksjon uttrykk_til_ops_og_verdier_med_miljo(tokens: liste_tekst, navn: liste_t
         } ellers hvis (tok_raw == "pluss" eller tok_raw == "plus") {
             tok = "+"
             tok_step = 1
-        } ellers hvis (tok_raw == "plusser_med" eller tok_raw == "plusses_med" eller tok_raw == "pluses_med" eller tok_raw == "plusse_med" eller tok_raw == "adder_med" eller tok_raw == "addere_med" eller tok_raw == "adderer_med" eller tok_raw == "adderes_med" eller tok_raw == "summer_med" eller tok_raw == "summerer_med" eller tok_raw == "summeres_med") {
+        } ellers hvis (tok_raw == "plusser_med" eller tok_raw == "plussermed" eller tok_raw == "plusses_med" eller tok_raw == "plussesmed" eller tok_raw == "pluses_med" eller tok_raw == "plusesmed" eller tok_raw == "plusse_med" eller tok_raw == "plussemed" eller tok_raw == "adder_med" eller tok_raw == "addermed" eller tok_raw == "addere_med" eller tok_raw == "adderemed" eller tok_raw == "adderer_med" eller tok_raw == "adderermed" eller tok_raw == "adderes_med" eller tok_raw == "adderesmed" eller tok_raw == "summer_med" eller tok_raw == "summermed" eller tok_raw == "summerer_med" eller tok_raw == "summerermed" eller tok_raw == "summeres_med" eller tok_raw == "summeresmed") {
             tok = "+"
             tok_step = 1
         } ellers hvis (i + 1 < lengde(tokens) og (tok_raw == "plusser" eller tok_raw == "plusses" eller tok_raw == "pluses" eller tok_raw == "plusse" eller tok_raw == "adder" eller tok_raw == "addere" eller tok_raw == "adderer" eller tok_raw == "adderes" eller tok_raw == "summer" eller tok_raw == "summerer" eller tok_raw == "summeres") og n1 == "med") {
