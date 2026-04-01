@@ -1368,7 +1368,7 @@ char * selfhost__compiler__uttrykk_til_ops_og_verdier_med_miljo(nl_list_text* to
             tok = "-";
             tok_step = 1;
         }
-        else if ((((nl_streq(tok_raw, "gang") || nl_streq(tok_raw, "gange")) || nl_streq(tok_raw, "ganget")) || nl_streq(tok_raw, "ganger")) || nl_streq(tok_raw, "ganges")) {
+        else if (((((((((nl_streq(tok_raw, "gang") || nl_streq(tok_raw, "gange")) || nl_streq(tok_raw, "ganget")) || nl_streq(tok_raw, "ganger")) || nl_streq(tok_raw, "ganges")) || nl_streq(tok_raw, "multipliser")) || nl_streq(tok_raw, "multiplisere")) || nl_streq(tok_raw, "multipliserer")) || nl_streq(tok_raw, "multiplisert")) || nl_streq(tok_raw, "multipliseres")) {
             tok = "*";
             tok_step = 1;
         }
@@ -2626,6 +2626,16 @@ int start() {
     nl_assert_eq_text(expr_norsk_multipliseres_med, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n");
     char * expr_norsk_multipliseres_med_underscore = selfhost__compiler__disasm_uttrykk("3 multipliseres_med 4");
     nl_assert_eq_text(expr_norsk_multipliseres_med_underscore, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n");
+    char * expr_norsk_multipliser_kort = selfhost__compiler__disasm_uttrykk("3 multipliser 4");
+    nl_assert_eq_text(expr_norsk_multipliser_kort, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n");
+    char * expr_norsk_multiplisere_kort = selfhost__compiler__disasm_uttrykk("3 multiplisere 4");
+    nl_assert_eq_text(expr_norsk_multiplisere_kort, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n");
+    char * expr_norsk_multipliserer_kort = selfhost__compiler__disasm_uttrykk("3 multipliserer 4");
+    nl_assert_eq_text(expr_norsk_multipliserer_kort, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n");
+    char * expr_norsk_multiplisert_kort = selfhost__compiler__disasm_uttrykk("3 multiplisert 4");
+    nl_assert_eq_text(expr_norsk_multiplisert_kort, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n");
+    char * expr_norsk_multipliseres_kort = selfhost__compiler__disasm_uttrykk("3 multipliseres 4");
+    nl_assert_eq_text(expr_norsk_multipliseres_kort, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n");
     char * expr_norsk_delt_med = selfhost__compiler__disasm_uttrykk("8 delt med 2");
     nl_assert_eq_text(expr_norsk_delt_med, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * expr_norsk_delt_med_underscore = selfhost__compiler__disasm_uttrykk("8 delt_med 2");
@@ -3283,6 +3293,16 @@ int start() {
     nl_assert_eq_text(script_norsk_multipliseres_med, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n");
     char * script_norsk_multipliseres_med_underscore = selfhost__compiler__disasm_skript("la x=3;la y=4;returner x multipliseres_med y");
     nl_assert_eq_text(script_norsk_multipliseres_med_underscore, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n");
+    char * script_norsk_multipliser_kort = selfhost__compiler__disasm_skript("la x=3;la y=4;returner x multipliser y");
+    nl_assert_eq_text(script_norsk_multipliser_kort, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n");
+    char * script_norsk_multiplisere_kort = selfhost__compiler__disasm_skript("la x=3;la y=4;returner x multiplisere y");
+    nl_assert_eq_text(script_norsk_multiplisere_kort, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n");
+    char * script_norsk_multipliserer_kort = selfhost__compiler__disasm_skript("la x=3;la y=4;returner x multipliserer y");
+    nl_assert_eq_text(script_norsk_multipliserer_kort, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n");
+    char * script_norsk_multiplisert_kort = selfhost__compiler__disasm_skript("la x=3;la y=4;returner x multiplisert y");
+    nl_assert_eq_text(script_norsk_multiplisert_kort, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n");
+    char * script_norsk_multipliseres_kort = selfhost__compiler__disasm_skript("la x=3;la y=4;returner x multipliseres y");
+    nl_assert_eq_text(script_norsk_multipliseres_kort, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n");
     char * script_norsk_delt_med = selfhost__compiler__disasm_skript("la x=8;la y=2;returner x delt med y");
     nl_assert_eq_text(script_norsk_delt_med, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * script_norsk_delt_med_underscore = selfhost__compiler__disasm_skript("la x=8;la y=2;returner x delt_med y");
