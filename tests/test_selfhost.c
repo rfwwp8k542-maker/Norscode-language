@@ -210,7 +210,9 @@ static nl_list_text *nl_tokenize_expression(const char *s) {
             continue;
         }
         if ((c == '&' && p[1] == '&') || (c == '|' && p[1] == '|') || (c == '=' && p[1] == '=') ||
-            (c == '!' && p[1] == '=') || (c == '<' && p[1] == '=') || (c == '>' && p[1] == '=')) {
+            (c == '!' && p[1] == '=') || (c == '<' && p[1] == '=') || (c == '>' && p[1] == '=') ||
+            (c == '+' && p[1] == '=') || (c == '-' && p[1] == '=') || (c == '*' && p[1] == '=') ||
+            (c == '/' && p[1] == '=') || (c == '%' && p[1] == '=')) {
             char token[3];
             token[0] = c;
             token[1] = p[1];
@@ -757,6 +759,34 @@ int selfhost__compiler__er_navn_token(char * tok) {
     }
     return 1;
     return 0;
+}
+
+int selfhost__compiler__er_assignment_op(char * tok) {
+    if (((((nl_streq(tok, "=") || nl_streq(tok, "+=")) || nl_streq(tok, "-=")) || nl_streq(tok, "*=")) || nl_streq(tok, "/=")) || nl_streq(tok, "%=")) {
+        return 1;
+    }
+    return 0;
+    return 0;
+}
+
+char * selfhost__compiler__assignment_op_til_binop(char * tok) {
+    if (nl_streq(tok, "+=")) {
+        return "+";
+    }
+    if (nl_streq(tok, "-=")) {
+        return "-";
+    }
+    if (nl_streq(tok, "*=")) {
+        return "*";
+    }
+    if (nl_streq(tok, "/=")) {
+        return "/";
+    }
+    if (nl_streq(tok, "%=")) {
+        return "%";
+    }
+    return "";
+    return "";
 }
 
 char * selfhost__compiler__eval_ops_til_verdi(nl_list_text* ops, nl_list_int* verdier, nl_list_int* resultat) {
@@ -1475,8 +1505,9 @@ char * selfhost__compiler__skript_til_ops_og_verdier(nl_list_text* tokens, nl_li
             }
             return "/* feil: 'sett' må etterfølges av variabelnavn */";
         }
-        if ((((ass_start + 1) < nl_list_text_len(stmt_tokens)) && selfhost__compiler__er_navn_token(stmt_tokens->data[ass_start])) && nl_streq(stmt_tokens->data[(ass_start + 1)], "=")) {
+        if ((((ass_start + 1) < nl_list_text_len(stmt_tokens)) && selfhost__compiler__er_navn_token(stmt_tokens->data[ass_start])) && selfhost__compiler__er_assignment_op(stmt_tokens->data[(ass_start + 1)])) {
             char * varnavn = stmt_tokens->data[ass_start];
+            char * ass_op = stmt_tokens->data[(ass_start + 1)];
             nl_list_text* expr_tokens = nl_list_text_new();
             nl_list_text_push(expr_tokens, "");
             nl_list_text* expr_ops = nl_list_text_new();
@@ -1500,6 +1531,32 @@ char * selfhost__compiler__skript_til_ops_og_verdier(nl_list_text* tokens, nl_li
             }
             if (stmt_has_semicolon == 0) {
                 return nl_concat(nl_concat("/* feil: mangler ';' etter assignment til ", varnavn), " */");
+            }
+            if (har_la && !(nl_streq(ass_op, "="))) {
+                return "/* feil: 'la' støtter kun '=' */";
+            }
+            int idx_pre = selfhost__compiler__finn_navn_indeks(navn, varnavn);
+            if (!(nl_streq(ass_op, "=")) && (idx_pre < 0)) {
+                return nl_concat(nl_concat(nl_concat(nl_concat("/* feil: variabel '", varnavn), "' er ikke deklarert for '"), ass_op), "' */");
+            }
+            if (!(nl_streq(ass_op, "="))) {
+                char * binop = selfhost__compiler__assignment_op_til_binop(ass_op);
+                nl_list_text* rhs_copy = nl_list_text_new();
+                nl_list_text_push(rhs_copy, "");
+                int t = 0;
+                nl_list_text_remove(rhs_copy, 0);
+                while (t < nl_list_text_len(expr_tokens)) {
+                    nl_list_text_push(rhs_copy, expr_tokens->data[t]);
+                    t = (t + 1);
+                }
+                nl_list_text_remove(expr_tokens, 0);
+                nl_list_text_push(expr_tokens, varnavn);
+                nl_list_text_push(expr_tokens, binop);
+                t = 0;
+                while (t < nl_list_text_len(rhs_copy)) {
+                    nl_list_text_push(expr_tokens, rhs_copy->data[t]);
+                    t = (t + 1);
+                }
             }
             if ((nl_list_text_len(expr_tokens) > 0) && nl_streq(expr_tokens->data[0], "hvis")) {
                 feil = selfhost__compiler__bygg_hvis_da_ellers_ops_med_miljo(expr_tokens, navn, miljo_verdier, expr_ops, expr_verdier);
@@ -1918,6 +1975,8 @@ int start() {
     nl_assert_eq_text(script_returner_semicolon, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
     char * script_sett_ok = selfhost__compiler__disasm_skript("la x=2;sett x=x+3;returner x");
     nl_assert_eq_text(script_sett_ok, "0: PUSH 5\n1: PRINT\n2: HALT\n");
+    char * script_compound_ok = selfhost__compiler__disasm_skript("la x=2;x+=3;x*=2;returner x");
+    nl_assert_eq_text(script_compound_ok, "0: PUSH 10\n1: PRINT\n2: HALT\n");
     char * script_hvis_assignment = selfhost__compiler__disasm_skript("la x=hvis 1==1 da 7 ellers 9;returner x+1");
     nl_assert_eq_text(script_hvis_assignment, "0: PUSH 7\n1: PUSH 1\n2: ADD\n3: PRINT\n4: HALT\n");
     char * script_hvis = selfhost__compiler__disasm_skript("la x=1;hvis x==1 da 10 ellers 20");
@@ -1949,6 +2008,10 @@ int start() {
     nl_assert_eq_text(script_err8, "/* feil: variabel 'x' er ikke deklarert (bruk 'la') */");
     char * script_err9 = selfhost__compiler__disasm_skript("la x=1;la x=2;returner x");
     nl_assert_eq_text(script_err9, "/* feil: variabel 'x' er allerede deklarert */");
+    char * script_err12 = selfhost__compiler__disasm_skript("la x+=1;returner x");
+    nl_assert_eq_text(script_err12, "/* feil: 'la' støtter kun '=' */");
+    char * script_err13 = selfhost__compiler__disasm_skript("x+=1;returner x");
+    nl_assert_eq_text(script_err13, "/* feil: variabel 'x' er ikke deklarert for '+=' */");
     char * script_err10 = selfhost__compiler__disasm_skript("hvis 1==1 10 ellers 20");
     nl_assert_eq_text(script_err10, "/* feil: hvis-uttrykk mangler 'da' */");
     char * script_err11 = selfhost__compiler__disasm_skript("hvis 1==1 da 10");

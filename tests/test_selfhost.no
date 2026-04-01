@@ -221,6 +221,9 @@ funksjon start() -> heltall {
     la script_sett_ok: tekst = sh.disasm_skript("la x=2;sett x=x+3;returner x")
     assert_eq(script_sett_ok, "0: PUSH 5\n1: PRINT\n2: HALT\n")
 
+    la script_compound_ok: tekst = sh.disasm_skript("la x=2;x+=3;x*=2;returner x")
+    assert_eq(script_compound_ok, "0: PUSH 10\n1: PRINT\n2: HALT\n")
+
     la script_hvis_assignment: tekst = sh.disasm_skript("la x=hvis 1==1 da 7 ellers 9;returner x+1")
     assert_eq(script_hvis_assignment, "0: PUSH 7\n1: PUSH 1\n2: ADD\n3: PRINT\n4: HALT\n")
 
@@ -266,6 +269,12 @@ funksjon start() -> heltall {
 
     la script_err9: tekst = sh.disasm_skript("la x=1;la x=2;returner x")
     assert_eq(script_err9, "/* feil: variabel 'x' er allerede deklarert */")
+
+    la script_err12: tekst = sh.disasm_skript("la x+=1;returner x")
+    assert_eq(script_err12, "/* feil: 'la' støtter kun '=' */")
+
+    la script_err13: tekst = sh.disasm_skript("x+=1;returner x")
+    assert_eq(script_err13, "/* feil: variabel 'x' er ikke deklarert for '+=' */")
 
     la script_err10: tekst = sh.disasm_skript("hvis 1==1 10 ellers 20")
     assert_eq(script_err10, "/* feil: hvis-uttrykk mangler 'da' */")

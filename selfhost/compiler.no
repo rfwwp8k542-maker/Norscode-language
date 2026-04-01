@@ -433,6 +433,32 @@ funksjon er_navn_token(tok: tekst) -> bool {
     returner sann
 }
 
+funksjon er_assignment_op(tok: tekst) -> bool {
+    hvis (tok == "=" eller tok == "+=" eller tok == "-=" eller tok == "*=" eller tok == "/=" eller tok == "%=") {
+        returner sann
+    }
+    returner usann
+}
+
+funksjon assignment_op_til_binop(tok: tekst) -> tekst {
+    hvis (tok == "+=") {
+        returner "+"
+    }
+    hvis (tok == "-=") {
+        returner "-"
+    }
+    hvis (tok == "*=") {
+        returner "*"
+    }
+    hvis (tok == "/=") {
+        returner "/"
+    }
+    hvis (tok == "%=") {
+        returner "%"
+    }
+    returner ""
+}
+
 funksjon eval_ops_til_verdi(ops: liste_tekst, verdier: liste_heltall, resultat: liste_heltall) -> tekst {
     la stack: liste_heltall = [0]
     la i: heltall = 0
@@ -1139,8 +1165,9 @@ funksjon skript_til_ops_og_verdier(tokens: liste_tekst, navn: liste_tekst, miljo
             returner "/* feil: 'sett' må etterfølges av variabelnavn */"
         }
 
-        hvis (ass_start + 1 < lengde(stmt_tokens) og er_navn_token(stmt_tokens[ass_start]) og stmt_tokens[ass_start + 1] == "=") {
+        hvis (ass_start + 1 < lengde(stmt_tokens) og er_navn_token(stmt_tokens[ass_start]) og er_assignment_op(stmt_tokens[ass_start + 1])) {
             la varnavn: tekst = stmt_tokens[ass_start]
+            la ass_op: tekst = stmt_tokens[ass_start + 1]
             la expr_tokens: liste_tekst = [""]
             la expr_ops: liste_tekst = [""]
             la expr_verdier: liste_heltall = [0]
@@ -1163,6 +1190,33 @@ funksjon skript_til_ops_og_verdier(tokens: liste_tekst, navn: liste_tekst, miljo
             }
             hvis (stmt_has_semicolon == usann) {
                 returner "/* feil: mangler ';' etter assignment til " + varnavn + " */"
+            }
+
+            hvis (har_la og ass_op != "=") {
+                returner "/* feil: 'la' støtter kun '=' */"
+            }
+
+            la idx_pre: heltall = finn_navn_indeks(navn, varnavn)
+            hvis (ass_op != "=" og idx_pre < 0) {
+                returner "/* feil: variabel '" + varnavn + "' er ikke deklarert for '" + ass_op + "' */"
+            }
+            hvis (ass_op != "=") {
+                la binop: tekst = assignment_op_til_binop(ass_op)
+                la rhs_copy: liste_tekst = [""]
+                la t: heltall = 0
+                fjern_indeks(rhs_copy, 0)
+                mens (t < lengde(expr_tokens)) {
+                    legg_til(rhs_copy, expr_tokens[t])
+                    t = t + 1
+                }
+                fjern_indeks(expr_tokens, 0)
+                legg_til(expr_tokens, varnavn)
+                legg_til(expr_tokens, binop)
+                t = 0
+                mens (t < lengde(rhs_copy)) {
+                    legg_til(expr_tokens, rhs_copy[t])
+                    t = t + 1
+                }
             }
 
             hvis (lengde(expr_tokens) > 0 og expr_tokens[0] == "hvis") {
