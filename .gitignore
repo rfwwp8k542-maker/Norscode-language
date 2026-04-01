@@ -4,6 +4,9 @@ __pycache__/
 
 # Build outputs / generated artifacts
 build/
+dist/
+*.egg-info/
+.norsklang/
 *.o
 *.out
 
@@ -18,3 +21,5 @@ tests/test_math
 tests/test_selfhost
 tests/test_text
 tests/test_while
+tests/test_dependency_import
+tests/test_dependency_import.c

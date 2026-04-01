@@ -1,13 +1,25 @@
 import argparse
+import datetime as dt
 import difflib
+import hashlib
 import json
+import os
+import re
+import shutil
 import subprocess
 import sys
+import tarfile
+import time
+import tomllib
+import urllib.request
 import uuid
+import zipfile
 from pathlib import Path
 
 from compiler.cgen import CGenerator
+from compiler.lexer import Lexer
 from compiler.loader import ModuleLoader
+from compiler.parser import Parser
 from compiler.semantic import SemanticAnalyzer
 
 
@@ -34,6 +46,864 @@ IR_OPS_NO_ARG = {
 }
 IR_ALL_OPS = IR_OPS_WITH_ARG | IR_OPS_NO_ARG
 IR_SNAPSHOT_FIXTURE = Path("tests/ir_snapshot_cases.json")
+PROJECT_CONFIG_NAME = "norsklang.toml"
+PYPROJECT_NAME = "pyproject.toml"
+CHANGELOG_NAME = "CHANGELOG.md"
+LOCKFILE_NAME = "norsklang.lock"
+SEMVER_RE = re.compile(r"^\d+\.\d+\.\d+$")
+
+
+def _find_project_config(start_dir: Path | None = None) -> Path:
+    base = (start_dir or Path.cwd()).resolve()
+    for candidate_dir in (base, *base.parents):
+        candidate = candidate_dir / PROJECT_CONFIG_NAME
+        if candidate.exists():
+            return candidate
+    raise RuntimeError(f"Fant ikke {PROJECT_CONFIG_NAME} i denne mappen eller overliggende mapper")
+
+
+def _parse_toml_string(raw: str) -> str | None:
+    value = raw.strip()
+    if len(value) >= 2 and value[0] == '"' and value[-1] == '"':
+        return value[1:-1]
+    return None
+
+
+def _parse_project_name_from_toml(path: Path) -> str | None:
+    current_section = ""
+    for line in path.read_text(encoding="utf-8").splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+        if stripped.startswith("[") and stripped.endswith("]"):
+            current_section = stripped[1:-1].strip()
+            continue
+        if current_section == "project" and "=" in stripped:
+            key, value = stripped.split("=", 1)
+            if key.strip() == "name":
+                return _parse_toml_string(value)
+    return None
+
+
+def _resolve_package_dir(package_path: str) -> tuple[Path, Path]:
+    path = Path(package_path).expanduser()
+    if not path.is_absolute():
+        path = (Path.cwd() / path).resolve()
+
+    if path.is_file():
+        if path.name != PROJECT_CONFIG_NAME:
+            raise RuntimeError(f"Sti peker til fil, men ikke {PROJECT_CONFIG_NAME}: {path}")
+        package_dir = path.parent
+        package_config = path
+    else:
+        package_dir = path
+        package_config = package_dir / PROJECT_CONFIG_NAME
+
+    if not package_dir.exists():
+        raise RuntimeError(f"Fant ikke pakkesti: {package_dir}")
+    if not package_dir.is_dir():
+        raise RuntimeError(f"Pakkesti må være mappe: {package_dir}")
+    if not package_config.exists():
+        raise RuntimeError(f"Fant ikke pakkekonfig: {package_config}")
+
+    return package_dir, package_config
+
+
+def _load_toml(path: Path) -> dict:
+    try:
+        return tomllib.loads(path.read_text(encoding="utf-8"))
+    except Exception as exc:
+        raise RuntimeError(f"Kunne ikke lese TOML {path}: {exc}") from exc
+
+
+def _normalize_registry_path(raw_path: str, relative_to: Path) -> Path:
+    path = Path(raw_path).expanduser()
+    if path.is_absolute():
+        return path.resolve()
+    return (relative_to / path).resolve()
+
+
+def _extract_package_map(raw: object) -> dict[str, dict]:
+    if not isinstance(raw, dict):
+        return {}
+
+    out: dict[str, dict] = {}
+    for name, value in raw.items():
+        if isinstance(value, str):
+            out[name] = {"path": value, "description": None, "git": None, "url": None, "ref": None}
+        elif isinstance(value, dict):
+            raw_path = value.get("path")
+            raw_git = value.get("git")
+            raw_url = value.get("url")
+            if isinstance(raw_path, str) or isinstance(raw_git, str) or isinstance(raw_url, str):
+                out[name] = {
+                    "path": raw_path if isinstance(raw_path, str) else None,
+                    "git": raw_git if isinstance(raw_git, str) else None,
+                    "url": raw_url if isinstance(raw_url, str) else None,
+                    "ref": value.get("ref") if isinstance(value.get("ref"), str) else None,
+                    "description": value.get("description"),
+                }
+    return out
+
+
+def _read_registry_entries(project_config_path: Path) -> dict[str, dict]:
+    project_dir = project_config_path.parent.resolve()
+    entries: dict[str, dict] = {}
+
+    # 1) Inline registry in project config: [registry.packages]
+    project_toml = _load_toml(project_config_path)
+    inline_registry = project_toml.get("registry", {})
+    inline_packages = _extract_package_map(inline_registry.get("packages"))
+    for name, meta in inline_packages.items():
+        if isinstance(meta.get("path"), str):
+            entries[name] = {
+                "kind": "path",
+                "path": _normalize_registry_path(meta["path"], project_dir),
+                "description": meta.get("description"),
+                "source": str(project_config_path),
+            }
+        elif isinstance(meta.get("git"), str):
+            entries[name] = {
+                "kind": "git",
+                "git": meta["git"],
+                "ref": meta.get("ref"),
+                "description": meta.get("description"),
+                "source": str(project_config_path),
+            }
+        elif isinstance(meta.get("url"), str):
+            entries[name] = {
+                "kind": "url",
+                "url": meta["url"],
+                "description": meta.get("description"),
+                "source": str(project_config_path),
+            }
+
+    # 2) External registry file: packages/registry.toml
+    registry_file = project_dir / "packages" / "registry.toml"
+    if registry_file.exists():
+        registry_toml = _load_toml(registry_file)
+        top_packages = _extract_package_map(registry_toml.get("packages"))
+        for name, meta in top_packages.items():
+            if isinstance(meta.get("path"), str):
+                entries[name] = {
+                    "kind": "path",
+                    "path": _normalize_registry_path(meta["path"], registry_file.parent),
+                    "description": meta.get("description"),
+                    "source": str(registry_file),
+                }
+            elif isinstance(meta.get("git"), str):
+                entries[name] = {
+                    "kind": "git",
+                    "git": meta["git"],
+                    "ref": meta.get("ref"),
+                    "description": meta.get("description"),
+                    "source": str(registry_file),
+                }
+            elif isinstance(meta.get("url"), str):
+                entries[name] = {
+                    "kind": "url",
+                    "url": meta["url"],
+                    "description": meta.get("description"),
+                    "source": str(registry_file),
+                }
+
+        nested_registry = registry_toml.get("registry", {})
+        nested_packages = _extract_package_map(nested_registry.get("packages"))
+        for name, meta in nested_packages.items():
+            if isinstance(meta.get("path"), str):
+                entries[name] = {
+                    "kind": "path",
+                    "path": _normalize_registry_path(meta["path"], registry_file.parent),
+                    "description": meta.get("description"),
+                    "source": str(registry_file),
+                }
+            elif isinstance(meta.get("git"), str):
+                entries[name] = {
+                    "kind": "git",
+                    "git": meta["git"],
+                    "ref": meta.get("ref"),
+                    "description": meta.get("description"),
+                    "source": str(registry_file),
+                }
+            elif isinstance(meta.get("url"), str):
+                entries[name] = {
+                    "kind": "url",
+                    "url": meta["url"],
+                    "description": meta.get("description"),
+                    "source": str(registry_file),
+                }
+
+    return entries
+
+
+def _to_project_relative_path(target_dir: Path, project_dir: Path) -> str:
+    relative = os.path.relpath(target_dir, project_dir).replace("\\", "/")
+    if relative == ".":
+        return "."
+    if not relative.startswith("."):
+        return f"./{relative}"
+    return relative
+
+
+def _upsert_dependency(config_path: Path, dep_name: str, dep_value: str) -> bool:
+    lines = config_path.read_text(encoding="utf-8").splitlines()
+    rendered_line = f'{dep_name} = "{dep_value}"'
+
+    dep_start = None
+    dep_end = len(lines)
+    for idx, line in enumerate(lines):
+        stripped = line.strip()
+        if stripped == "[dependencies]":
+            dep_start = idx
+            continue
+        if dep_start is not None and stripped.startswith("[") and stripped.endswith("]"):
+            dep_end = idx
+            break
+
+    changed = False
+    if dep_start is None:
+        if lines and lines[-1].strip() != "":
+            lines.append("")
+        lines.append("[dependencies]")
+        lines.append(rendered_line)
+        changed = True
+    else:
+        existing_idx = None
+        for idx in range(dep_start + 1, dep_end):
+            stripped = lines[idx].strip()
+            if not stripped or stripped.startswith("#") or "=" not in stripped:
+                continue
+            key, _value = stripped.split("=", 1)
+            if key.strip() == dep_name:
+                existing_idx = idx
+                break
+
+        if existing_idx is not None:
+            if lines[existing_idx].strip() != rendered_line:
+                lines[existing_idx] = rendered_line
+                changed = True
+        else:
+            lines.insert(dep_end, rendered_line)
+            changed = True
+
+    if changed:
+        config_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return changed
+
+
+def list_registry_packages():
+    config_path = _find_project_config()
+    entries = _read_registry_entries(config_path)
+    return config_path, entries
+
+
+def _render_git_dependency(git_url: str, ref: str | None) -> str:
+    if ref:
+        return f"git+{git_url}@{ref}"
+    return f"git+{git_url}"
+
+
+def _render_url_dependency(url: str) -> str:
+    return f"url+{url}"
+
+
+def _parse_dependencies_from_toml(path: Path) -> dict[str, str]:
+    data = _load_toml(path)
+    deps = data.get("dependencies", {})
+    if not isinstance(deps, dict):
+        return {}
+    out = {}
+    for name, value in deps.items():
+        if isinstance(name, str) and isinstance(value, str):
+            out[name] = value
+    return out
+
+
+def _hash_file(path: Path) -> str:
+    h = hashlib.sha256()
+    with path.open("rb") as f:
+        while True:
+            chunk = f.read(1024 * 1024)
+            if not chunk:
+                break
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def _hash_directory(path: Path) -> str:
+    h = hashlib.sha256()
+    files = [p for p in sorted(path.rglob("*")) if p.is_file() and ".git" not in p.parts]
+    for f in files:
+        rel = str(f.relative_to(path)).replace("\\", "/")
+        h.update(rel.encode("utf-8"))
+        h.update(b"\0")
+        with f.open("rb") as fd:
+            while True:
+                chunk = fd.read(1024 * 1024)
+                if not chunk:
+                    break
+                h.update(chunk)
+        h.update(b"\0")
+    return h.hexdigest()
+
+
+def _parse_git_dependency(value: str) -> tuple[str, str | None]:
+    raw = value[len("git+") :]
+    if "@" in raw:
+        url, ref = raw.rsplit("@", 1)
+        return url, ref
+    return raw, None
+
+
+def _resolve_path_dependency(project_dir: Path, value: str) -> Path:
+    dep_path = Path(value).expanduser()
+    if dep_path.is_absolute():
+        return dep_path.resolve()
+    return (project_dir / dep_path).resolve()
+
+
+def generate_lockfile(check_only: bool = False):
+    config_path = _find_project_config()
+    project_dir = config_path.parent.resolve()
+    deps = _parse_dependencies_from_toml(config_path)
+    project_toml = _load_toml(config_path)
+    project_meta = project_toml.get("project", {}) if isinstance(project_toml.get("project", {}), dict) else {}
+
+    lock = {
+        "lock_version": 1,
+        "generated_at": dt.datetime.now(dt.timezone.utc).isoformat(),
+        "project": {
+            "name": project_meta.get("name", project_dir.name),
+            "version": project_meta.get("version"),
+            "entry": project_meta.get("entry"),
+        },
+        "dependencies": {},
+    }
+
+    for dep_name, dep_value in sorted(deps.items(), key=lambda item: item[0]):
+        entry = {"specifier": dep_value}
+        if dep_value.startswith("git+"):
+            git_url, git_ref = _parse_git_dependency(dep_value)
+            entry["kind"] = "git"
+            entry["resolved"] = {
+                "url": git_url,
+                "ref": git_ref,
+                "pinned": bool(git_ref),
+            }
+        elif dep_value.startswith("url+"):
+            url = dep_value[len("url+") :]
+            entry["kind"] = "url"
+            entry["resolved"] = {
+                "url": url,
+                "pinned": True,
+            }
+        else:
+            dep_path = _resolve_path_dependency(project_dir, dep_value)
+            entry["kind"] = "path"
+            resolved = {
+                "path": str(dep_path),
+                "exists": dep_path.exists(),
+            }
+            if dep_path.exists() and dep_path.is_dir():
+                resolved["digest_sha256"] = _hash_directory(dep_path)
+                dep_cfg = dep_path / PROJECT_CONFIG_NAME
+                if dep_cfg.exists():
+                    dep_toml = _load_toml(dep_cfg)
+                    proj = dep_toml.get("project", {})
+                    if isinstance(proj, dict):
+                        resolved["project_name"] = proj.get("name")
+                        resolved["project_version"] = proj.get("version")
+                        resolved["entry"] = proj.get("entry")
+            elif dep_path.exists() and dep_path.is_file():
+                resolved["digest_sha256"] = _hash_file(dep_path)
+            entry["resolved"] = resolved
+
+        lock["dependencies"][dep_name] = entry
+
+    lock_path = project_dir / LOCKFILE_NAME
+    payload = json.dumps(lock, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
+
+    if check_only:
+        if not lock_path.exists():
+            return lock_path, False, "mangler"
+        try:
+            current_obj = json.loads(lock_path.read_text(encoding="utf-8"))
+        except Exception:
+            return lock_path, False, "utdatert"
+
+        expected_obj = dict(lock)
+        current_obj = dict(current_obj) if isinstance(current_obj, dict) else {}
+        expected_obj.pop("generated_at", None)
+        current_obj.pop("generated_at", None)
+        ok = current_obj == expected_obj
+        return lock_path, ok, "ok" if ok else "utdatert"
+
+    lock_path.write_text(payload, encoding="utf-8")
+    return lock_path, True, "skrevet"
+
+
+def _cache_base_dir(project_dir: Path) -> Path:
+    return (project_dir / ".norsklang" / "cache").resolve()
+
+
+def _safe_extract_tar(archive_path: Path, dest_dir: Path):
+    with tarfile.open(archive_path) as tar:
+        for member in tar.getmembers():
+            member_path = (dest_dir / member.name).resolve()
+            if not str(member_path).startswith(str(dest_dir.resolve())):
+                raise RuntimeError(f"Utrygg tar-oppføring blokkert: {member.name}")
+        tar.extractall(path=dest_dir)
+
+
+def _safe_extract_zip(archive_path: Path, dest_dir: Path):
+    with zipfile.ZipFile(archive_path) as zf:
+        for name in zf.namelist():
+            target = (dest_dir / name).resolve()
+            if not str(target).startswith(str(dest_dir.resolve())):
+                raise RuntimeError(f"Utrygg zip-oppføring blokkert: {name}")
+        zf.extractall(path=dest_dir)
+
+
+def _find_cached_package_root(base_dir: Path) -> Path:
+    direct = base_dir / PROJECT_CONFIG_NAME
+    if direct.exists():
+        return base_dir
+
+    candidates = sorted(base_dir.glob(f"**/{PROJECT_CONFIG_NAME}"))
+    if not candidates:
+        raise RuntimeError(f"Fant ikke {PROJECT_CONFIG_NAME} i cache: {base_dir}")
+    if len(candidates) > 1:
+        # Velg nærmeste kandidat (kortest sti) for forutsigbarhet.
+        candidates.sort(key=lambda p: len(p.relative_to(base_dir).parts))
+    return candidates[0].parent
+
+
+def _fetch_git_to_cache(project_dir: Path, package_name: str, git_url: str, git_ref: str | None, refresh: bool) -> Path:
+    cache_dir = _cache_base_dir(project_dir) / "git"
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    key = f"{git_url}@{git_ref or 'HEAD'}"
+    short = hashlib.sha1(key.encode("utf-8")).hexdigest()[:12]
+    target = cache_dir / f"{package_name}-{short}"
+
+    if target.exists() and refresh:
+        shutil.rmtree(target)
+
+    if not target.exists():
+        subprocess.run(["git", "clone", git_url, str(target)], check=True)
+    if git_ref:
+        subprocess.run(["git", "-C", str(target), "fetch", "--all", "--tags"], check=True)
+        subprocess.run(["git", "-C", str(target), "checkout", git_ref], check=True)
+
+    return _find_cached_package_root(target)
+
+
+def _fetch_url_to_cache(project_dir: Path, package_name: str, source_url: str, refresh: bool) -> Path:
+    cache_dir = _cache_base_dir(project_dir) / "url"
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    short = hashlib.sha1(source_url.encode("utf-8")).hexdigest()[:12]
+    target = cache_dir / f"{package_name}-{short}"
+
+    if target.exists() and refresh:
+        shutil.rmtree(target)
+
+    archives_dir = target / "archives"
+    extract_dir = target / "src"
+    if not target.exists():
+        archives_dir.mkdir(parents=True, exist_ok=True)
+        extract_dir.mkdir(parents=True, exist_ok=True)
+
+        filename = Path(source_url.split("?")[0]).name or "package.tar.gz"
+        archive_path = archives_dir / filename
+        urllib.request.urlretrieve(source_url, archive_path)
+
+        lower_name = filename.lower()
+        if lower_name.endswith(".zip"):
+            _safe_extract_zip(archive_path, extract_dir)
+        elif lower_name.endswith((".tar.gz", ".tgz", ".tar", ".tar.bz2", ".tbz2", ".tar.xz", ".txz")):
+            _safe_extract_tar(archive_path, extract_dir)
+        else:
+            raise RuntimeError(f"Ukjent arkivformat for URL-kilde: {filename}")
+
+    return _find_cached_package_root(extract_dir)
+
+
+def add_dependency(
+    package: str,
+    package_path: str | None = None,
+    dep_name_override: str | None = None,
+    git_url: str | None = None,
+    git_ref: str | None = None,
+    tarball_url: str | None = None,
+    fetch: bool = False,
+    refresh: bool = False,
+    pin: bool = False,
+):
+    config_path = _find_project_config()
+    project_dir = config_path.parent.resolve()
+    registry_entries = _read_registry_entries(config_path)
+
+    if git_url and tarball_url:
+        raise RuntimeError("Bruk enten --git eller --url, ikke begge")
+    if (git_url or tarball_url) and package_path:
+        raise RuntimeError("Ikke kombiner path-argument med --git/--url")
+    if git_ref and not git_url:
+        raise RuntimeError("--ref krever --git")
+    if pin and git_url and not git_ref:
+        raise RuntimeError("--pin krever --ref når --git brukes")
+
+    path_like = any(sep in package for sep in ("/", "\\")) or package.startswith(".")
+    dep_kind = "path"
+    dep_value = ""
+    package_name = package
+
+    if git_url:
+        dep_name = dep_name_override or package
+        dep_kind = "git"
+        dep_value = _render_git_dependency(git_url, git_ref)
+        package_name = dep_name
+        if fetch:
+            cached_root = _fetch_git_to_cache(project_dir, dep_name, git_url, git_ref, refresh=refresh)
+            dep_kind = "path"
+            dep_value = _to_project_relative_path(cached_root, project_dir)
+            package_name = _parse_project_name_from_toml(cached_root / PROJECT_CONFIG_NAME) or cached_root.name
+    elif tarball_url:
+        dep_name = dep_name_override or package
+        dep_kind = "url"
+        dep_value = _render_url_dependency(tarball_url)
+        package_name = dep_name
+        if fetch:
+            cached_root = _fetch_url_to_cache(project_dir, dep_name, tarball_url, refresh=refresh)
+            dep_kind = "path"
+            dep_value = _to_project_relative_path(cached_root, project_dir)
+            package_name = _parse_project_name_from_toml(cached_root / PROJECT_CONFIG_NAME) or cached_root.name
+    if package_path:
+        dep_name = dep_name_override or package
+        resolved_dir, pkg_config = _resolve_package_dir(package_path)
+        dep_kind = "path"
+        dep_value = _to_project_relative_path(resolved_dir, project_dir)
+        package_name = _parse_project_name_from_toml(pkg_config) or resolved_dir.name
+    elif not git_url and not tarball_url and path_like:
+        resolved_dir, pkg_config = _resolve_package_dir(package)
+        dep_name = dep_name_override or _parse_project_name_from_toml(pkg_config) or resolved_dir.name
+        dep_kind = "path"
+        dep_value = _to_project_relative_path(resolved_dir, project_dir)
+        package_name = _parse_project_name_from_toml(pkg_config) or resolved_dir.name
+    elif not git_url and not tarball_url:
+        dep_name = dep_name_override or package
+        registry_hit = registry_entries.get(package)
+        if registry_hit is not None:
+            if registry_hit.get("kind") == "path":
+                resolved_dir, pkg_config = _resolve_package_dir(str(registry_hit["path"]))
+                dep_kind = "path"
+                dep_value = _to_project_relative_path(resolved_dir, project_dir)
+                package_name = _parse_project_name_from_toml(pkg_config) or resolved_dir.name
+            elif registry_hit.get("kind") == "git":
+                if pin and not registry_hit.get("ref"):
+                    raise RuntimeError(f"Registry-pakke '{package}' mangler låst git-ref (bruk pakke med ref eller uten --pin)")
+                dep_kind = "git"
+                dep_value = _render_git_dependency(registry_hit["git"], registry_hit.get("ref"))
+                package_name = dep_name
+                if fetch:
+                    cached_root = _fetch_git_to_cache(
+                        project_dir,
+                        dep_name,
+                        registry_hit["git"],
+                        registry_hit.get("ref"),
+                        refresh=refresh,
+                    )
+                    dep_kind = "path"
+                    dep_value = _to_project_relative_path(cached_root, project_dir)
+                    package_name = _parse_project_name_from_toml(cached_root / PROJECT_CONFIG_NAME) or cached_root.name
+            elif registry_hit.get("kind") == "url":
+                dep_kind = "url"
+                dep_value = _render_url_dependency(registry_hit["url"])
+                package_name = dep_name
+                if fetch:
+                    cached_root = _fetch_url_to_cache(project_dir, dep_name, registry_hit["url"], refresh=refresh)
+                    dep_kind = "path"
+                    dep_value = _to_project_relative_path(cached_root, project_dir)
+                    package_name = _parse_project_name_from_toml(cached_root / PROJECT_CONFIG_NAME) or cached_root.name
+            else:
+                raise RuntimeError(f"Ukjent registry-kind for {package}: {registry_hit.get('kind')}")
+        else:
+            default_dir = project_dir / "packages" / package
+            resolved_dir, pkg_config = _resolve_package_dir(str(default_dir))
+            dep_kind = "path"
+            dep_value = _to_project_relative_path(resolved_dir, project_dir)
+            package_name = _parse_project_name_from_toml(pkg_config) or resolved_dir.name
+
+    if not dep_name:
+        raise RuntimeError("Kunne ikke finne avhengighetsnavn (bruk --name)")
+
+    if not dep_value:
+        raise RuntimeError("Kunne ikke finne dependency-verdi")
+
+    changed = _upsert_dependency(config_path, dep_name, dep_value)
+    return config_path, dep_name, dep_value, package_name, dep_kind, changed
+
+
+def _resolve_dependency_from_registry(
+    dep_name: str,
+    registry_hit: dict,
+    project_dir: Path,
+    fetch: bool,
+    refresh: bool,
+    pin: bool,
+) -> tuple[str, str]:
+    kind = registry_hit.get("kind")
+    if kind == "path":
+        resolved_dir, _pkg_config = _resolve_package_dir(str(registry_hit["path"]))
+        dep_value = _to_project_relative_path(resolved_dir, project_dir)
+        return "path", dep_value
+
+    if kind == "git":
+        if pin and not registry_hit.get("ref"):
+            raise RuntimeError(f"Registry-pakke '{dep_name}' mangler låst git-ref (bruk pakke med ref eller uten --pin)")
+        if fetch:
+            cached_root = _fetch_git_to_cache(
+                project_dir,
+                dep_name,
+                registry_hit["git"],
+                registry_hit.get("ref"),
+                refresh=refresh,
+            )
+            return "path", _to_project_relative_path(cached_root, project_dir)
+        return "git", _render_git_dependency(registry_hit["git"], registry_hit.get("ref"))
+
+    if kind == "url":
+        if fetch:
+            cached_root = _fetch_url_to_cache(project_dir, dep_name, registry_hit["url"], refresh=refresh)
+            return "path", _to_project_relative_path(cached_root, project_dir)
+        return "url", _render_url_dependency(registry_hit["url"])
+
+    raise RuntimeError(f"Ukjent registry-kind for {dep_name}: {kind}")
+
+
+def update_dependencies(
+    package: str | None = None,
+    check_only: bool = False,
+    pin: bool = False,
+    fetch: bool = False,
+    refresh: bool = False,
+    with_lock: bool = False,
+):
+    config_path = _find_project_config()
+    project_dir = config_path.parent.resolve()
+    deps = _parse_dependencies_from_toml(config_path)
+    registry_entries = _read_registry_entries(config_path)
+
+    if package is not None:
+        if package not in deps:
+            raise RuntimeError(f"Dependency finnes ikke i {PROJECT_CONFIG_NAME}: {package}")
+        targets = [package]
+    else:
+        targets = sorted(deps.keys())
+
+    updated = 0
+    unchanged = 0
+    skipped = 0
+    items = []
+
+    for dep_name in targets:
+        current = deps[dep_name]
+        hit = registry_entries.get(dep_name)
+        if hit is None:
+            skipped += 1
+            items.append(
+                {
+                    "name": dep_name,
+                    "status": "skipped",
+                    "reason": "ikke i registry",
+                    "current": current,
+                }
+            )
+            continue
+
+        new_kind, desired = _resolve_dependency_from_registry(
+            dep_name=dep_name,
+            registry_hit=hit,
+            project_dir=project_dir,
+            fetch=fetch,
+            refresh=refresh,
+            pin=pin,
+        )
+
+        if current == desired:
+            unchanged += 1
+            items.append(
+                {
+                    "name": dep_name,
+                    "status": "unchanged",
+                    "kind": new_kind,
+                    "value": desired,
+                }
+            )
+            continue
+
+        if not check_only:
+            _upsert_dependency(config_path, dep_name, desired)
+        updated += 1
+        items.append(
+            {
+                "name": dep_name,
+                "status": "updated",
+                "kind": new_kind,
+                "from": current,
+                "to": desired,
+            }
+        )
+
+    lock_info = None
+    if with_lock and not check_only:
+        lock_path, _ok, status = generate_lockfile(check_only=False)
+        lock_info = {"path": str(lock_path), "status": status}
+
+    return {
+        "config": str(config_path),
+        "check_only": check_only,
+        "target": package or "*",
+        "updated": updated,
+        "unchanged": unchanged,
+        "skipped": skipped,
+        "items": items,
+        "lock": lock_info,
+    }
+
+
+def _find_pyproject(start_dir: Path | None = None) -> Path:
+    base = (start_dir or Path.cwd()).resolve()
+    for candidate_dir in (base, *base.parents):
+        candidate = candidate_dir / PYPROJECT_NAME
+        if candidate.exists():
+            return candidate
+    raise RuntimeError(f"Fant ikke {PYPROJECT_NAME} i denne mappen eller overliggende mapper")
+
+
+def _parse_project_version_from_pyproject(path: Path) -> str:
+    current_section = ""
+    for line in path.read_text(encoding="utf-8").splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+        if stripped.startswith("[") and stripped.endswith("]"):
+            current_section = stripped[1:-1].strip()
+            continue
+        if current_section == "project" and "=" in stripped:
+            key, value = stripped.split("=", 1)
+            if key.strip() == "version":
+                parsed = _parse_toml_string(value)
+                if parsed:
+                    return parsed
+    raise RuntimeError(f"Fant ikke [project].version i {path}")
+
+
+def _set_project_version_in_pyproject(path: Path, new_version: str, dry_run: bool = False) -> bool:
+    lines = path.read_text(encoding="utf-8").splitlines()
+    current_section = ""
+    changed = False
+
+    for idx, line in enumerate(lines):
+        stripped = line.strip()
+        if stripped.startswith("[") and stripped.endswith("]"):
+            current_section = stripped[1:-1].strip()
+            continue
+        if current_section == "project" and "=" in stripped:
+            key, _value = stripped.split("=", 1)
+            if key.strip() == "version":
+                rendered = f'version = "{new_version}"'
+                if stripped != rendered:
+                    lines[idx] = rendered
+                    changed = True
+                break
+
+    if changed and not dry_run:
+        path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return changed
+
+
+def _next_semver(version: str, bump: str) -> str:
+    if not SEMVER_RE.match(version):
+        raise RuntimeError(f"Ugyldig semver i pyproject: {version}")
+    major, minor, patch = (int(part) for part in version.split("."))
+    if bump == "major":
+        return f"{major + 1}.0.0"
+    if bump == "minor":
+        return f"{major}.{minor + 1}.0"
+    return f"{major}.{minor}.{patch + 1}"
+
+
+def _upsert_changelog_release(changelog_path: Path, version: str, release_date: str, dry_run: bool = False) -> bool:
+    if not changelog_path.exists():
+        baseline = (
+            "# Changelog\n\n"
+            "## [Unreleased]\n\n"
+            f"## [{version}] - {release_date}\n\n"
+            "### Endret\n"
+            f"- Versjonsbump til `{version}`.\n"
+        )
+        if not dry_run:
+            changelog_path.write_text(baseline, encoding="utf-8")
+        return True
+
+    lines = changelog_path.read_text(encoding="utf-8").splitlines()
+    if any(line.startswith(f"## [{version}]") for line in lines):
+        return False
+
+    unreleased_idx = next((i for i, line in enumerate(lines) if line.strip().lower() == "## [unreleased]"), None)
+    if unreleased_idx is not None:
+        insert_at = len(lines)
+        for i in range(unreleased_idx + 1, len(lines)):
+            if lines[i].startswith("## "):
+                insert_at = i
+                break
+    else:
+        insert_at = next((i for i, line in enumerate(lines) if line.startswith("## ")), len(lines))
+
+    new_block = [
+        "",
+        f"## [{version}] - {release_date}",
+        "",
+        "### Endret",
+        f"- Versjonsbump til `{version}`.",
+    ]
+    updated = lines[:insert_at] + new_block + lines[insert_at:]
+    if not dry_run:
+        changelog_path.write_text("\n".join(updated).rstrip() + "\n", encoding="utf-8")
+    return True
+
+
+def prepare_release(version: str | None = None, bump: str = "patch", dry_run: bool = False, release_date: str | None = None):
+    pyproject_path = _find_pyproject()
+    old_version = _parse_project_version_from_pyproject(pyproject_path)
+
+    if version is not None:
+        if not SEMVER_RE.match(version):
+            raise RuntimeError(f"Ugyldig versjon: {version} (forventer MAJOR.MINOR.PATCH)")
+        new_version = version
+    else:
+        new_version = _next_semver(old_version, bump)
+
+    if new_version == old_version:
+        raise RuntimeError(f"Versjon er allerede {old_version}")
+
+    today = release_date or dt.date.today().isoformat()
+    if not re.match(r"^\d{4}-\d{2}-\d{2}$", today):
+        raise RuntimeError(f"Ugyldig datoformat: {today} (forventer YYYY-MM-DD)")
+
+    pyproject_changed = _set_project_version_in_pyproject(pyproject_path, new_version, dry_run=dry_run)
+    changelog_path = pyproject_path.parent / CHANGELOG_NAME
+    changelog_changed = _upsert_changelog_release(changelog_path, new_version, today, dry_run=dry_run)
+
+    return {
+        "pyproject": str(pyproject_path),
+        "changelog": str(changelog_path),
+        "old_version": old_version,
+        "new_version": new_version,
+        "release_date": today,
+        "dry_run": dry_run,
+        "changed_pyproject": pyproject_changed,
+        "changed_changelog": changelog_changed,
+    }
 
 
 def _resolve_source_path(source_file: str) -> Path:
@@ -54,6 +924,81 @@ def load_program(source_file: str):
         program, alias_map = loaded, {}
 
     return source_path, program, alias_map
+
+
+def lex_source(source_text: str):
+    lexer = Lexer(source_text)
+    tokens = []
+    while True:
+        tok = lexer.next_token()
+        tokens.append(tok)
+        if tok.typ == "EOF":
+            break
+    return tokens
+
+
+def parse_source(source_text: str):
+    parser = Parser(Lexer(source_text))
+    return parser.parse()
+
+
+def _ast_to_data(value):
+    if value is None or isinstance(value, (str, int, float, bool)):
+        return value
+    if isinstance(value, list):
+        return [_ast_to_data(item) for item in value]
+    if hasattr(value, "__dict__"):
+        data = {"node": value.__class__.__name__}
+        for key, item in value.__dict__.items():
+            data[key] = _ast_to_data(item)
+        return data
+    return repr(value)
+
+
+def debug_source(source_file: str, show_tokens: bool, show_ast: bool, show_symbols: bool):
+    source_path = _resolve_source_path(source_file)
+    source_text = source_path.read_text(encoding="utf-8")
+    parsed_program = parse_source(source_text)
+
+    payload = {
+        "source": str(source_path),
+        "imports": [
+            {"module": imp.module_name, "alias": imp.alias}
+            for imp in getattr(parsed_program, "imports", [])
+        ],
+        "functions": [
+            {"name": fn.name, "params": len(getattr(fn, "params", []))}
+            for fn in getattr(parsed_program, "functions", [])
+        ],
+    }
+
+    if show_tokens:
+        payload["tokens"] = [
+            {"type": tok.typ, "value": tok.value, "line": tok.line, "column": tok.column}
+            for tok in lex_source(source_text)
+        ]
+
+    if show_ast:
+        payload["ast"] = _ast_to_data(parsed_program)
+
+    if show_symbols:
+        _src, _program, alias_map, analyzer = check_program(source_file)
+        payload["aliases"] = alias_map
+        symbols = []
+        for name, meta in sorted(analyzer.functions.items(), key=lambda item: item[0]):
+            module_name = getattr(meta, "module_name", None) or "__main__"
+            symbols.append(
+                {
+                    "name": name,
+                    "module": module_name,
+                    "params": list(getattr(meta, "params", [])),
+                    "return_type": getattr(meta, "return_type", None),
+                    "builtin": bool(getattr(meta, "builtin", False)),
+                }
+            )
+        payload["symbols"] = symbols
+
+    return payload
 
 
 def check_program(source_file: str):
@@ -238,6 +1183,7 @@ def discover_tests() -> list[Path]:
 
 
 def run_test_file(source_file: str):
+    started = time.perf_counter()
     source_path, c_path, exe_path, _alias_map, _analyzer = build_program(source_file)
 
     result = subprocess.run(
@@ -245,6 +1191,7 @@ def run_test_file(source_file: str):
         capture_output=True,
         text=True,
     )
+    duration_ms = int((time.perf_counter() - started) * 1000)
 
     return {
         "source": str(source_path),
@@ -254,12 +1201,17 @@ def run_test_file(source_file: str):
         "stdout": result.stdout,
         "stderr": result.stderr,
         "success": result.returncode == 0,
+        "duration_ms": duration_ms,
     }
 
 
 def print_test_result(result, verbose: bool = False):
     status = "OK" if result["success"] else "FEIL"
-    print(f"{status}: {result['source']}")
+    duration_ms = result.get("duration_ms")
+    if isinstance(duration_ms, int):
+        print(f"{status}: {result['source']} ({duration_ms} ms)")
+    else:
+        print(f"{status}: {result['source']}")
 
     if verbose or not result["success"]:
         if result["stdout"]:
@@ -271,6 +1223,7 @@ def print_test_result(result, verbose: bool = False):
 
 
 def run_ir_snapshot_checks():
+    started = time.perf_counter()
     fixture_path = IR_SNAPSHOT_FIXTURE.resolve()
     try:
         fixture = json.loads(fixture_path.read_text(encoding="utf-8"))
@@ -285,6 +1238,7 @@ def run_ir_snapshot_checks():
             "stdout": "",
             "stderr": f"Kunne ikke lese fixture {fixture_path}: {exc}\n",
             "success": False,
+            "duration_ms": int((time.perf_counter() - started) * 1000),
         }
 
     mismatch_lines: list[str] = []
@@ -363,6 +1317,7 @@ def run_ir_snapshot_checks():
         "stdout": "",
         "stderr": "" if success else "\n".join(mismatch_lines) + "\n",
         "success": success,
+        "duration_ms": int((time.perf_counter() - started) * 1000),
     }
 
 
@@ -393,7 +1348,7 @@ def update_ir_snapshots(check_only: bool = False):
     return fixture_path, updated, len(strict_cases)
 
 
-def run_all_tests(verbose: bool = False):
+def run_all_tests(verbose: bool = False, quiet: bool = False):
     tests = discover_tests()
     if not tests:
         raise RuntimeError("Fant ingen tester i tests/")
@@ -402,22 +1357,91 @@ def run_all_tests(verbose: bool = False):
     for test_file in tests:
         result = run_test_file(str(test_file))
         results.append(result)
-        print_test_result(result, verbose=verbose)
+        if not quiet:
+            print_test_result(result, verbose=verbose)
 
     snapshot_result = run_ir_snapshot_checks()
     results.append(snapshot_result)
-    print_test_result(snapshot_result, verbose=verbose)
+    if not quiet:
+        print_test_result(snapshot_result, verbose=verbose)
 
     total = len(results)
     passed = sum(1 for r in results if r["success"])
     failed = total - passed
 
-    print()
-    print(f"Tester kjørt: {total}")
-    print(f"Bestått: {passed}")
-    print(f"Feilet: {failed}")
+    if not quiet:
+        print()
+        print(f"Tester kjørt: {total}")
+        print(f"Bestått: {passed}")
+        print(f"Feilet: {failed}")
 
     return results
+
+
+def summarize_test_results(results: list[dict]) -> dict:
+    total = len(results)
+    passed = sum(1 for r in results if r.get("success"))
+    failed = total - passed
+    duration_ms = sum(r.get("duration_ms", 0) for r in results if isinstance(r.get("duration_ms"), int))
+    return {
+        "total": total,
+        "passed": passed,
+        "failed": failed,
+        "duration_ms": duration_ms,
+        "ok": failed == 0,
+    }
+
+
+def run_ci_pipeline(json_output: bool = False):
+    payload = {
+        "snapshot_check": {"ok": False, "updated": None},
+        "parity_check": {"ok": False},
+        "test_check": {"ok": False, "passed": 0, "failed": 0, "total": 0},
+    }
+
+    if not json_output:
+        print("[1/3] Snapshot check")
+    _fixture_path, updated, _total = update_ir_snapshots(check_only=True)
+    payload["snapshot_check"]["updated"] = updated
+    if updated > 0:
+        raise RuntimeError(f"Snapshots er utdaterte ({updated} avvik). Kjør: python3 main.py update-snapshots")
+    payload["snapshot_check"]["ok"] = True
+    if not json_output:
+        print("OK")
+
+    if not json_output:
+        print("[2/3] Engine parity check")
+    _, py_ok, py_lines, py_err = ir_disasm_source_captured("tests/ir_sample.nlir", strict=False, engine="python")
+    _, sh_ok, sh_lines, sh_err = ir_disasm_source_captured("tests/ir_sample.nlir", strict=False, engine="selfhost")
+    if py_ok != sh_ok:
+        raise RuntimeError(f"Parity mismatch (status): python={py_ok} selfhost={sh_ok} {py_err or sh_err}")
+    if py_ok and py_lines != sh_lines:
+        raise RuntimeError("Parity mismatch: python/selfhost disasm avviker for tests/ir_sample.nlir")
+
+    _, py_s_ok, py_s_lines, py_s_err = ir_disasm_source_captured("tests/ir_sample.nlir", strict=True, engine="python")
+    _, sh_s_ok, sh_s_lines, sh_s_err = ir_disasm_source_captured("tests/ir_sample.nlir", strict=True, engine="selfhost")
+    if py_s_ok != sh_s_ok or py_s_lines != sh_s_lines or py_s_err != sh_s_err:
+        raise RuntimeError("Parity mismatch i strict-modus for tests/ir_sample.nlir")
+    payload["parity_check"]["ok"] = True
+    if not json_output:
+        print("OK")
+
+    if not json_output:
+        print("[3/3] Full test")
+    results = run_all_tests(verbose=False, quiet=json_output)
+    failed = sum(1 for r in results if not r["success"])
+    total = len(results)
+    passed = total - failed
+    payload["test_check"]["ok"] = failed == 0
+    payload["test_check"]["passed"] = passed
+    payload["test_check"]["failed"] = failed
+    payload["test_check"]["total"] = total
+    if failed != 0:
+        raise RuntimeError("Testfeil i CI-pipeline")
+    if not json_output:
+        print("OK")
+
+    return payload
 
 
 def main():
@@ -432,6 +1456,25 @@ def main():
 
     build = sub.add_parser("build", help="Generer C og bygg kjørbar fil")
     build.add_argument("file")
+
+    add = sub.add_parser("add", help="Legg til pakkeavhengighet i norsklang.toml")
+    add.add_argument("package", nargs="?", help="Pakkenavn eller pakkesti")
+    add.add_argument("path", nargs="?", help="Valgfri pakkesti (hvis package er navn)")
+    add.add_argument("--name", help="Overstyr dependency-navn")
+    add.add_argument("--list", action="store_true", help="Vis tilgjengelige pakker i registry")
+    add.add_argument("--git", help="Direkte Git-kilde (f.eks. https://github.com/org/repo.git)")
+    add.add_argument("--ref", help="Git ref (tag/branch/commit) brukt sammen med --git")
+    add.add_argument("--url", help="Direkte URL-kilde (f.eks. tarball/zip)")
+    add.add_argument("--fetch", action="store_true", help="Last ned/cach ekstern Git/URL-kilde til lokal mappe")
+    add.add_argument("--refresh", action="store_true", help="Tving ny nedlasting ved --fetch")
+    add.add_argument("--pin", action="store_true", help="Krev låst versjon/ref for ekstern kilde")
+
+    debug = sub.add_parser("debug", help="Vis debug-info (tokens/AST/symboler) for en .no-fil")
+    debug.add_argument("file")
+    debug.add_argument("--tokens", action="store_true", help="Vis lexer-tokens")
+    debug.add_argument("--ast", action="store_true", help="Vis AST")
+    debug.add_argument("--symbols", action="store_true", help="Vis semantiske symboler/funksjoner")
+    debug.add_argument("--json", action="store_true", help="Skriv debug-output som JSON")
 
     disasm = sub.add_parser("disasm", help="Vis generert C-kode for en .no-fil")
     disasm.add_argument("file")
@@ -448,9 +1491,33 @@ def main():
     update_snapshots = sub.add_parser("update-snapshots", help="Regenerer IR snapshot-forventninger")
     update_snapshots.add_argument("--check", action="store_true", help="Feil hvis snapshots er utdaterte (skriv ikke)")
 
+    ci = sub.add_parser("ci", help="Kjør lokal CI-sekvens (snapshot, parity, test)")
+    ci.add_argument("--json", action="store_true", help="Skriv CI-resultat som JSON")
+
+    lock = sub.add_parser("lock", help="Generer dependency lockfile (norsklang.lock)")
+    lock.add_argument("--check", action="store_true", help="Feil hvis lockfile er manglende/utdatert")
+    lock.add_argument("--json", action="store_true", help="Skriv lock-resultat som JSON")
+
+    update = sub.add_parser("update", help="Oppdater dependencies fra registry")
+    update.add_argument("package", nargs="?", help="Valgfri dependency å oppdatere")
+    update.add_argument("--check", action="store_true", help="Feil hvis en dependency ville blitt oppdatert")
+    update.add_argument("--json", action="store_true", help="Skriv update-resultat som JSON")
+    update.add_argument("--pin", action="store_true", help="Krev låst ref for registry git-kilder")
+    update.add_argument("--fetch", action="store_true", help="Materialiser registry git/url-kilder til lokal cache")
+    update.add_argument("--refresh", action="store_true", help="Tving ny nedlasting ved --fetch")
+    update.add_argument("--lock", action="store_true", help="Regenerer lockfile etter oppdatering")
+
+    release = sub.add_parser("release", help="Forbered release (versjonsbump + changelog)")
+    release.add_argument("--bump", choices=["major", "minor", "patch"], default="patch", help="Type semver-bump")
+    release.add_argument("--version", help="Sett eksakt versjon (overstyrer --bump)")
+    release.add_argument("--date", help="Release-dato (YYYY-MM-DD)")
+    release.add_argument("--dry-run", action="store_true", help="Vis endringer uten å skrive filer")
+    release.add_argument("--json", action="store_true", help="Skriv release-resultat som JSON")
+
     test = sub.add_parser("test", help="Kjør én testfil eller alle i tests/")
     test.add_argument("file", nargs="?", help="Valgfri testfil")
     test.add_argument("--verbose", action="store_true", help="Vis output også for tester som består")
+    test.add_argument("--json", action="store_true", help="Skriv testresultat som JSON")
 
     args = parser.parse_args()
 
@@ -470,6 +1537,90 @@ def main():
             print(f"Generert C-fil: {c_path}")
             print("Kompilert med: clang")
             print(f"Kjørbar fil: {exe_path}")
+
+        elif args.cmd == "add":
+            if args.list:
+                config_path, entries = list_registry_packages()
+                print(f"Prosjektkonfig: {config_path}")
+                if not entries:
+                    print("Registry: ingen pakker funnet")
+                else:
+                    print(f"Registry: {len(entries)} pakker")
+                    for name, meta in sorted(entries.items(), key=lambda item: item[0]):
+                        desc = meta.get("description")
+                        desc_text = f" - {desc}" if isinstance(desc, str) and desc.strip() else ""
+                        if meta.get("kind") == "path":
+                            target = str(meta["path"])
+                        elif meta.get("kind") == "git":
+                            target = _render_git_dependency(meta["git"], meta.get("ref"))
+                        elif meta.get("kind") == "url":
+                            target = _render_url_dependency(meta["url"])
+                        else:
+                            target = "<ukjent>"
+                        print(f"  {name} => {target}{desc_text}")
+                return
+
+            if not args.package:
+                raise RuntimeError("Mangler pakkenavn. Bruk: add <pakke> eller add --list")
+
+            config_path, dep_name, dep_value, package_name, dep_kind, changed = add_dependency(
+                args.package,
+                package_path=args.path,
+                dep_name_override=args.name,
+                git_url=args.git,
+                git_ref=args.ref,
+                tarball_url=args.url,
+                fetch=args.fetch,
+                refresh=args.refresh,
+                pin=args.pin,
+            )
+            print(f"Konfig: {config_path}")
+            print(f"Pakke: {package_name}")
+            print(f"Kilde: {dep_kind}")
+            print(f"Dependency: {dep_name} = \"{dep_value}\"")
+            print("Status: oppdatert" if changed else "Status: uendret")
+
+        elif args.cmd == "debug":
+            show_tokens = args.tokens
+            show_ast = args.ast
+            show_symbols = args.symbols
+            if not (show_tokens or show_ast or show_symbols):
+                show_symbols = True
+
+            payload = debug_source(args.file, show_tokens=show_tokens, show_ast=show_ast, show_symbols=show_symbols)
+            if args.json:
+                print(json.dumps(payload, ensure_ascii=False, indent=2))
+            else:
+                print(f"Kilde: {payload['source']}")
+                print(f"Imports: {len(payload.get('imports', []))}")
+                for imp in payload.get("imports", []):
+                    alias_text = f" som {imp['alias']}" if imp.get("alias") else ""
+                    print(f"  bruk {imp['module']}{alias_text}")
+
+                print(f"Funksjoner: {len(payload.get('functions', []))}")
+                for fn in payload.get("functions", []):
+                    print(f"  {fn['name']} (params: {fn['params']})")
+
+                if "tokens" in payload:
+                    print("Tokens:")
+                    for tok in payload["tokens"]:
+                        print(f"  {tok['line']}:{tok['column']} {tok['type']} {repr(tok['value'])}")
+
+                if "symbols" in payload:
+                    print("Symboler:")
+                    for sym in payload["symbols"]:
+                        print(
+                            f"  {sym['name']} -> modul={sym['module']} "
+                            f"params={sym['params']} return={sym['return_type']}"
+                        )
+                    if payload.get("aliases"):
+                        print("Aliaser:")
+                        for alias, module_name in payload["aliases"].items():
+                            print(f"  {alias} => {module_name}")
+
+                if "ast" in payload:
+                    print("AST:")
+                    print(json.dumps(payload["ast"], ensure_ascii=False, indent=2))
 
         elif args.cmd == "disasm":
             source_path, code = disasm_program(args.file)
@@ -655,14 +1806,92 @@ def main():
             else:
                 print(f"Endringer skrevet: {updated}")
 
+        elif args.cmd == "ci":
+            payload = run_ci_pipeline(json_output=args.json)
+            if args.json:
+                print(json.dumps(payload, ensure_ascii=False, indent=2))
+
+        elif args.cmd == "lock":
+            lock_path, ok, status = generate_lockfile(check_only=args.check)
+            if args.json:
+                print(json.dumps({"lockfile": str(lock_path), "ok": ok, "status": status, "check": args.check}, ensure_ascii=False, indent=2))
+            else:
+                print(f"Lockfile: {lock_path}")
+                print(f"Status: {status}")
+            if args.check and not ok:
+                sys.exit(1)
+
+        elif args.cmd == "update":
+            payload = update_dependencies(
+                package=args.package,
+                check_only=args.check,
+                pin=args.pin,
+                fetch=args.fetch,
+                refresh=args.refresh,
+                with_lock=args.lock,
+            )
+            if args.json:
+                print(json.dumps(payload, ensure_ascii=False, indent=2))
+            else:
+                print(f"Konfig: {payload['config']}")
+                print(f"Target: {payload['target']}")
+                print(f"Updated: {payload['updated']}")
+                print(f"Unchanged: {payload['unchanged']}")
+                print(f"Skipped: {payload['skipped']}")
+                for item in payload["items"]:
+                    name = item["name"]
+                    status = item["status"]
+                    if status == "updated":
+                        print(f"  {name}: oppdatert -> {item['to']}")
+                    elif status == "unchanged":
+                        print(f"  {name}: uendret")
+                    else:
+                        print(f"  {name}: hoppet over ({item.get('reason', 'ukjent')})")
+                if payload.get("lock"):
+                    print(f"Lockfile: {payload['lock']['path']} ({payload['lock']['status']})")
+            if args.check and payload["updated"] > 0:
+                sys.exit(1)
+
+        elif args.cmd == "release":
+            payload = prepare_release(
+                version=args.version,
+                bump=args.bump,
+                dry_run=args.dry_run,
+                release_date=args.date,
+            )
+            if args.json:
+                print(json.dumps(payload, ensure_ascii=False, indent=2))
+            else:
+                mode = "DRY-RUN" if payload["dry_run"] else "SKREVET"
+                print(f"Release: {mode}")
+                print(f"Versjon: {payload['old_version']} -> {payload['new_version']}")
+                print(f"Dato: {payload['release_date']}")
+                print(f"Pyproject: {'oppdatert' if payload['changed_pyproject'] else 'uendret'} ({payload['pyproject']})")
+                print(f"Changelog: {'oppdatert' if payload['changed_changelog'] else 'uendret'} ({payload['changelog']})")
+
         elif args.cmd == "test":
             if args.file:
                 result = run_test_file(args.file)
-                print_test_result(result, verbose=args.verbose)
+                if args.json:
+                    payload = {
+                        "mode": "single",
+                        "results": [result],
+                        "summary": summarize_test_results([result]),
+                    }
+                    print(json.dumps(payload, ensure_ascii=False, indent=2))
+                else:
+                    print_test_result(result, verbose=args.verbose)
                 if not result["success"]:
                     sys.exit(1)
             else:
-                results = run_all_tests(verbose=args.verbose)
+                results = run_all_tests(verbose=args.verbose, quiet=args.json)
+                if args.json:
+                    payload = {
+                        "mode": "all",
+                        "results": results,
+                        "summary": summarize_test_results(results),
+                    }
+                    print(json.dumps(payload, ensure_ascii=False, indent=2))
                 if any(not r["success"] for r in results):
                     sys.exit(1)
 

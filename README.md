@@ -17,6 +17,38 @@ Et norsk programmeringsspråk som kompilerer til C.
 
 ## 📦 Kom i gang
 
+### 0. Installer CLI
+
+```bash
+python3 -m pip install -e .
+# Hvis miljøet er offline/strengt:
+python3 -m pip install -e . --no-build-isolation
+
+# Deretter kan du bruke:
+nl --help
+norsklang --help
+```
+
+### 0b. Bygg og publiser pakke
+
+```bash
+# Bygg distributerbare filer lokalt
+python3 -m pip install build twine
+pyproject-build
+python3 -m twine check dist/*
+
+# Forbered ny release lokalt (oppdaterer pyproject + CHANGELOG)
+python3 main.py release --bump patch
+
+# Se hva som ville skjedd uten å skrive filer
+python3 main.py release --bump minor --dry-run --json
+```
+
+Publisering er satt opp i GitHub Actions via `.github/workflows/publish.yml`:
+
+- Push tag `vX.Y.Z` for å trigge build + publisering til PyPI
+- Workflowen bruker Trusted Publisher (`id-token`) for opplasting
+
 ### 1. Kjør program
 
 ```bash
@@ -33,6 +65,9 @@ python3 main.py check app.no
 
 ```bash
 python3 main.py test
+
+# Maskinlesbar testoutput
+python3 main.py test --json
 ```
 
 ### 4. IR disasm (debug/tooling)
@@ -57,7 +92,111 @@ python3 main.py ir-disasm path/to/program.nlir --diff --save-diff /tmp/ir.diff
 python3 main.py ir-disasm path/to/program.nlir --json
 ```
 
-### 5. Snapshot-oppsett (CI)
+### 5. Pakker (`nl add`)
+
+```bash
+# Se registry-pakker
+python3 main.py add --list
+
+# Legg til lokal pakke fra ./packages/<navn>
+python3 main.py add butikk
+
+# Legg til innebygde standardpakker fra registry
+python3 main.py add std_math
+python3 main.py add std_tekst
+python3 main.py add std_liste
+python3 main.py add std_io
+
+# Samme via launcher
+python3 nl add butikk
+
+# Legg til pakke fra vilkårlig sti
+python3 main.py add ./packages/butikk
+
+# Egendefinert dependency-navn
+python3 main.py add ./packages/butikk --name butikk_local
+
+# Direkte Git-kilde
+python3 main.py add minpakke --git https://github.com/org/repo.git --ref v1.2.0
+
+# Direkte URL-kilde
+python3 main.py add minpakke --url https://example.com/mypkg-1.2.0.tar.gz
+
+# Last ned/cach ekstern kilde til lokal mappe og skriv sti i dependencies
+python3 main.py add demo_git --fetch
+python3 main.py add minpakke --url https://example.com/mypkg-1.2.0.tar.gz --fetch
+
+# Tving ny nedlasting av cache
+python3 main.py add demo_git --fetch --refresh
+
+# Krev låst git-ref ved add
+python3 main.py add minpakke --git https://github.com/org/repo.git --ref v1.2.0 --pin
+```
+
+Registry kan defineres i `packages/registry.toml`:
+
+```toml
+[packages]
+butikk = "./butikk"
+
+[registry.packages.eksempel]
+path = "./butikk"
+description = "Eksempeloppføring"
+
+[registry.packages.demo_git]
+git = "https://github.com/org/repo.git"
+ref = "v1.2.0"
+description = "Hent pakke fra Git"
+
+[registry.packages.demo_url]
+url = "https://example.com/mypkg-1.2.0.tar.gz"
+description = "Hent pakke fra URL"
+```
+
+Cache for eksterne pakker lagres under `.norsklang/cache/`.
+Modul-loaderen leser `[dependencies]` i `norsklang.toml` automatisk ved `bruk ...`.
+Modul-loaderen bruker også en in-memory parse-cache per fil (med mtime/size-sjekk) for raskere test/bygg-kjøringer.
+
+### 5b. Lockfile
+
+```bash
+# Generer/oppdater lockfile
+python3 main.py lock
+
+# CI-sjekk: feiler hvis lockfile mangler/er utdatert
+python3 main.py lock --check
+```
+
+### 5c. Oppgrader dependencies
+
+```bash
+# Oppdater alle dependencies som finnes i registry
+python3 main.py update
+
+# Oppdater én dependency
+python3 main.py update butikk
+
+# Check-modus: feiler hvis noe ville blitt oppdatert
+python3 main.py update --check
+
+# Oppdater + regenerer lockfile
+python3 main.py update --lock
+```
+
+### 6. Debug tools
+
+```bash
+# Kort symbol-oversikt (default)
+python3 main.py debug app.no
+
+# Vis tokens
+python3 main.py debug app.no --tokens
+
+# Vis AST + symboler som JSON
+python3 main.py debug app.no --ast --symbols --json
+```
+
+### 7. Snapshot-oppsett (CI)
 
 ```bash
 # Oppdater strict snapshot-forventninger
@@ -67,7 +206,7 @@ python3 main.py update-snapshots
 python3 main.py update-snapshots --check
 ```
 
-### 6. CI-eksempel (GitHub Actions)
+### 8. CI-eksempel (GitHub Actions)
 
 ```yaml
 name: ci
@@ -87,6 +226,15 @@ jobs:
         run: python3 main.py ir-disasm tests/ir_sample.nlir --diff --fail-on-warning
       - name: Full test
         run: python3 main.py test
+```
+
+Lokal kjøring av samme sekvens:
+
+```bash
+python3 main.py ci
+
+# Maskinlesbar output
+python3 main.py ci --json
 ```
 
 ---
@@ -149,10 +297,8 @@ Vi har startet en tidlig selv-hosting bane i `selfhost/`:
 
 Neste steg:
 
-- Pakke-system (`nl add`)
-- Bedre test-output
-- Debug tools
-- Installer (`pip install norsklang`)
+- Utvide selv-hosting til full parser
+- Signatur/verifisering av eksterne pakker
 
 ---
 
