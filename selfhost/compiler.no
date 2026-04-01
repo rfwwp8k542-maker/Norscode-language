@@ -62,6 +62,9 @@ funksjon er_operator_token(tok: tekst) -> bool {
     hvis (tok == "==" eller tok == "!=" eller tok == "<" eller tok == ">" eller tok == "<=" eller tok == ">=") {
         returner sann
     }
+    hvis (tok == "er" eller tok == "ikke_er" eller tok == "mindre_enn" eller tok == "storre_enn" eller tok == "mindre_eller_lik" eller tok == "storre_eller_lik") {
+        returner sann
+    }
     hvis (tok == "&&" eller tok == "||" eller tok == "!" eller tok == "og" eller tok == "eller" eller tok == "ikke") {
         returner sann
     }
@@ -78,10 +81,12 @@ funksjon operator_precedens(tok: tekst) -> heltall {
     hvis (tok == "+" eller tok == "-") {
         returner 5
     }
-    hvis (tok == "<" eller tok == ">" eller tok == "<=" eller tok == ">=") {
+    hvis (tok == "<" eller tok == ">" eller tok == "<=" eller tok == ">="
+        eller tok == "mindre_enn" eller tok == "storre_enn"
+        eller tok == "mindre_eller_lik" eller tok == "storre_eller_lik") {
         returner 4
     }
-    hvis (tok == "==" eller tok == "!=") {
+    hvis (tok == "==" eller tok == "!=" eller tok == "er" eller tok == "ikke_er") {
         returner 3
     }
     hvis (tok == "&&" eller tok == "og") {
@@ -109,13 +114,13 @@ funksjon operator_til_opcode(tok: tekst) -> tekst {
     hvis (tok == "%") {
         returner "MOD"
     }
-    hvis (tok == "==") {
+    hvis (tok == "==" eller tok == "er") {
         returner "EQ"
     }
-    hvis (tok == "<") {
+    hvis (tok == "<" eller tok == "mindre_enn") {
         returner "LT"
     }
-    hvis (tok == ">") {
+    hvis (tok == ">" eller tok == "storre_enn") {
         returner "GT"
     }
     hvis (tok == "&&" eller tok == "og") {
@@ -142,21 +147,21 @@ funksjon emitter_operator(ops: liste_tekst, verdier: liste_heltall, op: tekst) -
         legg_til(verdier, 0)
         returner sann
     }
-    hvis (op == "!=") {
+    hvis (op == "!=" eller op == "ikke_er") {
         legg_til(ops, "EQ")
         legg_til(verdier, 0)
         legg_til(ops, "NOT")
         legg_til(verdier, 0)
         returner sann
     }
-    hvis (op == "<=") {
+    hvis (op == "<=" eller op == "mindre_eller_lik") {
         legg_til(ops, "GT")
         legg_til(verdier, 0)
         legg_til(ops, "NOT")
         legg_til(verdier, 0)
         returner sann
     }
-    hvis (op == ">=") {
+    hvis (op == ">=" eller op == "storre_eller_lik") {
         legg_til(ops, "LT")
         legg_til(verdier, 0)
         legg_til(ops, "NOT")
