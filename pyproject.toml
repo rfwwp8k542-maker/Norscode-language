@@ -38,6 +38,7 @@ dev = [
 norcode = "norcode.cli:main_cli"
 norsklang = "norcode.cli:main_cli"
 nl = "norcode.cli:main_cli"
+nc = "norcode.cli:main_cli"
 
 [tool.setuptools]
 py-modules = ["main"]
