@@ -371,6 +371,9 @@ char * selfhost__compiler__normaliser_norsk_token(char * tok) {
     if (nl_streq(tok, "deles_på") || nl_streq(tok, "deles_paa")) {
         return "deles_pa";
     }
+    if (nl_streq(tok, "deler_på") || nl_streq(tok, "deler_paa")) {
+        return "deler_pa";
+    }
     if (nl_streq(tok, "divider_på") || nl_streq(tok, "divider_paa")) {
         return "divider_pa";
     }
@@ -2689,6 +2692,8 @@ int start() {
     nl_assert_eq_text(expr_norsk_delt_paa_double_a_underscore, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * expr_norsk_deler_pa = selfhost__compiler__disasm_uttrykk("8 deler pa 2");
     nl_assert_eq_text(expr_norsk_deler_pa, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
+    char * expr_norsk_deler_paa_underscore_utf8 = selfhost__compiler__disasm_uttrykk("8 deler_på 2");
+    nl_assert_eq_text(expr_norsk_deler_paa_underscore_utf8, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * expr_norsk_deler_med = selfhost__compiler__disasm_uttrykk("8 deler med 2");
     nl_assert_eq_text(expr_norsk_deler_med, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * expr_norsk_deler_pa_underscore = selfhost__compiler__disasm_uttrykk("8 deler_pa 2");
@@ -3306,6 +3311,8 @@ int start() {
     nl_assert_eq_text(script_norsk_delt_paa_double_a_underscore, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * script_norsk_deler_pa = selfhost__compiler__disasm_skript("la x=8;la y=2;returner x deler pa y");
     nl_assert_eq_text(script_norsk_deler_pa, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
+    char * script_norsk_deler_paa_underscore_utf8 = selfhost__compiler__disasm_skript("la x=8;la y=2;returner x deler_på y");
+    nl_assert_eq_text(script_norsk_deler_paa_underscore_utf8, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * script_norsk_deler_med = selfhost__compiler__disasm_skript("la x=8;la y=2;returner x deler med y");
     nl_assert_eq_text(script_norsk_deler_med, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * script_norsk_deler_pa_underscore = selfhost__compiler__disasm_skript("la x=8;la y=2;returner x deler_pa y");
