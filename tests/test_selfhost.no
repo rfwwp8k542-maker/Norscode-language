@@ -418,6 +418,12 @@ funksjon start() -> heltall {
     la expr_norsk_multipliser_med_underscore: tekst = sh.disasm_uttrykk("3 multipliser_med 4")
     assert_eq(expr_norsk_multipliser_med_underscore, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n")
 
+    la expr_norsk_multiplisere_med: tekst = sh.disasm_uttrykk("3 multiplisere med 4")
+    assert_eq(expr_norsk_multiplisere_med, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n")
+
+    la expr_norsk_multiplisere_med_underscore: tekst = sh.disasm_uttrykk("3 multiplisere_med 4")
+    assert_eq(expr_norsk_multiplisere_med_underscore, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n")
+
     la expr_norsk_multipliserer_med: tekst = sh.disasm_uttrykk("3 multipliserer med 4")
     assert_eq(expr_norsk_multipliserer_med, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n")
 
@@ -1270,6 +1276,12 @@ funksjon start() -> heltall {
 
     la script_norsk_multipliser_med_underscore: tekst = sh.disasm_skript("la x=3;la y=4;returner x multipliser_med y")
     assert_eq(script_norsk_multipliser_med_underscore, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n")
+
+    la script_norsk_multiplisere_med: tekst = sh.disasm_skript("la x=3;la y=4;returner x multiplisere med y")
+    assert_eq(script_norsk_multiplisere_med, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n")
+
+    la script_norsk_multiplisere_med_underscore: tekst = sh.disasm_skript("la x=3;la y=4;returner x multiplisere_med y")
+    assert_eq(script_norsk_multiplisere_med_underscore, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n")
 
     la script_norsk_multipliserer_med: tekst = sh.disasm_skript("la x=3;la y=4;returner x multipliserer med y")
     assert_eq(script_norsk_multipliserer_med, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n")
