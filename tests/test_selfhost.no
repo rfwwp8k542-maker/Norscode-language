@@ -184,6 +184,9 @@ funksjon start() -> heltall {
     la expr_norsk_trekk_med_underscore: tekst = sh.disasm_uttrykk("10 trekk_med 3")
     assert_eq(expr_norsk_trekk_med_underscore, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n")
 
+    la expr_norsk_trekkmed_kompakt: tekst = sh.disasm_uttrykk("10 trekkmed 3")
+    assert_eq(expr_norsk_trekkmed_kompakt, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n")
+
     la expr_norsk_trekke_med: tekst = sh.disasm_uttrykk("10 trekke med 3")
     assert_eq(expr_norsk_trekke_med, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n")
 
@@ -396,6 +399,9 @@ funksjon start() -> heltall {
 
     la expr_norsk_trekk_fra_underscore: tekst = sh.disasm_uttrykk("10 trekk_fra 3")
     assert_eq(expr_norsk_trekk_fra_underscore, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n")
+
+    la expr_norsk_trekkfra_kompakt: tekst = sh.disasm_uttrykk("10 trekkfra 3")
+    assert_eq(expr_norsk_trekkfra_kompakt, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n")
 
     la expr_norsk_trekke_fra_underscore: tekst = sh.disasm_uttrykk("10 trekke_fra 3")
     assert_eq(expr_norsk_trekke_fra_underscore, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n")
@@ -1508,6 +1514,9 @@ funksjon start() -> heltall {
     la script_norsk_trekk_fra_underscore: tekst = sh.disasm_skript("la x=10;la y=3;returner x trekk_fra y")
     assert_eq(script_norsk_trekk_fra_underscore, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n")
 
+    la script_norsk_trekkfra_kompakt: tekst = sh.disasm_skript("la x=10;la y=3;returner x trekkfra y")
+    assert_eq(script_norsk_trekkfra_kompakt, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n")
+
     la script_norsk_trekke_fra_underscore: tekst = sh.disasm_skript("la x=10;la y=3;returner x trekke_fra y")
     assert_eq(script_norsk_trekke_fra_underscore, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n")
 
@@ -1570,6 +1579,9 @@ funksjon start() -> heltall {
 
     la script_norsk_trekk_med_underscore: tekst = sh.disasm_skript("la x=10;la y=3;returner x trekk_med y")
     assert_eq(script_norsk_trekk_med_underscore, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n")
+
+    la script_norsk_trekkmed_kompakt: tekst = sh.disasm_skript("la x=10;la y=3;returner x trekkmed y")
+    assert_eq(script_norsk_trekkmed_kompakt, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n")
 
     la script_norsk_trekke_med: tekst = sh.disasm_skript("la x=10;la y=3;returner x trekke med y")
     assert_eq(script_norsk_trekke_med, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n")
