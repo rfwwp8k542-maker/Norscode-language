@@ -256,6 +256,15 @@ funksjon start() -> heltall {
     la expr_norsk_legges_til_underscore: tekst = sh.disasm_uttrykk("2 legges_til 3")
     assert_eq(expr_norsk_legges_til_underscore, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n")
 
+    la expr_norsk_leggtil_kompakt: tekst = sh.disasm_uttrykk("2 leggtil 3")
+    assert_eq(expr_norsk_leggtil_kompakt, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n")
+
+    la expr_norsk_leggetil_kompakt: tekst = sh.disasm_uttrykk("2 leggetil 3")
+    assert_eq(expr_norsk_leggetil_kompakt, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n")
+
+    la expr_norsk_leggestil_kompakt: tekst = sh.disasm_uttrykk("2 leggestil 3")
+    assert_eq(expr_norsk_leggestil_kompakt, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n")
+
     la expr_norsk_legg_sammen: tekst = sh.disasm_uttrykk("2 legg sammen 3")
     assert_eq(expr_norsk_legg_sammen, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n")
 
@@ -273,6 +282,15 @@ funksjon start() -> heltall {
 
     la expr_norsk_legges_sammen_underscore: tekst = sh.disasm_uttrykk("2 legges_sammen 3")
     assert_eq(expr_norsk_legges_sammen_underscore, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n")
+
+    la expr_norsk_leggsammen_kompakt: tekst = sh.disasm_uttrykk("2 leggsammen 3")
+    assert_eq(expr_norsk_leggsammen_kompakt, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n")
+
+    la expr_norsk_leggesammen_kompakt: tekst = sh.disasm_uttrykk("2 leggesammen 3")
+    assert_eq(expr_norsk_leggesammen_kompakt, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n")
+
+    la expr_norsk_leggessammen_kompakt: tekst = sh.disasm_uttrykk("2 leggessammen 3")
+    assert_eq(expr_norsk_leggessammen_kompakt, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n")
 
     la expr_norsk_legg_kort: tekst = sh.disasm_uttrykk("2 legg 3")
     assert_eq(expr_norsk_legg_kort, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n")
@@ -1349,6 +1367,15 @@ funksjon start() -> heltall {
     la script_norsk_legges_til_underscore: tekst = sh.disasm_skript("la x=2;la y=3;returner x legges_til y")
     assert_eq(script_norsk_legges_til_underscore, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n")
 
+    la script_norsk_leggtil_kompakt: tekst = sh.disasm_skript("la x=2;la y=3;returner x leggtil y")
+    assert_eq(script_norsk_leggtil_kompakt, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n")
+
+    la script_norsk_leggetil_kompakt: tekst = sh.disasm_skript("la x=2;la y=3;returner x leggetil y")
+    assert_eq(script_norsk_leggetil_kompakt, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n")
+
+    la script_norsk_leggestil_kompakt: tekst = sh.disasm_skript("la x=2;la y=3;returner x leggestil y")
+    assert_eq(script_norsk_leggestil_kompakt, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n")
+
     la script_norsk_legg_sammen: tekst = sh.disasm_skript("la x=2;la y=3;returner x legg sammen y")
     assert_eq(script_norsk_legg_sammen, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n")
 
@@ -1366,6 +1393,15 @@ funksjon start() -> heltall {
 
     la script_norsk_legges_sammen_underscore: tekst = sh.disasm_skript("la x=2;la y=3;returner x legges_sammen y")
     assert_eq(script_norsk_legges_sammen_underscore, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n")
+
+    la script_norsk_leggsammen_kompakt: tekst = sh.disasm_skript("la x=2;la y=3;returner x leggsammen y")
+    assert_eq(script_norsk_leggsammen_kompakt, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n")
+
+    la script_norsk_leggesammen_kompakt: tekst = sh.disasm_skript("la x=2;la y=3;returner x leggesammen y")
+    assert_eq(script_norsk_leggesammen_kompakt, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n")
+
+    la script_norsk_leggessammen_kompakt: tekst = sh.disasm_skript("la x=2;la y=3;returner x leggessammen y")
+    assert_eq(script_norsk_leggessammen_kompakt, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n")
 
     la script_norsk_legg_kort: tekst = sh.disasm_skript("la x=2;la y=3;returner x legg y")
     assert_eq(script_norsk_legg_kort, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n")
