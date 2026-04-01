@@ -53,6 +53,9 @@ norcode migrate-names --apply --cleanup
 
 # Sikkerhet:
 # --cleanup fjerner bare legacy-ressurser når innholdet matcher NorCode-ressursen.
+
+# CI-sjekk: feiler hvis migrering/cleanup gjenstår
+norcode migrate-names --cleanup --check
 ```
 
 ### 0b. Bygg og publiser pakke

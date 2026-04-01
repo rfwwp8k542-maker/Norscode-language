@@ -1460,6 +1460,7 @@ def migrate_names(apply_changes: bool = False, cleanup_legacy: bool = False) -> 
         "planned": planned,
         "removed": removed,
         "planned_remove": planned_remove,
+        "needs_migration": (planned + planned_remove) > 0,
         "skipped": skipped,
         "actions": actions,
     }
@@ -2360,6 +2361,7 @@ def main():
     migrate_names_cmd = sub.add_parser("migrate-names", help="Migrer legacy navn (norsklang*) til NorCode-navn")
     migrate_names_cmd.add_argument("--apply", action="store_true", help="Utfør migrering (default er dry-run)")
     migrate_names_cmd.add_argument("--cleanup", action="store_true", help="Fjern legacy-filer etter vellykket migrering")
+    migrate_names_cmd.add_argument("--check", action="store_true", help="Feil hvis migrering/cleanup fortsatt gjenstår")
     migrate_names_cmd.add_argument("--json", action="store_true", help="Skriv resultat som JSON")
 
     release = sub.add_parser("release", help="Forbered release (versjonsbump + changelog)")
@@ -2791,6 +2793,8 @@ def main():
                     f"removed={payload['removed']} planned_remove={payload['planned_remove']} "
                     f"skipped={payload['skipped']}"
                 )
+            if args.check and payload["needs_migration"]:
+                sys.exit(1)
 
         elif args.cmd == "release":
             payload = prepare_release(
