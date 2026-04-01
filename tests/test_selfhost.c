@@ -1164,6 +1164,10 @@ char * selfhost__compiler__uttrykk_til_ops_og_verdier_med_miljo(nl_list_text* to
             tok = "*";
             tok_step = 1;
         }
+        else if (nl_streq(tok_raw, "mod") || nl_streq(tok_raw, "modulo")) {
+            tok = "%";
+            tok_step = 1;
+        }
         else if ((((((i + 3) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "mindre")) && nl_streq(tokens->data[(i + 1)], "enn")) && nl_streq(tokens->data[(i + 2)], "eller")) && nl_streq(tokens->data[(i + 3)], "lik")) {
             tok = "mindre_eller_lik";
             tok_step = 4;
@@ -2182,6 +2186,10 @@ int start() {
     nl_assert_eq_text(expr_norsk_arith, "0: PUSH 2\n1: PUSH 3\n2: PUSH 4\n3: MUL\n4: ADD\n5: PRINT\n6: HALT\n");
     char * expr_norsk_div = selfhost__compiler__disasm_uttrykk("8 delt pa 2");
     nl_assert_eq_text(expr_norsk_div, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
+    char * expr_norsk_mod = selfhost__compiler__disasm_uttrykk("17 mod 5");
+    nl_assert_eq_text(expr_norsk_mod, "0: PUSH 17\n1: PUSH 5\n2: MOD\n3: PRINT\n4: HALT\n");
+    char * expr_norsk_modulo = selfhost__compiler__disasm_uttrykk("17 modulo 5");
+    nl_assert_eq_text(expr_norsk_modulo, "0: PUSH 17\n1: PUSH 5\n2: MOD\n3: PRINT\n4: HALT\n");
     char * expr_bool_literals = selfhost__compiler__disasm_uttrykk("sann&&usann||!usann");
     nl_assert_eq_text(expr_bool_literals, "0: PUSH 1\n1: PUSH 0\n2: AND\n3: PUSH 0\n4: NOT\n5: OR\n6: PRINT\n7: HALT\n");
     char * expr_norsk_ops = selfhost__compiler__disasm_uttrykk("sann og ikke usann eller usann");
@@ -2329,6 +2337,8 @@ int start() {
     nl_assert_eq_text(script_unary_plus, "0: PUSH 2\n1: PRINT\n2: HALT\n");
     char * script_norsk_arith = selfhost__compiler__disasm_skript("la x=2;la y=3;returner x pluss y ganger 4");
     nl_assert_eq_text(script_norsk_arith, "0: PUSH 2\n1: PUSH 3\n2: PUSH 4\n3: MUL\n4: ADD\n5: PRINT\n6: HALT\n");
+    char * script_norsk_mod = selfhost__compiler__disasm_skript("la x=17;la y=5;returner x mod y");
+    nl_assert_eq_text(script_norsk_mod, "0: PUSH 17\n1: PUSH 5\n2: MOD\n3: PRINT\n4: HALT\n");
     char * script_c = selfhost__compiler__kompiler_skript_til_c("x=2;y=x+5;y*2");
     nl_assert_ne_text(script_c, "");
     char * script_err1 = selfhost__compiler__disasm_skript("x=2+3");
