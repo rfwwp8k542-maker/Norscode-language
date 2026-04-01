@@ -46,10 +46,10 @@ pyproject-build
 python3 -m twine check dist/*
 
 # Forbered ny release lokalt (oppdaterer pyproject + CHANGELOG)
-python3 main.py release --bump patch
+norcode release --bump patch
 
 # Se hva som ville skjedd uten å skrive filer
-python3 main.py release --bump minor --dry-run --json
+norcode release --bump minor --dry-run --json
 ```
 
 Publisering er satt opp i GitHub Actions via `.github/workflows/publish.yml`:
@@ -60,91 +60,91 @@ Publisering er satt opp i GitHub Actions via `.github/workflows/publish.yml`:
 ### 1. Kjør program
 
 ```bash
-python3 main.py run app.no
+norcode run app.no
 ```
 
 ### 2. Sjekk kode
 
 ```bash
-python3 main.py check app.no
+norcode check app.no
 ```
 
 ### 3. Kjør tester
 
 ```bash
-python3 main.py test
+norcode test
 
 # Maskinlesbar testoutput
-python3 main.py test --json
+norcode test --json
 ```
 
 ### 4. IR disasm (debug/tooling)
 
 ```bash
 # Generer IR disassembly fra tekstfil
-python3 main.py ir-disasm path/to/program.nlir
+norcode ir-disasm path/to/program.nlir
 
 # Streng validering av opcodes/argumenter
-python3 main.py ir-disasm path/to/program.nlir --strict
+norcode ir-disasm path/to/program.nlir --strict
 
 # Sammenlign python- og selfhost-motor
-python3 main.py ir-disasm path/to/program.nlir --diff
+norcode ir-disasm path/to/program.nlir --diff
 
 # Feil hvis strict-resultat avviker mellom motorene
-python3 main.py ir-disasm path/to/program.nlir --diff --fail-on-warning
+norcode ir-disasm path/to/program.nlir --diff --fail-on-warning
 
 # Lagre diff til fil (for CI artifacts)
-python3 main.py ir-disasm path/to/program.nlir --diff --save-diff /tmp/ir.diff
+norcode ir-disasm path/to/program.nlir --diff --save-diff /tmp/ir.diff
 
 # JSON-output (for scripts/CI)
-python3 main.py ir-disasm path/to/program.nlir --json
+norcode ir-disasm path/to/program.nlir --json
 ```
 
 ### 5. Pakker (`nl add`)
 
 ```bash
 # Se registry-pakker
-python3 main.py add --list
+norcode add --list
 
 # Legg til lokal pakke fra ./packages/<navn>
-python3 main.py add butikk
+norcode add butikk
 
 # Legg til innebygde standardpakker fra registry
-python3 main.py add std_math
-python3 main.py add std_tekst
-python3 main.py add std_liste
-python3 main.py add std_io
+norcode add std_math
+norcode add std_tekst
+norcode add std_liste
+norcode add std_io
 
 # Samme via launcher
 python3 nl add butikk
 
 # Legg til pakke fra vilkårlig sti
-python3 main.py add ./packages/butikk
+norcode add ./packages/butikk
 
 # Egendefinert dependency-navn
-python3 main.py add ./packages/butikk --name butikk_local
+norcode add ./packages/butikk --name butikk_local
 
 # Direkte Git-kilde
-python3 main.py add minpakke --git https://github.com/org/repo.git --ref v1.2.0
+norcode add minpakke --git https://github.com/org/repo.git --ref v1.2.0
 
 # Direkte URL-kilde
-python3 main.py add minpakke --url https://example.com/mypkg-1.2.0.tar.gz
+norcode add minpakke --url https://example.com/mypkg-1.2.0.tar.gz
 
 # Last ned/cach ekstern kilde til lokal mappe og skriv sti i dependencies
-python3 main.py add demo_git --fetch
-python3 main.py add minpakke --url https://example.com/mypkg-1.2.0.tar.gz --fetch
+norcode add demo_git --fetch
+norcode add minpakke --url https://example.com/mypkg-1.2.0.tar.gz --fetch
 
 # Tving ny nedlasting av cache
-python3 main.py add demo_git --fetch --refresh
+norcode add demo_git --fetch --refresh
 
 # Krev låst git-ref ved add
-python3 main.py add minpakke --git https://github.com/org/repo.git --ref v1.2.0 --pin
+norcode add minpakke --git https://github.com/org/repo.git --ref v1.2.0 --pin
 
 # Verifiser URL-arkiv med SHA256 ved fetch
-python3 main.py add minpakke --url https://example.com/mypkg-1.2.0.tar.gz --fetch --sha256 <sha256>
+norcode add minpakke --url https://example.com/mypkg-1.2.0.tar.gz --fetch --sha256 <sha256>
 
 # Overstyr trusted host-policy for én kommando
-python3 main.py add minpakke --url https://ukjent.example/pkg.tar.gz --allow-untrusted
+norcode add minpakke --url https://ukjent.example/pkg.tar.gz --allow-untrusted
 ```
 
 Registry kan defineres i `packages/registry.toml`:
@@ -179,10 +179,10 @@ For integritets-pinning av registry metadata:
 
 ```bash
 # Beregn SHA256 for packages/registry.toml
-python3 main.py registry-sign
+norcode registry-sign
 
 # Skriv SHA256 inn i norcode.toml (security.trusted_registry_sha256)
-python3 main.py registry-sign --write-config
+norcode registry-sign --write-config
 ```
 
 Remote registry-indeks kan konfigureres i `norcode.toml`:
@@ -195,21 +195,21 @@ sources = ["packages/remote_registry_example.json"]
 Synkroniser indeks til lokal cache:
 
 ```bash
-python3 main.py registry-sync
-python3 main.py registry-sync --json
+norcode registry-sync
+norcode registry-sync --json
 
 # Feil hvis en source feiler
-python3 main.py registry-sync --require-all
+norcode registry-sync --require-all
 
 # Tillat delvis sync og fallback til gammel cache
-python3 main.py registry-sync
+norcode registry-sync
 ```
 
 Bygg distribuerbar speilfil:
 
 ```bash
-python3 main.py registry-mirror
-python3 main.py registry-mirror --output build/registry_mirror.json
+norcode registry-mirror
+norcode registry-mirror --output build/registry_mirror.json
 ```
 
 Cache for eksterne pakker lagres under `.norcode/cache/`.
@@ -220,55 +220,55 @@ Modul-loaderen bruker også en in-memory parse-cache per fil (med mtime/size-sje
 
 ```bash
 # Generer/oppdater lockfile
-python3 main.py lock
+norcode lock
 
 # CI-sjekk: feiler hvis lockfile mangler/er utdatert
-python3 main.py lock --check
+norcode lock --check
 
 # Verifiser lockfile mot faktiske path-digests
-python3 main.py lock --verify
+norcode lock --verify
 ```
 
 ### 5c. Oppgrader dependencies
 
 ```bash
 # Oppdater alle dependencies som finnes i registry
-python3 main.py update
+norcode update
 
 # Oppdater én dependency
-python3 main.py update butikk
+norcode update butikk
 
 # Check-modus: feiler hvis noe ville blitt oppdatert
-python3 main.py update --check
+norcode update --check
 
 # Oppdater + regenerer lockfile
-python3 main.py update --lock
+norcode update --lock
 
 # Overstyr trusted host-policy for én oppdateringskjøring
-python3 main.py update --allow-untrusted
+norcode update --allow-untrusted
 ```
 
 ### 6. Debug tools
 
 ```bash
 # Kort symbol-oversikt (default)
-python3 main.py debug app.no
+norcode debug app.no
 
 # Vis tokens
-python3 main.py debug app.no --tokens
+norcode debug app.no --tokens
 
 # Vis AST + symboler som JSON
-python3 main.py debug app.no --ast --symbols --json
+norcode debug app.no --ast --symbols --json
 ```
 
 ### 7. Snapshot-oppsett (CI)
 
 ```bash
 # Oppdater strict snapshot-forventninger
-python3 main.py update-snapshots
+norcode update-snapshots
 
 # CI-sjekk: feiler hvis snapshots er utdaterte
-python3 main.py update-snapshots --check
+norcode update-snapshots --check
 ```
 
 ### 8. CI-eksempel (GitHub Actions)
@@ -286,20 +286,20 @@ jobs:
         with:
           python-version: "3.12"
       - name: Snapshot check
-        run: python3 main.py update-snapshots --check
+        run: norcode update-snapshots --check
       - name: Engine parity check
-        run: python3 main.py ir-disasm tests/ir_sample.nlir --diff --fail-on-warning
+        run: norcode ir-disasm tests/ir_sample.nlir --diff --fail-on-warning
       - name: Full test
-        run: python3 main.py test
+        run: norcode test
 ```
 
 Lokal kjøring av samme sekvens:
 
 ```bash
-python3 main.py ci
+norcode ci
 
 # Maskinlesbar output
-python3 main.py ci --json
+norcode ci --json
 ```
 
 ---
