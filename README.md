@@ -47,6 +47,9 @@ norcode migrate-names
 
 # Utfør navnemigrering:
 norcode migrate-names --apply
+
+# Utfør migrering og rydd bort legacy-filer:
+norcode migrate-names --apply --cleanup
 ```
 
 ### 0b. Bygg og publiser pakke

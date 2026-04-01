@@ -1277,12 +1277,12 @@ def verify_lockfile():
     return lock_path, ok, results
 
 
-def migrate_names(apply_changes: bool = False) -> dict:
+def migrate_names(apply_changes: bool = False, cleanup_legacy: bool = False) -> dict:
     config_path = _find_project_config()
     project_dir = config_path.parent.resolve()
     actions: list[dict] = []
 
-    def record_file_migration(legacy_name: str, primary_name: str):
+    def record_file_migration(legacy_name: str, primary_name: str) -> tuple[Path, Path, str]:
         legacy = (project_dir / legacy_name).resolve()
         primary = (project_dir / primary_name).resolve()
         if not legacy.exists():
@@ -1295,7 +1295,7 @@ def migrate_names(apply_changes: bool = False) -> dict:
                     "reason": "legacy mangler",
                 }
             )
-            return
+            return legacy, primary, "skipped"
         if primary.exists():
             actions.append(
                 {
@@ -1306,7 +1306,7 @@ def migrate_names(apply_changes: bool = False) -> dict:
                     "reason": "primary finnes allerede",
                 }
             )
-            return
+            return legacy, primary, "skipped"
         if apply_changes:
             shutil.copy2(legacy, primary)
             status = "copied"
@@ -1320,8 +1320,9 @@ def migrate_names(apply_changes: bool = False) -> dict:
                 "status": status,
             }
         )
+        return legacy, primary, status
 
-    def record_dir_migration(legacy_name: str, primary_name: str):
+    def record_dir_migration(legacy_name: str, primary_name: str) -> tuple[Path, Path, str]:
         legacy = (project_dir / legacy_name).resolve()
         primary = (project_dir / primary_name).resolve()
         if not legacy.exists():
@@ -1334,7 +1335,7 @@ def migrate_names(apply_changes: bool = False) -> dict:
                     "reason": "legacy mangler",
                 }
             )
-            return
+            return legacy, primary, "skipped"
         if primary.exists():
             actions.append(
                 {
@@ -1345,7 +1346,7 @@ def migrate_names(apply_changes: bool = False) -> dict:
                     "reason": "primary finnes allerede",
                 }
             )
-            return
+            return legacy, primary, "skipped"
         if apply_changes:
             shutil.copytree(legacy, primary)
             status = "copied"
@@ -1359,19 +1360,60 @@ def migrate_names(apply_changes: bool = False) -> dict:
                 "status": status,
             }
         )
+        return legacy, primary, status
 
-    record_file_migration(LEGACY_PROJECT_CONFIG_NAME, PROJECT_CONFIG_NAME)
-    record_file_migration(LEGACY_LOCKFILE_NAME, LOCKFILE_NAME)
-    record_dir_migration(".norsklang", ".norcode")
+    migrated_resources = [
+        ("file", *record_file_migration(LEGACY_PROJECT_CONFIG_NAME, PROJECT_CONFIG_NAME)),
+        ("file", *record_file_migration(LEGACY_LOCKFILE_NAME, LOCKFILE_NAME)),
+        ("dir", *record_dir_migration(".norsklang", ".norcode")),
+    ]
+
+    if cleanup_legacy:
+        for kind, legacy, primary, status in migrated_resources:
+            if not legacy.exists():
+                continue
+            primary_ready = primary.exists() or status == "copied"
+            if not primary_ready:
+                actions.append(
+                    {
+                        "kind": f"cleanup-{kind}",
+                        "legacy": str(legacy),
+                        "primary": str(primary),
+                        "status": "skipped",
+                        "reason": "primary mangler",
+                    }
+                )
+                continue
+            if apply_changes:
+                if kind == "dir":
+                    shutil.rmtree(legacy)
+                else:
+                    legacy.unlink()
+                cleanup_status = "removed"
+            else:
+                cleanup_status = "planned-remove"
+            actions.append(
+                {
+                    "kind": f"cleanup-{kind}",
+                    "legacy": str(legacy),
+                    "primary": str(primary),
+                    "status": cleanup_status,
+                }
+            )
 
     copied = sum(1 for a in actions if a["status"] == "copied")
     planned = sum(1 for a in actions if a["status"] == "planned")
     skipped = sum(1 for a in actions if a["status"] == "skipped")
+    removed = sum(1 for a in actions if a["status"] == "removed")
+    planned_remove = sum(1 for a in actions if a["status"] == "planned-remove")
     return {
         "project_dir": str(project_dir),
         "applied": apply_changes,
+        "cleanup": cleanup_legacy,
         "copied": copied,
         "planned": planned,
+        "removed": removed,
+        "planned_remove": planned_remove,
         "skipped": skipped,
         "actions": actions,
     }
@@ -2271,6 +2313,7 @@ def main():
 
     migrate_names_cmd = sub.add_parser("migrate-names", help="Migrer legacy navn (norsklang*) til NorCode-navn")
     migrate_names_cmd.add_argument("--apply", action="store_true", help="Utfør migrering (default er dry-run)")
+    migrate_names_cmd.add_argument("--cleanup", action="store_true", help="Fjern legacy-filer etter vellykket migrering")
     migrate_names_cmd.add_argument("--json", action="store_true", help="Skriv resultat som JSON")
 
     release = sub.add_parser("release", help="Forbered release (versjonsbump + changelog)")
@@ -2677,11 +2720,11 @@ def main():
                 print(f"Pakker: {payload['count']}")
 
         elif args.cmd == "migrate-names":
-            payload = migrate_names(apply_changes=args.apply)
+            payload = migrate_names(apply_changes=args.apply, cleanup_legacy=args.cleanup)
             if args.json:
                 print(json.dumps(payload, ensure_ascii=False, indent=2))
             else:
-                mode = "apply" if args.apply else "dry-run"
+                mode = "apply+cleanup" if args.apply and args.cleanup else ("apply" if args.apply else ("dry-run+cleanup" if args.cleanup else "dry-run"))
                 print(f"Prosjekt: {payload['project_dir']}")
                 print(f"Modus: {mode}")
                 for action in payload["actions"]:
@@ -2697,7 +2740,10 @@ def main():
                             f"[{action['status']}]"
                         )
                 print(
-                    f"Oppsummert: copied={payload['copied']} planned={payload['planned']} skipped={payload['skipped']}"
+                    "Oppsummert: "
+                    f"copied={payload['copied']} planned={payload['planned']} "
+                    f"removed={payload['removed']} planned_remove={payload['planned_remove']} "
+                    f"skipped={payload['skipped']}"
                 )
 
         elif args.cmd == "release":
