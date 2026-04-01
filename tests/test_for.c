@@ -174,6 +174,57 @@ static nl_list_text *nl_tokenize_simple(const char *s) {
     return out;
 }
 
+static nl_list_text *nl_tokenize_expression(const char *s) {
+    nl_list_text *out = nl_list_text_new();
+    if (!s) { return out; }
+    int in_comment = 0;
+    for (const char *p = s; *p; ) {
+        char c = *p;
+        if (in_comment) {
+            if (c == '\n') { in_comment = 0; }
+            p++;
+            continue;
+        }
+        if (c == '#') { in_comment = 1; p++; continue; }
+        if (isspace((unsigned char)c)) { p++; continue; }
+        if (isdigit((unsigned char)c)) {
+            char token[256];
+            int tlen = 0;
+            while (*p && isdigit((unsigned char)*p)) {
+                if (tlen < 255) { token[tlen++] = *p; }
+                p++;
+            }
+            token[tlen] = '\0';
+            nl_list_text_push(out, nl_strdup(token));
+            continue;
+        }
+        if ((c == '&' && p[1] == '&') || (c == '|' && p[1] == '|') || (c == '=' && p[1] == '=') ||
+            (c == '!' && p[1] == '=') || (c == '<' && p[1] == '=') || (c == '>' && p[1] == '=')) {
+            char token[3];
+            token[0] = c;
+            token[1] = p[1];
+            token[2] = '\0';
+            nl_list_text_push(out, nl_strdup(token));
+            p += 2;
+            continue;
+        }
+        if (c == '(' || c == ')' || c == '+' || c == '-' || c == '*' || c == '/' || c == '%' || c == '<' || c == '>') {
+            char token[2];
+            token[0] = c;
+            token[1] = '\0';
+            nl_list_text_push(out, nl_strdup(token));
+            p++;
+            continue;
+        }
+        char unknown[2];
+        unknown[0] = c;
+        unknown[1] = '\0';
+        nl_list_text_push(out, nl_strdup(unknown));
+        p++;
+    }
+    return out;
+}
+
 static char *nl_bool_to_text(int value) {
     return nl_strdup(value ? "sann" : "usann");
 }
