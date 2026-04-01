@@ -2383,6 +2383,8 @@ int start() {
     nl_assert_eq_text(script_norsk_cmp_phrase13, "0: PUSH 3\n1: PUSH 4\n2: LT\n3: NOT\n4: JZ 7\n5: PUSH 1\n6: JMP 9\n7: LABEL 7\n8: PUSH 0\n9: LABEL 9\n10: PRINT\n11: HALT\n");
     char * script_norsk_cmp_phrase14 = selfhost__compiler__disasm_skript("la x=4;la y=4;hvis x er storre enn lik y da 1 ellers 0");
     nl_assert_eq_text(script_norsk_cmp_phrase14, "0: PUSH 4\n1: PUSH 4\n2: LT\n3: NOT\n4: JZ 7\n5: PUSH 1\n6: JMP 9\n7: LABEL 7\n8: PUSH 0\n9: LABEL 9\n10: PRINT\n11: HALT\n");
+    char * script_norsk_cmp_phrase_utf8 = selfhost__compiler__disasm_skript("la x=4;la y=4;hvis x er større enn eller lik y da 1 ellers 0");
+    nl_assert_eq_text(script_norsk_cmp_phrase_utf8, "0: PUSH 4\n1: PUSH 4\n2: LT\n3: NOT\n4: JZ 7\n5: PUSH 1\n6: JMP 9\n7: LABEL 7\n8: PUSH 0\n9: LABEL 9\n10: PRINT\n11: HALT\n");
     char * script_unary_plus = selfhost__compiler__disasm_skript("la x=2;returner +x");
     nl_assert_eq_text(script_unary_plus, "0: PUSH 2\n1: PRINT\n2: HALT\n");
     char * script_norsk_arith = selfhost__compiler__disasm_skript("la x=2;la y=3;returner x pluss y ganger 4");
@@ -2393,6 +2395,8 @@ int start() {
     nl_assert_eq_text(script_norsk_ganget_med, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n");
     char * script_norsk_delt_med = selfhost__compiler__disasm_skript("la x=8;la y=2;returner x delt med y");
     nl_assert_eq_text(script_norsk_delt_med, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
+    char * script_norsk_delt_paa_utf8 = selfhost__compiler__disasm_skript("la x=8;la y=2;returner x delt på y");
+    nl_assert_eq_text(script_norsk_delt_paa_utf8, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * script_c = selfhost__compiler__kompiler_skript_til_c("x=2;y=x+5;y*2");
     nl_assert_ne_text(script_c, "");
     char * script_err1 = selfhost__compiler__disasm_skript("x=2+3");

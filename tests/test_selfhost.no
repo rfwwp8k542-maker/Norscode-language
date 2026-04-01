@@ -395,6 +395,9 @@ funksjon start() -> heltall {
     la script_norsk_cmp_phrase14: tekst = sh.disasm_skript("la x=4;la y=4;hvis x er storre enn lik y da 1 ellers 0")
     assert_eq(script_norsk_cmp_phrase14, "0: PUSH 4\n1: PUSH 4\n2: LT\n3: NOT\n4: JZ 7\n5: PUSH 1\n6: JMP 9\n7: LABEL 7\n8: PUSH 0\n9: LABEL 9\n10: PRINT\n11: HALT\n")
 
+    la script_norsk_cmp_phrase_utf8: tekst = sh.disasm_skript("la x=4;la y=4;hvis x er større enn eller lik y da 1 ellers 0")
+    assert_eq(script_norsk_cmp_phrase_utf8, "0: PUSH 4\n1: PUSH 4\n2: LT\n3: NOT\n4: JZ 7\n5: PUSH 1\n6: JMP 9\n7: LABEL 7\n8: PUSH 0\n9: LABEL 9\n10: PRINT\n11: HALT\n")
+
     la script_unary_plus: tekst = sh.disasm_skript("la x=2;returner +x")
     assert_eq(script_unary_plus, "0: PUSH 2\n1: PRINT\n2: HALT\n")
 
@@ -409,6 +412,9 @@ funksjon start() -> heltall {
 
     la script_norsk_delt_med: tekst = sh.disasm_skript("la x=8;la y=2;returner x delt med y")
     assert_eq(script_norsk_delt_med, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
+
+    la script_norsk_delt_paa_utf8: tekst = sh.disasm_skript("la x=8;la y=2;returner x delt på y")
+    assert_eq(script_norsk_delt_paa_utf8, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
 
     la script_c: tekst = sh.kompiler_skript_til_c("x=2;y=x+5;y*2")
     assert_ne(script_c, "")
