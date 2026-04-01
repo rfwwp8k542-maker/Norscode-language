@@ -197,6 +197,21 @@ funksjon start() -> heltall {
     la expr_env_err2: tekst = sh.disasm_uttrykk_med_miljo("x+1", env_navn_kort, env_verdier_lang)
     assert_eq(expr_env_err2, "/* feil: navn/miljø-verdier må ha samme lengde */")
 
+    la script_dis: tekst = sh.disasm_skript("x=2+3;y=x*4;y+1")
+    assert_eq(script_dis, "0: PUSH 20\n1: PUSH 1\n2: ADD\n3: PRINT\n4: HALT\n")
+
+    la script_c: tekst = sh.kompiler_skript_til_c("x=2;y=x+5;y*2")
+    assert_ne(script_c, "")
+
+    la script_err1: tekst = sh.disasm_skript("x=2+3")
+    assert_eq(script_err1, "/* feil: mangler ';' etter assignment til x */")
+
+    la script_err2: tekst = sh.disasm_skript("x=2;;x+1")
+    assert_eq(script_err2, "/* feil: uventet ';' i sluttuttrykk */")
+
+    la script_err3: tekst = sh.disasm_skript("x=2+3;")
+    assert_eq(script_err3, "/* feil: skriptet mangler sluttuttrykk */")
+
     la linjer: liste_tekst = ["", "PUSH", "11", "PUSH", "4", "SUB", "PRINT", "HALT"]
     la c3: tekst = sh.kompiler_fra_linjer(linjer)
     assert_ne(c3, "")

@@ -219,7 +219,7 @@ static nl_list_text *nl_tokenize_expression(const char *s) {
             p += 2;
             continue;
         }
-        if (c == '(' || c == ')' || c == '+' || c == '-' || c == '*' || c == '/' || c == '%' || c == '<' || c == '>') {
+        if (c == '(' || c == ')' || c == '+' || c == '-' || c == '*' || c == '/' || c == '%' || c == '<' || c == '>' || c == '=' || c == ';') {
             char token[2];
             token[0] = c;
             token[1] = '\0';

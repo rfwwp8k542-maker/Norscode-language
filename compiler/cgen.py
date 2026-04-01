@@ -402,7 +402,7 @@ class CGenerator:
         self.emit("continue;")
         self.indent -= 1
         self.emit("}")
-        self.emit("if (c == '(' || c == ')' || c == '+' || c == '-' || c == '*' || c == '/' || c == '%' || c == '<' || c == '>') {")
+        self.emit("if (c == '(' || c == ')' || c == '+' || c == '-' || c == '*' || c == '/' || c == '%' || c == '<' || c == '>' || c == '=' || c == ';') {")
         self.indent += 1
         self.emit("char token[2];")
         self.emit("token[0] = c;")
