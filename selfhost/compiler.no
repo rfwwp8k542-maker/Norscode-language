@@ -59,14 +59,32 @@ funksjon er_operator_token(tok: tekst) -> bool {
     hvis (tok == "+" eller tok == "-" eller tok == "*" eller tok == "/" eller tok == "%") {
         returner sann
     }
+    hvis (tok == "==" eller tok == "!=" eller tok == "<" eller tok == ">" eller tok == "<=" eller tok == ">=") {
+        returner sann
+    }
+    hvis (tok == "&&" eller tok == "||") {
+        returner sann
+    }
     returner usann
 }
 
 funksjon operator_precedens(tok: tekst) -> heltall {
     hvis (tok == "*" eller tok == "/" eller tok == "%") {
-        returner 2
+        returner 6
     }
     hvis (tok == "+" eller tok == "-") {
+        returner 5
+    }
+    hvis (tok == "<" eller tok == ">" eller tok == "<=" eller tok == ">=") {
+        returner 4
+    }
+    hvis (tok == "==" eller tok == "!=") {
+        returner 3
+    }
+    hvis (tok == "&&") {
+        returner 2
+    }
+    hvis (tok == "||") {
         returner 1
     }
     returner 0
@@ -88,10 +106,47 @@ funksjon operator_til_opcode(tok: tekst) -> tekst {
     hvis (tok == "%") {
         returner "MOD"
     }
+    hvis (tok == "==") {
+        returner "EQ"
+    }
+    hvis (tok == "<") {
+        returner "LT"
+    }
+    hvis (tok == ">") {
+        returner "GT"
+    }
+    hvis (tok == "&&") {
+        returner "AND"
+    }
+    hvis (tok == "||") {
+        returner "OR"
+    }
     returner ""
 }
 
 funksjon emitter_operator(ops: liste_tekst, verdier: liste_heltall, op: tekst) -> bool {
+    hvis (op == "!=") {
+        legg_til(ops, "EQ")
+        legg_til(verdier, 0)
+        legg_til(ops, "NOT")
+        legg_til(verdier, 0)
+        returner sann
+    }
+    hvis (op == "<=") {
+        legg_til(ops, "GT")
+        legg_til(verdier, 0)
+        legg_til(ops, "NOT")
+        legg_til(verdier, 0)
+        returner sann
+    }
+    hvis (op == ">=") {
+        legg_til(ops, "LT")
+        legg_til(verdier, 0)
+        legg_til(ops, "NOT")
+        legg_til(verdier, 0)
+        returner sann
+    }
+
     la opcode: tekst = operator_til_opcode(op)
     hvis (opcode == "") {
         returner usann

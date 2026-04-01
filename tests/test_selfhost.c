@@ -292,15 +292,33 @@ int selfhost__compiler__er_operator_token(char * tok) {
     if ((((nl_streq(tok, "+") || nl_streq(tok, "-")) || nl_streq(tok, "*")) || nl_streq(tok, "/")) || nl_streq(tok, "%")) {
         return 1;
     }
+    if (((((nl_streq(tok, "==") || nl_streq(tok, "!=")) || nl_streq(tok, "<")) || nl_streq(tok, ">")) || nl_streq(tok, "<=")) || nl_streq(tok, ">=")) {
+        return 1;
+    }
+    if (nl_streq(tok, "&&") || nl_streq(tok, "||")) {
+        return 1;
+    }
     return 0;
     return 0;
 }
 
 int selfhost__compiler__operator_precedens(char * tok) {
     if ((nl_streq(tok, "*") || nl_streq(tok, "/")) || nl_streq(tok, "%")) {
-        return 2;
+        return 6;
     }
     if (nl_streq(tok, "+") || nl_streq(tok, "-")) {
+        return 5;
+    }
+    if (((nl_streq(tok, "<") || nl_streq(tok, ">")) || nl_streq(tok, "<=")) || nl_streq(tok, ">=")) {
+        return 4;
+    }
+    if (nl_streq(tok, "==") || nl_streq(tok, "!=")) {
+        return 3;
+    }
+    if (nl_streq(tok, "&&")) {
+        return 2;
+    }
+    if (nl_streq(tok, "||")) {
         return 1;
     }
     return 0;
@@ -323,11 +341,47 @@ char * selfhost__compiler__operator_til_opcode(char * tok) {
     if (nl_streq(tok, "%")) {
         return "MOD";
     }
+    if (nl_streq(tok, "==")) {
+        return "EQ";
+    }
+    if (nl_streq(tok, "<")) {
+        return "LT";
+    }
+    if (nl_streq(tok, ">")) {
+        return "GT";
+    }
+    if (nl_streq(tok, "&&")) {
+        return "AND";
+    }
+    if (nl_streq(tok, "||")) {
+        return "OR";
+    }
     return "";
     return "";
 }
 
 int selfhost__compiler__emitter_operator(nl_list_text* ops, nl_list_int* verdier, char * op) {
+    if (nl_streq(op, "!=")) {
+        nl_list_text_push(ops, "EQ");
+        nl_list_int_push(verdier, 0);
+        nl_list_text_push(ops, "NOT");
+        nl_list_int_push(verdier, 0);
+        return 1;
+    }
+    if (nl_streq(op, "<=")) {
+        nl_list_text_push(ops, "GT");
+        nl_list_int_push(verdier, 0);
+        nl_list_text_push(ops, "NOT");
+        nl_list_int_push(verdier, 0);
+        return 1;
+    }
+    if (nl_streq(op, ">=")) {
+        nl_list_text_push(ops, "LT");
+        nl_list_int_push(verdier, 0);
+        nl_list_text_push(ops, "NOT");
+        nl_list_int_push(verdier, 0);
+        return 1;
+    }
     char * opcode = selfhost__compiler__operator_til_opcode(op);
     if (nl_streq(opcode, "")) {
         return 0;
@@ -1086,6 +1140,14 @@ int start() {
     nl_assert_eq_text(expr_dis_paren, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PUSH 4\n4: MUL\n5: PRINT\n6: HALT\n");
     char * expr_c = selfhost__compiler__kompiler_uttrykk_til_c("10 + 32");
     nl_assert_ne_text(expr_c, "");
+    char * expr_cmp = selfhost__compiler__disasm_uttrykk("5 > 3 && 2 < 4");
+    nl_assert_eq_text(expr_cmp, "0: PUSH 5\n1: PUSH 3\n2: GT\n3: PUSH 2\n4: PUSH 4\n5: LT\n6: AND\n7: PRINT\n8: HALT\n");
+    char * expr_eq = selfhost__compiler__disasm_uttrykk("7 != 7 || 2 == 2");
+    nl_assert_eq_text(expr_eq, "0: PUSH 7\n1: PUSH 7\n2: EQ\n3: NOT\n4: PUSH 2\n5: PUSH 2\n6: EQ\n7: OR\n8: PRINT\n9: HALT\n");
+    char * expr_le = selfhost__compiler__disasm_uttrykk("3 <= 4");
+    nl_assert_eq_text(expr_le, "0: PUSH 3\n1: PUSH 4\n2: GT\n3: NOT\n4: PRINT\n5: HALT\n");
+    char * expr_ge = selfhost__compiler__disasm_uttrykk("4 >= 3");
+    nl_assert_eq_text(expr_ge, "0: PUSH 4\n1: PUSH 3\n2: LT\n3: NOT\n4: PRINT\n5: HALT\n");
     char * expr_err = selfhost__compiler__disasm_uttrykk("2 +");
     nl_assert_eq_text(expr_err, "/* feil: uttrykket avsluttes med operator */");
     char * expr_err2 = selfhost__compiler__disasm_uttrykk("2 + )");
