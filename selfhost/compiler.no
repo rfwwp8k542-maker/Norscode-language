@@ -998,6 +998,11 @@ funksjon uttrykk_til_ops_og_verdier_med_miljo(tokens: liste_tekst, navn: liste_t
                     i = i + tok_step
                     fortsett
                 }
+                hvis (tok == "+") {
+                    siste_token = i + tok_step - 1
+                    i = i + tok_step
+                    fortsett
+                }
                 returner "/* feil: mangler verdi før operator " + tok + " ved " + token_pos(i) + " */"
             }
             mens (lengde(operatorer) > 0) {
