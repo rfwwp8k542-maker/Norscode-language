@@ -1311,7 +1311,7 @@ char * selfhost__compiler__uttrykk_til_ops_og_verdier_med_miljo(nl_list_text* to
             tok = "/";
             tok_step = 1;
         }
-        else if (((((((((nl_streq(tok_raw, "gang_med") || nl_streq(tok_raw, "ganget_med")) || nl_streq(tok_raw, "gange_med")) || nl_streq(tok_raw, "ganger_med")) || nl_streq(tok_raw, "ganges_med")) || nl_streq(tok_raw, "multipliser_med")) || nl_streq(tok_raw, "multiplisere_med")) || nl_streq(tok_raw, "multipliserer_med")) || nl_streq(tok_raw, "multiplisert_med")) || nl_streq(tok_raw, "multipliseres_med")) {
+        else if (((((((((((((((((((nl_streq(tok_raw, "gang_med") || nl_streq(tok_raw, "gangmed")) || nl_streq(tok_raw, "ganget_med")) || nl_streq(tok_raw, "gangetmed")) || nl_streq(tok_raw, "gange_med")) || nl_streq(tok_raw, "gangemed")) || nl_streq(tok_raw, "ganger_med")) || nl_streq(tok_raw, "gangermed")) || nl_streq(tok_raw, "ganges_med")) || nl_streq(tok_raw, "gangesmed")) || nl_streq(tok_raw, "multipliser_med")) || nl_streq(tok_raw, "multiplisermed")) || nl_streq(tok_raw, "multiplisere_med")) || nl_streq(tok_raw, "multipliseremed")) || nl_streq(tok_raw, "multipliserer_med")) || nl_streq(tok_raw, "multipliserermed")) || nl_streq(tok_raw, "multiplisert_med")) || nl_streq(tok_raw, "multiplisertmed")) || nl_streq(tok_raw, "multipliseres_med")) || nl_streq(tok_raw, "multipliseresmed")) {
             tok = "*";
             tok_step = 1;
         }
@@ -2689,10 +2689,14 @@ int start() {
     nl_assert_eq_text(expr_norsk_ganges_med, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n");
     char * expr_norsk_ganges_med_underscore = selfhost__compiler__disasm_uttrykk("3 ganges_med 4");
     nl_assert_eq_text(expr_norsk_ganges_med_underscore, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n");
+    char * expr_norsk_gangesmed_kompakt = selfhost__compiler__disasm_uttrykk("3 gangesmed 4");
+    nl_assert_eq_text(expr_norsk_gangesmed_kompakt, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n");
     char * expr_norsk_gang_med = selfhost__compiler__disasm_uttrykk("3 gang med 4");
     nl_assert_eq_text(expr_norsk_gang_med, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n");
     char * expr_norsk_gang_med_underscore = selfhost__compiler__disasm_uttrykk("3 gang_med 4");
     nl_assert_eq_text(expr_norsk_gang_med_underscore, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n");
+    char * expr_norsk_gangmed_kompakt = selfhost__compiler__disasm_uttrykk("3 gangmed 4");
+    nl_assert_eq_text(expr_norsk_gangmed_kompakt, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n");
     char * expr_norsk_gang = selfhost__compiler__disasm_uttrykk("3 gang 4");
     nl_assert_eq_text(expr_norsk_gang, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n");
     char * expr_norsk_gange = selfhost__compiler__disasm_uttrykk("3 gange 4");
@@ -2707,6 +2711,8 @@ int start() {
     nl_assert_eq_text(expr_norsk_multipliser_med, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n");
     char * expr_norsk_multipliser_med_underscore = selfhost__compiler__disasm_uttrykk("3 multipliser_med 4");
     nl_assert_eq_text(expr_norsk_multipliser_med_underscore, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n");
+    char * expr_norsk_multiplisermed_kompakt = selfhost__compiler__disasm_uttrykk("3 multiplisermed 4");
+    nl_assert_eq_text(expr_norsk_multiplisermed_kompakt, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n");
     char * expr_norsk_multiplisere_med = selfhost__compiler__disasm_uttrykk("3 multiplisere med 4");
     nl_assert_eq_text(expr_norsk_multiplisere_med, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n");
     char * expr_norsk_multiplisere_med_underscore = selfhost__compiler__disasm_uttrykk("3 multiplisere_med 4");
@@ -2723,6 +2729,8 @@ int start() {
     nl_assert_eq_text(expr_norsk_multipliseres_med, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n");
     char * expr_norsk_multipliseres_med_underscore = selfhost__compiler__disasm_uttrykk("3 multipliseres_med 4");
     nl_assert_eq_text(expr_norsk_multipliseres_med_underscore, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n");
+    char * expr_norsk_multipliseresmed_kompakt = selfhost__compiler__disasm_uttrykk("3 multipliseresmed 4");
+    nl_assert_eq_text(expr_norsk_multipliseresmed_kompakt, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n");
     char * expr_norsk_multipliser_kort = selfhost__compiler__disasm_uttrykk("3 multipliser 4");
     nl_assert_eq_text(expr_norsk_multipliser_kort, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n");
     char * expr_norsk_multiplisere_kort = selfhost__compiler__disasm_uttrykk("3 multiplisere 4");
@@ -3512,10 +3520,14 @@ int start() {
     nl_assert_eq_text(script_norsk_ganges_med, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n");
     char * script_norsk_ganges_med_underscore = selfhost__compiler__disasm_skript("la x=3;la y=4;returner x ganges_med y");
     nl_assert_eq_text(script_norsk_ganges_med_underscore, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n");
+    char * script_norsk_gangesmed_kompakt = selfhost__compiler__disasm_skript("la x=3;la y=4;returner x gangesmed y");
+    nl_assert_eq_text(script_norsk_gangesmed_kompakt, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n");
     char * script_norsk_gang_med = selfhost__compiler__disasm_skript("la x=3;la y=4;returner x gang med y");
     nl_assert_eq_text(script_norsk_gang_med, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n");
     char * script_norsk_gang_med_underscore = selfhost__compiler__disasm_skript("la x=3;la y=4;returner x gang_med y");
     nl_assert_eq_text(script_norsk_gang_med_underscore, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n");
+    char * script_norsk_gangmed_kompakt = selfhost__compiler__disasm_skript("la x=3;la y=4;returner x gangmed y");
+    nl_assert_eq_text(script_norsk_gangmed_kompakt, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n");
     char * script_norsk_gang = selfhost__compiler__disasm_skript("la x=3;la y=4;returner x gang y");
     nl_assert_eq_text(script_norsk_gang, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n");
     char * script_norsk_gange = selfhost__compiler__disasm_skript("la x=3;la y=4;returner x gange y");
@@ -3530,6 +3542,8 @@ int start() {
     nl_assert_eq_text(script_norsk_multipliser_med, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n");
     char * script_norsk_multipliser_med_underscore = selfhost__compiler__disasm_skript("la x=3;la y=4;returner x multipliser_med y");
     nl_assert_eq_text(script_norsk_multipliser_med_underscore, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n");
+    char * script_norsk_multiplisermed_kompakt = selfhost__compiler__disasm_skript("la x=3;la y=4;returner x multiplisermed y");
+    nl_assert_eq_text(script_norsk_multiplisermed_kompakt, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n");
     char * script_norsk_multiplisere_med = selfhost__compiler__disasm_skript("la x=3;la y=4;returner x multiplisere med y");
     nl_assert_eq_text(script_norsk_multiplisere_med, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n");
     char * script_norsk_multiplisere_med_underscore = selfhost__compiler__disasm_skript("la x=3;la y=4;returner x multiplisere_med y");
@@ -3546,6 +3560,8 @@ int start() {
     nl_assert_eq_text(script_norsk_multipliseres_med, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n");
     char * script_norsk_multipliseres_med_underscore = selfhost__compiler__disasm_skript("la x=3;la y=4;returner x multipliseres_med y");
     nl_assert_eq_text(script_norsk_multipliseres_med_underscore, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n");
+    char * script_norsk_multipliseresmed_kompakt = selfhost__compiler__disasm_skript("la x=3;la y=4;returner x multipliseresmed y");
+    nl_assert_eq_text(script_norsk_multipliseresmed_kompakt, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n");
     char * script_norsk_multipliser_kort = selfhost__compiler__disasm_skript("la x=3;la y=4;returner x multipliser y");
     nl_assert_eq_text(script_norsk_multipliser_kort, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n");
     char * script_norsk_multiplisere_kort = selfhost__compiler__disasm_skript("la x=3;la y=4;returner x multiplisere y");
