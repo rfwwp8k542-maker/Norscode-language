@@ -2611,6 +2611,8 @@ int start() {
     nl_assert_eq_text(expr_norsk_modulus_av_phrase, "0: PUSH 17\n1: PUSH 5\n2: MOD\n3: PRINT\n4: HALT\n");
     char * expr_norsk_rest = selfhost__compiler__disasm_uttrykk("17 rest 5");
     nl_assert_eq_text(expr_norsk_rest, "0: PUSH 17\n1: PUSH 5\n2: MOD\n3: PRINT\n4: HALT\n");
+    char * expr_norsk_resten = selfhost__compiler__disasm_uttrykk("17 resten 5");
+    nl_assert_eq_text(expr_norsk_resten, "0: PUSH 17\n1: PUSH 5\n2: MOD\n3: PRINT\n4: HALT\n");
     char * expr_norsk_rest_av = selfhost__compiler__disasm_uttrykk("17 rest_av 5");
     nl_assert_eq_text(expr_norsk_rest_av, "0: PUSH 17\n1: PUSH 5\n2: MOD\n3: PRINT\n4: HALT\n");
     char * expr_norsk_rest_av_phrase = selfhost__compiler__disasm_uttrykk("17 rest av 5");
@@ -3374,6 +3376,8 @@ int start() {
     nl_assert_eq_text(script_norsk_modulus_av_phrase, "0: PUSH 17\n1: PUSH 5\n2: MOD\n3: PRINT\n4: HALT\n");
     char * script_norsk_rest = selfhost__compiler__disasm_skript("la x=17;la y=5;returner x rest y");
     nl_assert_eq_text(script_norsk_rest, "0: PUSH 17\n1: PUSH 5\n2: MOD\n3: PRINT\n4: HALT\n");
+    char * script_norsk_resten = selfhost__compiler__disasm_skript("la x=17;la y=5;returner x resten y");
+    nl_assert_eq_text(script_norsk_resten, "0: PUSH 17\n1: PUSH 5\n2: MOD\n3: PRINT\n4: HALT\n");
     char * script_norsk_rest_av = selfhost__compiler__disasm_skript("la x=17;la y=5;returner x rest_av y");
     nl_assert_eq_text(script_norsk_rest_av, "0: PUSH 17\n1: PUSH 5\n2: MOD\n3: PRINT\n4: HALT\n");
     char * script_norsk_rest_av_phrase = selfhost__compiler__disasm_skript("la x=17;la y=5;returner x rest av y");
