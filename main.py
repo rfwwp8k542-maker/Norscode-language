@@ -2021,7 +2021,7 @@ def run_ci_pipeline(json_output: bool = False):
     _fixture_path, updated, _total = update_ir_snapshots(check_only=True)
     payload["snapshot_check"]["updated"] = updated
     if updated > 0:
-        raise RuntimeError(f"Snapshots er utdaterte ({updated} avvik). Kjør: python3 main.py update-snapshots")
+        raise RuntimeError(f"Snapshots er utdaterte ({updated} avvik). Kjør: norcode update-snapshots")
     payload["snapshot_check"]["ok"] = True
     if not json_output:
         print("OK")
@@ -2062,7 +2062,7 @@ def run_ci_pipeline(json_output: bool = False):
 
 
 def main():
-    parser = argparse.ArgumentParser(prog="python3 main.py", description="NorCode CLI")
+    parser = argparse.ArgumentParser(prog="norcode", description="NorCode CLI")
     sub = parser.add_subparsers(dest="cmd")
 
     run = sub.add_parser("run", help="Bygg og kjør en .no-fil")
