@@ -730,6 +730,18 @@ char * selfhost__compiler__token_pos(int pos) {
     return "";
 }
 
+int selfhost__compiler__finn_navn_indeks(nl_list_text* navn, char * key) {
+    int i = 0;
+    while (i < nl_list_text_len(navn)) {
+        if (nl_streq(navn->data[i], key)) {
+            return i;
+        }
+        i = (i + 1);
+    }
+    return (-(1));
+    return 0;
+}
+
 char * selfhost__compiler__parse_tokens_til_ops(nl_list_text* tokens, nl_list_text* ops, nl_list_int* verdier, int strict) {
     int i = 0;
     nl_list_text_remove(ops, 0);
@@ -872,12 +884,15 @@ char * selfhost__compiler__kompiler_fra_kilde_strict(char * kilde) {
     return "";
 }
 
-char * selfhost__compiler__uttrykk_til_ops_og_verdier(nl_list_text* tokens, nl_list_text* ops, nl_list_int* verdier) {
+char * selfhost__compiler__uttrykk_til_ops_og_verdier_med_miljo(nl_list_text* tokens, nl_list_text* navn, nl_list_int* miljo_verdier, nl_list_text* ops, nl_list_int* verdier) {
     nl_list_text* operatorer = nl_list_text_new();
     nl_list_text_push(operatorer, "");
     int i = 0;
     int forventer_verdi = 1;
     nl_list_text_remove(operatorer, 0);
+    if (nl_list_text_len(navn) != nl_list_int_len(miljo_verdier)) {
+        return "/* feil: navn/miljø-verdier må ha samme lengde */";
+    }
     while (i < nl_list_text_len(tokens)) {
         char * tok = tokens->data[i];
         if (nl_streq(tok, "")) {
@@ -908,6 +923,16 @@ char * selfhost__compiler__uttrykk_til_ops_og_verdier(nl_list_text* tokens, nl_l
             forventer_verdi = 0;
             i = (i + 1);
             continue;
+        }
+        if (forventer_verdi) {
+            int idx_navn = selfhost__compiler__finn_navn_indeks(navn, tok);
+            if (idx_navn >= 0) {
+                nl_list_text_push(ops, "PUSH");
+                nl_list_int_push(verdier, miljo_verdier->data[idx_navn]);
+                forventer_verdi = 0;
+                i = (i + 1);
+                continue;
+            }
         }
         if (nl_streq(tok, "(")) {
             if (forventer_verdi == 0) {
@@ -994,6 +1019,17 @@ char * selfhost__compiler__uttrykk_til_ops_og_verdier(nl_list_text* tokens, nl_l
     return "";
 }
 
+char * selfhost__compiler__uttrykk_til_ops_og_verdier(nl_list_text* tokens, nl_list_text* ops, nl_list_int* verdier) {
+    nl_list_text* navn = nl_list_text_new();
+    nl_list_text_push(navn, "");
+    nl_list_int* miljo_verdier = nl_list_int_new();
+    nl_list_int_push(miljo_verdier, 0);
+    nl_list_text_remove(navn, 0);
+    nl_list_int_remove(miljo_verdier, 0);
+    return selfhost__compiler__uttrykk_til_ops_og_verdier_med_miljo(tokens, navn, miljo_verdier, ops, verdier);
+    return "";
+}
+
 char * selfhost__compiler__disasm_uttrykk(char * kilde) {
     nl_list_text* tokens = nl_tokenize_expression(kilde);
     nl_list_text* ops = nl_list_text_new();
@@ -1015,6 +1051,27 @@ char * selfhost__compiler__disasm_uttrykk(char * kilde) {
     return "";
 }
 
+char * selfhost__compiler__disasm_uttrykk_med_miljo(char * kilde, nl_list_text* navn, nl_list_int* miljo_verdier) {
+    nl_list_text* tokens = nl_tokenize_expression(kilde);
+    nl_list_text* ops = nl_list_text_new();
+    nl_list_text_push(ops, "");
+    nl_list_int* verdier = nl_list_int_new();
+    nl_list_int_push(verdier, 0);
+    char * feil = "";
+    nl_list_text_remove(ops, 0);
+    nl_list_int_remove(verdier, 0);
+    feil = selfhost__compiler__uttrykk_til_ops_og_verdier_med_miljo(tokens, navn, miljo_verdier, ops, verdier);
+    if (!(nl_streq(feil, ""))) {
+        return feil;
+    }
+    nl_list_text_push(ops, "PRINT");
+    nl_list_int_push(verdier, 0);
+    nl_list_text_push(ops, "HALT");
+    nl_list_int_push(verdier, 0);
+    return selfhost__compiler__disasm_program(ops, verdier);
+    return "";
+}
+
 char * selfhost__compiler__kompiler_uttrykk_til_c(char * kilde) {
     nl_list_text* tokens = nl_tokenize_expression(kilde);
     nl_list_text* ops = nl_list_text_new();
@@ -1025,6 +1082,27 @@ char * selfhost__compiler__kompiler_uttrykk_til_c(char * kilde) {
     nl_list_text_remove(ops, 0);
     nl_list_int_remove(verdier, 0);
     feil = selfhost__compiler__uttrykk_til_ops_og_verdier(tokens, ops, verdier);
+    if (!(nl_streq(feil, ""))) {
+        return feil;
+    }
+    nl_list_text_push(ops, "PRINT");
+    nl_list_int_push(verdier, 0);
+    nl_list_text_push(ops, "HALT");
+    nl_list_int_push(verdier, 0);
+    return selfhost__compiler__kompiler_til_c(ops, verdier);
+    return "";
+}
+
+char * selfhost__compiler__kompiler_uttrykk_til_c_med_miljo(char * kilde, nl_list_text* navn, nl_list_int* miljo_verdier) {
+    nl_list_text* tokens = nl_tokenize_expression(kilde);
+    nl_list_text* ops = nl_list_text_new();
+    nl_list_text_push(ops, "");
+    nl_list_int* verdier = nl_list_int_new();
+    nl_list_int_push(verdier, 0);
+    char * feil = "";
+    nl_list_text_remove(ops, 0);
+    nl_list_int_remove(verdier, 0);
+    feil = selfhost__compiler__uttrykk_til_ops_og_verdier_med_miljo(tokens, navn, miljo_verdier, ops, verdier);
     if (!(nl_streq(feil, ""))) {
         return feil;
     }
@@ -1258,6 +1336,16 @@ int start() {
     nl_assert_eq_text(expr_unary_minus, "0: PUSH 3\n1: PUSH 0\n2: SWAP\n3: SUB\n4: PUSH 5\n5: ADD\n6: PRINT\n7: HALT\n");
     char * expr_bool_literals = selfhost__compiler__disasm_uttrykk("sann&&usann||!usann");
     nl_assert_eq_text(expr_bool_literals, "0: PUSH 1\n1: PUSH 0\n2: AND\n3: PUSH 0\n4: NOT\n5: OR\n6: PRINT\n7: HALT\n");
+    nl_list_text* env_navn = nl_list_text_new();
+    nl_list_text_push(env_navn, "x");
+    nl_list_text_push(env_navn, "y");
+    nl_list_int* env_verdier = nl_list_int_new();
+    nl_list_int_push(env_verdier, 7);
+    nl_list_int_push(env_verdier, 3);
+    char * expr_env = selfhost__compiler__disasm_uttrykk_med_miljo("x*2+y", env_navn, env_verdier);
+    nl_assert_eq_text(expr_env, "0: PUSH 7\n1: PUSH 2\n2: MUL\n3: PUSH 3\n4: ADD\n5: PRINT\n6: HALT\n");
+    char * expr_env_c = selfhost__compiler__kompiler_uttrykk_til_c_med_miljo("x+y", env_navn, env_verdier);
+    nl_assert_ne_text(expr_env_c, "");
     char * expr_err = selfhost__compiler__disasm_uttrykk("2 +");
     nl_assert_eq_text(expr_err, "/* feil: uttrykket avsluttes med operator */");
     char * expr_err2 = selfhost__compiler__disasm_uttrykk("2 + )");
@@ -1266,6 +1354,15 @@ int start() {
     nl_assert_eq_text(expr_err3, "/* feil: ukjent token/navn i uttrykk $ ved token 2 */");
     char * expr_err4 = selfhost__compiler__disasm_uttrykk("foo+1");
     nl_assert_eq_text(expr_err4, "/* feil: ukjent token/navn i uttrykk foo ved token 0 */");
+    char * expr_env_err = selfhost__compiler__disasm_uttrykk_med_miljo("z+1", env_navn, env_verdier);
+    nl_assert_eq_text(expr_env_err, "/* feil: ukjent token/navn i uttrykk z ved token 0 */");
+    nl_list_text* env_navn_kort = nl_list_text_new();
+    nl_list_text_push(env_navn_kort, "x");
+    nl_list_int* env_verdier_lang = nl_list_int_new();
+    nl_list_int_push(env_verdier_lang, 1);
+    nl_list_int_push(env_verdier_lang, 2);
+    char * expr_env_err2 = selfhost__compiler__disasm_uttrykk_med_miljo("x+1", env_navn_kort, env_verdier_lang);
+    nl_assert_eq_text(expr_env_err2, "/* feil: navn/miljø-verdier må ha samme lengde */");
     nl_list_text* linjer = nl_list_text_new();
     nl_list_text_push(linjer, "");
     nl_list_text_push(linjer, "PUSH");

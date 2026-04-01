@@ -169,6 +169,14 @@ funksjon start() -> heltall {
     la expr_bool_literals: tekst = sh.disasm_uttrykk("sann&&usann||!usann")
     assert_eq(expr_bool_literals, "0: PUSH 1\n1: PUSH 0\n2: AND\n3: PUSH 0\n4: NOT\n5: OR\n6: PRINT\n7: HALT\n")
 
+    la env_navn: liste_tekst = ["x", "y"]
+    la env_verdier: liste_heltall = [7, 3]
+    la expr_env: tekst = sh.disasm_uttrykk_med_miljo("x*2+y", env_navn, env_verdier)
+    assert_eq(expr_env, "0: PUSH 7\n1: PUSH 2\n2: MUL\n3: PUSH 3\n4: ADD\n5: PRINT\n6: HALT\n")
+
+    la expr_env_c: tekst = sh.kompiler_uttrykk_til_c_med_miljo("x+y", env_navn, env_verdier)
+    assert_ne(expr_env_c, "")
+
     la expr_err: tekst = sh.disasm_uttrykk("2 +")
     assert_eq(expr_err, "/* feil: uttrykket avsluttes med operator */")
 
@@ -180,6 +188,14 @@ funksjon start() -> heltall {
 
     la expr_err4: tekst = sh.disasm_uttrykk("foo+1")
     assert_eq(expr_err4, "/* feil: ukjent token/navn i uttrykk foo ved token 0 */")
+
+    la expr_env_err: tekst = sh.disasm_uttrykk_med_miljo("z+1", env_navn, env_verdier)
+    assert_eq(expr_env_err, "/* feil: ukjent token/navn i uttrykk z ved token 0 */")
+
+    la env_navn_kort: liste_tekst = ["x"]
+    la env_verdier_lang: liste_heltall = [1, 2]
+    la expr_env_err2: tekst = sh.disasm_uttrykk_med_miljo("x+1", env_navn_kort, env_verdier_lang)
+    assert_eq(expr_env_err2, "/* feil: navn/miljø-verdier må ha samme lengde */")
 
     la linjer: liste_tekst = ["", "PUSH", "11", "PUSH", "4", "SUB", "PRINT", "HALT"]
     la c3: tekst = sh.kompiler_fra_linjer(linjer)

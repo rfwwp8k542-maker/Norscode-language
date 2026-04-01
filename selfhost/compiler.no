@@ -406,6 +406,17 @@ funksjon token_pos(pos: heltall) -> tekst {
     returner "token " + tekst_fra_heltall(pos)
 }
 
+funksjon finn_navn_indeks(navn: liste_tekst, key: tekst) -> heltall {
+    la i: heltall = 0
+    mens (i < lengde(navn)) {
+        hvis (navn[i] == key) {
+            returner i
+        }
+        i = i + 1
+    }
+    returner -1
+}
+
 funksjon parse_tokens_til_ops(tokens: liste_tekst, ops: liste_tekst, verdier: liste_heltall, strict: bool) -> tekst {
     la i: heltall = 0
 
@@ -528,12 +539,16 @@ funksjon kompiler_fra_kilde_strict(kilde: tekst) -> tekst {
     returner kompiler_fra_tokens_strict(tokens)
 }
 
-funksjon uttrykk_til_ops_og_verdier(tokens: liste_tekst, ops: liste_tekst, verdier: liste_heltall) -> tekst {
+funksjon uttrykk_til_ops_og_verdier_med_miljo(tokens: liste_tekst, navn: liste_tekst, miljo_verdier: liste_heltall, ops: liste_tekst, verdier: liste_heltall) -> tekst {
     la operatorer: liste_tekst = [""]
     la i: heltall = 0
     la forventer_verdi: bool = sann
 
     fjern_indeks(operatorer, 0)
+
+    hvis (lengde(navn) != lengde(miljo_verdier)) {
+        returner "/* feil: navn/miljø-verdier må ha samme lengde */"
+    }
 
     mens (i < lengde(tokens)) {
         la tok: tekst = tokens[i]
@@ -567,6 +582,17 @@ funksjon uttrykk_til_ops_og_verdier(tokens: liste_tekst, ops: liste_tekst, verdi
             forventer_verdi = usann
             i = i + 1
             fortsett
+        }
+
+        hvis (forventer_verdi) {
+            la idx_navn: heltall = finn_navn_indeks(navn, tok)
+            hvis (idx_navn >= 0) {
+                legg_til(ops, "PUSH")
+                legg_til(verdier, miljo_verdier[idx_navn])
+                forventer_verdi = usann
+                i = i + 1
+                fortsett
+            }
         }
 
         hvis (tok == "(") {
@@ -659,6 +685,14 @@ funksjon uttrykk_til_ops_og_verdier(tokens: liste_tekst, ops: liste_tekst, verdi
     returner ""
 }
 
+funksjon uttrykk_til_ops_og_verdier(tokens: liste_tekst, ops: liste_tekst, verdier: liste_heltall) -> tekst {
+    la navn: liste_tekst = [""]
+    la miljo_verdier: liste_heltall = [0]
+    fjern_indeks(navn, 0)
+    fjern_indeks(miljo_verdier, 0)
+    returner uttrykk_til_ops_og_verdier_med_miljo(tokens, navn, miljo_verdier, ops, verdier)
+}
+
 funksjon disasm_uttrykk(kilde: tekst) -> tekst {
     la tokens: liste_tekst = tokeniser_uttrykk(kilde)
     la ops: liste_tekst = [""]
@@ -681,6 +715,28 @@ funksjon disasm_uttrykk(kilde: tekst) -> tekst {
     returner disasm_program(ops, verdier)
 }
 
+funksjon disasm_uttrykk_med_miljo(kilde: tekst, navn: liste_tekst, miljo_verdier: liste_heltall) -> tekst {
+    la tokens: liste_tekst = tokeniser_uttrykk(kilde)
+    la ops: liste_tekst = [""]
+    la verdier: liste_heltall = [0]
+    la feil: tekst = ""
+
+    fjern_indeks(ops, 0)
+    fjern_indeks(verdier, 0)
+
+    feil = uttrykk_til_ops_og_verdier_med_miljo(tokens, navn, miljo_verdier, ops, verdier)
+    hvis (feil != "") {
+        returner feil
+    }
+
+    legg_til(ops, "PRINT")
+    legg_til(verdier, 0)
+    legg_til(ops, "HALT")
+    legg_til(verdier, 0)
+
+    returner disasm_program(ops, verdier)
+}
+
 funksjon kompiler_uttrykk_til_c(kilde: tekst) -> tekst {
     la tokens: liste_tekst = tokeniser_uttrykk(kilde)
     la ops: liste_tekst = [""]
@@ -691,6 +747,28 @@ funksjon kompiler_uttrykk_til_c(kilde: tekst) -> tekst {
     fjern_indeks(verdier, 0)
 
     feil = uttrykk_til_ops_og_verdier(tokens, ops, verdier)
+    hvis (feil != "") {
+        returner feil
+    }
+
+    legg_til(ops, "PRINT")
+    legg_til(verdier, 0)
+    legg_til(ops, "HALT")
+    legg_til(verdier, 0)
+
+    returner kompiler_til_c(ops, verdier)
+}
+
+funksjon kompiler_uttrykk_til_c_med_miljo(kilde: tekst, navn: liste_tekst, miljo_verdier: liste_heltall) -> tekst {
+    la tokens: liste_tekst = tokeniser_uttrykk(kilde)
+    la ops: liste_tekst = [""]
+    la verdier: liste_heltall = [0]
+    la feil: tekst = ""
+
+    fjern_indeks(ops, 0)
+    fjern_indeks(verdier, 0)
+
+    feil = uttrykk_til_ops_og_verdier_med_miljo(tokens, navn, miljo_verdier, ops, verdier)
     hvis (feil != "") {
         returner feil
     }
