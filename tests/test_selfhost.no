@@ -301,6 +301,9 @@ funksjon start() -> heltall {
     la expr_norsk_plusse_med_underscore: tekst = sh.disasm_uttrykk("2 plusse_med 3")
     assert_eq(expr_norsk_plusse_med_underscore, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n")
 
+    la expr_norsk_plusser: tekst = sh.disasm_uttrykk("2 plusser 3")
+    assert_eq(expr_norsk_plusser, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n")
+
     la expr_norsk_adder_med: tekst = sh.disasm_uttrykk("2 adder med 3")
     assert_eq(expr_norsk_adder_med, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n")
 
@@ -325,6 +328,9 @@ funksjon start() -> heltall {
     la expr_norsk_adderes_med_underscore: tekst = sh.disasm_uttrykk("2 adderes_med 3")
     assert_eq(expr_norsk_adderes_med_underscore, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n")
 
+    la expr_norsk_adder: tekst = sh.disasm_uttrykk("2 adder 3")
+    assert_eq(expr_norsk_adder, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n")
+
     la expr_norsk_summer_med: tekst = sh.disasm_uttrykk("2 summer med 3")
     assert_eq(expr_norsk_summer_med, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n")
 
@@ -342,6 +348,9 @@ funksjon start() -> heltall {
 
     la expr_norsk_summeres_med_underscore: tekst = sh.disasm_uttrykk("2 summeres_med 3")
     assert_eq(expr_norsk_summeres_med_underscore, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n")
+
+    la expr_norsk_summer: tekst = sh.disasm_uttrykk("2 summer 3")
+    assert_eq(expr_norsk_summer, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n")
 
     la expr_norsk_trekk_fra: tekst = sh.disasm_uttrykk("10 trekk fra 3")
     assert_eq(expr_norsk_trekk_fra, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n")
@@ -1193,6 +1202,9 @@ funksjon start() -> heltall {
     la script_norsk_plusse_med_underscore: tekst = sh.disasm_skript("la x=2;la y=3;returner x plusse_med y")
     assert_eq(script_norsk_plusse_med_underscore, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n")
 
+    la script_norsk_plusser: tekst = sh.disasm_skript("la x=2;la y=3;returner x plusser y")
+    assert_eq(script_norsk_plusser, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n")
+
     la script_norsk_adder_med: tekst = sh.disasm_skript("la x=2;la y=3;returner x adder med y")
     assert_eq(script_norsk_adder_med, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n")
 
@@ -1217,6 +1229,9 @@ funksjon start() -> heltall {
     la script_norsk_adderes_med_underscore: tekst = sh.disasm_skript("la x=2;la y=3;returner x adderes_med y")
     assert_eq(script_norsk_adderes_med_underscore, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n")
 
+    la script_norsk_adder: tekst = sh.disasm_skript("la x=2;la y=3;returner x adder y")
+    assert_eq(script_norsk_adder, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n")
+
     la script_norsk_summer_med: tekst = sh.disasm_skript("la x=2;la y=3;returner x summer med y")
     assert_eq(script_norsk_summer_med, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n")
 
@@ -1234,6 +1249,9 @@ funksjon start() -> heltall {
 
     la script_norsk_summeres_med_underscore: tekst = sh.disasm_skript("la x=2;la y=3;returner x summeres_med y")
     assert_eq(script_norsk_summeres_med_underscore, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n")
+
+    la script_norsk_summer: tekst = sh.disasm_skript("la x=2;la y=3;returner x summer y")
+    assert_eq(script_norsk_summer, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n")
 
     la script_norsk_trekk_fra: tekst = sh.disasm_skript("la x=10;la y=3;returner x trekk fra y")
     assert_eq(script_norsk_trekk_fra, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n")

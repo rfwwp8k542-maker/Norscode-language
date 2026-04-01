@@ -1320,6 +1320,10 @@ char * selfhost__compiler__uttrykk_til_ops_og_verdier_med_miljo(nl_list_text* to
             tok = "+";
             tok_step = 2;
         }
+        else if ((((((((((nl_streq(tok_raw, "plusser") || nl_streq(tok_raw, "plusses")) || nl_streq(tok_raw, "pluses")) || nl_streq(tok_raw, "plusse")) || nl_streq(tok_raw, "adder")) || nl_streq(tok_raw, "addere")) || nl_streq(tok_raw, "adderer")) || nl_streq(tok_raw, "adderes")) || nl_streq(tok_raw, "summer")) || nl_streq(tok_raw, "summerer")) || nl_streq(tok_raw, "summeres")) {
+            tok = "+";
+            tok_step = 1;
+        }
         else if ((nl_streq(tok_raw, "legg_til") || nl_streq(tok_raw, "legge_til")) || nl_streq(tok_raw, "legges_til")) {
             tok = "+";
             tok_step = 1;
@@ -2470,6 +2474,8 @@ int start() {
     nl_assert_eq_text(expr_norsk_plusse_med, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
     char * expr_norsk_plusse_med_underscore = selfhost__compiler__disasm_uttrykk("2 plusse_med 3");
     nl_assert_eq_text(expr_norsk_plusse_med_underscore, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
+    char * expr_norsk_plusser = selfhost__compiler__disasm_uttrykk("2 plusser 3");
+    nl_assert_eq_text(expr_norsk_plusser, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
     char * expr_norsk_adder_med = selfhost__compiler__disasm_uttrykk("2 adder med 3");
     nl_assert_eq_text(expr_norsk_adder_med, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
     char * expr_norsk_adder_med_underscore = selfhost__compiler__disasm_uttrykk("2 adder_med 3");
@@ -2486,6 +2492,8 @@ int start() {
     nl_assert_eq_text(expr_norsk_adderes_med, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
     char * expr_norsk_adderes_med_underscore = selfhost__compiler__disasm_uttrykk("2 adderes_med 3");
     nl_assert_eq_text(expr_norsk_adderes_med_underscore, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
+    char * expr_norsk_adder = selfhost__compiler__disasm_uttrykk("2 adder 3");
+    nl_assert_eq_text(expr_norsk_adder, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
     char * expr_norsk_summer_med = selfhost__compiler__disasm_uttrykk("2 summer med 3");
     nl_assert_eq_text(expr_norsk_summer_med, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
     char * expr_norsk_summer_med_underscore = selfhost__compiler__disasm_uttrykk("2 summer_med 3");
@@ -2498,6 +2506,8 @@ int start() {
     nl_assert_eq_text(expr_norsk_summeres_med, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
     char * expr_norsk_summeres_med_underscore = selfhost__compiler__disasm_uttrykk("2 summeres_med 3");
     nl_assert_eq_text(expr_norsk_summeres_med_underscore, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
+    char * expr_norsk_summer = selfhost__compiler__disasm_uttrykk("2 summer 3");
+    nl_assert_eq_text(expr_norsk_summer, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
     char * expr_norsk_trekk_fra = selfhost__compiler__disasm_uttrykk("10 trekk fra 3");
     nl_assert_eq_text(expr_norsk_trekk_fra, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n");
     char * expr_norsk_trekk_fra_underscore = selfhost__compiler__disasm_uttrykk("10 trekk_fra 3");
@@ -3073,6 +3083,8 @@ int start() {
     nl_assert_eq_text(script_norsk_plusse_med, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
     char * script_norsk_plusse_med_underscore = selfhost__compiler__disasm_skript("la x=2;la y=3;returner x plusse_med y");
     nl_assert_eq_text(script_norsk_plusse_med_underscore, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
+    char * script_norsk_plusser = selfhost__compiler__disasm_skript("la x=2;la y=3;returner x plusser y");
+    nl_assert_eq_text(script_norsk_plusser, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
     char * script_norsk_adder_med = selfhost__compiler__disasm_skript("la x=2;la y=3;returner x adder med y");
     nl_assert_eq_text(script_norsk_adder_med, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
     char * script_norsk_adder_med_underscore = selfhost__compiler__disasm_skript("la x=2;la y=3;returner x adder_med y");
@@ -3089,6 +3101,8 @@ int start() {
     nl_assert_eq_text(script_norsk_adderes_med, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
     char * script_norsk_adderes_med_underscore = selfhost__compiler__disasm_skript("la x=2;la y=3;returner x adderes_med y");
     nl_assert_eq_text(script_norsk_adderes_med_underscore, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
+    char * script_norsk_adder = selfhost__compiler__disasm_skript("la x=2;la y=3;returner x adder y");
+    nl_assert_eq_text(script_norsk_adder, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
     char * script_norsk_summer_med = selfhost__compiler__disasm_skript("la x=2;la y=3;returner x summer med y");
     nl_assert_eq_text(script_norsk_summer_med, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
     char * script_norsk_summer_med_underscore = selfhost__compiler__disasm_skript("la x=2;la y=3;returner x summer_med y");
@@ -3101,6 +3115,8 @@ int start() {
     nl_assert_eq_text(script_norsk_summeres_med, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
     char * script_norsk_summeres_med_underscore = selfhost__compiler__disasm_skript("la x=2;la y=3;returner x summeres_med y");
     nl_assert_eq_text(script_norsk_summeres_med_underscore, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
+    char * script_norsk_summer = selfhost__compiler__disasm_skript("la x=2;la y=3;returner x summer y");
+    nl_assert_eq_text(script_norsk_summer, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
     char * script_norsk_trekk_fra = selfhost__compiler__disasm_skript("la x=10;la y=3;returner x trekk fra y");
     nl_assert_eq_text(script_norsk_trekk_fra, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n");
     char * script_norsk_trekk_fra_underscore = selfhost__compiler__disasm_skript("la x=10;la y=3;returner x trekk_fra y");
