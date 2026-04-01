@@ -918,7 +918,7 @@ funksjon uttrykk_til_ops_og_verdier_med_miljo(tokens: liste_tekst, navn: liste_t
             n4 = normaliser_norsk_token(tokens[i + 4])
         }
 
-        hvis (tok_raw == "delt_pa" eller tok_raw == "deler_pa" eller tok_raw == "dele_pa" eller tok_raw == "deles_pa" eller tok_raw == "del_pa" eller tok_raw == "divider_pa" eller tok_raw == "dividere_pa" eller tok_raw == "dividerer_pa" eller tok_raw == "dividert_pa" eller tok_raw == "divideres_pa") {
+        hvis (tok_raw == "delt_pa" eller tok_raw == "deler_pa" eller tok_raw == "dele_pa" eller tok_raw == "deles_pa" eller tok_raw == "del_pa" eller tok_raw == "dele_seg_pa" eller tok_raw == "deler_seg_pa" eller tok_raw == "divider_pa" eller tok_raw == "dividere_pa" eller tok_raw == "dividerer_pa" eller tok_raw == "dividert_pa" eller tok_raw == "divideres_pa") {
             tok = "/"
             tok_step = 1
         } ellers hvis (tok_raw == "delt_med" eller tok_raw == "dele_med" eller tok_raw == "deler_med" eller tok_raw == "deles_med" eller tok_raw == "dele_seg_med" eller tok_raw == "deler_seg_med" eller tok_raw == "dividere_med" eller tok_raw == "divider_med" eller tok_raw == "dividerer_med" eller tok_raw == "dividert_med" eller tok_raw == "divideres_med" eller tok_raw == "del_med") {
@@ -927,7 +927,7 @@ funksjon uttrykk_til_ops_og_verdier_med_miljo(tokens: liste_tekst, navn: liste_t
         } ellers hvis (i + 1 < lengde(tokens) og (tok_raw == "delt" eller tok_raw == "deler" eller tok_raw == "dele" eller tok_raw == "deles" eller tok_raw == "del" eller tok_raw == "divider" eller tok_raw == "dividere" eller tok_raw == "dividerer" eller tok_raw == "dividert" eller tok_raw == "divideres") og (n1 == "pa" eller n1 == "paa")) {
             tok = "/"
             tok_step = 2
-        } ellers hvis (i + 2 < lengde(tokens) og (tok_raw == "dele" eller tok_raw == "deler") og n1 == "seg" og n2 == "med") {
+        } ellers hvis (i + 2 < lengde(tokens) og (tok_raw == "dele" eller tok_raw == "deler") og n1 == "seg" og (n2 == "med" eller n2 == "pa" eller n2 == "paa")) {
             tok = "/"
             tok_step = 3
         } ellers hvis (i + 1 < lengde(tokens) og (tok_raw == "delt" eller tok_raw == "dele" eller tok_raw == "deler" eller tok_raw == "deles" eller tok_raw == "dividere" eller tok_raw == "divider" eller tok_raw == "dividerer" eller tok_raw == "dividert" eller tok_raw == "divideres" eller tok_raw == "del") og n1 == "med") {
