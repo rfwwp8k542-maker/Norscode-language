@@ -786,7 +786,26 @@ funksjon uttrykk_til_ops_og_verdier_med_miljo(tokens: liste_tekst, navn: liste_t
     }
 
     mens (i < lengde(tokens)) {
-        la tok: tekst = tokens[i]
+        la tok_raw: tekst = tokens[i]
+        la tok: tekst = tok_raw
+        la tok_step: heltall = 1
+
+        hvis (i + 1 < lengde(tokens) og tok_raw == "mindre" og tokens[i + 1] == "enn") {
+            tok = "mindre_enn"
+            tok_step = 2
+        } ellers hvis (i + 1 < lengde(tokens) og tok_raw == "storre" og tokens[i + 1] == "enn") {
+            tok = "storre_enn"
+            tok_step = 2
+        } ellers hvis (i + 2 < lengde(tokens) og tok_raw == "mindre" og tokens[i + 1] == "eller" og tokens[i + 2] == "lik") {
+            tok = "mindre_eller_lik"
+            tok_step = 3
+        } ellers hvis (i + 2 < lengde(tokens) og tok_raw == "storre" og tokens[i + 1] == "eller" og tokens[i + 2] == "lik") {
+            tok = "storre_eller_lik"
+            tok_step = 3
+        } ellers hvis (i + 1 < lengde(tokens) og tok_raw == "ikke" og tokens[i + 1] == "er") {
+            tok = "ikke_er"
+            tok_step = 2
+        }
 
         hvis (tok == "") {
             i = i + 1
@@ -800,7 +819,7 @@ funksjon uttrykk_til_ops_og_verdier_med_miljo(tokens: liste_tekst, navn: liste_t
             legg_til(ops, "PUSH")
             legg_til(verdier, heltall_fra_tekst(tok))
             forventer_verdi = usann
-            i = i + 1
+            i = i + tok_step
             fortsett
         }
 
@@ -815,7 +834,7 @@ funksjon uttrykk_til_ops_og_verdier_med_miljo(tokens: liste_tekst, navn: liste_t
                 legg_til(verdier, 0)
             }
             forventer_verdi = usann
-            i = i + 1
+            i = i + tok_step
             fortsett
         }
 
@@ -825,7 +844,7 @@ funksjon uttrykk_til_ops_og_verdier_med_miljo(tokens: liste_tekst, navn: liste_t
                 legg_til(ops, "PUSH")
                 legg_til(verdier, miljo_verdier[idx_navn])
                 forventer_verdi = usann
-                i = i + 1
+                i = i + tok_step
                 fortsett
             }
         }
@@ -835,7 +854,7 @@ funksjon uttrykk_til_ops_og_verdier_med_miljo(tokens: liste_tekst, navn: liste_t
                 returner "/* feil: mangler operator før ( ved " + token_pos(i) + " */"
             }
             legg_til(operatorer, tok)
-            i = i + 1
+            i = i + tok_step
             fortsett
         }
 
@@ -860,7 +879,7 @@ funksjon uttrykk_til_ops_og_verdier_med_miljo(tokens: liste_tekst, navn: liste_t
                 returner "/* feil: ) uten matchende ( ved " + token_pos(i) + " */"
             }
             forventer_verdi = usann
-            i = i + 1
+            i = i + tok_step
             fortsett
         }
 
@@ -868,17 +887,17 @@ funksjon uttrykk_til_ops_og_verdier_med_miljo(tokens: liste_tekst, navn: liste_t
             hvis (forventer_verdi) {
                 hvis (tok == "!") {
                     legg_til(operatorer, "u!")
-                    i = i + 1
+                    i = i + tok_step
                     fortsett
                 }
                 hvis (tok == "ikke") {
                     legg_til(operatorer, "uikke")
-                    i = i + 1
+                    i = i + tok_step
                     fortsett
                 }
                 hvis (tok == "-") {
                     legg_til(operatorer, "u-")
-                    i = i + 1
+                    i = i + tok_step
                     fortsett
                 }
                 returner "/* feil: mangler verdi før operator " + tok + " ved " + token_pos(i) + " */"
@@ -899,7 +918,7 @@ funksjon uttrykk_til_ops_og_verdier_med_miljo(tokens: liste_tekst, navn: liste_t
             }
             legg_til(operatorer, tok)
             forventer_verdi = sann
-            i = i + 1
+            i = i + tok_step
             fortsett
         }
 

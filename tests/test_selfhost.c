@@ -1141,7 +1141,29 @@ char * selfhost__compiler__uttrykk_til_ops_og_verdier_med_miljo(nl_list_text* to
         return "/* feil: navn/miljø-verdier må ha samme lengde */";
     }
     while (i < nl_list_text_len(tokens)) {
-        char * tok = tokens->data[i];
+        char * tok_raw = tokens->data[i];
+        char * tok = tok_raw;
+        int tok_step = 1;
+        if ((((i + 1) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "mindre")) && nl_streq(tokens->data[(i + 1)], "enn")) {
+            tok = "mindre_enn";
+            tok_step = 2;
+        }
+        else if ((((i + 1) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "storre")) && nl_streq(tokens->data[(i + 1)], "enn")) {
+            tok = "storre_enn";
+            tok_step = 2;
+        }
+        else if (((((i + 2) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "mindre")) && nl_streq(tokens->data[(i + 1)], "eller")) && nl_streq(tokens->data[(i + 2)], "lik")) {
+            tok = "mindre_eller_lik";
+            tok_step = 3;
+        }
+        else if (((((i + 2) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "storre")) && nl_streq(tokens->data[(i + 1)], "eller")) && nl_streq(tokens->data[(i + 2)], "lik")) {
+            tok = "storre_eller_lik";
+            tok_step = 3;
+        }
+        else if ((((i + 1) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "ikke")) && nl_streq(tokens->data[(i + 1)], "er")) {
+            tok = "ikke_er";
+            tok_step = 2;
+        }
         if (nl_streq(tok, "")) {
             i = (i + 1);
             continue;
@@ -1153,7 +1175,7 @@ char * selfhost__compiler__uttrykk_til_ops_og_verdier_med_miljo(nl_list_text* to
             nl_list_text_push(ops, "PUSH");
             nl_list_int_push(verdier, nl_text_to_int(tok));
             forventer_verdi = 0;
-            i = (i + 1);
+            i = (i + tok_step);
             continue;
         }
         if (nl_streq(tok, "sann") || nl_streq(tok, "usann")) {
@@ -1168,7 +1190,7 @@ char * selfhost__compiler__uttrykk_til_ops_og_verdier_med_miljo(nl_list_text* to
                 nl_list_int_push(verdier, 0);
             }
             forventer_verdi = 0;
-            i = (i + 1);
+            i = (i + tok_step);
             continue;
         }
         if (forventer_verdi) {
@@ -1177,7 +1199,7 @@ char * selfhost__compiler__uttrykk_til_ops_og_verdier_med_miljo(nl_list_text* to
                 nl_list_text_push(ops, "PUSH");
                 nl_list_int_push(verdier, miljo_verdier->data[idx_navn]);
                 forventer_verdi = 0;
-                i = (i + 1);
+                i = (i + tok_step);
                 continue;
             }
         }
@@ -1186,7 +1208,7 @@ char * selfhost__compiler__uttrykk_til_ops_og_verdier_med_miljo(nl_list_text* to
                 return nl_concat(nl_concat("/* feil: mangler operator før ( ved ", selfhost__compiler__token_pos(i)), " */");
             }
             nl_list_text_push(operatorer, tok);
-            i = (i + 1);
+            i = (i + tok_step);
             continue;
         }
         if (nl_streq(tok, ")")) {
@@ -1210,24 +1232,24 @@ char * selfhost__compiler__uttrykk_til_ops_og_verdier_med_miljo(nl_list_text* to
                 return nl_concat(nl_concat("/* feil: ) uten matchende ( ved ", selfhost__compiler__token_pos(i)), " */");
             }
             forventer_verdi = 0;
-            i = (i + 1);
+            i = (i + tok_step);
             continue;
         }
         if (selfhost__compiler__er_operator_token(tok)) {
             if (forventer_verdi) {
                 if (nl_streq(tok, "!")) {
                     nl_list_text_push(operatorer, "u!");
-                    i = (i + 1);
+                    i = (i + tok_step);
                     continue;
                 }
                 if (nl_streq(tok, "ikke")) {
                     nl_list_text_push(operatorer, "uikke");
-                    i = (i + 1);
+                    i = (i + tok_step);
                     continue;
                 }
                 if (nl_streq(tok, "-")) {
                     nl_list_text_push(operatorer, "u-");
-                    i = (i + 1);
+                    i = (i + tok_step);
                     continue;
                 }
                 return nl_concat(nl_concat(nl_concat(nl_concat("/* feil: mangler verdi før operator ", tok), " ved "), selfhost__compiler__token_pos(i)), " */");
@@ -1248,7 +1270,7 @@ char * selfhost__compiler__uttrykk_til_ops_og_verdier_med_miljo(nl_list_text* to
             }
             nl_list_text_push(operatorer, tok);
             forventer_verdi = 1;
-            i = (i + 1);
+            i = (i + tok_step);
             continue;
         }
         return nl_concat(nl_concat(nl_concat(nl_concat("/* feil: ukjent token/navn i uttrykk ", tok), " ved "), selfhost__compiler__token_pos(i)), " */");
@@ -2001,6 +2023,10 @@ int start() {
     nl_assert_eq_text(expr_norsk_cmp, "0: PUSH 7\n1: PUSH 7\n2: EQ\n3: PUSH 3\n4: PUSH 4\n5: LT\n6: AND\n7: PRINT\n8: HALT\n");
     char * expr_norsk_cmp2 = selfhost__compiler__disasm_uttrykk("7 ikke_er 8 og 4 storre_eller_lik 4");
     nl_assert_eq_text(expr_norsk_cmp2, "0: PUSH 7\n1: PUSH 8\n2: EQ\n3: NOT\n4: PUSH 4\n5: PUSH 4\n6: LT\n7: NOT\n8: AND\n9: PRINT\n10: HALT\n");
+    char * expr_norsk_cmp_phrase = selfhost__compiler__disasm_uttrykk("7 er 7 og 3 mindre enn 4");
+    nl_assert_eq_text(expr_norsk_cmp_phrase, "0: PUSH 7\n1: PUSH 7\n2: EQ\n3: PUSH 3\n4: PUSH 4\n5: LT\n6: AND\n7: PRINT\n8: HALT\n");
+    char * expr_norsk_cmp_phrase2 = selfhost__compiler__disasm_uttrykk("7 ikke er 8 og 4 storre eller lik 4");
+    nl_assert_eq_text(expr_norsk_cmp_phrase2, "0: PUSH 7\n1: PUSH 8\n2: EQ\n3: NOT\n4: PUSH 4\n5: PUSH 4\n6: LT\n7: NOT\n8: AND\n9: PRINT\n10: HALT\n");
     nl_list_text* env_navn = nl_list_text_new();
     nl_list_text_push(env_navn, "x");
     nl_list_text_push(env_navn, "y");
@@ -2062,6 +2088,8 @@ int start() {
     nl_assert_eq_text(script_norsk_ops, "0: PUSH 1\n1: PUSH 1\n2: AND\n3: PRINT\n4: HALT\n");
     char * script_norsk_cmp = selfhost__compiler__disasm_skript("la x=3;la y=4;hvis x mindre_enn y da 1 ellers 0");
     nl_assert_eq_text(script_norsk_cmp, "0: PUSH 3\n1: PUSH 4\n2: LT\n3: JZ 6\n4: PUSH 1\n5: JMP 8\n6: LABEL 6\n7: PUSH 0\n8: LABEL 8\n9: PRINT\n10: HALT\n");
+    char * script_norsk_cmp_phrase = selfhost__compiler__disasm_skript("la x=3;la y=4;hvis x mindre enn y da 1 ellers 0");
+    nl_assert_eq_text(script_norsk_cmp_phrase, "0: PUSH 3\n1: PUSH 4\n2: LT\n3: JZ 6\n4: PUSH 1\n5: JMP 8\n6: LABEL 6\n7: PUSH 0\n8: LABEL 8\n9: PRINT\n10: HALT\n");
     char * script_c = selfhost__compiler__kompiler_skript_til_c("x=2;y=x+5;y*2");
     nl_assert_ne_text(script_c, "");
     char * script_err1 = selfhost__compiler__disasm_skript("x=2+3");
