@@ -47,21 +47,40 @@ IR_OPS_NO_ARG = {
 }
 IR_ALL_OPS = IR_OPS_WITH_ARG | IR_OPS_NO_ARG
 IR_SNAPSHOT_FIXTURE = Path("tests/ir_snapshot_cases.json")
-PROJECT_CONFIG_NAME = "norsklang.toml"
+PROJECT_CONFIG_NAME = "norcode.toml"
+LEGACY_PROJECT_CONFIG_NAME = "norsklang.toml"
+PROJECT_CONFIG_NAMES = (PROJECT_CONFIG_NAME, LEGACY_PROJECT_CONFIG_NAME)
 PYPROJECT_NAME = "pyproject.toml"
 CHANGELOG_NAME = "CHANGELOG.md"
-LOCKFILE_NAME = "norsklang.lock"
-REMOTE_REGISTRY_CACHE = ".norsklang/registry/remote_index.json"
+LOCKFILE_NAME = "norcode.lock"
+LEGACY_LOCKFILE_NAME = "norsklang.lock"
+LOCKFILE_NAMES = (LOCKFILE_NAME, LEGACY_LOCKFILE_NAME)
+REMOTE_REGISTRY_CACHE = ".norcode/registry/remote_index.json"
+LEGACY_REMOTE_REGISTRY_CACHE = ".norsklang/registry/remote_index.json"
 SEMVER_RE = re.compile(r"^\d+\.\d+\.\d+$")
+
+
+def _find_existing_project_config_in_dir(base: Path) -> Path | None:
+    for name in PROJECT_CONFIG_NAMES:
+        candidate = base / name
+        if candidate.exists():
+            return candidate
+    return None
+
+
+def _project_config_display_names() -> str:
+    return " / ".join(PROJECT_CONFIG_NAMES)
 
 
 def _find_project_config(start_dir: Path | None = None) -> Path:
     base = (start_dir or Path.cwd()).resolve()
     for candidate_dir in (base, *base.parents):
-        candidate = candidate_dir / PROJECT_CONFIG_NAME
-        if candidate.exists():
+        candidate = _find_existing_project_config_in_dir(candidate_dir)
+        if candidate is not None:
             return candidate
-    raise RuntimeError(f"Fant ikke {PROJECT_CONFIG_NAME} i denne mappen eller overliggende mapper")
+    raise RuntimeError(
+        f"Fant ikke {_project_config_display_names()} i denne mappen eller overliggende mapper"
+    )
 
 
 def _parse_toml_string(raw: str) -> str | None:
@@ -93,13 +112,13 @@ def _resolve_package_dir(package_path: str) -> tuple[Path, Path]:
         path = (Path.cwd() / path).resolve()
 
     if path.is_file():
-        if path.name != PROJECT_CONFIG_NAME:
-            raise RuntimeError(f"Sti peker til fil, men ikke {PROJECT_CONFIG_NAME}: {path}")
+        if path.name not in PROJECT_CONFIG_NAMES:
+            raise RuntimeError(f"Sti peker til fil, men ikke {_project_config_display_names()}: {path}")
         package_dir = path.parent
         package_config = path
     else:
         package_dir = path
-        package_config = package_dir / PROJECT_CONFIG_NAME
+        package_config = _find_existing_project_config_in_dir(package_dir) or (package_dir / PROJECT_CONFIG_NAME)
 
     if not package_dir.exists():
         raise RuntimeError(f"Fant ikke pakkesti: {package_dir}")
@@ -148,7 +167,7 @@ def _verify_registry_integrity(config_path: Path, registry_file: Path):
         return
 
     if not _is_valid_sha256(expected):
-        raise RuntimeError("Ugyldig [security].trusted_registry_sha256 i norsklang.toml")
+        raise RuntimeError("Ugyldig [security].trusted_registry_sha256 i norcode.toml")
 
     if not registry_file.exists():
         raise RuntimeError(f"Registry-fil mangler, men trusted_registry_sha256 er satt: {registry_file}")
@@ -344,7 +363,11 @@ def _parse_remote_registry_text(source_name: str, text: str) -> dict[str, dict]:
 
 
 def _remote_registry_cache_path(project_dir: Path) -> Path:
-    return (project_dir / REMOTE_REGISTRY_CACHE).resolve()
+    primary = (project_dir / REMOTE_REGISTRY_CACHE).resolve()
+    legacy = (project_dir / LEGACY_REMOTE_REGISTRY_CACHE).resolve()
+    if primary.exists() or not legacy.exists():
+        return primary
+    return legacy
 
 
 def _load_remote_registry_cache(project_dir: Path) -> dict[str, dict]:
@@ -883,8 +906,8 @@ def generate_lockfile(check_only: bool = False):
             }
             if dep_path.exists() and dep_path.is_dir():
                 resolved["digest_sha256"] = _hash_directory(dep_path)
-                dep_cfg = dep_path / PROJECT_CONFIG_NAME
-                if dep_cfg.exists():
+                dep_cfg = _find_existing_project_config_in_dir(dep_path)
+                if dep_cfg is not None and dep_cfg.exists():
                     dep_toml = _load_toml(dep_cfg)
                     proj = dep_toml.get("project", {})
                     if isinstance(proj, dict):
@@ -920,7 +943,11 @@ def generate_lockfile(check_only: bool = False):
 
 
 def _cache_base_dir(project_dir: Path) -> Path:
-    return (project_dir / ".norsklang" / "cache").resolve()
+    primary = (project_dir / ".norcode" / "cache").resolve()
+    legacy = (project_dir / ".norsklang" / "cache").resolve()
+    if primary.exists() or not legacy.exists():
+        return primary
+    return legacy
 
 
 def _safe_extract_tar(archive_path: Path, dest_dir: Path):
@@ -942,13 +969,16 @@ def _safe_extract_zip(archive_path: Path, dest_dir: Path):
 
 
 def _find_cached_package_root(base_dir: Path) -> Path:
-    direct = base_dir / PROJECT_CONFIG_NAME
-    if direct.exists():
+    direct = _find_existing_project_config_in_dir(base_dir)
+    if direct is not None:
         return base_dir
 
-    candidates = sorted(base_dir.glob(f"**/{PROJECT_CONFIG_NAME}"))
+    candidates = []
+    for cfg_name in PROJECT_CONFIG_NAMES:
+        candidates.extend(base_dir.glob(f"**/{cfg_name}"))
+    candidates = sorted(candidates)
     if not candidates:
-        raise RuntimeError(f"Fant ikke {PROJECT_CONFIG_NAME} i cache: {base_dir}")
+        raise RuntimeError(f"Fant ikke {_project_config_display_names()} i cache: {base_dir}")
     if len(candidates) > 1:
         # Velg nærmeste kandidat (kortest sti) for forutsigbarhet.
         candidates.sort(key=lambda p: len(p.relative_to(base_dir).parts))
@@ -1061,7 +1091,8 @@ def add_dependency(
             cached_root = _fetch_git_to_cache(project_dir, dep_name, git_url, git_ref, refresh=refresh)
             dep_kind = "path"
             dep_value = _to_project_relative_path(cached_root, project_dir)
-            package_name = _parse_project_name_from_toml(cached_root / PROJECT_CONFIG_NAME) or cached_root.name
+            cached_cfg = _find_existing_project_config_in_dir(cached_root) or (cached_root / PROJECT_CONFIG_NAME)
+            package_name = _parse_project_name_from_toml(cached_cfg) or cached_root.name
     elif tarball_url:
         dep_name = dep_name_override or package
         _enforce_trusted_source("url", tarball_url, security_policy, allow_untrusted=allow_untrusted)
@@ -1078,7 +1109,8 @@ def add_dependency(
             )
             dep_kind = "path"
             dep_value = _to_project_relative_path(cached_root, project_dir)
-            package_name = _parse_project_name_from_toml(cached_root / PROJECT_CONFIG_NAME) or cached_root.name
+            cached_cfg = _find_existing_project_config_in_dir(cached_root) or (cached_root / PROJECT_CONFIG_NAME)
+            package_name = _parse_project_name_from_toml(cached_cfg) or cached_root.name
     if package_path:
         dep_name = dep_name_override or package
         resolved_dir, pkg_config = _resolve_package_dir(package_path)
@@ -1117,7 +1149,8 @@ def add_dependency(
                     )
                     dep_kind = "path"
                     dep_value = _to_project_relative_path(cached_root, project_dir)
-                    package_name = _parse_project_name_from_toml(cached_root / PROJECT_CONFIG_NAME) or cached_root.name
+                    cached_cfg = _find_existing_project_config_in_dir(cached_root) or (cached_root / PROJECT_CONFIG_NAME)
+                    package_name = _parse_project_name_from_toml(cached_cfg) or cached_root.name
             elif registry_hit.get("kind") == "url":
                 _enforce_trusted_source("url", registry_hit["url"], security_policy, allow_untrusted=allow_untrusted)
                 dep_kind = "url"
@@ -1133,7 +1166,8 @@ def add_dependency(
                     )
                     dep_kind = "path"
                     dep_value = _to_project_relative_path(cached_root, project_dir)
-                    package_name = _parse_project_name_from_toml(cached_root / PROJECT_CONFIG_NAME) or cached_root.name
+                    cached_cfg = _find_existing_project_config_in_dir(cached_root) or (cached_root / PROJECT_CONFIG_NAME)
+                    package_name = _parse_project_name_from_toml(cached_cfg) or cached_root.name
             else:
                 raise RuntimeError(f"Ukjent registry-kind for {package}: {registry_hit.get('kind')}")
         else:
@@ -1154,7 +1188,13 @@ def add_dependency(
 
 
 def verify_lockfile():
-    lock_path = Path(LOCKFILE_NAME).resolve()
+    cwd = Path.cwd().resolve()
+    lock_path = (cwd / LOCKFILE_NAME).resolve()
+    for candidate_name in LOCKFILE_NAMES:
+        candidate = (cwd / candidate_name).resolve()
+        if candidate.exists():
+            lock_path = candidate
+            break
     if not lock_path.exists():
         return lock_path, False, [{"name": "*", "status": "mangler lockfile"}]
 
@@ -1269,7 +1309,7 @@ def update_dependencies(
 
     if package is not None:
         if package not in deps:
-            raise RuntimeError(f"Dependency finnes ikke i {PROJECT_CONFIG_NAME}: {package}")
+            raise RuntimeError(f"Dependency finnes ikke i {_project_config_display_names()}: {package}")
         targets = [package]
     else:
         targets = sorted(deps.keys())
@@ -2022,7 +2062,7 @@ def run_ci_pipeline(json_output: bool = False):
 
 
 def main():
-    parser = argparse.ArgumentParser(prog="python3 main.py", description="NorskLang CLI")
+    parser = argparse.ArgumentParser(prog="python3 main.py", description="NorCode CLI")
     sub = parser.add_subparsers(dest="cmd")
 
     run = sub.add_parser("run", help="Bygg og kjør en .no-fil")
@@ -2034,7 +2074,7 @@ def main():
     build = sub.add_parser("build", help="Generer C og bygg kjørbar fil")
     build.add_argument("file")
 
-    add = sub.add_parser("add", help="Legg til pakkeavhengighet i norsklang.toml")
+    add = sub.add_parser("add", help="Legg til pakkeavhengighet i norcode.toml")
     add.add_argument("package", nargs="?", help="Pakkenavn eller pakkesti")
     add.add_argument("path", nargs="?", help="Valgfri pakkesti (hvis package er navn)")
     add.add_argument("--name", help="Overstyr dependency-navn")
@@ -2073,7 +2113,7 @@ def main():
     ci = sub.add_parser("ci", help="Kjør lokal CI-sekvens (snapshot, parity, test)")
     ci.add_argument("--json", action="store_true", help="Skriv CI-resultat som JSON")
 
-    lock = sub.add_parser("lock", help="Generer dependency lockfile (norsklang.lock)")
+    lock = sub.add_parser("lock", help="Generer dependency lockfile (norcode.lock)")
     lock.add_argument("--check", action="store_true", help="Feil hvis lockfile er manglende/utdatert")
     lock.add_argument("--verify", action="store_true", help="Verifiser path-digests i eksisterende lockfile")
     lock.add_argument("--json", action="store_true", help="Skriv lock-resultat som JSON")

@@ -8,6 +8,7 @@ from .parser import Parser
 
 
 _PARSE_CACHE_BY_PATH = {}
+PROJECT_CONFIG_NAMES = ("norcode.toml", "norsklang.toml")
 
 
 class ModuleLoader:
@@ -18,10 +19,17 @@ class ModuleLoader:
         self.project_root = self._find_project_root()
         self.dependency_map = self._load_dependencies()
 
+    def _find_existing_config_in_dir(self, base: Path):
+        for name in PROJECT_CONFIG_NAMES:
+            config_path = base / name
+            if config_path.exists():
+                return config_path
+        return None
+
     def _find_project_root(self):
         for base in (self.root, *self.root.parents):
-            config_path = base / "norsklang.toml"
-            if config_path.exists():
+            config_path = self._find_existing_config_in_dir(base)
+            if config_path is not None:
                 return base
         return None
 
@@ -29,7 +37,9 @@ class ModuleLoader:
         if self.project_root is None:
             return {}
 
-        config_path = self.project_root / "norsklang.toml"
+        config_path = self._find_existing_config_in_dir(self.project_root)
+        if config_path is None:
+            return {}
         try:
             data = tomllib.loads(config_path.read_text(encoding="utf-8"))
         except Exception:
@@ -53,8 +63,8 @@ class ModuleLoader:
                 continue
 
             entry_file = None
-            dep_config = dep_path / "norsklang.toml"
-            if dep_config.exists():
+            dep_config = self._find_existing_config_in_dir(dep_path)
+            if dep_config is not None and dep_config.exists():
                 try:
                     dep_data = tomllib.loads(dep_config.read_text(encoding="utf-8"))
                     project = dep_data.get("project", {})

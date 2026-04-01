@@ -1,4 +1,4 @@
-"""Compiler package for NorskLang."""
+"""Compiler package for NorCode."""
 
 __all__ = [
     "ast_nodes",

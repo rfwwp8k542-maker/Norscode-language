@@ -1,1 +1,1 @@
-"""NorskLang Python package."""
+"""NorCode Python package."""

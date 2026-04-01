@@ -1,6 +1,6 @@
 
 
-# NorskLang 🚀
+# NorCode 🚀
 
 Et norsk programmeringsspråk som kompilerer til C.
 
@@ -26,7 +26,7 @@ python3 -m pip install -e . --no-build-isolation
 
 # Deretter kan du bruke:
 nl --help
-norsklang --help
+norcode --help
 ```
 
 ### 0b. Bygg og publiser pakke
@@ -159,7 +159,7 @@ url = "https://example.com/mypkg-1.2.0.tar.gz"
 description = "Hent pakke fra URL"
 ```
 
-Trusted host-policy kan settes i `norsklang.toml`:
+Trusted host-policy kan settes i `norcode.toml`:
 
 ```toml
 [security]
@@ -173,11 +173,11 @@ For integritets-pinning av registry metadata:
 # Beregn SHA256 for packages/registry.toml
 python3 main.py registry-sign
 
-# Skriv SHA256 inn i norsklang.toml (security.trusted_registry_sha256)
+# Skriv SHA256 inn i norcode.toml (security.trusted_registry_sha256)
 python3 main.py registry-sign --write-config
 ```
 
-Remote registry-indeks kan konfigureres i `norsklang.toml`:
+Remote registry-indeks kan konfigureres i `norcode.toml`:
 
 ```toml
 [registry]
@@ -204,8 +204,8 @@ python3 main.py registry-mirror
 python3 main.py registry-mirror --output build/registry_mirror.json
 ```
 
-Cache for eksterne pakker lagres under `.norsklang/cache/`.
-Modul-loaderen leser `[dependencies]` i `norsklang.toml` automatisk ved `bruk ...`.
+Cache for eksterne pakker lagres under `.norcode/cache/`.
+Modul-loaderen leser `[dependencies]` i `norcode.toml` automatisk ved `bruk ...`.
 Modul-loaderen bruker også en in-memory parse-cache per fil (med mtime/size-sjekk) for raskere test/bygg-kjøringer.
 
 ### 5b. Lockfile
@@ -329,13 +329,13 @@ funksjon start() -> heltall {
 ## 📁 Struktur
 
 ```
-norsklang/
+norcode/
 ├── main.py
 ├── compiler/
 ├── std/
 ├── tests/
 ├── app.no
-└── norsklang.toml
+└── norcode.toml
 ```
 
 ---
@@ -348,9 +348,9 @@ Dette prosjektet er under aktiv utvikling.
 
 Vi har startet en tidlig selv-hosting bane i `selfhost/`:
 
-- `selfhost/compiler.no` er en compiler skrevet i NorskLang
+- `selfhost/compiler.no` er en compiler skrevet i NorCode
 - Første steg kompilerer et lite instruksjonssett (IR/bytecode) til C
-- Dette brukes som bootstrap før full lexer/parser i NorskLang
+- Dette brukes som bootstrap før full lexer/parser i NorCode
 
 Neste steg:
 
