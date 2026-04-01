@@ -346,7 +346,7 @@ int selfhost__compiler__er_operator_token(char * tok) {
     if (((((nl_streq(tok, "==") || nl_streq(tok, "!=")) || nl_streq(tok, "<")) || nl_streq(tok, ">")) || nl_streq(tok, "<=")) || nl_streq(tok, ">=")) {
         return 1;
     }
-    if (nl_streq(tok, "&&") || nl_streq(tok, "||")) {
+    if ((nl_streq(tok, "&&") || nl_streq(tok, "||")) || nl_streq(tok, "!")) {
         return 1;
     }
     return 0;
@@ -354,6 +354,9 @@ int selfhost__compiler__er_operator_token(char * tok) {
 }
 
 int selfhost__compiler__operator_precedens(char * tok) {
+    if (nl_streq(tok, "u!") || nl_streq(tok, "u-")) {
+        return 7;
+    }
     if ((nl_streq(tok, "*") || nl_streq(tok, "/")) || nl_streq(tok, "%")) {
         return 6;
     }
@@ -412,6 +415,20 @@ char * selfhost__compiler__operator_til_opcode(char * tok) {
 }
 
 int selfhost__compiler__emitter_operator(nl_list_text* ops, nl_list_int* verdier, char * op) {
+    if (nl_streq(op, "u!")) {
+        nl_list_text_push(ops, "NOT");
+        nl_list_int_push(verdier, 0);
+        return 1;
+    }
+    if (nl_streq(op, "u-")) {
+        nl_list_text_push(ops, "PUSH");
+        nl_list_int_push(verdier, 0);
+        nl_list_text_push(ops, "SWAP");
+        nl_list_int_push(verdier, 0);
+        nl_list_text_push(ops, "SUB");
+        nl_list_int_push(verdier, 0);
+        return 1;
+    }
     if (nl_streq(op, "!=")) {
         nl_list_text_push(ops, "EQ");
         nl_list_int_push(verdier, 0);
@@ -900,6 +917,16 @@ char * selfhost__compiler__uttrykk_til_ops_og_verdier(nl_list_text* tokens, nl_l
         }
         if (selfhost__compiler__er_operator_token(tok)) {
             if (forventer_verdi) {
+                if (nl_streq(tok, "!")) {
+                    nl_list_text_push(operatorer, "u!");
+                    i = (i + 1);
+                    continue;
+                }
+                if (nl_streq(tok, "-")) {
+                    nl_list_text_push(operatorer, "u-");
+                    i = (i + 1);
+                    continue;
+                }
                 return nl_concat(nl_concat(nl_concat(nl_concat("/* feil: mangler verdi før operator ", tok), " ved "), selfhost__compiler__token_pos(i)), " */");
             }
             while (nl_list_text_len(operatorer) > 0) {
@@ -1199,6 +1226,10 @@ int start() {
     nl_assert_eq_text(expr_le, "0: PUSH 3\n1: PUSH 4\n2: GT\n3: NOT\n4: PRINT\n5: HALT\n");
     char * expr_ge = selfhost__compiler__disasm_uttrykk("4 >= 3");
     nl_assert_eq_text(expr_ge, "0: PUSH 4\n1: PUSH 3\n2: LT\n3: NOT\n4: PRINT\n5: HALT\n");
+    char * expr_unary_not = selfhost__compiler__disasm_uttrykk("!0||0");
+    nl_assert_eq_text(expr_unary_not, "0: PUSH 0\n1: NOT\n2: PUSH 0\n3: OR\n4: PRINT\n5: HALT\n");
+    char * expr_unary_minus = selfhost__compiler__disasm_uttrykk("-3+5");
+    nl_assert_eq_text(expr_unary_minus, "0: PUSH 3\n1: PUSH 0\n2: SWAP\n3: SUB\n4: PUSH 5\n5: ADD\n6: PRINT\n7: HALT\n");
     char * expr_err = selfhost__compiler__disasm_uttrykk("2 +");
     nl_assert_eq_text(expr_err, "/* feil: uttrykket avsluttes med operator */");
     char * expr_err2 = selfhost__compiler__disasm_uttrykk("2 + )");

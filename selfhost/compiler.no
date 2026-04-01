@@ -62,13 +62,16 @@ funksjon er_operator_token(tok: tekst) -> bool {
     hvis (tok == "==" eller tok == "!=" eller tok == "<" eller tok == ">" eller tok == "<=" eller tok == ">=") {
         returner sann
     }
-    hvis (tok == "&&" eller tok == "||") {
+    hvis (tok == "&&" eller tok == "||" eller tok == "!") {
         returner sann
     }
     returner usann
 }
 
 funksjon operator_precedens(tok: tekst) -> heltall {
+    hvis (tok == "u!" eller tok == "u-") {
+        returner 7
+    }
     hvis (tok == "*" eller tok == "/" eller tok == "%") {
         returner 6
     }
@@ -125,6 +128,20 @@ funksjon operator_til_opcode(tok: tekst) -> tekst {
 }
 
 funksjon emitter_operator(ops: liste_tekst, verdier: liste_heltall, op: tekst) -> bool {
+    hvis (op == "u!") {
+        legg_til(ops, "NOT")
+        legg_til(verdier, 0)
+        returner sann
+    }
+    hvis (op == "u-") {
+        legg_til(ops, "PUSH")
+        legg_til(verdier, 0)
+        legg_til(ops, "SWAP")
+        legg_til(verdier, 0)
+        legg_til(ops, "SUB")
+        legg_til(verdier, 0)
+        returner sann
+    }
     hvis (op == "!=") {
         legg_til(ops, "EQ")
         legg_til(verdier, 0)
@@ -573,6 +590,16 @@ funksjon uttrykk_til_ops_og_verdier(tokens: liste_tekst, ops: liste_tekst, verdi
 
         hvis (er_operator_token(tok)) {
             hvis (forventer_verdi) {
+                hvis (tok == "!") {
+                    legg_til(operatorer, "u!")
+                    i = i + 1
+                    fortsett
+                }
+                hvis (tok == "-") {
+                    legg_til(operatorer, "u-")
+                    i = i + 1
+                    fortsett
+                }
                 returner "/* feil: mangler verdi før operator " + tok + " ved " + token_pos(i) + " */"
             }
             mens (lengde(operatorer) > 0) {

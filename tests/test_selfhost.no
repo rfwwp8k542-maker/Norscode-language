@@ -160,6 +160,12 @@ funksjon start() -> heltall {
     la expr_ge: tekst = sh.disasm_uttrykk("4 >= 3")
     assert_eq(expr_ge, "0: PUSH 4\n1: PUSH 3\n2: LT\n3: NOT\n4: PRINT\n5: HALT\n")
 
+    la expr_unary_not: tekst = sh.disasm_uttrykk("!0||0")
+    assert_eq(expr_unary_not, "0: PUSH 0\n1: NOT\n2: PUSH 0\n3: OR\n4: PRINT\n5: HALT\n")
+
+    la expr_unary_minus: tekst = sh.disasm_uttrykk("-3+5")
+    assert_eq(expr_unary_minus, "0: PUSH 3\n1: PUSH 0\n2: SWAP\n3: SUB\n4: PUSH 5\n5: ADD\n6: PRINT\n7: HALT\n")
+
     la expr_err: tekst = sh.disasm_uttrykk("2 +")
     assert_eq(expr_err, "/* feil: uttrykket avsluttes med operator */")
 
