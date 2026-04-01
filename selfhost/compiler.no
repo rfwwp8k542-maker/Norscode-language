@@ -104,8 +104,8 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "mindre_lik") {
         returner "mindre_eller_lik"
     }
-    hvis (tok == "ikke_lik" eller tok == "ikke_lik_med" eller tok == "er_ikke" eller tok == "er_ulik" eller tok == "ulik_med"
-        eller tok == "ikkje_lik" eller tok == "ikkje_lik_med" eller tok == "ikkje_er") {
+    hvis (tok == "ikke_lik" eller tok == "ikke_lik_med" eller tok == "er_ikke" eller tok == "er_ulik" eller tok == "er_ulik_med" eller tok == "ulik_med"
+        eller tok == "ikkje_lik" eller tok == "ikkje_lik_med" eller tok == "ikkje_er" eller tok == "er_ikkje") {
         returner "ikke_er"
     }
     hvis (tok == "ikkje") {
