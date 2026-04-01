@@ -1,0 +1,12 @@
+[project]
+name = "norsklang_app"
+version = "0.1.0"
+entry = "app.no"
+
+[paths]
+source = "."
+stdlib = "std"
+build = "build"
+
+[dependencies]
+butikk = "./packages/butikk"

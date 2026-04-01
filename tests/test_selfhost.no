@@ -1,0 +1,145 @@
+bruk selfhost.compiler som sh
+
+funksjon start() -> heltall {
+    la push_linje: tekst = sh.instruksjon_til_c("PUSH", 42)
+    assert_eq(push_linje, "stack[sp++] = 42;")
+
+    la add_linje: tekst = sh.instruksjon_til_c("ADD", 0)
+    assert_eq(add_linje, "stack[sp-2] = stack[sp-2] + stack[sp-1]; sp = sp - 1;")
+
+    la halt_linje: tekst = sh.instruksjon_til_c("HALT", 0)
+    assert_eq(halt_linje, "return 0;")
+
+    la label_linje: tekst = sh.instruksjon_til_c("LABEL", 7)
+    assert_eq(label_linje, "L7:;")
+
+    la jmp_linje: tekst = sh.instruksjon_til_c("JMP", 7)
+    assert_eq(jmp_linje, "goto L7;")
+
+    la jz_linje: tekst = sh.instruksjon_til_c("JZ", 7)
+    assert_eq(jz_linje, "if (stack[sp-1] == 0) goto L7;")
+
+    la call_linje: tekst = sh.instruksjon_til_c("CALL", 7)
+    assert_eq(call_linje, "ret_stack[rsp++] = 0; goto L7;")
+
+    la ret_linje: tekst = sh.instruksjon_til_c("RET", 0)
+    assert_eq(ret_linje, "goto *labels[0];")
+
+    la store_linje: tekst = sh.instruksjon_til_c("STORE", 3)
+    assert_eq(store_linje, "mem[3] = stack[sp-1]; sp = sp - 1;")
+
+    la load_linje: tekst = sh.instruksjon_til_c("LOAD", 3)
+    assert_eq(load_linje, "stack[sp++] = mem[3];")
+
+    la eq_linje: tekst = sh.instruksjon_til_c("EQ", 0)
+    assert_eq(eq_linje, "stack[sp-2] = (stack[sp-2] == stack[sp-1]); sp = sp - 1;")
+
+    la gt_linje: tekst = sh.instruksjon_til_c("GT", 0)
+    assert_eq(gt_linje, "stack[sp-2] = (stack[sp-2] > stack[sp-1]); sp = sp - 1;")
+
+    la lt_linje: tekst = sh.instruksjon_til_c("LT", 0)
+    assert_eq(lt_linje, "stack[sp-2] = (stack[sp-2] < stack[sp-1]); sp = sp - 1;")
+
+    la mod_linje: tekst = sh.instruksjon_til_c("MOD", 0)
+    assert_eq(mod_linje, "stack[sp-2] = stack[sp-2] % stack[sp-1]; sp = sp - 1;")
+
+    la and_linje: tekst = sh.instruksjon_til_c("AND", 0)
+    assert_eq(and_linje, "stack[sp-2] = (stack[sp-2] && stack[sp-1]); sp = sp - 1;")
+
+    la or_linje: tekst = sh.instruksjon_til_c("OR", 0)
+    assert_eq(or_linje, "stack[sp-2] = (stack[sp-2] || stack[sp-1]); sp = sp - 1;")
+
+    la not_linje: tekst = sh.instruksjon_til_c("NOT", 0)
+    assert_eq(not_linje, "stack[sp-1] = !stack[sp-1];")
+
+    la dup_linje: tekst = sh.instruksjon_til_c("DUP", 0)
+    assert_eq(dup_linje, "stack[sp] = stack[sp-1]; sp = sp + 1;")
+
+    la pop_linje: tekst = sh.instruksjon_til_c("POP", 0)
+    assert_eq(pop_linje, "sp = sp - 1;")
+
+    la swap_linje: tekst = sh.instruksjon_til_c("SWAP", 0)
+    assert_eq(swap_linje, "tmp = stack[sp-1]; stack[sp-1] = stack[sp-2]; stack[sp-2] = tmp;")
+
+    la over_linje: tekst = sh.instruksjon_til_c("OVER", 0)
+    assert_eq(over_linje, "stack[sp] = stack[sp-2]; sp = sp + 1;")
+
+    la demo: tekst = sh.demo_program()
+    assert_ne(demo, "")
+
+    la ops: liste_tekst = ["PUSH", "PUSH", "MUL", "PRINT", "HALT"]
+    la verdier: liste_heltall = [6, 7, 0, 0, 0]
+    la c: tekst = sh.kompiler_til_c(ops, verdier)
+    assert_ne(c, "")
+
+    la tokens: liste_tekst = ["PUSH", "8", "PUSH", "9", "ADD", "PRINT", "HALT"]
+    la c2: tekst = sh.kompiler_fra_tokens(tokens)
+    assert_ne(c2, "")
+
+    la tokens_jmp: liste_tekst = ["PUSH", "0", "JZ", "1", "PUSH", "99", "PRINT", "LABEL", "1", "HALT"]
+    la c2b: tekst = sh.kompiler_fra_tokens(tokens_jmp)
+    assert_ne(c2b, "")
+
+    la tokens_cmp_jz: liste_tekst = ["PUSH", "4", "PUSH", "4", "EQ", "JZ", "2", "PUSH", "1", "PRINT", "LABEL", "2", "HALT"]
+    la c2c: tekst = sh.kompiler_fra_tokens(tokens_cmp_jz)
+    assert_ne(c2c, "")
+
+    la tokens_stack: liste_tekst = ["PUSH", "5", "DUP", "ADD", "POP", "HALT"]
+    la c2d: tekst = sh.kompiler_fra_tokens(tokens_stack)
+    assert_ne(c2d, "")
+
+    la tokens_stack2: liste_tekst = ["PUSH", "2", "PUSH", "9", "SWAP", "OVER", "ADD", "HALT"]
+    la c2e: tekst = sh.kompiler_fra_tokens(tokens_stack2)
+    assert_ne(c2e, "")
+
+    la tokens_mod: liste_tekst = ["PUSH", "17", "PUSH", "5", "MOD", "PRINT", "HALT"]
+    la c2f: tekst = sh.kompiler_fra_tokens(tokens_mod)
+    assert_ne(c2f, "")
+
+    la tokens_bool: liste_tekst = ["PUSH", "1", "PUSH", "0", "AND", "NOT", "PRINT", "HALT"]
+    la c2g: tekst = sh.kompiler_fra_tokens(tokens_bool)
+    assert_ne(c2g, "")
+
+    la tokens_mem: liste_tekst = ["PUSH", "42", "STORE", "0", "LOAD", "0", "PUSH", "1", "ADD", "PRINT", "HALT"]
+    la c2h: tekst = sh.kompiler_fra_tokens(tokens_mem)
+    assert_ne(c2h, "")
+
+    la tokens_call: liste_tekst = ["CALL", "3", "HALT", "LABEL", "3", "PUSH", "99", "RET"]
+    la c2i: tekst = sh.kompiler_fra_tokens(tokens_call)
+    assert_ne(c2i, "")
+
+    la tokens_bad_jump: liste_tekst = ["JMP", "9", "HALT"]
+    la c_bad: tekst = sh.kompiler_fra_tokens(tokens_bad_jump)
+    assert_eq(c_bad, "/* feil: ugyldig hopp-target 9 */")
+
+    la tokens_underflow: liste_tekst = ["ADD", "HALT"]
+    la c_underflow: tekst = sh.kompiler_fra_tokens(tokens_underflow)
+    assert_eq(c_underflow, "/* feil: stack-underflow ved indeks 0 (ADD) */")
+
+    la tokens_bad_mem: liste_tekst = ["PUSH", "1", "STORE", "999", "HALT"]
+    la c_bad_mem: tekst = sh.kompiler_fra_tokens(tokens_bad_mem)
+    assert_eq(c_bad_mem, "/* feil: minneindeks utenfor range 999 */")
+
+    la tokens_dis: liste_tekst = ["PUSH", "3", "PUSH", "4", "ADD", "HALT"]
+    la dis: tekst = sh.disasm_fra_tokens(tokens_dis)
+    assert_eq(dis, "0: PUSH 3\n1: PUSH 4\n2: ADD\n3: HALT\n")
+
+    la dis_src: tekst = sh.disasm_fra_kilde("# c\nPUSH 3;\nPUSH 4\nADD\nHALT")
+    assert_eq(dis_src, "0: PUSH 3\n1: PUSH 4\n2: ADD\n3: HALT\n")
+
+    la dis_src_strict: tekst = sh.disasm_fra_kilde_strict("PUSH 3\nPUSH 4\nADD\nHALT")
+    assert_eq(dis_src_strict, "0: PUSH 3\n1: PUSH 4\n2: ADD\n3: HALT\n")
+
+    la dis_src_bad: tekst = sh.disasm_fra_kilde_strict("PUSH x\nHALT")
+    assert_eq(dis_src_bad, "/* feil: ugyldig heltallsargument x */")
+
+    la linjer: liste_tekst = ["", "PUSH", "11", "PUSH", "4", "SUB", "PRINT", "HALT"]
+    la c3: tekst = sh.kompiler_fra_linjer(linjer)
+    assert_ne(c3, "")
+
+    la kilde: tekst = "# kommentar\nPUSH 10;\nPUSH 32\nADD\nPRINT\nHALT"
+    la c4: tekst = sh.kompiler_fra_kilde(kilde)
+    assert_eq(c4, demo)
+
+    returner 0
+}

@@ -1,0 +1,418 @@
+funksjon append_linje(kilde: tekst, linje: tekst) -> tekst {
+    returner kilde + linje + "\n"
+}
+
+funksjon instruksjon_til_tekst(op: tekst, verdi: heltall) -> tekst {
+    hvis (op == "PUSH" eller op == "LABEL" eller op == "JMP" eller op == "JZ" eller op == "CALL" eller op == "STORE" eller op == "LOAD") {
+        returner op + " " + tekst_fra_heltall(verdi)
+    }
+    returner op
+}
+
+funksjon disasm_program(ops: liste_tekst, verdier: liste_heltall) -> tekst {
+    la out: tekst = ""
+    la i: heltall = 0
+
+    hvis (lengde(ops) != lengde(verdier)) {
+        returner "/* feil: ops og verdier må ha samme lengde */"
+    }
+
+    mens (i < lengde(ops)) {
+        out = append_linje(out, tekst_fra_heltall(i) + ": " + instruksjon_til_tekst(ops[i], verdier[i]))
+        i = i + 1
+    }
+    returner out
+}
+
+funksjon op_krever_arg(op: tekst) -> bool {
+    hvis (op == "PUSH" eller op == "LABEL" eller op == "JMP" eller op == "JZ" eller op == "CALL" eller op == "STORE" eller op == "LOAD") {
+        returner sann
+    }
+    returner usann
+}
+
+funksjon op_kjent(op: tekst) -> bool {
+    hvis (op_krever_arg(op)) {
+        returner sann
+    }
+    hvis (op == "ADD" eller op == "SUB" eller op == "MUL" eller op == "DIV" eller op == "MOD") {
+        returner sann
+    }
+    hvis (op == "EQ" eller op == "GT" eller op == "LT" eller op == "AND" eller op == "OR") {
+        returner sann
+    }
+    hvis (op == "NOT" eller op == "DUP" eller op == "POP" eller op == "SWAP" eller op == "OVER") {
+        returner sann
+    }
+    hvis (op == "PRINT" eller op == "HALT" eller op == "RET") {
+        returner sann
+    }
+    returner usann
+}
+
+funksjon er_heltall_token(tok: tekst) -> bool {
+    la n: heltall = heltall_fra_tekst(tok)
+    returner tekst_fra_heltall(n) == tok
+}
+
+funksjon stack_behov(op: tekst) -> heltall {
+    hvis (op == "ADD" eller op == "SUB" eller op == "MUL" eller op == "DIV" eller op == "MOD") {
+        returner 2
+    }
+    hvis (op == "EQ" eller op == "GT" eller op == "LT" eller op == "AND" eller op == "OR") {
+        returner 2
+    }
+    hvis (op == "NOT" eller op == "POP" eller op == "DUP" eller op == "STORE" eller op == "PRINT" eller op == "JZ") {
+        returner 1
+    }
+    hvis (op == "OVER" eller op == "SWAP") {
+        returner 2
+    }
+    returner 0
+}
+
+funksjon stack_endring(op: tekst) -> heltall {
+    hvis (op == "PUSH" eller op == "LOAD" eller op == "DUP" eller op == "OVER") {
+        returner 1
+    }
+    hvis (op == "ADD" eller op == "SUB" eller op == "MUL" eller op == "DIV" eller op == "MOD") {
+        returner -1
+    }
+    hvis (op == "EQ" eller op == "GT" eller op == "LT" eller op == "AND" eller op == "OR") {
+        returner -1
+    }
+    hvis (op == "POP" eller op == "STORE") {
+        returner -1
+    }
+    returner 0
+}
+
+funksjon sjekk_program(ops: liste_tekst, verdier: liste_heltall) -> tekst {
+    la labels: liste_heltall = [0]
+    la i: heltall = 0
+    la n: heltall = lengde(ops)
+    la dybde: heltall = 0
+
+    hvis (n == 0) {
+        returner "/* feil: tomt program */"
+    }
+
+    fjern_indeks(labels, 0)
+    mens (lengde(labels) < n) {
+        legg_til(labels, 0)
+    }
+
+    mens (i < n) {
+        hvis (ops[i] == "LABEL") {
+            sett_inn(labels, i, 1)
+        }
+        i = i + 1
+    }
+
+    i = 0
+    mens (i < n) {
+        la op: tekst = ops[i]
+        hvis (op == "JMP" eller op == "JZ" eller op == "CALL") {
+            la target: heltall = verdier[i]
+            hvis (target < 0 eller target >= n) {
+                returner "/* feil: ugyldig hopp-target " + tekst_fra_heltall(target) + " */"
+            }
+            hvis (labels[target] != 1) {
+                returner "/* feil: hopp-target mangler LABEL ved indeks " + tekst_fra_heltall(target) + " */"
+            }
+        }
+        hvis (op == "STORE" eller op == "LOAD") {
+            la idx: heltall = verdier[i]
+            hvis (idx < 0 eller idx >= 256) {
+                returner "/* feil: minneindeks utenfor range " + tekst_fra_heltall(idx) + " */"
+            }
+        }
+        i = i + 1
+    }
+
+    i = 0
+    mens (i < n) {
+        la op2: tekst = ops[i]
+        la behov: heltall = stack_behov(op2)
+        hvis (dybde < behov) {
+            returner "/* feil: stack-underflow ved indeks " + tekst_fra_heltall(i) + " (" + op2 + ") */"
+        }
+        dybde = dybde + stack_endring(op2)
+        hvis (dybde < 0) {
+            returner "/* feil: stack-underflow ved indeks " + tekst_fra_heltall(i) + " (" + op2 + ") */"
+        }
+        i = i + 1
+    }
+
+    returner ""
+}
+
+funksjon instruksjon_til_c(op: tekst, verdi: heltall) -> tekst {
+    hvis (op == "PUSH") {
+        returner "stack[sp++] = " + tekst_fra_heltall(verdi) + ";"
+    } ellers hvis (op == "LABEL") {
+        returner "L" + tekst_fra_heltall(verdi) + ":;"
+    } ellers hvis (op == "JMP") {
+        returner "goto L" + tekst_fra_heltall(verdi) + ";"
+    } ellers hvis (op == "JZ") {
+        returner "if (stack[sp-1] == 0) goto L" + tekst_fra_heltall(verdi) + ";"
+    } ellers hvis (op == "CALL") {
+        returner "ret_stack[rsp++] = 0; goto L" + tekst_fra_heltall(verdi) + ";"
+    } ellers hvis (op == "RET") {
+        returner "goto *labels[0];"
+    } ellers hvis (op == "STORE") {
+        returner "mem[" + tekst_fra_heltall(verdi) + "] = stack[sp-1]; sp = sp - 1;"
+    } ellers hvis (op == "LOAD") {
+        returner "stack[sp++] = mem[" + tekst_fra_heltall(verdi) + "];"
+    } ellers hvis (op == "ADD") {
+        returner "stack[sp-2] = stack[sp-2] + stack[sp-1]; sp = sp - 1;"
+    } ellers hvis (op == "SUB") {
+        returner "stack[sp-2] = stack[sp-2] - stack[sp-1]; sp = sp - 1;"
+    } ellers hvis (op == "MUL") {
+        returner "stack[sp-2] = stack[sp-2] * stack[sp-1]; sp = sp - 1;"
+    } ellers hvis (op == "DIV") {
+        returner "stack[sp-2] = stack[sp-2] / stack[sp-1]; sp = sp - 1;"
+    } ellers hvis (op == "MOD") {
+        returner "stack[sp-2] = stack[sp-2] % stack[sp-1]; sp = sp - 1;"
+    } ellers hvis (op == "EQ") {
+        returner "stack[sp-2] = (stack[sp-2] == stack[sp-1]); sp = sp - 1;"
+    } ellers hvis (op == "GT") {
+        returner "stack[sp-2] = (stack[sp-2] > stack[sp-1]); sp = sp - 1;"
+    } ellers hvis (op == "LT") {
+        returner "stack[sp-2] = (stack[sp-2] < stack[sp-1]); sp = sp - 1;"
+    } ellers hvis (op == "AND") {
+        returner "stack[sp-2] = (stack[sp-2] && stack[sp-1]); sp = sp - 1;"
+    } ellers hvis (op == "OR") {
+        returner "stack[sp-2] = (stack[sp-2] || stack[sp-1]); sp = sp - 1;"
+    } ellers hvis (op == "NOT") {
+        returner "stack[sp-1] = !stack[sp-1];"
+    } ellers hvis (op == "DUP") {
+        returner "stack[sp] = stack[sp-1]; sp = sp + 1;"
+    } ellers hvis (op == "POP") {
+        returner "sp = sp - 1;"
+    } ellers hvis (op == "SWAP") {
+        returner "tmp = stack[sp-1]; stack[sp-1] = stack[sp-2]; stack[sp-2] = tmp;"
+    } ellers hvis (op == "OVER") {
+        returner "stack[sp] = stack[sp-2]; sp = sp + 1;"
+    } ellers hvis (op == "PRINT") {
+        returner "printf(\"%d\\n\", stack[sp-1]);"
+    } ellers hvis (op == "HALT") {
+        returner "return 0;"
+    }
+
+    returner "/* ukjent instruksjon: " + op + " */"
+}
+
+funksjon instruksjon_til_c_med_retur(op: tekst, verdi: heltall, retur: heltall) -> tekst {
+    hvis (op == "CALL") {
+        returner "if (rsp >= 256) { printf(\"ret-stack overflow\\n\"); return 1; } ret_stack[rsp++] = "
+            + tekst_fra_heltall(retur) + "; goto L" + tekst_fra_heltall(verdi) + ";"
+    }
+    hvis (op == "RET") {
+        returner "if (rsp <= 0) { printf(\"ret-stack underflow\\n\"); return 1; } goto *labels[ret_stack[--rsp]];"
+    }
+    hvis (op == "LOAD") {
+        returner "if (sp >= 256) { printf(\"stack overflow\\n\"); return 1; } if (" + tekst_fra_heltall(verdi)
+            + " < 0 || " + tekst_fra_heltall(verdi) + " >= 256) { printf(\"mem index out of range\\n\"); return 1; } "
+            + instruksjon_til_c(op, verdi)
+    }
+    hvis (op == "STORE") {
+        returner "if (sp < 1) { printf(\"stack underflow\\n\"); return 1; } if (" + tekst_fra_heltall(verdi)
+            + " < 0 || " + tekst_fra_heltall(verdi) + " >= 256) { printf(\"mem index out of range\\n\"); return 1; } "
+            + instruksjon_til_c(op, verdi)
+    }
+    hvis (op == "PUSH" eller op == "DUP" eller op == "OVER") {
+        returner "if (sp >= 256) { printf(\"stack overflow\\n\"); return 1; } " + instruksjon_til_c(op, verdi)
+    }
+    hvis (op == "ADD" eller op == "SUB" eller op == "MUL" eller op == "DIV" eller op == "MOD") {
+        returner "if (sp < 2) { printf(\"stack underflow\\n\"); return 1; } " + instruksjon_til_c(op, verdi)
+    }
+    hvis (op == "EQ" eller op == "GT" eller op == "LT" eller op == "AND" eller op == "OR") {
+        returner "if (sp < 2) { printf(\"stack underflow\\n\"); return 1; } " + instruksjon_til_c(op, verdi)
+    }
+    hvis (op == "NOT" eller op == "POP" eller op == "PRINT" eller op == "JZ") {
+        returner "if (sp < 1) { printf(\"stack underflow\\n\"); return 1; } " + instruksjon_til_c(op, verdi)
+    }
+    hvis (op == "SWAP") {
+        returner "if (sp < 2) { printf(\"stack underflow\\n\"); return 1; } " + instruksjon_til_c(op, verdi)
+    }
+    returner instruksjon_til_c(op, verdi)
+}
+
+funksjon kompiler_til_c(ops: liste_tekst, verdier: liste_heltall) -> tekst {
+    la c: tekst = ""
+    la i: heltall = 0
+    la n: heltall = lengde(ops)
+    la valideringsfeil: tekst = ""
+
+    hvis (lengde(ops) != lengde(verdier)) {
+        returner "/* feil: ops og verdier må ha samme lengde */"
+    }
+
+    valideringsfeil = sjekk_program(ops, verdier)
+    hvis (valideringsfeil != "") {
+        returner valideringsfeil
+    }
+
+    c = append_linje(c, "#include <stdio.h>")
+    c = append_linje(c, "")
+    c = append_linje(c, "int main(void) {")
+    c = append_linje(c, "    int stack[256];")
+    c = append_linje(c, "    int mem[256] = {0};")
+    c = append_linje(c, "    int ret_stack[256];")
+    c = append_linje(c, "    int sp = 0;")
+    c = append_linje(c, "    int rsp = 0;")
+    c = append_linje(c, "    int tmp = 0;")
+    c = append_linje(c, "    void *labels[512] = {0};")
+
+    mens (i < n) {
+        c = append_linje(c, "L" + tekst_fra_heltall(i) + ":; labels[" + tekst_fra_heltall(i) + "] = &&L" + tekst_fra_heltall(i) + ";")
+        c = append_linje(c, "    " + instruksjon_til_c_med_retur(ops[i], verdier[i], i + 1))
+        i = i + 1
+    }
+
+    c = append_linje(c, "labels[" + tekst_fra_heltall(n) + "] = &&L" + tekst_fra_heltall(n) + ";")
+    c = append_linje(c, "L" + tekst_fra_heltall(n) + ":;")
+    c = append_linje(c, "    return 0;")
+    c = append_linje(c, "}")
+    returner c
+}
+
+funksjon demo_program() -> tekst {
+    la ops: liste_tekst = ["PUSH", "PUSH", "ADD", "PRINT", "HALT"]
+    la verdier: liste_heltall = [10, 32, 0, 0, 0]
+    returner kompiler_til_c(ops, verdier)
+}
+
+funksjon kompiler_fra_tokens(tokens: liste_tekst) -> tekst {
+    la ops: liste_tekst = ["HALT"]
+    la verdier: liste_heltall = [0]
+    la i: heltall = 0
+
+    mens (i < lengde(tokens)) {
+        la op: tekst = tokens[i]
+
+        hvis (op == "PUSH" eller op == "LABEL" eller op == "JMP" eller op == "JZ" eller op == "STORE" eller op == "LOAD" eller op == "CALL") {
+            hvis (i + 1 >= lengde(tokens)) {
+                returner "/* feil: op mangler verdi */"
+            }
+            legg_til(ops, op)
+            legg_til(verdier, heltall_fra_tekst(tokens[i + 1]))
+            i = i + 2
+        } ellers {
+            legg_til(ops, op)
+            legg_til(verdier, 0)
+            i = i + 1
+        }
+    }
+
+    fjern_indeks(ops, 0)
+    fjern_indeks(verdier, 0)
+
+    returner kompiler_til_c(ops, verdier)
+}
+
+funksjon disasm_fra_tokens(tokens: liste_tekst) -> tekst {
+    la ops: liste_tekst = ["HALT"]
+    la verdier: liste_heltall = [0]
+    la i: heltall = 0
+
+    mens (i < lengde(tokens)) {
+        la op: tekst = tokens[i]
+
+        hvis (op == "PUSH" eller op == "LABEL" eller op == "JMP" eller op == "JZ" eller op == "STORE" eller op == "LOAD" eller op == "CALL") {
+            hvis (i + 1 >= lengde(tokens)) {
+                returner "/* feil: op mangler verdi */"
+            }
+            legg_til(ops, op)
+            legg_til(verdier, heltall_fra_tekst(tokens[i + 1]))
+            i = i + 2
+        } ellers {
+            legg_til(ops, op)
+            legg_til(verdier, 0)
+            i = i + 1
+        }
+    }
+
+    fjern_indeks(ops, 0)
+    fjern_indeks(verdier, 0)
+    returner disasm_program(ops, verdier)
+}
+
+funksjon disasm_fra_tokens_strict(tokens: liste_tekst) -> tekst {
+    la ops: liste_tekst = ["HALT"]
+    la verdier: liste_heltall = [0]
+    la i: heltall = 0
+
+    mens (i < lengde(tokens)) {
+        la op: tekst = tokens[i]
+
+        hvis (op_kjent(op) == usann) {
+            returner "/* feil: ukjent opcode " + op + " */"
+        }
+
+        hvis (op_krever_arg(op)) {
+            hvis (i + 1 >= lengde(tokens)) {
+                returner "/* feil: op mangler verdi */"
+            }
+            hvis (er_heltall_token(tokens[i + 1]) == usann) {
+                returner "/* feil: ugyldig heltallsargument " + tokens[i + 1] + " */"
+            }
+            legg_til(ops, op)
+            legg_til(verdier, heltall_fra_tekst(tokens[i + 1]))
+            i = i + 2
+        } ellers {
+            legg_til(ops, op)
+            legg_til(verdier, 0)
+            i = i + 1
+        }
+    }
+
+    fjern_indeks(ops, 0)
+    fjern_indeks(verdier, 0)
+    returner disasm_program(ops, verdier)
+}
+
+funksjon disasm_fra_linjer(linjer: liste_tekst) -> tekst {
+    la tokens: liste_tekst = [""]
+    for linje i linjer {
+        hvis (linje == "") {
+            fortsett
+        }
+        legg_til(tokens, linje)
+    }
+    fjern_indeks(tokens, 0)
+    returner disasm_fra_tokens(tokens)
+}
+
+funksjon linjer_til_tokens(linjer: liste_tekst) -> liste_tekst {
+    la tokens: liste_tekst = [""]
+    for linje i linjer {
+        hvis (linje == "") {
+            fortsett
+        }
+        legg_til(tokens, linje)
+    }
+    fjern_indeks(tokens, 0)
+    returner tokens
+}
+
+funksjon kompiler_fra_linjer(linjer: liste_tekst) -> tekst {
+    la tokens: liste_tekst = linjer_til_tokens(linjer)
+    returner kompiler_fra_tokens(tokens)
+}
+
+funksjon kompiler_fra_kilde(kilde: tekst) -> tekst {
+    la tokens: liste_tekst = tokeniser_enkel(kilde)
+    returner kompiler_fra_tokens(tokens)
+}
+
+funksjon disasm_fra_kilde(kilde: tekst) -> tekst {
+    la tokens: liste_tekst = tokeniser_enkel(kilde)
+    returner disasm_fra_tokens(tokens)
+}
+
+funksjon disasm_fra_kilde_strict(kilde: tekst) -> tekst {
+    la tokens: liste_tekst = tokeniser_enkel(kilde)
+    returner disasm_fra_tokens_strict(tokens)
+}
