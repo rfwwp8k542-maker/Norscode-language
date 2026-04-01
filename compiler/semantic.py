@@ -21,6 +21,7 @@ class SemanticAnalyzer:
             "heltall_fra_tekst": FunctionSymbol("heltall_fra_tekst", [TYPE_TEXT], TYPE_INT, True),
             "del_ord": FunctionSymbol("del_ord", [TYPE_TEXT], TYPE_LIST_TEXT, True),
             "tokeniser_enkel": FunctionSymbol("tokeniser_enkel", [TYPE_TEXT], TYPE_LIST_TEXT, True),
+            "tokeniser_uttrykk": FunctionSymbol("tokeniser_uttrykk", [TYPE_TEXT], TYPE_LIST_TEXT, True),
             "les_input": FunctionSymbol("les_input", [TYPE_TEXT], TYPE_TEXT, True),
             "lengde": FunctionSymbol("lengde", [None], TYPE_INT, True),
             "legg_til": FunctionSymbol("legg_til", [None, None], TYPE_INT, True),

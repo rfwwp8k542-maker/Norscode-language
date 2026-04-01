@@ -528,7 +528,7 @@ funksjon uttrykk_til_ops_og_verdier(tokens: liste_tekst, ops: liste_tekst, verdi
 
         hvis (er_heltall_token(tok)) {
             hvis (forventer_verdi == usann) {
-                returner "/* feil: mangler operator før verdi " + tok + " */"
+                returner "/* feil: mangler operator før verdi " + tok + " ved " + token_pos(i) + " */"
             }
             legg_til(ops, "PUSH")
             legg_til(verdier, heltall_fra_tekst(tok))
@@ -539,7 +539,7 @@ funksjon uttrykk_til_ops_og_verdier(tokens: liste_tekst, ops: liste_tekst, verdi
 
         hvis (tok == "(") {
             hvis (forventer_verdi == usann) {
-                returner "/* feil: mangler operator før ( */"
+                returner "/* feil: mangler operator før ( ved " + token_pos(i) + " */"
             }
             legg_til(operatorer, tok)
             i = i + 1
@@ -548,7 +548,7 @@ funksjon uttrykk_til_ops_og_verdier(tokens: liste_tekst, ops: liste_tekst, verdi
 
         hvis (tok == ")") {
             hvis (forventer_verdi) {
-                returner "/* feil: mangler verdi før ) */"
+                returner "/* feil: mangler verdi før ) ved " + token_pos(i) + " */"
             }
             la fant_parantes: bool = usann
             mens (lengde(operatorer) > 0) {
@@ -564,7 +564,7 @@ funksjon uttrykk_til_ops_og_verdier(tokens: liste_tekst, ops: liste_tekst, verdi
                 }
             }
             hvis (fant_parantes == usann) {
-                returner "/* feil: ) uten matchende ( */"
+                returner "/* feil: ) uten matchende ( ved " + token_pos(i) + " */"
             }
             forventer_verdi = usann
             i = i + 1
@@ -573,7 +573,7 @@ funksjon uttrykk_til_ops_og_verdier(tokens: liste_tekst, ops: liste_tekst, verdi
 
         hvis (er_operator_token(tok)) {
             hvis (forventer_verdi) {
-                returner "/* feil: mangler verdi før operator " + tok + " */"
+                returner "/* feil: mangler verdi før operator " + tok + " ved " + token_pos(i) + " */"
             }
             mens (lengde(operatorer) > 0) {
                 la top_idx2: heltall = lengde(operatorer) - 1
@@ -595,7 +595,7 @@ funksjon uttrykk_til_ops_og_verdier(tokens: liste_tekst, ops: liste_tekst, verdi
             fortsett
         }
 
-        returner "/* feil: ukjent token i uttrykk " + tok + " */"
+        returner "/* feil: ukjent token i uttrykk " + tok + " ved " + token_pos(i) + " */"
     }
 
     hvis (forventer_verdi) {
@@ -618,7 +618,7 @@ funksjon uttrykk_til_ops_og_verdier(tokens: liste_tekst, ops: liste_tekst, verdi
 }
 
 funksjon disasm_uttrykk(kilde: tekst) -> tekst {
-    la tokens: liste_tekst = del_ord(kilde)
+    la tokens: liste_tekst = tokeniser_uttrykk(kilde)
     la ops: liste_tekst = [""]
     la verdier: liste_heltall = [0]
     la feil: tekst = ""
@@ -640,7 +640,7 @@ funksjon disasm_uttrykk(kilde: tekst) -> tekst {
 }
 
 funksjon kompiler_uttrykk_til_c(kilde: tekst) -> tekst {
-    la tokens: liste_tekst = del_ord(kilde)
+    la tokens: liste_tekst = tokeniser_uttrykk(kilde)
     la ops: liste_tekst = [""]
     la verdier: liste_heltall = [0]
     la feil: tekst = ""

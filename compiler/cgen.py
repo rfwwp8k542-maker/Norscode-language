@@ -343,6 +343,72 @@ class CGenerator:
         self.emit("}")
         self.emit()
 
+        self.emit("static nl_list_text *nl_tokenize_expression(const char *s) {")
+        self.indent += 1
+        self.emit("nl_list_text *out = nl_list_text_new();")
+        self.emit("if (!s) { return out; }")
+        self.emit("int in_comment = 0;")
+        self.emit("for (const char *p = s; *p; ) {")
+        self.indent += 1
+        self.emit("char c = *p;")
+        self.emit("if (in_comment) {")
+        self.indent += 1
+        self.emit("if (c == '\\n') { in_comment = 0; }")
+        self.emit("p++;")
+        self.emit("continue;")
+        self.indent -= 1
+        self.emit("}")
+        self.emit("if (c == '#') { in_comment = 1; p++; continue; }")
+        self.emit("if (isspace((unsigned char)c)) { p++; continue; }")
+        self.emit("if (isdigit((unsigned char)c)) {")
+        self.indent += 1
+        self.emit("char token[256];")
+        self.emit("int tlen = 0;")
+        self.emit("while (*p && isdigit((unsigned char)*p)) {")
+        self.indent += 1
+        self.emit("if (tlen < 255) { token[tlen++] = *p; }")
+        self.emit("p++;")
+        self.indent -= 1
+        self.emit("}")
+        self.emit("token[tlen] = '\\0';")
+        self.emit("nl_list_text_push(out, nl_strdup(token));")
+        self.emit("continue;")
+        self.indent -= 1
+        self.emit("}")
+        self.emit("if ((c == '&' && p[1] == '&') || (c == '|' && p[1] == '|') || (c == '=' && p[1] == '=') ||")
+        self.emit("    (c == '!' && p[1] == '=') || (c == '<' && p[1] == '=') || (c == '>' && p[1] == '=')) {")
+        self.indent += 1
+        self.emit("char token[3];")
+        self.emit("token[0] = c;")
+        self.emit("token[1] = p[1];")
+        self.emit("token[2] = '\\0';")
+        self.emit("nl_list_text_push(out, nl_strdup(token));")
+        self.emit("p += 2;")
+        self.emit("continue;")
+        self.indent -= 1
+        self.emit("}")
+        self.emit("if (c == '(' || c == ')' || c == '+' || c == '-' || c == '*' || c == '/' || c == '%' || c == '<' || c == '>') {")
+        self.indent += 1
+        self.emit("char token[2];")
+        self.emit("token[0] = c;")
+        self.emit("token[1] = '\\0';")
+        self.emit("nl_list_text_push(out, nl_strdup(token));")
+        self.emit("p++;")
+        self.emit("continue;")
+        self.indent -= 1
+        self.emit("}")
+        self.emit("char unknown[2];")
+        self.emit("unknown[0] = c;")
+        self.emit("unknown[1] = '\\0';")
+        self.emit("nl_list_text_push(out, nl_strdup(unknown));")
+        self.emit("p++;")
+        self.indent -= 1
+        self.emit("}")
+        self.emit("return out;")
+        self.indent -= 1
+        self.emit("}")
+        self.emit()
+
         self.emit("static char *nl_bool_to_text(int value) {")
         self.indent += 1
         self.emit('return nl_strdup(value ? "sann" : "usann");')
@@ -714,6 +780,9 @@ class CGenerator:
 
             if node.name == "tokeniser_enkel":
                 return f"nl_tokenize_simple({args[0]})", TYPE_LIST_TEXT
+
+            if node.name == "tokeniser_uttrykk":
+                return f"nl_tokenize_expression({args[0]})", TYPE_LIST_TEXT
 
             if node.name == "lengde":
                 arg_type = args_with_types[0][1]

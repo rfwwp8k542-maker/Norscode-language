@@ -139,19 +139,19 @@ funksjon start() -> heltall {
     la c_src_bad: tekst = sh.kompiler_fra_kilde_strict("PUSH 2\nPUSH q\nADD\nHALT")
     assert_eq(c_src_bad, "/* feil: ugyldig heltallsargument q ved token 3 */")
 
-    la expr_dis: tekst = sh.disasm_uttrykk("2 + 3 * 4")
+    la expr_dis: tekst = sh.disasm_uttrykk("2+3*4")
     assert_eq(expr_dis, "0: PUSH 2\n1: PUSH 3\n2: PUSH 4\n3: MUL\n4: ADD\n5: PRINT\n6: HALT\n")
 
-    la expr_dis_paren: tekst = sh.disasm_uttrykk("( 2 + 3 ) * 4")
+    la expr_dis_paren: tekst = sh.disasm_uttrykk("(2+3)*4")
     assert_eq(expr_dis_paren, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PUSH 4\n4: MUL\n5: PRINT\n6: HALT\n")
 
     la expr_c: tekst = sh.kompiler_uttrykk_til_c("10 + 32")
     assert_ne(expr_c, "")
 
-    la expr_cmp: tekst = sh.disasm_uttrykk("5 > 3 && 2 < 4")
+    la expr_cmp: tekst = sh.disasm_uttrykk("5>3&&2<4")
     assert_eq(expr_cmp, "0: PUSH 5\n1: PUSH 3\n2: GT\n3: PUSH 2\n4: PUSH 4\n5: LT\n6: AND\n7: PRINT\n8: HALT\n")
 
-    la expr_eq: tekst = sh.disasm_uttrykk("7 != 7 || 2 == 2")
+    la expr_eq: tekst = sh.disasm_uttrykk("7!=7||2==2")
     assert_eq(expr_eq, "0: PUSH 7\n1: PUSH 7\n2: EQ\n3: NOT\n4: PUSH 2\n5: PUSH 2\n6: EQ\n7: OR\n8: PRINT\n9: HALT\n")
 
     la expr_le: tekst = sh.disasm_uttrykk("3 <= 4")
@@ -164,7 +164,10 @@ funksjon start() -> heltall {
     assert_eq(expr_err, "/* feil: uttrykket avsluttes med operator */")
 
     la expr_err2: tekst = sh.disasm_uttrykk("2 + )")
-    assert_eq(expr_err2, "/* feil: mangler verdi før ) */")
+    assert_eq(expr_err2, "/* feil: mangler verdi før ) ved token 2 */")
+
+    la expr_err3: tekst = sh.disasm_uttrykk("2+$")
+    assert_eq(expr_err3, "/* feil: ukjent token i uttrykk $ ved token 2 */")
 
     la linjer: liste_tekst = ["", "PUSH", "11", "PUSH", "4", "SUB", "PRINT", "HALT"]
     la c3: tekst = sh.kompiler_fra_linjer(linjer)

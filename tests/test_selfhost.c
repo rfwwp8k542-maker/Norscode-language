@@ -174,6 +174,57 @@ static nl_list_text *nl_tokenize_simple(const char *s) {
     return out;
 }
 
+static nl_list_text *nl_tokenize_expression(const char *s) {
+    nl_list_text *out = nl_list_text_new();
+    if (!s) { return out; }
+    int in_comment = 0;
+    for (const char *p = s; *p; ) {
+        char c = *p;
+        if (in_comment) {
+            if (c == '\n') { in_comment = 0; }
+            p++;
+            continue;
+        }
+        if (c == '#') { in_comment = 1; p++; continue; }
+        if (isspace((unsigned char)c)) { p++; continue; }
+        if (isdigit((unsigned char)c)) {
+            char token[256];
+            int tlen = 0;
+            while (*p && isdigit((unsigned char)*p)) {
+                if (tlen < 255) { token[tlen++] = *p; }
+                p++;
+            }
+            token[tlen] = '\0';
+            nl_list_text_push(out, nl_strdup(token));
+            continue;
+        }
+        if ((c == '&' && p[1] == '&') || (c == '|' && p[1] == '|') || (c == '=' && p[1] == '=') ||
+            (c == '!' && p[1] == '=') || (c == '<' && p[1] == '=') || (c == '>' && p[1] == '=')) {
+            char token[3];
+            token[0] = c;
+            token[1] = p[1];
+            token[2] = '\0';
+            nl_list_text_push(out, nl_strdup(token));
+            p += 2;
+            continue;
+        }
+        if (c == '(' || c == ')' || c == '+' || c == '-' || c == '*' || c == '/' || c == '%' || c == '<' || c == '>') {
+            char token[2];
+            token[0] = c;
+            token[1] = '\0';
+            nl_list_text_push(out, nl_strdup(token));
+            p++;
+            continue;
+        }
+        char unknown[2];
+        unknown[0] = c;
+        unknown[1] = '\0';
+        nl_list_text_push(out, nl_strdup(unknown));
+        p++;
+    }
+    return out;
+}
+
 static char *nl_bool_to_text(int value) {
     return nl_strdup(value ? "sann" : "usann");
 }
@@ -807,7 +858,7 @@ char * selfhost__compiler__uttrykk_til_ops_og_verdier(nl_list_text* tokens, nl_l
         }
         if (selfhost__compiler__er_heltall_token(tok)) {
             if (forventer_verdi == 0) {
-                return nl_concat(nl_concat("/* feil: mangler operator før verdi ", tok), " */");
+                return nl_concat(nl_concat(nl_concat(nl_concat("/* feil: mangler operator før verdi ", tok), " ved "), selfhost__compiler__token_pos(i)), " */");
             }
             nl_list_text_push(ops, "PUSH");
             nl_list_int_push(verdier, nl_text_to_int(tok));
@@ -817,7 +868,7 @@ char * selfhost__compiler__uttrykk_til_ops_og_verdier(nl_list_text* tokens, nl_l
         }
         if (nl_streq(tok, "(")) {
             if (forventer_verdi == 0) {
-                return "/* feil: mangler operator før ( */";
+                return nl_concat(nl_concat("/* feil: mangler operator før ( ved ", selfhost__compiler__token_pos(i)), " */");
             }
             nl_list_text_push(operatorer, tok);
             i = (i + 1);
@@ -825,7 +876,7 @@ char * selfhost__compiler__uttrykk_til_ops_og_verdier(nl_list_text* tokens, nl_l
         }
         if (nl_streq(tok, ")")) {
             if (forventer_verdi) {
-                return "/* feil: mangler verdi før ) */";
+                return nl_concat(nl_concat("/* feil: mangler verdi før ) ved ", selfhost__compiler__token_pos(i)), " */");
             }
             int fant_parantes = 0;
             while (nl_list_text_len(operatorer) > 0) {
@@ -841,7 +892,7 @@ char * selfhost__compiler__uttrykk_til_ops_og_verdier(nl_list_text* tokens, nl_l
                 }
             }
             if (fant_parantes == 0) {
-                return "/* feil: ) uten matchende ( */";
+                return nl_concat(nl_concat("/* feil: ) uten matchende ( ved ", selfhost__compiler__token_pos(i)), " */");
             }
             forventer_verdi = 0;
             i = (i + 1);
@@ -849,7 +900,7 @@ char * selfhost__compiler__uttrykk_til_ops_og_verdier(nl_list_text* tokens, nl_l
         }
         if (selfhost__compiler__er_operator_token(tok)) {
             if (forventer_verdi) {
-                return nl_concat(nl_concat("/* feil: mangler verdi før operator ", tok), " */");
+                return nl_concat(nl_concat(nl_concat(nl_concat("/* feil: mangler verdi før operator ", tok), " ved "), selfhost__compiler__token_pos(i)), " */");
             }
             while (nl_list_text_len(operatorer) > 0) {
                 int top_idx2 = (nl_list_text_len(operatorer) - 1);
@@ -870,7 +921,7 @@ char * selfhost__compiler__uttrykk_til_ops_og_verdier(nl_list_text* tokens, nl_l
             i = (i + 1);
             continue;
         }
-        return nl_concat(nl_concat("/* feil: ukjent token i uttrykk ", tok), " */");
+        return nl_concat(nl_concat(nl_concat(nl_concat("/* feil: ukjent token i uttrykk ", tok), " ved "), selfhost__compiler__token_pos(i)), " */");
     }
     if (forventer_verdi) {
         return "/* feil: uttrykket avsluttes med operator */";
@@ -891,7 +942,7 @@ char * selfhost__compiler__uttrykk_til_ops_og_verdier(nl_list_text* tokens, nl_l
 }
 
 char * selfhost__compiler__disasm_uttrykk(char * kilde) {
-    nl_list_text* tokens = nl_split_words(kilde);
+    nl_list_text* tokens = nl_tokenize_expression(kilde);
     nl_list_text* ops = nl_list_text_new();
     nl_list_text_push(ops, "");
     nl_list_int* verdier = nl_list_int_new();
@@ -912,7 +963,7 @@ char * selfhost__compiler__disasm_uttrykk(char * kilde) {
 }
 
 char * selfhost__compiler__kompiler_uttrykk_til_c(char * kilde) {
-    nl_list_text* tokens = nl_split_words(kilde);
+    nl_list_text* tokens = nl_tokenize_expression(kilde);
     nl_list_text* ops = nl_list_text_new();
     nl_list_text_push(ops, "");
     nl_list_int* verdier = nl_list_int_new();
@@ -1134,15 +1185,15 @@ int start() {
     nl_assert_eq_text(dis_src_bad_opcode, "/* feil: ukjent opcode PUHS ved token 0 */");
     char * c_src_bad = selfhost__compiler__kompiler_fra_kilde_strict("PUSH 2\nPUSH q\nADD\nHALT");
     nl_assert_eq_text(c_src_bad, "/* feil: ugyldig heltallsargument q ved token 3 */");
-    char * expr_dis = selfhost__compiler__disasm_uttrykk("2 + 3 * 4");
+    char * expr_dis = selfhost__compiler__disasm_uttrykk("2+3*4");
     nl_assert_eq_text(expr_dis, "0: PUSH 2\n1: PUSH 3\n2: PUSH 4\n3: MUL\n4: ADD\n5: PRINT\n6: HALT\n");
-    char * expr_dis_paren = selfhost__compiler__disasm_uttrykk("( 2 + 3 ) * 4");
+    char * expr_dis_paren = selfhost__compiler__disasm_uttrykk("(2+3)*4");
     nl_assert_eq_text(expr_dis_paren, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PUSH 4\n4: MUL\n5: PRINT\n6: HALT\n");
     char * expr_c = selfhost__compiler__kompiler_uttrykk_til_c("10 + 32");
     nl_assert_ne_text(expr_c, "");
-    char * expr_cmp = selfhost__compiler__disasm_uttrykk("5 > 3 && 2 < 4");
+    char * expr_cmp = selfhost__compiler__disasm_uttrykk("5>3&&2<4");
     nl_assert_eq_text(expr_cmp, "0: PUSH 5\n1: PUSH 3\n2: GT\n3: PUSH 2\n4: PUSH 4\n5: LT\n6: AND\n7: PRINT\n8: HALT\n");
-    char * expr_eq = selfhost__compiler__disasm_uttrykk("7 != 7 || 2 == 2");
+    char * expr_eq = selfhost__compiler__disasm_uttrykk("7!=7||2==2");
     nl_assert_eq_text(expr_eq, "0: PUSH 7\n1: PUSH 7\n2: EQ\n3: NOT\n4: PUSH 2\n5: PUSH 2\n6: EQ\n7: OR\n8: PRINT\n9: HALT\n");
     char * expr_le = selfhost__compiler__disasm_uttrykk("3 <= 4");
     nl_assert_eq_text(expr_le, "0: PUSH 3\n1: PUSH 4\n2: GT\n3: NOT\n4: PRINT\n5: HALT\n");
@@ -1151,7 +1202,9 @@ int start() {
     char * expr_err = selfhost__compiler__disasm_uttrykk("2 +");
     nl_assert_eq_text(expr_err, "/* feil: uttrykket avsluttes med operator */");
     char * expr_err2 = selfhost__compiler__disasm_uttrykk("2 + )");
-    nl_assert_eq_text(expr_err2, "/* feil: mangler verdi før ) */");
+    nl_assert_eq_text(expr_err2, "/* feil: mangler verdi før ) ved token 2 */");
+    char * expr_err3 = selfhost__compiler__disasm_uttrykk("2+$");
+    nl_assert_eq_text(expr_err3, "/* feil: ukjent token i uttrykk $ ved token 2 */");
     nl_list_text* linjer = nl_list_text_new();
     nl_list_text_push(linjer, "");
     nl_list_text_push(linjer, "PUSH");
