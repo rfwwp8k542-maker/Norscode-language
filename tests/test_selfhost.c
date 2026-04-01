@@ -1321,11 +1321,11 @@ char * selfhost__compiler__uttrykk_til_ops_og_verdier_med_miljo(nl_list_text* to
             tok = "+";
             tok_step = 2;
         }
-        else if (nl_streq(tok_raw, "legg_sammen") || nl_streq(tok_raw, "legges_sammen")) {
+        else if ((nl_streq(tok_raw, "legg_sammen") || nl_streq(tok_raw, "legge_sammen")) || nl_streq(tok_raw, "legges_sammen")) {
             tok = "+";
             tok_step = 1;
         }
-        else if ((((i + 1) < nl_list_text_len(tokens)) && (nl_streq(tok_raw, "legg") || nl_streq(tok_raw, "legges"))) && nl_streq(n1, "sammen")) {
+        else if ((((i + 1) < nl_list_text_len(tokens)) && ((nl_streq(tok_raw, "legg") || nl_streq(tok_raw, "legge")) || nl_streq(tok_raw, "legges"))) && nl_streq(n1, "sammen")) {
             tok = "+";
             tok_step = 2;
         }
@@ -2425,6 +2425,10 @@ int start() {
     nl_assert_eq_text(expr_norsk_legg_sammen, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
     char * expr_norsk_legg_sammen_underscore = selfhost__compiler__disasm_uttrykk("2 legg_sammen 3");
     nl_assert_eq_text(expr_norsk_legg_sammen_underscore, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
+    char * expr_norsk_legge_sammen = selfhost__compiler__disasm_uttrykk("2 legge sammen 3");
+    nl_assert_eq_text(expr_norsk_legge_sammen, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
+    char * expr_norsk_legge_sammen_underscore = selfhost__compiler__disasm_uttrykk("2 legge_sammen 3");
+    nl_assert_eq_text(expr_norsk_legge_sammen_underscore, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
     char * expr_norsk_legges_sammen = selfhost__compiler__disasm_uttrykk("2 legges sammen 3");
     nl_assert_eq_text(expr_norsk_legges_sammen, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
     char * expr_norsk_legges_sammen_underscore = selfhost__compiler__disasm_uttrykk("2 legges_sammen 3");
@@ -2994,6 +2998,10 @@ int start() {
     nl_assert_eq_text(script_norsk_legg_sammen, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
     char * script_norsk_legg_sammen_underscore = selfhost__compiler__disasm_skript("la x=2;la y=3;returner x legg_sammen y");
     nl_assert_eq_text(script_norsk_legg_sammen_underscore, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
+    char * script_norsk_legge_sammen = selfhost__compiler__disasm_skript("la x=2;la y=3;returner x legge sammen y");
+    nl_assert_eq_text(script_norsk_legge_sammen, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
+    char * script_norsk_legge_sammen_underscore = selfhost__compiler__disasm_skript("la x=2;la y=3;returner x legge_sammen y");
+    nl_assert_eq_text(script_norsk_legge_sammen_underscore, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
     char * script_norsk_legges_sammen = selfhost__compiler__disasm_skript("la x=2;la y=3;returner x legges sammen y");
     nl_assert_eq_text(script_norsk_legges_sammen, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
     char * script_norsk_legges_sammen_underscore = selfhost__compiler__disasm_skript("la x=2;la y=3;returner x legges_sammen y");
