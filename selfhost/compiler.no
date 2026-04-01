@@ -77,7 +77,7 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "mindre_enn_eller_lik") {
         returner "mindre_eller_lik"
     }
-    hvis (tok == "ikke_lik" eller tok == "ikke_lik_med" eller tok == "er_ikke") {
+    hvis (tok == "ikke_lik" eller tok == "ikke_lik_med" eller tok == "er_ikke" eller tok == "er_ulik" eller tok == "ulik_med") {
         returner "ikke_er"
     }
     hvis (tok == "er_lik" eller tok == "er_lik_med") {
