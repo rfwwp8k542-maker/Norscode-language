@@ -35,6 +35,10 @@ norsklang --help
 # Modul-kjøring:
 python3 -m norcode --help
 python3 -m norsklang --help
+
+# Merk:
+# Legacy-aliasene `norsklang` og `python3 -m norsklang` viser et kort varsel
+# og videresender til NorCode-CLI.
 ```
 
 ### 0b. Bygg og publiser pakke
