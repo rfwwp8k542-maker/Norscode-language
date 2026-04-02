@@ -2327,6 +2327,7 @@ def check_workflow_action_versions(workflows_dir: Path | None = None) -> dict:
 
 
 def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
+    pipeline_started = time.perf_counter()
     total_steps = 5 if check_names else 4
     payload = {
         "steps": {"total": total_steps, "name_check_enabled": check_names},
@@ -2429,6 +2430,7 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
         if not json_output:
             print("OK")
 
+    payload["timings_ms"]["total"] = int((time.perf_counter() - pipeline_started) * 1000)
     return payload
 
 

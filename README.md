@@ -323,6 +323,7 @@ python3 -m norcode ci --json
 # Inkluderer også steps.total og steps.name_check_enabled
 # Inkluderer workflow_action_check.policy med håndhevede regler
 # Inkluderer timings_ms per CI-del (millisekunder)
+# Inkluderer timings_ms.total for total CI-varighet
 
 # Valgfri ekstra-sjekk for navnemigrering i CI
 python3 -m norcode ci --check-names
