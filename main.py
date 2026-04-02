@@ -11,6 +11,7 @@ import shlex
 import subprocess
 import sys
 import tarfile
+import tempfile
 import time
 import platform
 import tomllib
@@ -2605,6 +2606,8 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
             "gid": os.getgid() if hasattr(os, "getgid") else None,
             "pid": os.getpid(),
             "ppid": os.getppid(),
+            "home": os.path.expanduser("~"),
+            "tmpdir": tempfile.gettempdir(),
             "cwd": str(Path.cwd()),
             "timezone": dt.datetime.now().astimezone().tzname(),
         },
