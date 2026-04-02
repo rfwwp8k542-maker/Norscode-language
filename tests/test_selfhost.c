@@ -407,6 +407,9 @@ char * selfhost__compiler__normaliser_norsk_token(char * tok) {
     if (nl_streq(tok, "iff")) {
         return "xnor";
     }
+    if (nl_streq(tok, "equiv") || nl_streq(tok, "ekvivalent")) {
+        return "xnor";
+    }
     if (nl_streq(tok, "og_ikke") || nl_streq(tok, "ogikke")) {
         return "nand";
     }
@@ -3074,6 +3077,10 @@ int start() {
     nl_assert_eq_text(expr_norsk_impliserer_operator, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
     char * expr_iff_alias = selfhost__compiler__disasm_uttrykk("1 iff 1");
     nl_assert_eq_text(expr_iff_alias, "0: PUSH 1\n1: PUSH 1\n2: EQ\n3: PRINT\n4: HALT\n");
+    char * expr_equiv_alias = selfhost__compiler__disasm_uttrykk("1 equiv 1");
+    nl_assert_eq_text(expr_equiv_alias, "0: PUSH 1\n1: PUSH 1\n2: EQ\n3: PRINT\n4: HALT\n");
+    char * expr_ekvivalent_alias = selfhost__compiler__disasm_uttrykk("1 ekvivalent 1");
+    nl_assert_eq_text(expr_ekvivalent_alias, "0: PUSH 1\n1: PUSH 1\n2: EQ\n3: PRINT\n4: HALT\n");
     char * expr_le = selfhost__compiler__disasm_uttrykk("3 <= 4");
     nl_assert_eq_text(expr_le, "0: PUSH 3\n1: PUSH 4\n2: GT\n3: NOT\n4: PRINT\n5: HALT\n");
     char * expr_ge = selfhost__compiler__disasm_uttrykk("4 >= 3");
@@ -4279,6 +4286,8 @@ int start() {
     nl_assert_eq_text(script_implies_operator, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
     char * script_iff_alias = selfhost__compiler__disasm_skript("returner 1 iff 1");
     nl_assert_eq_text(script_iff_alias, "0: PUSH 1\n1: PUSH 1\n2: EQ\n3: PRINT\n4: HALT\n");
+    char * script_equiv_alias = selfhost__compiler__disasm_skript("returner 1 equiv 1");
+    nl_assert_eq_text(script_equiv_alias, "0: PUSH 1\n1: PUSH 1\n2: EQ\n3: PRINT\n4: HALT\n");
     char * script_english_cmp_is_not_equal_to_compact_alias = selfhost__compiler__disasm_skript("let x=4;let y=5;return x is_not_equal_to y");
     nl_assert_eq_text(script_english_cmp_is_not_equal_to_compact_alias, "0: PUSH 4\n1: PUSH 5\n2: EQ\n3: NOT\n4: PRINT\n5: HALT\n");
     char * script_english_cmp_isnt_alias = selfhost__compiler__disasm_skript("let x=4;let y=5;return x isnt y");

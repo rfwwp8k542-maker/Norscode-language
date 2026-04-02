@@ -110,6 +110,9 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "iff") {
         returner "xnor"
     }
+    hvis (tok == "equiv" eller tok == "ekvivalent") {
+        returner "xnor"
+    }
     hvis (tok == "og_ikke" eller tok == "ogikke") {
         returner "nand"
     }

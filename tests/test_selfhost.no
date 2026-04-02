@@ -199,6 +199,12 @@ funksjon start() -> heltall {
     la expr_iff_alias: tekst = sh.disasm_uttrykk("1 iff 1")
     assert_eq(expr_iff_alias, "0: PUSH 1\n1: PUSH 1\n2: EQ\n3: PRINT\n4: HALT\n")
 
+    la expr_equiv_alias: tekst = sh.disasm_uttrykk("1 equiv 1")
+    assert_eq(expr_equiv_alias, "0: PUSH 1\n1: PUSH 1\n2: EQ\n3: PRINT\n4: HALT\n")
+
+    la expr_ekvivalent_alias: tekst = sh.disasm_uttrykk("1 ekvivalent 1")
+    assert_eq(expr_ekvivalent_alias, "0: PUSH 1\n1: PUSH 1\n2: EQ\n3: PRINT\n4: HALT\n")
+
     la expr_le: tekst = sh.disasm_uttrykk("3 <= 4")
     assert_eq(expr_le, "0: PUSH 3\n1: PUSH 4\n2: GT\n3: NOT\n4: PRINT\n5: HALT\n")
 
@@ -1993,6 +1999,9 @@ funksjon start() -> heltall {
 
     la script_iff_alias: tekst = sh.disasm_skript("returner 1 iff 1")
     assert_eq(script_iff_alias, "0: PUSH 1\n1: PUSH 1\n2: EQ\n3: PRINT\n4: HALT\n")
+
+    la script_equiv_alias: tekst = sh.disasm_skript("returner 1 equiv 1")
+    assert_eq(script_equiv_alias, "0: PUSH 1\n1: PUSH 1\n2: EQ\n3: PRINT\n4: HALT\n")
 
     la script_english_cmp_is_not_equal_to_compact_alias: tekst = sh.disasm_skript("let x=4;let y=5;return x is_not_equal_to y")
     assert_eq(script_english_cmp_is_not_equal_to_compact_alias, "0: PUSH 4\n1: PUSH 5\n2: EQ\n3: NOT\n4: PRINT\n5: HALT\n")
