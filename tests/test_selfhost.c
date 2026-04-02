@@ -383,6 +383,30 @@ char * selfhost__compiler__normaliser_norsk_token(char * tok) {
     if (nl_streq(tok, "not")) {
         return "ikke";
     }
+    if (nl_streq(tok, "is")) {
+        return "er";
+    }
+    if (nl_streq(tok, "is_not") || nl_streq(tok, "isnot")) {
+        return "ikke_er";
+    }
+    if (((nl_streq(tok, "not_equal") || nl_streq(tok, "not_equals")) || nl_streq(tok, "notequal")) || nl_streq(tok, "notequals")) {
+        return "ikke_er";
+    }
+    if (nl_streq(tok, "equals") || nl_streq(tok, "equal")) {
+        return "er";
+    }
+    if (nl_streq(tok, "less_than") || nl_streq(tok, "lessthan")) {
+        return "mindre_enn";
+    }
+    if (nl_streq(tok, "greater_than") || nl_streq(tok, "greaterthan")) {
+        return "storre_enn";
+    }
+    if (((nl_streq(tok, "less_or_equal") || nl_streq(tok, "less_or_equals")) || nl_streq(tok, "lessorequal")) || nl_streq(tok, "lessorequals")) {
+        return "mindre_eller_lik";
+    }
+    if (((nl_streq(tok, "greater_or_equal") || nl_streq(tok, "greater_or_equals")) || nl_streq(tok, "greaterorequal")) || nl_streq(tok, "greaterorequals")) {
+        return "storre_eller_lik";
+    }
     if ((((nl_streq(tok, "elif") || nl_streq(tok, "else_if")) || nl_streq(tok, "else_hvis")) || nl_streq(tok, "elsehvis")) || nl_streq(tok, "else-hvis")) {
         return "ellers_hvis";
     }
@@ -3393,6 +3417,10 @@ int start() {
     nl_assert_eq_text(expr_if_elseif_alias, "0: PUSH 0\n1: PUSH 1\n2: EQ\n3: JZ 6\n4: PUSH 10\n5: JMP 16\n6: LABEL 6\n7: PUSH 1\n8: PUSH 1\n9: EQ\n10: JZ 13\n11: PUSH 20\n12: JMP 15\n13: LABEL 13\n14: PUSH 30\n15: LABEL 15\n16: LABEL 16\n17: PRINT\n18: HALT\n");
     char * expr_and_or_not_alias = selfhost__compiler__disasm_uttrykk("not 0 and 1 or 0");
     nl_assert_eq_text(expr_and_or_not_alias, "0: PUSH 0\n1: NOT\n2: PUSH 1\n3: AND\n4: PUSH 0\n5: OR\n6: PRINT\n7: HALT\n");
+    char * expr_english_cmp_alias = selfhost__compiler__disasm_uttrykk("4 greater_or_equal 4 and 3 less_than 4");
+    nl_assert_eq_text(expr_english_cmp_alias, "0: PUSH 4\n1: PUSH 4\n2: LT\n3: NOT\n4: PUSH 3\n5: PUSH 4\n6: LT\n7: AND\n8: PRINT\n9: HALT\n");
+    char * expr_english_is_not_alias = selfhost__compiler__disasm_uttrykk("7 is_not 8");
+    nl_assert_eq_text(expr_english_is_not_alias, "0: PUSH 7\n1: PUSH 8\n2: EQ\n3: NOT\n4: PRINT\n5: HALT\n");
     char * expr_hvis_env = selfhost__compiler__disasm_uttrykk_med_miljo("hvis x>y da x ellers y", env_navn, env_verdier);
     nl_assert_eq_text(expr_hvis_env, "0: PUSH 7\n1: PUSH 3\n2: GT\n3: JZ 6\n4: PUSH 7\n5: JMP 8\n6: LABEL 6\n7: PUSH 3\n8: LABEL 8\n9: PRINT\n10: HALT\n");
     char * expr_hvis_c = selfhost__compiler__kompiler_uttrykk_til_c("hvis 1==1 da 7 ellers 9");
@@ -3452,6 +3480,8 @@ int start() {
     nl_assert_eq_text(script_let_set_return_alias, "0: PUSH 5\n1: PRINT\n2: HALT\n");
     char * script_return_alias_only = selfhost__compiler__disasm_skript("la x=2;return x+3");
     nl_assert_eq_text(script_return_alias_only, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
+    char * script_english_cmp_alias = selfhost__compiler__disasm_skript("let x=4;let y=4;return x greater_or_equal y");
+    nl_assert_eq_text(script_english_cmp_alias, "0: PUSH 4\n1: PUSH 4\n2: LT\n3: NOT\n4: PRINT\n5: HALT\n");
     char * script_norsk_ops = selfhost__compiler__disasm_skript("x=sann;y=ikke usann;x og y");
     nl_assert_eq_text(script_norsk_ops, "0: PUSH 1\n1: PUSH 1\n2: AND\n3: PRINT\n4: HALT\n");
     char * script_norsk_ops_enten = selfhost__compiler__disasm_skript("x=usann;y=sann;x enten y");
