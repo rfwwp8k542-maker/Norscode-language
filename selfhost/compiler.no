@@ -146,6 +146,9 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "is_less_or_equal" eller tok == "is_less_or_equals" eller tok == "islessorequal" eller tok == "islessorequals") {
         returner "mindre_eller_lik"
     }
+    hvis (tok == "is_less_or_equal_to" eller tok == "is_less_or_equals_to" eller tok == "islessorequalto" eller tok == "islessorequalsto") {
+        returner "mindre_eller_lik"
+    }
     hvis (tok == "is_less_than_or_equal" eller tok == "is_less_than_or_equals" eller tok == "islessthanorequal" eller tok == "islessthanorequals" eller tok == "is_less_than_or_equal_to" eller tok == "is_less_than_or_equals_to" eller tok == "islessthanorequalto" eller tok == "islessthanorequalsto") {
         returner "mindre_eller_lik"
     }
@@ -153,6 +156,9 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
         returner "storre_eller_lik"
     }
     hvis (tok == "is_greater_or_equal" eller tok == "is_greater_or_equals" eller tok == "isgreaterorequal" eller tok == "isgreaterorequals") {
+        returner "storre_eller_lik"
+    }
+    hvis (tok == "is_greater_or_equal_to" eller tok == "is_greater_or_equals_to" eller tok == "isgreaterorequalto" eller tok == "isgreaterorequalsto") {
         returner "storre_eller_lik"
     }
     hvis (tok == "is_greater_than_or_equal" eller tok == "is_greater_than_or_equals" eller tok == "isgreaterthanorequal" eller tok == "isgreaterthanorequals" eller tok == "is_greater_than_or_equal_to" eller tok == "is_greater_than_or_equals_to" eller tok == "isgreaterthanorequalto" eller tok == "isgreaterthanorequalsto") {

@@ -443,6 +443,9 @@ char * selfhost__compiler__normaliser_norsk_token(char * tok) {
     if (((nl_streq(tok, "is_less_or_equal") || nl_streq(tok, "is_less_or_equals")) || nl_streq(tok, "islessorequal")) || nl_streq(tok, "islessorequals")) {
         return "mindre_eller_lik";
     }
+    if (((nl_streq(tok, "is_less_or_equal_to") || nl_streq(tok, "is_less_or_equals_to")) || nl_streq(tok, "islessorequalto")) || nl_streq(tok, "islessorequalsto")) {
+        return "mindre_eller_lik";
+    }
     if (((((((nl_streq(tok, "is_less_than_or_equal") || nl_streq(tok, "is_less_than_or_equals")) || nl_streq(tok, "islessthanorequal")) || nl_streq(tok, "islessthanorequals")) || nl_streq(tok, "is_less_than_or_equal_to")) || nl_streq(tok, "is_less_than_or_equals_to")) || nl_streq(tok, "islessthanorequalto")) || nl_streq(tok, "islessthanorequalsto")) {
         return "mindre_eller_lik";
     }
@@ -450,6 +453,9 @@ char * selfhost__compiler__normaliser_norsk_token(char * tok) {
         return "storre_eller_lik";
     }
     if (((nl_streq(tok, "is_greater_or_equal") || nl_streq(tok, "is_greater_or_equals")) || nl_streq(tok, "isgreaterorequal")) || nl_streq(tok, "isgreaterorequals")) {
+        return "storre_eller_lik";
+    }
+    if (((nl_streq(tok, "is_greater_or_equal_to") || nl_streq(tok, "is_greater_or_equals_to")) || nl_streq(tok, "isgreaterorequalto")) || nl_streq(tok, "isgreaterorequalsto")) {
         return "storre_eller_lik";
     }
     if (((((((nl_streq(tok, "is_greater_than_or_equal") || nl_streq(tok, "is_greater_than_or_equals")) || nl_streq(tok, "isgreaterthanorequal")) || nl_streq(tok, "isgreaterthanorequals")) || nl_streq(tok, "is_greater_than_or_equal_to")) || nl_streq(tok, "is_greater_than_or_equals_to")) || nl_streq(tok, "isgreaterthanorequalto")) || nl_streq(tok, "isgreaterthanorequalsto")) {
@@ -3722,6 +3728,10 @@ int start() {
     nl_assert_eq_text(expr_english_is_less_than_or_equal_to_compact_alias, "0: PUSH 3\n1: PUSH 3\n2: GT\n3: NOT\n4: PRINT\n5: HALT\n");
     char * expr_english_is_greater_than_or_equal_to_compact_alias = selfhost__compiler__disasm_uttrykk("4 is_greater_than_or_equal_to 4");
     nl_assert_eq_text(expr_english_is_greater_than_or_equal_to_compact_alias, "0: PUSH 4\n1: PUSH 4\n2: LT\n3: NOT\n4: PRINT\n5: HALT\n");
+    char * expr_english_is_less_or_equal_to_compact_alias = selfhost__compiler__disasm_uttrykk("3 is_less_or_equal_to 3");
+    nl_assert_eq_text(expr_english_is_less_or_equal_to_compact_alias, "0: PUSH 3\n1: PUSH 3\n2: GT\n3: NOT\n4: PRINT\n5: HALT\n");
+    char * expr_english_is_greater_or_equal_to_compact_alias = selfhost__compiler__disasm_uttrykk("4 is_greater_or_equal_to 4");
+    nl_assert_eq_text(expr_english_is_greater_or_equal_to_compact_alias, "0: PUSH 4\n1: PUSH 4\n2: LT\n3: NOT\n4: PRINT\n5: HALT\n");
     char * expr_english_times_alias = selfhost__compiler__disasm_uttrykk("3 times 4");
     nl_assert_eq_text(expr_english_times_alias, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n");
     char * expr_english_multiplied_by_alias = selfhost__compiler__disasm_uttrykk("3 multiplied_by 4");
@@ -3855,6 +3865,10 @@ int start() {
     nl_assert_eq_text(script_english_is_less_than_or_equal_to_compact_alias, "0: PUSH 3\n1: PUSH 3\n2: GT\n3: NOT\n4: PRINT\n5: HALT\n");
     char * script_english_is_greater_than_or_equal_to_compact_alias = selfhost__compiler__disasm_skript("let x=4;let y=4;return x is_greater_than_or_equal_to y");
     nl_assert_eq_text(script_english_is_greater_than_or_equal_to_compact_alias, "0: PUSH 4\n1: PUSH 4\n2: LT\n3: NOT\n4: PRINT\n5: HALT\n");
+    char * script_english_is_less_or_equal_to_compact_alias = selfhost__compiler__disasm_skript("let x=3;let y=3;return x is_less_or_equal_to y");
+    nl_assert_eq_text(script_english_is_less_or_equal_to_compact_alias, "0: PUSH 3\n1: PUSH 3\n2: GT\n3: NOT\n4: PRINT\n5: HALT\n");
+    char * script_english_is_greater_or_equal_to_compact_alias = selfhost__compiler__disasm_skript("let x=4;let y=4;return x is_greater_or_equal_to y");
+    nl_assert_eq_text(script_english_is_greater_or_equal_to_compact_alias, "0: PUSH 4\n1: PUSH 4\n2: LT\n3: NOT\n4: PRINT\n5: HALT\n");
     char * script_english_cmp_equal_to_alias = selfhost__compiler__disasm_skript("let x=4;let y=4;return x equal_to y");
     nl_assert_eq_text(script_english_cmp_equal_to_alias, "0: PUSH 4\n1: PUSH 4\n2: EQ\n3: PRINT\n4: HALT\n");
     char * script_english_cmp_equal_to_phrase = selfhost__compiler__disasm_skript("let x=4;let y=4;return x equal to y");
