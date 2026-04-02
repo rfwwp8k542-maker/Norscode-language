@@ -348,6 +348,9 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "safe") {
         returner "sann"
     }
+    hvis (tok == "secure") {
+        returner "sann"
+    }
     hvis (tok == "enabled") {
         returner "sann"
     }
@@ -409,6 +412,9 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
         returner "usann"
     }
     hvis (tok == "unsafe") {
+        returner "usann"
+    }
+    hvis (tok == "insecure") {
         returner "usann"
     }
     hvis (tok == "disabled") {
