@@ -2244,6 +2244,8 @@ def check_workflow_action_versions(workflows_dir: Path | None = None) -> dict:
         has_node24_env = False
         for line_no, raw_line in enumerate(lines, start=1):
             line = raw_line.strip()
+            if not line or line.startswith("#"):
+                continue
             lower_line = line.lower().replace(" ", "")
             if "force_javascript_actions_to_node24:" in lower_line and "true" in lower_line:
                 has_node24_env = True
