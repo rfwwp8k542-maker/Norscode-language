@@ -2514,20 +2514,10 @@ def run_selfhost_parser_core_checks(fixture_path: Path, label: str):
 
 
 def run_selfhost_parser_parity(suite: str = "all") -> dict:
-    suites = {
-        "m1": [(SELFHOST_PARSER_M1_FIXTURE, "Selfhost parser parity (M1)")],
-        "extended": [(SELFHOST_PARSER_EXTENDED_FIXTURE, "Selfhost parser parity (utvidet)")],
-        "all": [
-            (SELFHOST_PARSER_M1_FIXTURE, "Selfhost parser parity (M1)"),
-            (SELFHOST_PARSER_EXTENDED_FIXTURE, "Selfhost parser parity (utvidet)"),
-        ],
-    }
-    if suite not in suites:
-        raise RuntimeError(f"Ugyldig suite: {suite}")
-
+    suites = _selfhost_parity_suite_targets(suite)
     started = time.perf_counter()
     results: list[dict] = []
-    for fixture_path, label in suites[suite]:
+    for fixture_path, label in suites:
         results.append(run_selfhost_parser_core_checks(fixture_path, label))
 
     ok = all(item.get("success") for item in results)
@@ -2629,6 +2619,81 @@ def run_selfhost_parser_suite_consistency_check(m1_fixture: Path, extended_fixtu
         "mismatch_count": len(mismatch_lines),
         "stderr": "" if success else "\n".join(mismatch_lines) + "\n",
         "duration_ms": int((time.perf_counter() - started) * 1000),
+    }
+
+
+def _selfhost_parity_suite_targets(suite: str) -> list[tuple[Path, str]]:
+    suites = {
+        "m1": [(SELFHOST_PARSER_M1_FIXTURE, "Selfhost parser parity (M1)")],
+        "extended": [(SELFHOST_PARSER_EXTENDED_FIXTURE, "Selfhost parser parity (utvidet)")],
+        "all": [
+            (SELFHOST_PARSER_M1_FIXTURE, "Selfhost parser parity (M1)"),
+            (SELFHOST_PARSER_EXTENDED_FIXTURE, "Selfhost parser parity (utvidet)"),
+        ],
+    }
+    if suite not in suites:
+        raise RuntimeError(f"Ugyldig suite: {suite}")
+    return suites[suite]
+
+
+def update_selfhost_parser_fixtures(check_only: bool = False, suite: str = "all") -> dict:
+    targets = _selfhost_parity_suite_targets(suite)
+    summaries: list[dict] = []
+    total_updated = 0
+    total_cases = 0
+
+    for fixture_path, label in targets:
+        fixture_abs = fixture_path.resolve()
+        fixture = json.loads(fixture_abs.read_text(encoding="utf-8"))
+        updated = 0
+        case_count = 0
+
+        for mode, key in (("expression", "expressions"), ("script", "scripts")):
+            cases = fixture.get(key, [])
+            if not cases:
+                continue
+            sources = [str(item.get("source", "")) for item in cases]
+            actual_lists = _run_selfhost_parser_disasm_cases(sources, mode=mode)
+            if len(actual_lists) != len(cases):
+                raise RuntimeError(f"Intern feil ved oppdatering av {fixture_abs} ({mode}): antall resultater avviker")
+
+            for idx, item in enumerate(cases):
+                case_count += 1
+                actual_lines = actual_lists[idx]
+                old_lines = item.get("expected_lines")
+                old_error = item.get("expected_error")
+
+                if actual_lines and actual_lines[0].startswith("/* feil:"):
+                    new_error = actual_lines[0]
+                    if old_error != new_error or old_lines is not None:
+                        updated += 1
+                    item["expected_error"] = new_error
+                    item.pop("expected_lines", None)
+                else:
+                    if old_lines != actual_lines or old_error is not None:
+                        updated += 1
+                    item["expected_lines"] = actual_lines
+                    item.pop("expected_error", None)
+
+        total_updated += updated
+        total_cases += case_count
+        summaries.append(
+            {
+                "fixture": str(fixture_abs),
+                "label": label,
+                "cases": case_count,
+                "updated": updated,
+            }
+        )
+        if not check_only:
+            fixture_abs.write_text(json.dumps(fixture, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+    return {
+        "suite": suite,
+        "check_only": check_only,
+        "updated": total_updated,
+        "cases": total_cases,
+        "fixtures": summaries,
     }
 
 
@@ -3223,6 +3288,14 @@ def main():
     update_snapshots = sub.add_parser("update-snapshots", help="Regenerer IR snapshot-forventninger")
     update_snapshots.add_argument("--check", action="store_true", help="Feil hvis snapshots er utdaterte (skriv ikke)")
 
+    update_selfhost_parity = sub.add_parser(
+        "update-selfhost-parity-fixtures",
+        help="Regenerer selfhost parser parity-forventninger",
+    )
+    update_selfhost_parity.add_argument("--suite", choices=["m1", "extended", "all"], default="all", help="Velg fixtures å oppdatere")
+    update_selfhost_parity.add_argument("--check", action="store_true", help="Feil hvis parity-fixtures er utdaterte (skriv ikke)")
+    update_selfhost_parity.add_argument("--json", action="store_true", help="Skriv resultat som JSON")
+
     ci = sub.add_parser("ci", help="Kjør lokal CI-sekvens (snapshot, parity, test)")
     ci.add_argument("--json", action="store_true", help="Skriv CI-resultat som JSON")
     ci.add_argument("--check-names", action="store_true", help="Inkluder sjekk for navnemigrering (legacy -> NorCode)")
@@ -3570,6 +3643,26 @@ def main():
                     sys.exit(1)
             else:
                 print(f"Endringer skrevet: {updated}")
+
+        elif args.cmd == "update-selfhost-parity-fixtures":
+            payload = update_selfhost_parser_fixtures(check_only=args.check, suite=args.suite)
+            if args.json:
+                print(json.dumps(payload, ensure_ascii=False, indent=2))
+            else:
+                print(f"Suite: {payload['suite']}")
+                print(f"Cases: {payload['cases']}")
+                print(f"Avvik: {payload['updated']}")
+                for row in payload["fixtures"]:
+                    print(
+                        f"- {row['label']}: {row['cases']} cases, "
+                        f"{row['updated']} oppdateringer ({row['fixture']})"
+                    )
+                if args.check:
+                    print("Status: check-only")
+                else:
+                    print("Status: skrevet")
+            if args.check and payload["updated"] > 0:
+                sys.exit(1)
 
         elif args.cmd == "ci":
             payload = run_ci_pipeline(

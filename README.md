@@ -288,8 +288,14 @@ norcode debug app.no --ast --symbols --json
 # Oppdater strict snapshot-forventninger
 norcode update-snapshots
 
+# Oppdater selfhost parser parity-fixtures
+python3 -m norcode update-selfhost-parity-fixtures --suite all
+
 # CI-sjekk: feiler hvis snapshots er utdaterte
 norcode update-snapshots --check
+
+# CI-sjekk: feiler hvis parity-fixtures er utdaterte
+python3 -m norcode update-selfhost-parity-fixtures --suite all --check
 ```
 
 ### 8. CI-eksempel (GitHub Actions)
@@ -430,6 +436,11 @@ Kjør parser parity separat uten full CI:
 python3 -m norcode selfhost-parity --suite m1
 python3 -m norcode selfhost-parity --suite extended
 python3 -m norcode selfhost-parity --suite all --json
+
+# Regenerer forventninger for parity-fixtures
+python3 -m norcode update-selfhost-parity-fixtures --suite m1
+python3 -m norcode update-selfhost-parity-fixtures --suite extended
+python3 -m norcode update-selfhost-parity-fixtures --suite all --check
 ```
 
 `selfhost-parity` rapporterer også fordeling per suite: antall uttrykk, skript, linje-cases og feil-cases.
