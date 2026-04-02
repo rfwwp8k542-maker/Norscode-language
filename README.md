@@ -444,6 +444,8 @@ python3 -m norcode selfhost-parity --suite m1
 python3 -m norcode selfhost-parity --suite m2
 python3 -m norcode selfhost-parity --suite extended
 python3 -m norcode selfhost-parity --suite all --json
+python3 -m norcode selfhost-parity-progress
+python3 -m norcode selfhost-parity-progress --json
 python3 -m norcode selfhost-parity-consistency
 python3 -m norcode selfhost-parity-consistency --scope m2
 python3 -m norcode selfhost-parity-consistency --scope all
@@ -456,7 +458,8 @@ python3 -m norcode update-selfhost-parity-fixtures --suite extended
 python3 -m norcode update-selfhost-parity-fixtures --suite all --check
 ```
 
-`selfhost-parity` rapporterer også fordeling per suite: antall uttrykk, skript, linje-cases og feil-cases.
+`selfhost-parity` rapporterer fordeling per suite: antall uttrykk, skript, linje-cases og feil-cases.
+`selfhost-parity-progress` viser samlet M1/M2-fremdrift mot utvidet suite (dekning, overlap, missing/extra, consistency).
 
 ---
 

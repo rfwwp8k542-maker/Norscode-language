@@ -2535,6 +2535,118 @@ def run_selfhost_parser_parity(suite: str = "all") -> dict:
     }
 
 
+def _count_selfhost_parity_cases(fixture: dict) -> dict:
+    expression_cases = fixture.get("expressions", [])
+    script_cases = fixture.get("scripts", [])
+    all_cases = [*expression_cases, *script_cases]
+    error_cases = sum(1 for item in all_cases if "expected_error" in item)
+    line_cases = len(all_cases) - error_cases
+    return {
+        "case_count": len(all_cases),
+        "expression_cases": len(expression_cases),
+        "script_cases": len(script_cases),
+        "line_cases": line_cases,
+        "error_cases": error_cases,
+    }
+
+
+def run_selfhost_parity_progress() -> dict:
+    started = time.perf_counter()
+    mismatch_lines: list[str] = []
+    m1_fixture = _load_selfhost_parity_fixture(SELFHOST_PARSER_M1_FIXTURE, mismatch_lines)
+    m2_fixture = _load_selfhost_parity_fixture(SELFHOST_PARSER_M2_FIXTURE, mismatch_lines)
+    ext_fixture = _load_selfhost_parity_fixture(SELFHOST_PARSER_EXTENDED_FIXTURE, mismatch_lines)
+    if m1_fixture is None or m2_fixture is None or ext_fixture is None:
+        return {
+            "ok": False,
+            "duration_ms": int((time.perf_counter() - started) * 1000),
+            "stderr": "\n".join(mismatch_lines) + "\n",
+        }
+
+    m1_maps, _ = _selfhost_parity_fixture_case_maps(m1_fixture, "m1", mismatch_lines)
+    m2_maps, _ = _selfhost_parity_fixture_case_maps(m2_fixture, "m2", mismatch_lines)
+    ext_maps, _ = _selfhost_parity_fixture_case_maps(ext_fixture, "extended", mismatch_lines)
+
+    overlap_expr = sorted(set(m1_maps["expressions"].keys()) & set(m2_maps["expressions"].keys()))
+    overlap_scripts = sorted(set(m1_maps["scripts"].keys()) & set(m2_maps["scripts"].keys()))
+    overlap_total = len(overlap_expr) + len(overlap_scripts)
+
+    union_expr = set(m1_maps["expressions"].keys()) | set(m2_maps["expressions"].keys())
+    union_scripts = set(m1_maps["scripts"].keys()) | set(m2_maps["scripts"].keys())
+    ext_expr = set(ext_maps["expressions"].keys())
+    ext_scripts = set(ext_maps["scripts"].keys())
+    union_total = len(union_expr) + len(union_scripts)
+    ext_total = len(ext_expr) + len(ext_scripts)
+
+    missing_expr = sorted(ext_expr - union_expr)
+    missing_scripts = sorted(ext_scripts - union_scripts)
+    missing_total = len(missing_expr) + len(missing_scripts)
+
+    extra_expr = sorted(union_expr - ext_expr)
+    extra_scripts = sorted(union_scripts - ext_scripts)
+    extra_total = len(extra_expr) + len(extra_scripts)
+
+    consistency = run_selfhost_parser_suite_all_consistency_check(
+        SELFHOST_PARSER_M1_FIXTURE,
+        SELFHOST_PARSER_M2_FIXTURE,
+        SELFHOST_PARSER_EXTENDED_FIXTURE,
+    )
+
+    def _pct(part: int, total: int) -> float:
+        if total <= 0:
+            return 100.0
+        return round((part / total) * 100.0, 2)
+
+    coverage_expr = _pct(len(union_expr), len(ext_expr))
+    coverage_scripts = _pct(len(union_scripts), len(ext_scripts))
+    coverage_total = _pct(union_total, ext_total)
+    m1_total = len(m1_maps["expressions"]) + len(m1_maps["scripts"])
+    m2_total = len(m2_maps["expressions"]) + len(m2_maps["scripts"])
+    coverage_m1 = _pct(m1_total, ext_total)
+    coverage_m2 = _pct(m2_total, ext_total)
+
+    ready = (
+        consistency.get("success")
+        and missing_total == 0
+        and extra_total == 0
+        and overlap_total == 0
+    )
+    ok = ready and not mismatch_lines
+    return {
+        "ok": ok,
+        "ready": bool(ready),
+        "duration_ms": int((time.perf_counter() - started) * 1000),
+        "m1": {
+            **_count_selfhost_parity_cases(m1_fixture),
+            "coverage_total_pct": coverage_m1,
+        },
+        "m2": {
+            **_count_selfhost_parity_cases(m2_fixture),
+            "coverage_total_pct": coverage_m2,
+        },
+        "extended": _count_selfhost_parity_cases(ext_fixture),
+        "coverage": {
+            "expression_pct": coverage_expr,
+            "script_pct": coverage_scripts,
+            "total_pct": coverage_total,
+            "union_case_count": union_total,
+            "extended_case_count": ext_total,
+            "missing_in_m1_m2_count": missing_total,
+            "extra_in_m1_m2_count": extra_total,
+            "overlap_count": overlap_total,
+            "missing_in_m1_m2_examples": (missing_expr + missing_scripts)[:10],
+            "extra_in_m1_m2_examples": (extra_expr + extra_scripts)[:10],
+            "overlap_examples": (overlap_expr + overlap_scripts)[:10],
+        },
+        "consistency": {
+            "ok": bool(consistency.get("success")),
+            "checked_cases": int(consistency.get("checked_cases", 0) or 0),
+            "mismatch_count": int(consistency.get("mismatch_count", 0) or 0),
+        },
+        "stderr": "" if ok else (consistency.get("stderr", "") or "\n".join(mismatch_lines) + "\n"),
+    }
+
+
 def _load_selfhost_parity_fixture(path: Path, mismatch_lines: list[str]) -> dict | None:
     try:
         return json.loads(path.resolve().read_text(encoding="utf-8"))
@@ -3473,6 +3585,12 @@ def main():
     selfhost_parity.add_argument("--suite", choices=["m1", "m2", "extended", "all"], default="all", help="Velg parity-suite")
     selfhost_parity.add_argument("--json", action="store_true", help="Skriv resultat som JSON")
 
+    selfhost_parity_progress = sub.add_parser(
+        "selfhost-parity-progress",
+        help="Vis fremdrift for M1/M2 dekning mot utvidet parity-suite",
+    )
+    selfhost_parity_progress.add_argument("--json", action="store_true", help="Skriv resultat som JSON")
+
     selfhost_parity_consistency = sub.add_parser(
         "selfhost-parity-consistency",
         help="Sjekk consistency mellom parity-suiter og utvidet suite",
@@ -3886,6 +4004,45 @@ def main():
                     if not item.get("success") and item.get("stderr"):
                         print(item["stderr"].rstrip())
             if not payload["ok"]:
+                sys.exit(1)
+
+        elif args.cmd == "selfhost-parity-progress":
+            payload = run_selfhost_parity_progress()
+            if args.json:
+                print(json.dumps(payload, ensure_ascii=False, indent=2))
+            else:
+                print(f"OK: {'ja' if payload.get('ok') else 'nei'}")
+                print(f"Klar for full coverage: {'ja' if payload.get('ready') else 'nei'}")
+                coverage = payload.get("coverage", {})
+                print(
+                    "Dekning: "
+                    f"uttrykk={coverage.get('expression_pct', 0)}% "
+                    f"skript={coverage.get('script_pct', 0)}% "
+                    f"total={coverage.get('total_pct', 0)}%"
+                )
+                print(
+                    "Cases: "
+                    f"m1={payload.get('m1', {}).get('case_count', 0)} "
+                    f"m2={payload.get('m2', {}).get('case_count', 0)} "
+                    f"utvidet={payload.get('extended', {}).get('case_count', 0)}"
+                )
+                print(
+                    "Avvik: "
+                    f"missing={coverage.get('missing_in_m1_m2_count', 0)} "
+                    f"extra={coverage.get('extra_in_m1_m2_count', 0)} "
+                    f"overlap={coverage.get('overlap_count', 0)}"
+                )
+                consistency = payload.get("consistency", {})
+                print(
+                    "Consistency(all): "
+                    f"{'OK' if consistency.get('ok') else 'FEIL'} "
+                    f"({consistency.get('checked_cases', 0)} cases, "
+                    f"{consistency.get('mismatch_count', 0)} avvik)"
+                )
+                print(f"Tid: {payload.get('duration_ms', 0)} ms")
+                if payload.get("stderr") and not payload.get("ok"):
+                    print(str(payload.get("stderr", "")).rstrip())
+            if not payload.get("ok"):
                 sys.exit(1)
 
         elif args.cmd == "selfhost-parity-consistency":
