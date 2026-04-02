@@ -1372,6 +1372,9 @@ funksjon start() -> heltall {
     la expr_norsk_cmp_erikkje_kompakt: tekst = sh.disasm_uttrykk("7 erikkje 8")
     assert_eq(expr_norsk_cmp_erikkje_kompakt, "0: PUSH 7\n1: PUSH 8\n2: EQ\n3: NOT\n4: PRINT\n5: HALT\n")
 
+    la expr_norsk_cmp_erikkelik_kompakt: tekst = sh.disasm_uttrykk("7 erikkelik 8")
+    assert_eq(expr_norsk_cmp_erikkelik_kompakt, "0: PUSH 7\n1: PUSH 8\n2: EQ\n3: NOT\n4: PRINT\n5: HALT\n")
+
     la expr_norsk_cmp_erikkjelik_kompakt: tekst = sh.disasm_uttrykk("7 erikkjelik 8")
     assert_eq(expr_norsk_cmp_erikkjelik_kompakt, "0: PUSH 7\n1: PUSH 8\n2: EQ\n3: NOT\n4: PRINT\n5: HALT\n")
 
@@ -1654,6 +1657,9 @@ funksjon start() -> heltall {
 
     la script_norsk_cmp_erikkje_kompakt: tekst = sh.disasm_skript("la x=7;la y=8;hvis x erikkje y da 1 ellers 0")
     assert_eq(script_norsk_cmp_erikkje_kompakt, "0: PUSH 7\n1: PUSH 8\n2: EQ\n3: NOT\n4: JZ 7\n5: PUSH 1\n6: JMP 9\n7: LABEL 7\n8: PUSH 0\n9: LABEL 9\n10: PRINT\n11: HALT\n")
+
+    la script_norsk_cmp_erikkelik_kompakt: tekst = sh.disasm_skript("la x=7;la y=8;hvis x erikkelik y da 1 ellers 0")
+    assert_eq(script_norsk_cmp_erikkelik_kompakt, "0: PUSH 7\n1: PUSH 8\n2: EQ\n3: NOT\n4: JZ 7\n5: PUSH 1\n6: JMP 9\n7: LABEL 7\n8: PUSH 0\n9: LABEL 9\n10: PRINT\n11: HALT\n")
 
     la script_norsk_cmp_erikkjelik_kompakt: tekst = sh.disasm_skript("la x=7;la y=8;hvis x erikkjelik y da 1 ellers 0")
     assert_eq(script_norsk_cmp_erikkjelik_kompakt, "0: PUSH 7\n1: PUSH 8\n2: EQ\n3: NOT\n4: JZ 7\n5: PUSH 1\n6: JMP 9\n7: LABEL 7\n8: PUSH 0\n9: LABEL 9\n10: PRINT\n11: HALT\n")
