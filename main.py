@@ -2253,6 +2253,19 @@ def check_workflow_action_versions(workflows_dir: Path | None = None) -> dict:
                             "expected": new_ref,
                         }
                     )
+            lower_line = line.lower()
+            if (
+                "actions_allow_use_unsecure_node_version" in lower_line
+                and "true" in lower_line
+            ):
+                payload["issues"].append(
+                    {
+                        "file": str(workflow_path),
+                        "line": line_no,
+                        "found": "ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true",
+                        "expected": "fjern opt-out og bruk Node 24-kompatible action-versjoner",
+                    }
+                )
 
     payload["ok"] = len(payload["issues"]) == 0
     return payload
