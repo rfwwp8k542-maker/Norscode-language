@@ -1542,6 +1542,9 @@ funksjon start() -> heltall {
     la expr_english_permit_forbid_alias: tekst = sh.disasm_uttrykk("permit and not forbid")
     assert_eq(expr_english_permit_forbid_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: AND\n4: PRINT\n5: HALT\n")
 
+    la expr_english_valid_invalid_alias: tekst = sh.disasm_uttrykk("valid and not invalid")
+    assert_eq(expr_english_valid_invalid_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: AND\n4: PRINT\n5: HALT\n")
+
     la expr_english_equal_to_alias: tekst = sh.disasm_uttrykk("7 equal_to 7")
     assert_eq(expr_english_equal_to_alias, "0: PUSH 7\n1: PUSH 7\n2: EQ\n3: PRINT\n4: HALT\n")
 
@@ -1900,6 +1903,9 @@ funksjon start() -> heltall {
 
     la script_english_permit_forbid_alias: tekst = sh.disasm_skript("let x=permit;return x and not forbid")
     assert_eq(script_english_permit_forbid_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: AND\n4: PRINT\n5: HALT\n")
+
+    la script_english_valid_invalid_alias: tekst = sh.disasm_skript("let x=valid;return x and not invalid")
+    assert_eq(script_english_valid_invalid_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: AND\n4: PRINT\n5: HALT\n")
 
     la script_english_math_alias: tekst = sh.disasm_skript("let x=8;let y=2;return x divided_by y")
     assert_eq(script_english_math_alias, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
