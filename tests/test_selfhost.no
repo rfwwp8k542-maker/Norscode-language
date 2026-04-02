@@ -3351,7 +3351,7 @@ funksjon start() -> heltall {
     assert_ne(script_c, "")
 
     la script_err1: tekst = sh.disasm_skript("x=2+3")
-    assert_eq(script_err1, "/* feil: mangler ';' eller ',' etter assignment til x ved token 0 */")
+    assert_eq(script_err1, "/* feil: mangler ';', ',' eller ':' etter assignment til x ved token 0 */")
 
     la script_skip_empty: tekst = sh.disasm_skript("x=2;;x+1")
     assert_eq(script_skip_empty, "0: PUSH 2\n1: PUSH 1\n2: ADD\n3: PRINT\n4: HALT\n")
@@ -3359,8 +3359,14 @@ funksjon start() -> heltall {
     la script_comma_separator: tekst = sh.disasm_skript("la x=2,la y=3,returner x+y")
     assert_eq(script_comma_separator, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n")
 
+    la script_colon_separator: tekst = sh.disasm_skript("la x=2:la y=3:returner x+y")
+    assert_eq(script_colon_separator, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n")
+
     la script_comma_trailing: tekst = sh.disasm_skript("la x=2,returner x,")
     assert_eq(script_comma_trailing, "0: PUSH 2\n1: PRINT\n2: HALT\n")
+
+    la script_colon_trailing: tekst = sh.disasm_skript("la x=2:returner x:")
+    assert_eq(script_colon_trailing, "0: PUSH 2\n1: PRINT\n2: HALT\n")
 
     la script_err3: tekst = sh.disasm_skript("x=2+3;")
     assert_eq(script_err3, "/* feil: skriptet mangler sluttuttrykk */")

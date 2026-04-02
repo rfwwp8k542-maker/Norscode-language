@@ -2478,13 +2478,13 @@ char * selfhost__compiler__skript_til_ops_og_verdier(nl_list_text* tokens, nl_li
         int stmt_start = i;
         int stmt_has_semicolon = 0;
         nl_list_text_remove(stmt_tokens, 0);
-        while (((i < nl_list_text_len(tokens)) && !(nl_streq(tokens->data[i], ";"))) && !(nl_streq(tokens->data[i], ","))) {
+        while ((((i < nl_list_text_len(tokens)) && !(nl_streq(tokens->data[i], ";"))) && !(nl_streq(tokens->data[i], ","))) && !(nl_streq(tokens->data[i], ":"))) {
             if (!(nl_streq(tokens->data[i], ""))) {
                 nl_list_text_push(stmt_tokens, tokens->data[i]);
             }
             i = (i + 1);
         }
-        if ((i < nl_list_text_len(tokens)) && (nl_streq(tokens->data[i], ";") || nl_streq(tokens->data[i], ","))) {
+        if ((i < nl_list_text_len(tokens)) && ((nl_streq(tokens->data[i], ";") || nl_streq(tokens->data[i], ",")) || nl_streq(tokens->data[i], ":"))) {
             stmt_has_semicolon = 1;
             i = (i + 1);
         }
@@ -2534,7 +2534,7 @@ char * selfhost__compiler__skript_til_ops_og_verdier(nl_list_text* tokens, nl_li
                 return nl_concat(nl_concat(nl_concat(nl_concat("/* feil: tomt uttrykk i assignment til ", varnavn), " ved "), selfhost__compiler__token_pos(stmt_start)), " */");
             }
             if (stmt_has_semicolon == 0) {
-                return nl_concat(nl_concat(nl_concat(nl_concat("/* feil: mangler ';' eller ',' etter assignment til ", varnavn), " ved "), selfhost__compiler__token_pos(stmt_start)), " */");
+                return nl_concat(nl_concat(nl_concat(nl_concat("/* feil: mangler ';', ',' eller ':' etter assignment til ", varnavn), " ved "), selfhost__compiler__token_pos(stmt_start)), " */");
             }
             if (har_la && !(nl_streq(ass_op, "="))) {
                 return nl_concat(nl_concat("/* feil: 'la' støtter kun '=' ved ", selfhost__compiler__token_pos(stmt_start)), " */");
@@ -2637,7 +2637,7 @@ char * selfhost__compiler__skript_til_ops_og_verdier(nl_list_text* tokens, nl_li
             int bare_tomme_etter = 1;
             int sjekk_i = i;
             while (sjekk_i < nl_list_text_len(tokens)) {
-                if ((!(nl_streq(tokens->data[sjekk_i], ";")) && !(nl_streq(tokens->data[sjekk_i], ","))) && !(nl_streq(tokens->data[sjekk_i], ""))) {
+                if (((!(nl_streq(tokens->data[sjekk_i], ";")) && !(nl_streq(tokens->data[sjekk_i], ","))) && !(nl_streq(tokens->data[sjekk_i], ":"))) && !(nl_streq(tokens->data[sjekk_i], ""))) {
                     bare_tomme_etter = 0;
                     break;
                 }
@@ -2659,8 +2659,8 @@ char * selfhost__compiler__skript_til_ops_og_verdier(nl_list_text* tokens, nl_li
                 }
                 fant_sluttuttrykk = 1;
                 while (i < nl_list_text_len(tokens)) {
-                    if ((!(nl_streq(tokens->data[i], ";")) && !(nl_streq(tokens->data[i], ","))) && !(nl_streq(tokens->data[i], ""))) {
-                        return nl_concat(nl_concat("/* feil: kun ';' eller ',' er tillatt etter 'returner' (token ", nl_int_to_text(i)), ") */");
+                    if (((!(nl_streq(tokens->data[i], ";")) && !(nl_streq(tokens->data[i], ","))) && !(nl_streq(tokens->data[i], ":"))) && !(nl_streq(tokens->data[i], ""))) {
+                        return nl_concat(nl_concat("/* feil: kun ';', ',' eller ':' er tillatt etter 'returner' (token ", nl_int_to_text(i)), ") */");
                     }
                     i = (i + 1);
                 }
@@ -2681,7 +2681,7 @@ char * selfhost__compiler__skript_til_ops_og_verdier(nl_list_text* tokens, nl_li
         }
         fant_sluttuttrykk = 1;
         while (i < nl_list_text_len(tokens)) {
-            if ((!(nl_streq(tokens->data[i], ";")) && !(nl_streq(tokens->data[i], ","))) && !(nl_streq(tokens->data[i], ""))) {
+            if (((!(nl_streq(tokens->data[i], ";")) && !(nl_streq(tokens->data[i], ","))) && !(nl_streq(tokens->data[i], ":"))) && !(nl_streq(tokens->data[i], ""))) {
                 return nl_concat(nl_concat("/* feil: kun siste statement kan være uttrykk (token ", nl_int_to_text(i)), ") */");
             }
             i = (i + 1);
@@ -5123,13 +5123,17 @@ int start() {
     char * script_c = selfhost__compiler__kompiler_skript_til_c("x=2;y=x+5;y*2");
     nl_assert_ne_text(script_c, "");
     char * script_err1 = selfhost__compiler__disasm_skript("x=2+3");
-    nl_assert_eq_text(script_err1, "/* feil: mangler ';' eller ',' etter assignment til x ved token 0 */");
+    nl_assert_eq_text(script_err1, "/* feil: mangler ';', ',' eller ':' etter assignment til x ved token 0 */");
     char * script_skip_empty = selfhost__compiler__disasm_skript("x=2;;x+1");
     nl_assert_eq_text(script_skip_empty, "0: PUSH 2\n1: PUSH 1\n2: ADD\n3: PRINT\n4: HALT\n");
     char * script_comma_separator = selfhost__compiler__disasm_skript("la x=2,la y=3,returner x+y");
     nl_assert_eq_text(script_comma_separator, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
+    char * script_colon_separator = selfhost__compiler__disasm_skript("la x=2:la y=3:returner x+y");
+    nl_assert_eq_text(script_colon_separator, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
     char * script_comma_trailing = selfhost__compiler__disasm_skript("la x=2,returner x,");
     nl_assert_eq_text(script_comma_trailing, "0: PUSH 2\n1: PRINT\n2: HALT\n");
+    char * script_colon_trailing = selfhost__compiler__disasm_skript("la x=2:returner x:");
+    nl_assert_eq_text(script_colon_trailing, "0: PUSH 2\n1: PRINT\n2: HALT\n");
     char * script_err3 = selfhost__compiler__disasm_skript("x=2+3;");
     nl_assert_eq_text(script_err3, "/* feil: skriptet mangler sluttuttrykk */");
     char * script_err4 = selfhost__compiler__disasm_skript("la ;x+1");

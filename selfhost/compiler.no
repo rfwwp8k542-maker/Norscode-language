@@ -2035,13 +2035,13 @@ funksjon skript_til_ops_og_verdier(tokens: liste_tekst, navn: liste_tekst, miljo
         la stmt_has_semicolon: bool = usann
 
         fjern_indeks(stmt_tokens, 0)
-        mens (i < lengde(tokens) og tokens[i] != ";" og tokens[i] != ",") {
+        mens (i < lengde(tokens) og tokens[i] != ";" og tokens[i] != "," og tokens[i] != ":") {
             hvis (tokens[i] != "") {
                 legg_til(stmt_tokens, tokens[i])
             }
             i = i + 1
         }
-        hvis (i < lengde(tokens) og (tokens[i] == ";" eller tokens[i] == ",")) {
+        hvis (i < lengde(tokens) og (tokens[i] == ";" eller tokens[i] == "," eller tokens[i] == ":")) {
             stmt_has_semicolon = sann
             i = i + 1
         }
@@ -2094,7 +2094,7 @@ funksjon skript_til_ops_og_verdier(tokens: liste_tekst, navn: liste_tekst, miljo
                 returner "/* feil: tomt uttrykk i assignment til " + varnavn + " ved " + token_pos(stmt_start) + " */"
             }
             hvis (stmt_has_semicolon == usann) {
-                returner "/* feil: mangler ';' eller ',' etter assignment til " + varnavn + " ved " + token_pos(stmt_start) + " */"
+                returner "/* feil: mangler ';', ',' eller ':' etter assignment til " + varnavn + " ved " + token_pos(stmt_start) + " */"
             }
 
             hvis (har_la og ass_op != "=") {
@@ -2200,7 +2200,7 @@ funksjon skript_til_ops_og_verdier(tokens: liste_tekst, navn: liste_tekst, miljo
             la bare_tomme_etter: bool = sann
             la sjekk_i: heltall = i
             mens (sjekk_i < lengde(tokens)) {
-                hvis (tokens[sjekk_i] != ";" og tokens[sjekk_i] != "," og tokens[sjekk_i] != "") {
+                hvis (tokens[sjekk_i] != ";" og tokens[sjekk_i] != "," og tokens[sjekk_i] != ":" og tokens[sjekk_i] != "") {
                     bare_tomme_etter = usann
                     bryt
                 }
@@ -2224,8 +2224,8 @@ funksjon skript_til_ops_og_verdier(tokens: liste_tekst, navn: liste_tekst, miljo
                 }
                 fant_sluttuttrykk = sann
                 mens (i < lengde(tokens)) {
-                    hvis (tokens[i] != ";" og tokens[i] != "," og tokens[i] != "") {
-                        returner "/* feil: kun ';' eller ',' er tillatt etter 'returner' (token " + tekst_fra_heltall(i) + ") */"
+                    hvis (tokens[i] != ";" og tokens[i] != "," og tokens[i] != ":" og tokens[i] != "") {
+                        returner "/* feil: kun ';', ',' eller ':' er tillatt etter 'returner' (token " + tekst_fra_heltall(i) + ") */"
                     }
                     i = i + 1
                 }
@@ -2248,7 +2248,7 @@ funksjon skript_til_ops_og_verdier(tokens: liste_tekst, navn: liste_tekst, miljo
         fant_sluttuttrykk = sann
 
         mens (i < lengde(tokens)) {
-            hvis (tokens[i] != ";" og tokens[i] != "," og tokens[i] != "") {
+            hvis (tokens[i] != ";" og tokens[i] != "," og tokens[i] != ":" og tokens[i] != "") {
                 returner "/* feil: kun siste statement kan være uttrykk (token " + tekst_fra_heltall(i) + ") */"
             }
             i = i + 1
