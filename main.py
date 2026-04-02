@@ -2759,10 +2759,15 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
         payload["timings_ratio"]["step_coverage_pct"] + payload["timings_ratio"]["overhead_share_pct"], 2
     )
     payload["timings_ratio"]["percent_delta"] = round(abs(100.0 - payload["timings_ratio"]["percent_sum"]), 4)
+    payload["timings_ratio"]["overhead_policy"] = {
+        "low_max": 0.02,
+        "medium_max": 0.05,
+        "unit": "share",
+    }
     overhead_share = payload["timings_ratio"]["overhead_share"]
-    if overhead_share <= 0.02:
+    if overhead_share <= payload["timings_ratio"]["overhead_policy"]["low_max"]:
         payload["timings_ratio"]["overhead_level"] = "low"
-    elif overhead_share <= 0.05:
+    elif overhead_share <= payload["timings_ratio"]["overhead_policy"]["medium_max"]:
         payload["timings_ratio"]["overhead_level"] = "medium"
     else:
         payload["timings_ratio"]["overhead_level"] = "high"
