@@ -140,6 +140,28 @@
       ]
     },
     {
+      "name": "script_comma_separator",
+      "source": "la x=2,la y=3,returner x+y",
+      "expected_lines": [
+        "0: PUSH 2",
+        "1: PUSH 3",
+        "2: ADD",
+        "3: PRINT",
+        "4: HALT"
+      ]
+    },
+    {
+      "name": "script_colon_separator",
+      "source": "la x=2:la y=3:returner x+y",
+      "expected_lines": [
+        "0: PUSH 2",
+        "1: PUSH 3",
+        "2: ADD",
+        "3: PRINT",
+        "4: HALT"
+      ]
+    },
+    {
       "name": "error_la_missing_name",
       "source": "la ;x+1",
       "expected_error": "/* feil: 'la' må etterfølges av variabelnavn ved token 0 */"

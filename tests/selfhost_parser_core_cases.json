@@ -447,6 +447,28 @@
       ]
     },
     {
+      "name": "script_comma_separator",
+      "source": "la x=2,la y=3,returner x+y",
+      "expected_lines": [
+        "0: PUSH 2",
+        "1: PUSH 3",
+        "2: ADD",
+        "3: PRINT",
+        "4: HALT"
+      ]
+    },
+    {
+      "name": "script_colon_separator",
+      "source": "la x=2:la y=3:returner x+y",
+      "expected_lines": [
+        "0: PUSH 2",
+        "1: PUSH 3",
+        "2: ADD",
+        "3: PRINT",
+        "4: HALT"
+      ]
+    },
+    {
       "name": "error_missing_separator_after_assign",
       "source": "x=2+3",
       "expected_error": "/* feil: mangler ';', ',' eller ':' etter assignment til x ved token 0 */"
