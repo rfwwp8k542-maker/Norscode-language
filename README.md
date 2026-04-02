@@ -526,7 +526,7 @@ Neste steg:
 | Semantiske feil/paritetsfeil | Ikke startet | Trenger målbar sammenligning av feiltype + posisjon |
 
 **Mangelliste for M1 (konkret):**
-- Definere et fast `core parser parity`-testsett (20-30 representative programmer). M1-kjerne (20) ligger i `tests/selfhost_parser_m1_cases.json`, utvidet batch (45, inkl. `expected_error`) i `tests/selfhost_parser_core_cases.json`.
+- Definere et fast `core parser parity`-testsett (20-30 representative programmer). M1-kjerne (27) ligger i `tests/selfhost_parser_m1_cases.json`, utvidet batch (45, inkl. `expected_error`) i `tests/selfhost_parser_core_cases.json`.
 - Legge til en CI-jobb som sammenligner AST/IR mellom Python-compiler og selfhost på dette settet.
 - Dokumentere parser-begrensninger eksplisitt (hva som er støttet, hva som ikke er støttet).
 - Fryse alias-vekst midlertidig når parity-settet etableres, slik at vi får stabile milepæler.

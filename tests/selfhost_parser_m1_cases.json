@@ -27,6 +27,32 @@
       ]
     },
     {
+      "name": "brace_grouped",
+      "source": "{2+3}*4",
+      "expected_lines": [
+        "0: PUSH 2",
+        "1: PUSH 3",
+        "2: ADD",
+        "3: PUSH 4",
+        "4: MUL",
+        "5: PRINT",
+        "6: HALT"
+      ]
+    },
+    {
+      "name": "bracket_grouped",
+      "source": "[2+3]*4",
+      "expected_lines": [
+        "0: PUSH 2",
+        "1: PUSH 3",
+        "2: ADD",
+        "3: PUSH 4",
+        "4: MUL",
+        "5: PRINT",
+        "6: HALT"
+      ]
+    },
+    {
       "name": "bool_and_cmp",
       "source": "5>3&&2<4",
       "expected_lines": [
@@ -160,6 +186,23 @@
       ]
     },
     {
+      "name": "if_return_expression",
+      "source": "la x=0;returner hvis x==1 da 10 ellers 20",
+      "expected_lines": [
+        "0: PUSH 0",
+        "1: PUSH 1",
+        "2: EQ",
+        "3: JZ 6",
+        "4: PUSH 10",
+        "5: JMP 8",
+        "6: LABEL 6",
+        "7: PUSH 20",
+        "8: LABEL 8",
+        "9: PRINT",
+        "10: HALT"
+      ]
+    },
+    {
       "name": "set_assignment",
       "source": "la x=2;sett x=x+3;returner x",
       "expected_lines": [
@@ -201,6 +244,17 @@
         "8: LABEL 8",
         "9: PRINT",
         "10: HALT"
+      ]
+    },
+    {
+      "name": "return_semicolon",
+      "source": "la x=2;returner x+3;",
+      "expected_lines": [
+        "0: PUSH 2",
+        "1: PUSH 3",
+        "2: ADD",
+        "3: PRINT",
+        "4: HALT"
       ]
     },
     {
