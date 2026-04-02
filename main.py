@@ -2555,6 +2555,8 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
             "python_cache_tag": sys.implementation.cache_tag,
             "python_executable": sys.executable,
             "byteorder": sys.byteorder,
+            "is_ci": bool(os.getenv("CI")),
+            "is_github_actions": bool(os.getenv("GITHUB_ACTIONS")),
             "os": platform.system(),
             "arch": platform.machine(),
             "platform": platform.platform(),
