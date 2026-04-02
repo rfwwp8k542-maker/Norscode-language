@@ -386,6 +386,28 @@ Tolkning av `timings_ratio` (hurtigguide):
 - `overhead_within_medium`: enkel boolsk gate for automasjon (`true` når overhead er innen medium-grensen).
 - `ratio_sum` og `percent_sum` bør være nær `1.0` / `100.0`; `ratio_delta` og `percent_delta` viser avrundingsavvik.
 
+Eksempel på `timings_ratio` i `ci --json`:
+
+```json
+{
+  "step_coverage": 0.9884,
+  "overhead_share": 0.0116,
+  "step_coverage_pct": 98.84,
+  "overhead_share_pct": 1.16,
+  "ratio_sum": 1.0,
+  "ratio_delta": 0.0,
+  "percent_sum": 100.0,
+  "percent_delta": 0.0,
+  "overhead_policy": {
+    "low_max": 0.02,
+    "medium_max": 0.05,
+    "unit": "share"
+  },
+  "overhead_level": "low",
+  "overhead_within_medium": true
+}
+```
+
 `norcode ci` kjører nå disse stegene:
 1. Snapshot check
 2. Engine parity check
