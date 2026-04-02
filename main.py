@@ -2883,6 +2883,7 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False, parity
     py_major_minor = f"{sys.version_info.major}.{sys.version_info.minor}"
     step_order = [
         "snapshot_check",
+        "parser_fixture_check",
         "parity_check",
         "parser_core_m1_check",
     ]
@@ -3000,6 +3001,7 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False, parity
         "timings_s": {},
         "timings_ratio": {},
         "snapshot_check": {"ok": False, "updated": None},
+        "parser_fixture_check": {"ok": False, "updated": None, "cases": 0, "suite": parity_suite},
         "parity_check": {"ok": False},
         "parser_core_m1_check": {"ok": False, "case_count": 0, "error_cases": 0},
         "parser_core_extended_check": {"ok": False, "case_count": 0, "error_cases": 0},
@@ -3033,7 +3035,29 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False, parity
         print("OK")
 
     if not json_output:
-        print(f"[2/{total_steps}] Engine parity check")
+        print(f"[2/{total_steps}] Selfhost parity fixture check")
+    started = time.perf_counter()
+    fixture_suite = "all" if parity_suite == "all" else "m1"
+    fixture_check = update_selfhost_parser_fixtures(check_only=True, suite=fixture_suite)
+    payload["timings_ms"]["parser_fixture_check"] = int((time.perf_counter() - started) * 1000)
+    payload["timings_s"]["parser_fixture_check"] = round(payload["timings_ms"]["parser_fixture_check"] / 1000.0, 3)
+    payload["parser_fixture_check"]["ok"] = fixture_check["updated"] == 0
+    payload["parser_fixture_check"]["updated"] = int(fixture_check["updated"])
+    payload["parser_fixture_check"]["cases"] = int(fixture_check["cases"])
+    payload["parser_fixture_check"]["suite"] = str(fixture_check["suite"])
+    if fixture_check["updated"] > 0:
+        raise RuntimeError(
+            f"Selfhost parity-fixtures er utdaterte ({fixture_check['updated']} avvik). "
+            "Kjør: python3 -m norcode update-selfhost-parity-fixtures --suite all"
+        )
+    if not json_output:
+        print(
+            f"OK ({payload['parser_fixture_check']['cases']} cases, "
+            f"suite={payload['parser_fixture_check']['suite']})"
+        )
+
+    if not json_output:
+        print(f"[3/{total_steps}] Engine parity check")
     started = time.perf_counter()
     _, py_ok, py_lines, py_err = ir_disasm_source_captured("tests/ir_sample.nlir", strict=False, engine="python")
     _, sh_ok, sh_lines, sh_err = ir_disasm_source_captured("tests/ir_sample.nlir", strict=False, engine="selfhost")
@@ -3053,7 +3077,7 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False, parity
         print("OK")
 
     if not json_output:
-        print(f"[3/{total_steps}] Selfhost parser parity (M1)")
+        print(f"[4/{total_steps}] Selfhost parser parity (M1)")
     started = time.perf_counter()
     parser_core_m1_result = run_selfhost_parser_core_checks(
         SELFHOST_PARSER_M1_FIXTURE, "Selfhost parser parity (M1)"
@@ -3076,7 +3100,7 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False, parity
 
     if parity_suite == "all":
         if not json_output:
-            print(f"[4/{total_steps}] Selfhost parser parity (utvidet)")
+            print(f"[5/{total_steps}] Selfhost parser parity (utvidet)")
         started = time.perf_counter()
         parser_core_extended_result = run_selfhost_parser_core_checks(
             SELFHOST_PARSER_EXTENDED_FIXTURE, "Selfhost parser parity (utvidet)"
@@ -3107,7 +3131,7 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False, parity
         payload["parser_core_extended_check"]["case_count"] = 0
         payload["parser_core_extended_check"]["error_cases"] = 0
 
-    consistency_step = 5 if parity_suite == "all" else 4
+    consistency_step = 6 if parity_suite == "all" else 5
     if not json_output:
         print(f"[{consistency_step}/{total_steps}] Parser suite consistency")
     started = time.perf_counter()
@@ -3130,7 +3154,7 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False, parity
     if not json_output:
         print(f"OK ({payload['parser_suite_consistency_check']['checked_cases']} cases)")
 
-    test_step = 6 if parity_suite == "all" else 5
+    test_step = 7 if parity_suite == "all" else 6
     if not json_output:
         print(f"[{test_step}/{total_steps}] Full test")
     started = time.perf_counter()
@@ -3149,7 +3173,7 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False, parity
     if not json_output:
         print("OK")
 
-    workflow_step = 7 if parity_suite == "all" else 6
+    workflow_step = 8 if parity_suite == "all" else 7
     if not json_output:
         print(f"[{workflow_step}/{total_steps}] Workflow action version check")
     started = time.perf_counter()
@@ -3169,7 +3193,7 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False, parity
         print(f"OK ({workflow_check['scanned_files']} filer)")
 
     if check_names:
-        name_step = 8 if parity_suite == "all" else 7
+        name_step = 9 if parity_suite == "all" else 8
         if not json_output:
             print(f"[{name_step}/{total_steps}] Name migration check")
         started = time.perf_counter()

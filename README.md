@@ -423,13 +423,14 @@ Eksempel på `timings_ratio` i `ci --json`:
 
 `norcode ci` kjører nå disse stegene:
 1. Snapshot check
-2. Engine parity check
-3. Selfhost parser parity (M1)
-4. Selfhost parser parity (utvidet)
-5. Parser suite consistency (verifiserer at alle M1-cases finnes identisk i utvidet suite)
-6. Full test
-7. Workflow action version check (stopper på deprecated action-versjoner og usikker Node opt-out)
-8. Name migration check (kun med `--check-names`)
+2. Selfhost parity fixture check (feiler hvis fixtures er utdaterte)
+3. Engine parity check
+4. Selfhost parser parity (M1)
+5. Selfhost parser parity (utvidet)
+6. Parser suite consistency (verifiserer at alle M1-cases finnes identisk i utvidet suite)
+7. Full test
+8. Workflow action version check (stopper på deprecated action-versjoner og usikker Node opt-out)
+9. Name migration check (kun med `--check-names`)
 
 Med `--parity-suite m1` hopper `norcode ci` over steg 4 for raskere lokal iterasjon.
 
