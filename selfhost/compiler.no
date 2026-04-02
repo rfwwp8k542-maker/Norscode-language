@@ -107,6 +107,9 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "implies") {
         returner "impliserer"
     }
+    hvis (tok == "medforer") {
+        returner "impliserer"
+    }
     hvis (tok == "iff") {
         returner "xnor"
     }
