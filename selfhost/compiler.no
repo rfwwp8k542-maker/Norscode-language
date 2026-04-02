@@ -402,6 +402,9 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "awake") {
         returner "sann"
     }
+    hvis (tok == "healthy") {
+        returner "sann"
+    }
     hvis (tok == "enabled") {
         returner "sann"
     }
@@ -517,6 +520,9 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
         returner "usann"
     }
     hvis (tok == "asleep") {
+        returner "usann"
+    }
+    hvis (tok == "unhealthy") {
         returner "usann"
     }
     hvis (tok == "disabled") {
