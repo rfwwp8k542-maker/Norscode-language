@@ -119,6 +119,15 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "times" eller tok == "multiply" eller tok == "multiplies" eller tok == "multiplied") {
         returner "*"
     }
+    hvis (tok == "add" eller tok == "adds" eller tok == "added") {
+        returner "+"
+    }
+    hvis (tok == "subtract" eller tok == "subtracts" eller tok == "subtracted") {
+        returner "-"
+    }
+    hvis (tok == "divide" eller tok == "divides") {
+        returner "/"
+    }
     hvis (tok == "multiplied_by" eller tok == "multipliedby" eller tok == "multiply_by" eller tok == "multiplyby") {
         returner "*"
     }
