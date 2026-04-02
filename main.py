@@ -2510,6 +2510,7 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
     source_remote = get_current_git_origin_url()
     source_remote_protocol = get_git_remote_protocol(source_remote)
     source_remote_host = get_git_remote_host(source_remote)
+    source_remote_provider = get_git_remote_provider(source_remote_host)
     source_repo_slug = get_git_remote_repo_slug(source_remote)
     source_repo_owner, source_repo_name = split_repo_slug(source_repo_slug)
     source_dirty = get_current_git_dirty_state()
@@ -2541,8 +2542,8 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
         "source_remote_is_github": is_github_host(source_remote_host),
         "source_remote_is_gitlab": is_gitlab_host(source_remote_host),
         "source_remote_is_bitbucket": is_bitbucket_host(source_remote_host),
-        "source_remote_provider": get_git_remote_provider(source_remote_host),
-        "source_remote_is_unknown": get_git_remote_provider(source_remote_host) == "unknown",
+        "source_remote_provider": source_remote_provider,
+        "source_remote_is_unknown": source_remote_provider == "unknown",
         "source_repo_slug": source_repo_slug,
         "source_repo_owner": source_repo_owner,
         "source_repo_name": source_repo_name,
