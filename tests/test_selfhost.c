@@ -353,6 +353,12 @@ int selfhost__compiler__er_heltall_token(char * tok) {
 }
 
 char * selfhost__compiler__normaliser_norsk_token(char * tok) {
+    if ((((nl_streq(tok, "elif") || nl_streq(tok, "else_if")) || nl_streq(tok, "else_hvis")) || nl_streq(tok, "elsehvis")) || nl_streq(tok, "else-hvis")) {
+        return "ellers_hvis";
+    }
+    if (nl_streq(tok, "ellershvis")) {
+        return "ellers_hvis";
+    }
     if (nl_streq(tok, "på")) {
         return "pa";
     }
@@ -1708,33 +1714,36 @@ char * selfhost__compiler__bygg_hvis_da_ellers_ops_med_miljo(nl_list_text* token
     int nested_if_etter_da = 0;
     int da_idx = (-(1));
     int ellers_idx = (-(1));
+    int ellers_hvis_compact = 0;
     int i = 1;
     nl_list_int_remove(paren_pos, 0);
     while (i < nl_list_text_len(tokens)) {
         char * tok = tokens->data[i];
-        if (nl_streq(tok, "(")) {
+        char * tok_norm = selfhost__compiler__normaliser_norsk_token(tok);
+        if (nl_streq(tok_norm, "(")) {
             depth = (depth + 1);
             nl_list_int_push(paren_pos, i);
         }
-        else if (nl_streq(tok, ")")) {
+        else if (nl_streq(tok_norm, ")")) {
             depth = (depth - 1);
             if (depth < 0) {
                 return nl_concat(nl_concat("/* feil: ) uten matchende ( i hvis-uttrykk ved ", selfhost__compiler__token_pos(i)), " */");
             }
             nl_list_int_remove(paren_pos, (nl_list_int_len(paren_pos) - 1));
         }
-        else if (((depth == 0) && nl_streq(tok, "da")) && (da_idx < 0)) {
+        else if (((depth == 0) && nl_streq(tok_norm, "da")) && (da_idx < 0)) {
             da_idx = i;
         }
-        else if (((depth == 0) && (da_idx >= 0)) && nl_streq(tok, "hvis")) {
+        else if (((depth == 0) && (da_idx >= 0)) && nl_streq(tok_norm, "hvis")) {
             nested_if_etter_da = (nested_if_etter_da + 1);
         }
-        else if (((depth == 0) && nl_streq(tok, "ellers")) && (da_idx >= 0)) {
+        else if (((depth == 0) && (nl_streq(tok_norm, "ellers") || nl_streq(tok_norm, "ellers_hvis"))) && (da_idx >= 0)) {
             if (nested_if_etter_da > 0) {
                 nested_if_etter_da = (nested_if_etter_da - 1);
             }
             else {
                 ellers_idx = i;
+                ellers_hvis_compact = nl_streq(tok_norm, "ellers_hvis");
                 break;
             }
         }
@@ -1769,6 +1778,9 @@ char * selfhost__compiler__bygg_hvis_da_ellers_ops_med_miljo(nl_list_text* token
         i = (i + 1);
     }
     i = (ellers_idx + 1);
+    if (ellers_hvis_compact) {
+        nl_list_text_push(else_tokens, "hvis");
+    }
     while (i < nl_list_text_len(tokens)) {
         nl_list_text_push(else_tokens, tokens->data[i]);
         i = (i + 1);
@@ -3340,6 +3352,10 @@ int start() {
     nl_assert_ne_text(expr_env_c, "");
     char * expr_hvis = selfhost__compiler__disasm_uttrykk("hvis 1==1 da 7 ellers 9");
     nl_assert_eq_text(expr_hvis, "0: PUSH 1\n1: PUSH 1\n2: EQ\n3: JZ 6\n4: PUSH 7\n5: JMP 8\n6: LABEL 6\n7: PUSH 9\n8: LABEL 8\n9: PRINT\n10: HALT\n");
+    char * expr_hvis_ellers_hvis = selfhost__compiler__disasm_uttrykk("hvis 0==1 da 10 ellers_hvis 1==1 da 20 ellers 30");
+    nl_assert_eq_text(expr_hvis_ellers_hvis, "0: PUSH 0\n1: PUSH 1\n2: EQ\n3: JZ 6\n4: PUSH 10\n5: JMP 16\n6: LABEL 6\n7: PUSH 1\n8: PUSH 1\n9: EQ\n10: JZ 13\n11: PUSH 20\n12: JMP 15\n13: LABEL 13\n14: PUSH 30\n15: LABEL 15\n16: LABEL 16\n17: PRINT\n18: HALT\n");
+    char * expr_hvis_elif_alias = selfhost__compiler__disasm_uttrykk("hvis 0==1 da 10 elif 1==1 da 20 ellers 30");
+    nl_assert_eq_text(expr_hvis_elif_alias, "0: PUSH 0\n1: PUSH 1\n2: EQ\n3: JZ 6\n4: PUSH 10\n5: JMP 16\n6: LABEL 6\n7: PUSH 1\n8: PUSH 1\n9: EQ\n10: JZ 13\n11: PUSH 20\n12: JMP 15\n13: LABEL 13\n14: PUSH 30\n15: LABEL 15\n16: LABEL 16\n17: PRINT\n18: HALT\n");
     char * expr_hvis_env = selfhost__compiler__disasm_uttrykk_med_miljo("hvis x>y da x ellers y", env_navn, env_verdier);
     nl_assert_eq_text(expr_hvis_env, "0: PUSH 7\n1: PUSH 3\n2: GT\n3: JZ 6\n4: PUSH 7\n5: JMP 8\n6: LABEL 6\n7: PUSH 3\n8: LABEL 8\n9: PRINT\n10: HALT\n");
     char * expr_hvis_c = selfhost__compiler__kompiler_uttrykk_til_c("hvis 1==1 da 7 ellers 9");

@@ -56,6 +56,12 @@ funksjon er_heltall_token(tok: tekst) -> bool {
 }
 
 funksjon normaliser_norsk_token(tok: tekst) -> tekst {
+    hvis (tok == "elif" eller tok == "else_if" eller tok == "else_hvis" eller tok == "elsehvis" eller tok == "else-hvis") {
+        returner "ellers_hvis"
+    }
+    hvis (tok == "ellershvis") {
+        returner "ellers_hvis"
+    }
     hvis (tok == "på") {
         returner "pa"
     }
@@ -1301,30 +1307,33 @@ funksjon bygg_hvis_da_ellers_ops_med_miljo(tokens: liste_tekst, navn: liste_teks
     la nested_if_etter_da: heltall = 0
     la da_idx: heltall = -1
     la ellers_idx: heltall = -1
+    la ellers_hvis_compact: bool = usann
     la i: heltall = 1
 
     fjern_indeks(paren_pos, 0)
 
     mens (i < lengde(tokens)) {
         la tok: tekst = tokens[i]
-        hvis (tok == "(") {
+        la tok_norm: tekst = normaliser_norsk_token(tok)
+        hvis (tok_norm == "(") {
             depth = depth + 1
             legg_til(paren_pos, i)
-        } ellers hvis (tok == ")") {
+        } ellers hvis (tok_norm == ")") {
             depth = depth - 1
             hvis (depth < 0) {
                 returner "/* feil: ) uten matchende ( i hvis-uttrykk ved " + token_pos(i) + " */"
             }
             fjern_indeks(paren_pos, lengde(paren_pos) - 1)
-        } ellers hvis (depth == 0 og tok == "da" og da_idx < 0) {
+        } ellers hvis (depth == 0 og tok_norm == "da" og da_idx < 0) {
             da_idx = i
-        } ellers hvis (depth == 0 og da_idx >= 0 og tok == "hvis") {
+        } ellers hvis (depth == 0 og da_idx >= 0 og tok_norm == "hvis") {
             nested_if_etter_da = nested_if_etter_da + 1
-        } ellers hvis (depth == 0 og tok == "ellers" og da_idx >= 0) {
+        } ellers hvis (depth == 0 og (tok_norm == "ellers" eller tok_norm == "ellers_hvis") og da_idx >= 0) {
             hvis (nested_if_etter_da > 0) {
                 nested_if_etter_da = nested_if_etter_da - 1
             } ellers {
                 ellers_idx = i
+                ellers_hvis_compact = tok_norm == "ellers_hvis"
                 bryt
             }
         }
@@ -1359,6 +1368,9 @@ funksjon bygg_hvis_da_ellers_ops_med_miljo(tokens: liste_tekst, navn: liste_teks
         i = i + 1
     }
     i = ellers_idx + 1
+    hvis (ellers_hvis_compact) {
+        legg_til(else_tokens, "hvis")
+    }
     mens (i < lengde(tokens)) {
         legg_til(else_tokens, tokens[i])
         i = i + 1

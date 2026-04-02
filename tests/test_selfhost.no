@@ -1470,6 +1470,12 @@ funksjon start() -> heltall {
     la expr_hvis: tekst = sh.disasm_uttrykk("hvis 1==1 da 7 ellers 9")
     assert_eq(expr_hvis, "0: PUSH 1\n1: PUSH 1\n2: EQ\n3: JZ 6\n4: PUSH 7\n5: JMP 8\n6: LABEL 6\n7: PUSH 9\n8: LABEL 8\n9: PRINT\n10: HALT\n")
 
+    la expr_hvis_ellers_hvis: tekst = sh.disasm_uttrykk("hvis 0==1 da 10 ellers_hvis 1==1 da 20 ellers 30")
+    assert_eq(expr_hvis_ellers_hvis, "0: PUSH 0\n1: PUSH 1\n2: EQ\n3: JZ 6\n4: PUSH 10\n5: JMP 16\n6: LABEL 6\n7: PUSH 1\n8: PUSH 1\n9: EQ\n10: JZ 13\n11: PUSH 20\n12: JMP 15\n13: LABEL 13\n14: PUSH 30\n15: LABEL 15\n16: LABEL 16\n17: PRINT\n18: HALT\n")
+
+    la expr_hvis_elif_alias: tekst = sh.disasm_uttrykk("hvis 0==1 da 10 elif 1==1 da 20 ellers 30")
+    assert_eq(expr_hvis_elif_alias, "0: PUSH 0\n1: PUSH 1\n2: EQ\n3: JZ 6\n4: PUSH 10\n5: JMP 16\n6: LABEL 6\n7: PUSH 1\n8: PUSH 1\n9: EQ\n10: JZ 13\n11: PUSH 20\n12: JMP 15\n13: LABEL 13\n14: PUSH 30\n15: LABEL 15\n16: LABEL 16\n17: PRINT\n18: HALT\n")
+
     la expr_hvis_env: tekst = sh.disasm_uttrykk_med_miljo("hvis x>y da x ellers y", env_navn, env_verdier)
     assert_eq(expr_hvis_env, "0: PUSH 7\n1: PUSH 3\n2: GT\n3: JZ 6\n4: PUSH 7\n5: JMP 8\n6: LABEL 6\n7: PUSH 3\n8: LABEL 8\n9: PRINT\n10: HALT\n")
 
