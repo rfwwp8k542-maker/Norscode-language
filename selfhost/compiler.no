@@ -137,6 +137,9 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "infer" eller tok == "derav") {
         returner "impliserer"
     }
+    hvis (tok == "as_a_result" eller tok == "asaresult" eller tok == "som_resultat" eller tok == "somresultat") {
+        returner "impliserer"
+    }
     hvis (tok == "only_if" eller tok == "onlyif" eller tok == "kun_hvis" eller tok == "kunhvis") {
         returner "impliserer"
     }
