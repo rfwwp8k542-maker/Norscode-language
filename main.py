@@ -2237,6 +2237,7 @@ def check_workflow_action_versions(workflows_dir: Path | None = None) -> dict:
     minimum_action_majors = WORKFLOW_ACTION_POLICY["minimum_action_majors"]
     payload = {
         "ok": True,
+        "scanned_dir": str(base),
         "scanned_files": 0,
         "files": [],
         "file_extensions": [".yml", ".yaml"],
@@ -2351,6 +2352,7 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
         "test_check": {"ok": False, "passed": 0, "failed": 0, "total": 0},
         "workflow_action_check": {
             "ok": False,
+            "scanned_dir": ".github/workflows",
             "scanned_files": 0,
             "files": [],
             "file_extensions": [".yml", ".yaml"],
