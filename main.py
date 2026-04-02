@@ -2378,10 +2378,11 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
     payload["workflow_action_check"] = workflow_check
     if not workflow_check["ok"]:
         issue = workflow_check["issues"][0]
+        issue_type = issue.get("type", "unknown")
         raise RuntimeError(
-            "Deprecated GitHub Action oppdaget: "
+            f"Workflow policy-brudd ({issue_type}) oppdaget: "
             f"{issue['found']} i {issue['file']}:{issue['line']} "
-            f"(oppdater til {issue['expected']})"
+            f"(forventet: {issue['expected']})"
         )
     if not json_output:
         print("OK")
