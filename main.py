@@ -2611,6 +2611,7 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
             "home": os.path.expanduser("~"),
             "tmpdir": tempfile.gettempdir(),
             "cwd": str(Path.cwd()),
+            "cwd_has_spaces": " " in str(Path.cwd()),
             "timezone": dt.datetime.now().astimezone().tzname(),
         },
         "steps": {"total": total_steps, "name_check_enabled": check_names, "order": step_order},
