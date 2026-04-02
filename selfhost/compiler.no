@@ -98,6 +98,9 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "not") {
         returner "ikke"
     }
+    hvis (tok == "xeller") {
+        returner "xor"
+    }
     hvis (tok == "is") {
         returner "er"
     }
@@ -571,7 +574,7 @@ funksjon er_operator_token(tok: tekst) -> bool {
     hvis (tok == "er" eller tok == "ikke_er" eller tok == "mindre_enn" eller tok == "storre_enn" eller tok == "mindre_eller_lik" eller tok == "storre_eller_lik") {
         returner sann
     }
-    hvis (tok == "&&" eller tok == "||" eller tok == "!" eller tok == "og" eller tok == "samt" eller tok == "eller" eller tok == "enten" eller tok == "ikke") {
+    hvis (tok == "&&" eller tok == "||" eller tok == "!" eller tok == "og" eller tok == "samt" eller tok == "eller" eller tok == "enten" eller tok == "ikke" eller tok == "xor" eller tok == "^^") {
         returner sann
     }
     returner usann
@@ -598,7 +601,7 @@ funksjon operator_precedens(tok: tekst) -> heltall {
     hvis (tok == "&&" eller tok == "og" eller tok == "samt") {
         returner 2
     }
-    hvis (tok == "||" eller tok == "eller" eller tok == "enten") {
+    hvis (tok == "||" eller tok == "eller" eller tok == "enten" eller tok == "xor" eller tok == "^^") {
         returner 1
     }
     returner 0
@@ -654,6 +657,13 @@ funksjon emitter_operator(ops: liste_tekst, verdier: liste_heltall, op: tekst) -
         returner sann
     }
     hvis (op == "!=" eller op == "ikke_er") {
+        legg_til(ops, "EQ")
+        legg_til(verdier, 0)
+        legg_til(ops, "NOT")
+        legg_til(verdier, 0)
+        returner sann
+    }
+    hvis (op == "xor" eller op == "^^") {
         legg_til(ops, "EQ")
         legg_til(verdier, 0)
         legg_til(ops, "NOT")

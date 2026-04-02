@@ -395,6 +395,9 @@ char * selfhost__compiler__normaliser_norsk_token(char * tok) {
     if (nl_streq(tok, "not")) {
         return "ikke";
     }
+    if (nl_streq(tok, "xeller")) {
+        return "xor";
+    }
     if (nl_streq(tok, "is")) {
         return "er";
     }
@@ -868,7 +871,7 @@ int selfhost__compiler__er_operator_token(char * tok) {
     if (((((nl_streq(tok, "er") || nl_streq(tok, "ikke_er")) || nl_streq(tok, "mindre_enn")) || nl_streq(tok, "storre_enn")) || nl_streq(tok, "mindre_eller_lik")) || nl_streq(tok, "storre_eller_lik")) {
         return 1;
     }
-    if (((((((nl_streq(tok, "&&") || nl_streq(tok, "||")) || nl_streq(tok, "!")) || nl_streq(tok, "og")) || nl_streq(tok, "samt")) || nl_streq(tok, "eller")) || nl_streq(tok, "enten")) || nl_streq(tok, "ikke")) {
+    if (((((((((nl_streq(tok, "&&") || nl_streq(tok, "||")) || nl_streq(tok, "!")) || nl_streq(tok, "og")) || nl_streq(tok, "samt")) || nl_streq(tok, "eller")) || nl_streq(tok, "enten")) || nl_streq(tok, "ikke")) || nl_streq(tok, "xor")) || nl_streq(tok, "^^")) {
         return 1;
     }
     return 0;
@@ -894,7 +897,7 @@ int selfhost__compiler__operator_precedens(char * tok) {
     if ((nl_streq(tok, "&&") || nl_streq(tok, "og")) || nl_streq(tok, "samt")) {
         return 2;
     }
-    if ((nl_streq(tok, "||") || nl_streq(tok, "eller")) || nl_streq(tok, "enten")) {
+    if ((((nl_streq(tok, "||") || nl_streq(tok, "eller")) || nl_streq(tok, "enten")) || nl_streq(tok, "xor")) || nl_streq(tok, "^^")) {
         return 1;
     }
     return 0;
@@ -952,6 +955,13 @@ int selfhost__compiler__emitter_operator(nl_list_text* ops, nl_list_int* verdier
         return 1;
     }
     if (nl_streq(op, "!=") || nl_streq(op, "ikke_er")) {
+        nl_list_text_push(ops, "EQ");
+        nl_list_int_push(verdier, 0);
+        nl_list_text_push(ops, "NOT");
+        nl_list_int_push(verdier, 0);
+        return 1;
+    }
+    if (nl_streq(op, "xor") || nl_streq(op, "^^")) {
         nl_list_text_push(ops, "EQ");
         nl_list_int_push(verdier, 0);
         nl_list_text_push(ops, "NOT");
@@ -2989,6 +2999,8 @@ int start() {
     nl_assert_eq_text(expr_eq, "0: PUSH 7\n1: PUSH 7\n2: EQ\n3: NOT\n4: PUSH 2\n5: PUSH 2\n6: EQ\n7: OR\n8: PRINT\n9: HALT\n");
     char * expr_not_equal_angle_alias = selfhost__compiler__disasm_uttrykk("7<>8");
     nl_assert_eq_text(expr_not_equal_angle_alias, "0: PUSH 7\n1: PUSH 8\n2: EQ\n3: NOT\n4: PRINT\n5: HALT\n");
+    char * expr_xor_alias = selfhost__compiler__disasm_uttrykk("1 xor 0");
+    nl_assert_eq_text(expr_xor_alias, "0: PUSH 1\n1: PUSH 0\n2: EQ\n3: NOT\n4: PRINT\n5: HALT\n");
     char * expr_le = selfhost__compiler__disasm_uttrykk("3 <= 4");
     nl_assert_eq_text(expr_le, "0: PUSH 3\n1: PUSH 4\n2: GT\n3: NOT\n4: PRINT\n5: HALT\n");
     char * expr_ge = selfhost__compiler__disasm_uttrykk("4 >= 3");
@@ -4178,6 +4190,8 @@ int start() {
     nl_assert_eq_text(script_english_cmp_is_not_equal_to_phrase, "0: PUSH 4\n1: PUSH 5\n2: EQ\n3: NOT\n4: PRINT\n5: HALT\n");
     char * script_not_equal_angle_alias = selfhost__compiler__disasm_skript("returner 7<>8");
     nl_assert_eq_text(script_not_equal_angle_alias, "0: PUSH 7\n1: PUSH 8\n2: EQ\n3: NOT\n4: PRINT\n5: HALT\n");
+    char * script_xor_alias = selfhost__compiler__disasm_skript("returner 1 xor 0");
+    nl_assert_eq_text(script_xor_alias, "0: PUSH 1\n1: PUSH 0\n2: EQ\n3: NOT\n4: PRINT\n5: HALT\n");
     char * script_english_cmp_is_not_equal_to_compact_alias = selfhost__compiler__disasm_skript("let x=4;let y=5;return x is_not_equal_to y");
     nl_assert_eq_text(script_english_cmp_is_not_equal_to_compact_alias, "0: PUSH 4\n1: PUSH 5\n2: EQ\n3: NOT\n4: PRINT\n5: HALT\n");
     char * script_english_cmp_isnt_alias = selfhost__compiler__disasm_skript("let x=4;let y=5;return x isnt y");

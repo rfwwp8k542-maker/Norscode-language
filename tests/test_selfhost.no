@@ -163,6 +163,9 @@ funksjon start() -> heltall {
     la expr_not_equal_angle_alias: tekst = sh.disasm_uttrykk("7<>8")
     assert_eq(expr_not_equal_angle_alias, "0: PUSH 7\n1: PUSH 8\n2: EQ\n3: NOT\n4: PRINT\n5: HALT\n")
 
+    la expr_xor_alias: tekst = sh.disasm_uttrykk("1 xor 0")
+    assert_eq(expr_xor_alias, "0: PUSH 1\n1: PUSH 0\n2: EQ\n3: NOT\n4: PRINT\n5: HALT\n")
+
     la expr_le: tekst = sh.disasm_uttrykk("3 <= 4")
     assert_eq(expr_le, "0: PUSH 3\n1: PUSH 4\n2: GT\n3: NOT\n4: PRINT\n5: HALT\n")
 
@@ -1933,6 +1936,9 @@ funksjon start() -> heltall {
 
     la script_not_equal_angle_alias: tekst = sh.disasm_skript("returner 7<>8")
     assert_eq(script_not_equal_angle_alias, "0: PUSH 7\n1: PUSH 8\n2: EQ\n3: NOT\n4: PRINT\n5: HALT\n")
+
+    la script_xor_alias: tekst = sh.disasm_skript("returner 1 xor 0")
+    assert_eq(script_xor_alias, "0: PUSH 1\n1: PUSH 0\n2: EQ\n3: NOT\n4: PRINT\n5: HALT\n")
 
     la script_english_cmp_is_not_equal_to_compact_alias: tekst = sh.disasm_skript("let x=4;let y=5;return x is_not_equal_to y")
     assert_eq(script_english_cmp_is_not_equal_to_compact_alias, "0: PUSH 4\n1: PUSH 5\n2: EQ\n3: NOT\n4: PRINT\n5: HALT\n")
