@@ -277,6 +277,12 @@ funksjon start() -> heltall {
     la expr_derav_alias: tekst = sh.disasm_uttrykk("1 derav 0")
     assert_eq(expr_derav_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n")
 
+    la expr_as_consequence_alias: tekst = sh.disasm_uttrykk("1 as_consequence 0")
+    assert_eq(expr_as_consequence_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n")
+
+    la expr_som_konsekvens_alias: tekst = sh.disasm_uttrykk("1 som_konsekvens 0")
+    assert_eq(expr_som_konsekvens_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n")
+
     la expr_as_a_result_alias: tekst = sh.disasm_uttrykk("1 as_a_result 0")
     assert_eq(expr_as_a_result_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n")
 
@@ -2296,6 +2302,12 @@ funksjon start() -> heltall {
 
     la script_derav_alias: tekst = sh.disasm_skript("returner 1 derav 0")
     assert_eq(script_derav_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n")
+
+    la script_as_consequence_alias: tekst = sh.disasm_skript("returner 1 as_consequence 0")
+    assert_eq(script_as_consequence_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n")
+
+    la script_som_konsekvens_alias: tekst = sh.disasm_skript("returner 1 som_konsekvens 0")
+    assert_eq(script_som_konsekvens_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n")
 
     la script_as_a_result_alias: tekst = sh.disasm_skript("returner 1 as_a_result 0")
     assert_eq(script_as_a_result_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n")

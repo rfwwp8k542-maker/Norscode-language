@@ -149,6 +149,9 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "infer" eller tok == "derav") {
         returner "impliserer"
     }
+    hvis (tok == "as_consequence" eller tok == "asconsequence" eller tok == "som_konsekvens" eller tok == "somkonsekvens") {
+        returner "impliserer"
+    }
     hvis (tok == "as_a_result" eller tok == "asaresult" eller tok == "som_resultat" eller tok == "somresultat") {
         returner "impliserer"
     }

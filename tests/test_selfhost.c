@@ -446,6 +446,9 @@ char * selfhost__compiler__normaliser_norsk_token(char * tok) {
     if (nl_streq(tok, "infer") || nl_streq(tok, "derav")) {
         return "impliserer";
     }
+    if (((nl_streq(tok, "as_consequence") || nl_streq(tok, "asconsequence")) || nl_streq(tok, "som_konsekvens")) || nl_streq(tok, "somkonsekvens")) {
+        return "impliserer";
+    }
     if (((nl_streq(tok, "as_a_result") || nl_streq(tok, "asaresult")) || nl_streq(tok, "som_resultat")) || nl_streq(tok, "somresultat")) {
         return "impliserer";
     }
@@ -3275,6 +3278,10 @@ int start() {
     nl_assert_eq_text(expr_infer_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
     char * expr_derav_alias = selfhost__compiler__disasm_uttrykk("1 derav 0");
     nl_assert_eq_text(expr_derav_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
+    char * expr_as_consequence_alias = selfhost__compiler__disasm_uttrykk("1 as_consequence 0");
+    nl_assert_eq_text(expr_as_consequence_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
+    char * expr_som_konsekvens_alias = selfhost__compiler__disasm_uttrykk("1 som_konsekvens 0");
+    nl_assert_eq_text(expr_som_konsekvens_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
     char * expr_as_a_result_alias = selfhost__compiler__disasm_uttrykk("1 as_a_result 0");
     nl_assert_eq_text(expr_as_a_result_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
     char * expr_som_resultat_alias = selfhost__compiler__disasm_uttrykk("1 som_resultat 0");
@@ -4630,6 +4637,10 @@ int start() {
     nl_assert_eq_text(script_infer_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
     char * script_derav_alias = selfhost__compiler__disasm_skript("returner 1 derav 0");
     nl_assert_eq_text(script_derav_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
+    char * script_as_consequence_alias = selfhost__compiler__disasm_skript("returner 1 as_consequence 0");
+    nl_assert_eq_text(script_as_consequence_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
+    char * script_som_konsekvens_alias = selfhost__compiler__disasm_skript("returner 1 som_konsekvens 0");
+    nl_assert_eq_text(script_som_konsekvens_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
     char * script_as_a_result_alias = selfhost__compiler__disasm_skript("returner 1 as_a_result 0");
     nl_assert_eq_text(script_as_a_result_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
     char * script_som_resultat_alias = selfhost__compiler__disasm_skript("returner 1 som_resultat 0");
