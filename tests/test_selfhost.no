@@ -430,6 +430,12 @@ funksjon start() -> heltall {
     la expr_premiss_gitt_alias: tekst = sh.disasm_uttrykk("1 premiss_gitt 0")
     assert_eq(expr_premiss_gitt_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n")
 
+    la expr_premise_assumed_alias: tekst = sh.disasm_uttrykk("1 premise_assumed 0")
+    assert_eq(expr_premise_assumed_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n")
+
+    la expr_premiss_antatt_alias: tekst = sh.disasm_uttrykk("1 premiss_antatt 0")
+    assert_eq(expr_premiss_antatt_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n")
+
     la expr_iff_alias: tekst = sh.disasm_uttrykk("1 iff 1")
     assert_eq(expr_iff_alias, "0: PUSH 1\n1: PUSH 1\n2: EQ\n3: PRINT\n4: HALT\n")
 
@@ -2467,6 +2473,12 @@ funksjon start() -> heltall {
 
     la script_premiss_gitt_alias: tekst = sh.disasm_skript("returner 1 premiss_gitt 0")
     assert_eq(script_premiss_gitt_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n")
+
+    la script_premise_assumed_alias: tekst = sh.disasm_skript("returner 1 premise_assumed 0")
+    assert_eq(script_premise_assumed_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n")
+
+    la script_premiss_antatt_alias: tekst = sh.disasm_skript("returner 1 premiss_antatt 0")
+    assert_eq(script_premiss_antatt_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n")
 
     la script_iff_alias: tekst = sh.disasm_skript("returner 1 iff 1")
     assert_eq(script_iff_alias, "0: PUSH 1\n1: PUSH 1\n2: EQ\n3: PRINT\n4: HALT\n")
