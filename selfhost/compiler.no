@@ -128,6 +128,12 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "divide" eller tok == "divides") {
         returner "/"
     }
+    hvis (tok == "mod_of" eller tok == "modulo_of" eller tok == "modof" eller tok == "moduloof") {
+        returner "%"
+    }
+    hvis (tok == "remainder" eller tok == "remainder_of" eller tok == "remainderof") {
+        returner "%"
+    }
     hvis (tok == "multiplied_by" eller tok == "multipliedby" eller tok == "multiply_by" eller tok == "multiplyby") {
         returner "*"
     }

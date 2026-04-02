@@ -1521,6 +1521,12 @@ funksjon start() -> heltall {
     la expr_english_divide_alias: tekst = sh.disasm_uttrykk("8 divide 2")
     assert_eq(expr_english_divide_alias, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
 
+    la expr_english_mod_of_alias: tekst = sh.disasm_uttrykk("17 mod_of 5")
+    assert_eq(expr_english_mod_of_alias, "0: PUSH 17\n1: PUSH 5\n2: MOD\n3: PRINT\n4: HALT\n")
+
+    la expr_english_remainder_alias: tekst = sh.disasm_uttrykk("17 remainder 5")
+    assert_eq(expr_english_remainder_alias, "0: PUSH 17\n1: PUSH 5\n2: MOD\n3: PRINT\n4: HALT\n")
+
     la expr_hvis_env: tekst = sh.disasm_uttrykk_med_miljo("hvis x>y da x ellers y", env_navn, env_verdier)
     assert_eq(expr_hvis_env, "0: PUSH 7\n1: PUSH 3\n2: GT\n3: JZ 6\n4: PUSH 7\n5: JMP 8\n6: LABEL 6\n7: PUSH 3\n8: LABEL 8\n9: PRINT\n10: HALT\n")
 
@@ -1615,6 +1621,9 @@ funksjon start() -> heltall {
 
     la script_english_math_short_alias: tekst = sh.disasm_skript("let x=8;let y=2;return x divide y")
     assert_eq(script_english_math_short_alias, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
+
+    la script_english_modulo_alias: tekst = sh.disasm_skript("let x=17;let y=5;return x modulo_of y")
+    assert_eq(script_english_modulo_alias, "0: PUSH 17\n1: PUSH 5\n2: MOD\n3: PRINT\n4: HALT\n")
 
     la script_norsk_ops: tekst = sh.disasm_skript("x=sann;y=ikke usann;x og y")
     assert_eq(script_norsk_ops, "0: PUSH 1\n1: PUSH 1\n2: AND\n3: PRINT\n4: HALT\n")

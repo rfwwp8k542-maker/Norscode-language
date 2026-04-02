@@ -425,6 +425,12 @@ char * selfhost__compiler__normaliser_norsk_token(char * tok) {
     if (nl_streq(tok, "divide") || nl_streq(tok, "divides")) {
         return "/";
     }
+    if (((nl_streq(tok, "mod_of") || nl_streq(tok, "modulo_of")) || nl_streq(tok, "modof")) || nl_streq(tok, "moduloof")) {
+        return "%";
+    }
+    if ((nl_streq(tok, "remainder") || nl_streq(tok, "remainder_of")) || nl_streq(tok, "remainderof")) {
+        return "%";
+    }
     if (((nl_streq(tok, "multiplied_by") || nl_streq(tok, "multipliedby")) || nl_streq(tok, "multiply_by")) || nl_streq(tok, "multiplyby")) {
         return "*";
     }
@@ -3465,6 +3471,10 @@ int start() {
     nl_assert_eq_text(expr_english_subtract_alias, "0: PUSH 10\n1: PUSH 3\n2: SUB\n3: PRINT\n4: HALT\n");
     char * expr_english_divide_alias = selfhost__compiler__disasm_uttrykk("8 divide 2");
     nl_assert_eq_text(expr_english_divide_alias, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
+    char * expr_english_mod_of_alias = selfhost__compiler__disasm_uttrykk("17 mod_of 5");
+    nl_assert_eq_text(expr_english_mod_of_alias, "0: PUSH 17\n1: PUSH 5\n2: MOD\n3: PRINT\n4: HALT\n");
+    char * expr_english_remainder_alias = selfhost__compiler__disasm_uttrykk("17 remainder 5");
+    nl_assert_eq_text(expr_english_remainder_alias, "0: PUSH 17\n1: PUSH 5\n2: MOD\n3: PRINT\n4: HALT\n");
     char * expr_hvis_env = selfhost__compiler__disasm_uttrykk_med_miljo("hvis x>y da x ellers y", env_navn, env_verdier);
     nl_assert_eq_text(expr_hvis_env, "0: PUSH 7\n1: PUSH 3\n2: GT\n3: JZ 6\n4: PUSH 7\n5: JMP 8\n6: LABEL 6\n7: PUSH 3\n8: LABEL 8\n9: PRINT\n10: HALT\n");
     char * expr_hvis_c = selfhost__compiler__kompiler_uttrykk_til_c("hvis 1==1 da 7 ellers 9");
@@ -3532,6 +3542,8 @@ int start() {
     nl_assert_eq_text(script_english_math_alias, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * script_english_math_short_alias = selfhost__compiler__disasm_skript("let x=8;let y=2;return x divide y");
     nl_assert_eq_text(script_english_math_short_alias, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
+    char * script_english_modulo_alias = selfhost__compiler__disasm_skript("let x=17;let y=5;return x modulo_of y");
+    nl_assert_eq_text(script_english_modulo_alias, "0: PUSH 17\n1: PUSH 5\n2: MOD\n3: PRINT\n4: HALT\n");
     char * script_norsk_ops = selfhost__compiler__disasm_skript("x=sann;y=ikke usann;x og y");
     nl_assert_eq_text(script_norsk_ops, "0: PUSH 1\n1: PUSH 1\n2: AND\n3: PRINT\n4: HALT\n");
     char * script_norsk_ops_enten = selfhost__compiler__disasm_skript("x=usann;y=sann;x enten y");
