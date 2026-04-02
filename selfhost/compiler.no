@@ -1046,7 +1046,8 @@ funksjon uttrykk_til_ops_og_verdier_med_miljo(tokens: liste_tekst, navn: liste_t
     }
 
     mens (i < lengde(tokens)) {
-        la tok_raw: tekst = tokens[i]
+        la tok_kilde: tekst = tokens[i]
+        la tok_raw: tekst = tok_kilde
         tok_raw = normaliser_norsk_token(tok_raw)
         la tok: tekst = tok_raw
         la tok_step: heltall = 1
@@ -1068,7 +1069,16 @@ funksjon uttrykk_til_ops_og_verdier_med_miljo(tokens: liste_tekst, navn: liste_t
             n4 = normaliser_norsk_token(tokens[i + 4])
         }
 
-        hvis (tok_raw == "delt_pa" eller tok_raw == "deltpa" eller tok_raw == "deltpaa" eller tok_raw == "deler_pa" eller tok_raw == "delerpa" eller tok_raw == "delerpaa" eller tok_raw == "dele_pa" eller tok_raw == "delepa" eller tok_raw == "delepaa" eller tok_raw == "deles_pa" eller tok_raw == "delespa" eller tok_raw == "delespaa" eller tok_raw == "del_pa" eller tok_raw == "delpa" eller tok_raw == "delpaa" eller tok_raw == "dele_seg_pa" eller tok_raw == "delesegpa" eller tok_raw == "delesegpaa" eller tok_raw == "deler_seg_pa" eller tok_raw == "delersegpa" eller tok_raw == "delersegpaa" eller tok_raw == "divider_seg_pa" eller tok_raw == "dividersegpa" eller tok_raw == "dividersegpaa" eller tok_raw == "dividere_seg_pa" eller tok_raw == "divideresegpa" eller tok_raw == "divideresegpaa" eller tok_raw == "dividerer_seg_pa" eller tok_raw == "dividerersegpa" eller tok_raw == "dividerersegpaa" eller tok_raw == "divider_pa" eller tok_raw == "dividerpa" eller tok_raw == "dividerpaa" eller tok_raw == "dividere_pa" eller tok_raw == "dividerepa" eller tok_raw == "dividerepaa" eller tok_raw == "dividerer_pa" eller tok_raw == "dividererpa" eller tok_raw == "dividererpaa" eller tok_raw == "dividert_pa" eller tok_raw == "dividertpa" eller tok_raw == "dividertpaa" eller tok_raw == "divideres_pa" eller tok_raw == "dividerespa" eller tok_raw == "dividerespaa") {
+        hvis (i + 1 < lengde(tokens) og ((tok_raw == "divided") eller (tok_raw == "*" og (tok_kilde == "multiply" eller tok_kilde == "multiplied")) eller tok_raw == "modulo") og (n1 == "by" eller n1 == "of")) {
+            hvis (tok_raw == "divided") {
+                tok = "/"
+            } ellers hvis (tok_raw == "*" og (tok_kilde == "multiply" eller tok_kilde == "multiplied")) {
+                tok = "*"
+            } ellers {
+                tok = "%"
+            }
+            tok_step = 2
+        } ellers hvis (tok_raw == "delt_pa" eller tok_raw == "deltpa" eller tok_raw == "deltpaa" eller tok_raw == "deler_pa" eller tok_raw == "delerpa" eller tok_raw == "delerpaa" eller tok_raw == "dele_pa" eller tok_raw == "delepa" eller tok_raw == "delepaa" eller tok_raw == "deles_pa" eller tok_raw == "delespa" eller tok_raw == "delespaa" eller tok_raw == "del_pa" eller tok_raw == "delpa" eller tok_raw == "delpaa" eller tok_raw == "dele_seg_pa" eller tok_raw == "delesegpa" eller tok_raw == "delesegpaa" eller tok_raw == "deler_seg_pa" eller tok_raw == "delersegpa" eller tok_raw == "delersegpaa" eller tok_raw == "divider_seg_pa" eller tok_raw == "dividersegpa" eller tok_raw == "dividersegpaa" eller tok_raw == "dividere_seg_pa" eller tok_raw == "divideresegpa" eller tok_raw == "divideresegpaa" eller tok_raw == "dividerer_seg_pa" eller tok_raw == "dividerersegpa" eller tok_raw == "dividerersegpaa" eller tok_raw == "divider_pa" eller tok_raw == "dividerpa" eller tok_raw == "dividerpaa" eller tok_raw == "dividere_pa" eller tok_raw == "dividerepa" eller tok_raw == "dividerepaa" eller tok_raw == "dividerer_pa" eller tok_raw == "dividererpa" eller tok_raw == "dividererpaa" eller tok_raw == "dividert_pa" eller tok_raw == "dividertpa" eller tok_raw == "dividertpaa" eller tok_raw == "divideres_pa" eller tok_raw == "dividerespa" eller tok_raw == "dividerespaa") {
             tok = "/"
             tok_step = 1
         } ellers hvis (tok_raw == "delt_med" eller tok_raw == "deltmed" eller tok_raw == "dele_med" eller tok_raw == "delemed" eller tok_raw == "deler_med" eller tok_raw == "deles_med" eller tok_raw == "delesmed" eller tok_raw == "dele_seg_med" eller tok_raw == "delesegmed" eller tok_raw == "deler_seg_med" eller tok_raw == "delersegmed" eller tok_raw == "divider_seg_med" eller tok_raw == "dividersegmed" eller tok_raw == "dividere_seg_med" eller tok_raw == "divideresegmed" eller tok_raw == "dividerer_seg_med" eller tok_raw == "dividerersegmed" eller tok_raw == "dividere_med" eller tok_raw == "divideremed" eller tok_raw == "divider_med" eller tok_raw == "dividermed" eller tok_raw == "dividerer_med" eller tok_raw == "dividerermed" eller tok_raw == "dividert_med" eller tok_raw == "dividertmed" eller tok_raw == "divideres_med" eller tok_raw == "divideresmed" eller tok_raw == "del_med" eller tok_raw == "delmed") {

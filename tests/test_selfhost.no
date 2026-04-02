@@ -1536,8 +1536,17 @@ funksjon start() -> heltall {
     la expr_english_multiplied_by_alias: tekst = sh.disasm_uttrykk("3 multiplied_by 4")
     assert_eq(expr_english_multiplied_by_alias, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n")
 
+    la expr_english_multiply_by_phrase: tekst = sh.disasm_uttrykk("3 multiply by 4")
+    assert_eq(expr_english_multiply_by_phrase, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n")
+
+    la expr_english_multiplied_by_phrase: tekst = sh.disasm_uttrykk("3 multiplied by 4")
+    assert_eq(expr_english_multiplied_by_phrase, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n")
+
     la expr_english_divided_by_alias: tekst = sh.disasm_uttrykk("8 divided_by 2")
     assert_eq(expr_english_divided_by_alias, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
+
+    la expr_english_divided_by_phrase: tekst = sh.disasm_uttrykk("8 divided by 2")
+    assert_eq(expr_english_divided_by_phrase, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
 
     la expr_english_add_alias: tekst = sh.disasm_uttrykk("3 add 4")
     assert_eq(expr_english_add_alias, "0: PUSH 3\n1: PUSH 4\n2: ADD\n3: PRINT\n4: HALT\n")
@@ -1550,6 +1559,9 @@ funksjon start() -> heltall {
 
     la expr_english_mod_of_alias: tekst = sh.disasm_uttrykk("17 mod_of 5")
     assert_eq(expr_english_mod_of_alias, "0: PUSH 17\n1: PUSH 5\n2: MOD\n3: PRINT\n4: HALT\n")
+
+    la expr_english_modulo_of_phrase: tekst = sh.disasm_uttrykk("17 modulo of 5")
+    assert_eq(expr_english_modulo_of_phrase, "0: PUSH 17\n1: PUSH 5\n2: MOD\n3: PRINT\n4: HALT\n")
 
     la expr_english_remainder_alias: tekst = sh.disasm_uttrykk("17 remainder 5")
     assert_eq(expr_english_remainder_alias, "0: PUSH 17\n1: PUSH 5\n2: MOD\n3: PRINT\n4: HALT\n")
@@ -1676,11 +1688,23 @@ funksjon start() -> heltall {
     la script_english_math_alias: tekst = sh.disasm_skript("let x=8;let y=2;return x divided_by y")
     assert_eq(script_english_math_alias, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
 
+    la script_english_divided_by_phrase: tekst = sh.disasm_skript("let x=8;let y=2;return x divided by y")
+    assert_eq(script_english_divided_by_phrase, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
+
+    la script_english_multiply_by_phrase: tekst = sh.disasm_skript("let x=3;let y=4;return x multiply by y")
+    assert_eq(script_english_multiply_by_phrase, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n")
+
+    la script_english_multiplied_by_phrase: tekst = sh.disasm_skript("let x=3;let y=4;return x multiplied by y")
+    assert_eq(script_english_multiplied_by_phrase, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n")
+
     la script_english_math_short_alias: tekst = sh.disasm_skript("let x=8;let y=2;return x divide y")
     assert_eq(script_english_math_short_alias, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
 
     la script_english_modulo_alias: tekst = sh.disasm_skript("let x=17;let y=5;return x modulo_of y")
     assert_eq(script_english_modulo_alias, "0: PUSH 17\n1: PUSH 5\n2: MOD\n3: PRINT\n4: HALT\n")
+
+    la script_english_modulo_of_phrase: tekst = sh.disasm_skript("let x=17;let y=5;return x modulo of y")
+    assert_eq(script_english_modulo_of_phrase, "0: PUSH 17\n1: PUSH 5\n2: MOD\n3: PRINT\n4: HALT\n")
 
     la script_norsk_ops: tekst = sh.disasm_skript("x=sann;y=ikke usann;x og y")
     assert_eq(script_norsk_ops, "0: PUSH 1\n1: PUSH 1\n2: AND\n3: PRINT\n4: HALT\n")
