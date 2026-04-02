@@ -51,7 +51,8 @@ IR_OPS_NO_ARG = {
 }
 IR_ALL_OPS = IR_OPS_WITH_ARG | IR_OPS_NO_ARG
 IR_SNAPSHOT_FIXTURE = Path("tests/ir_snapshot_cases.json")
-SELFHOST_PARSER_CORE_FIXTURE = Path("tests/selfhost_parser_core_cases.json")
+SELFHOST_PARSER_M1_FIXTURE = Path("tests/selfhost_parser_m1_cases.json")
+SELFHOST_PARSER_EXTENDED_FIXTURE = Path("tests/selfhost_parser_core_cases.json")
 WORKFLOW_ACTION_POLICY = {
     "minimum_action_majors": {
         "actions/checkout": 6,
@@ -2403,14 +2404,14 @@ def run_ir_snapshot_checks():
     }
 
 
-def run_selfhost_parser_core_checks():
+def run_selfhost_parser_core_checks(fixture_path: Path, label: str):
     started = time.perf_counter()
-    fixture_path = SELFHOST_PARSER_CORE_FIXTURE.resolve()
+    fixture_path = fixture_path.resolve()
     try:
         fixture = json.loads(fixture_path.read_text(encoding="utf-8"))
     except Exception as exc:
         return {
-            "source": "Selfhost parser core parity",
+            "source": label,
             "c_file": "",
             "exe_file": "",
             "returncode": 1,
@@ -2477,7 +2478,7 @@ def run_selfhost_parser_core_checks():
 
     success = len(mismatch_lines) == 0
     return {
-        "source": "Selfhost parser core parity",
+        "source": label,
         "c_file": "",
         "exe_file": "",
         "returncode": 0 if success else 1,
@@ -2674,13 +2675,14 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
     step_order = [
         "snapshot_check",
         "parity_check",
-        "parser_core_check",
+        "parser_core_m1_check",
+        "parser_core_extended_check",
         "test_check",
         "workflow_action_check",
     ]
     if check_names:
         step_order.append("name_migration_check")
-    total_steps = 6 if check_names else 5
+    total_steps = 7 if check_names else 6
     payload = {
         "schema_version": 1,
         "run_id": uuid.uuid4().hex,
@@ -2784,7 +2786,8 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
         "timings_ratio": {},
         "snapshot_check": {"ok": False, "updated": None},
         "parity_check": {"ok": False},
-        "parser_core_check": {"ok": False, "case_count": 0},
+        "parser_core_m1_check": {"ok": False, "case_count": 0},
+        "parser_core_extended_check": {"ok": False, "case_count": 0},
         "test_check": {"ok": False, "passed": 0, "failed": 0, "total": 0},
         "workflow_action_check": {
             "ok": False,
@@ -2834,23 +2837,47 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
         print("OK")
 
     if not json_output:
-        print(f"[3/{total_steps}] Selfhost parser core parity")
+        print(f"[3/{total_steps}] Selfhost parser parity (M1)")
     started = time.perf_counter()
-    parser_core_result = run_selfhost_parser_core_checks()
-    payload["timings_ms"]["parser_core_check"] = int((time.perf_counter() - started) * 1000)
-    payload["timings_s"]["parser_core_check"] = round(payload["timings_ms"]["parser_core_check"] / 1000.0, 3)
-    payload["parser_core_check"]["ok"] = parser_core_result["success"]
-    payload["parser_core_check"]["case_count"] = int(parser_core_result.get("case_count", 0) or 0)
-    if not parser_core_result["success"]:
+    parser_core_m1_result = run_selfhost_parser_core_checks(
+        SELFHOST_PARSER_M1_FIXTURE, "Selfhost parser parity (M1)"
+    )
+    payload["timings_ms"]["parser_core_m1_check"] = int((time.perf_counter() - started) * 1000)
+    payload["timings_s"]["parser_core_m1_check"] = round(payload["timings_ms"]["parser_core_m1_check"] / 1000.0, 3)
+    payload["parser_core_m1_check"]["ok"] = parser_core_m1_result["success"]
+    payload["parser_core_m1_check"]["case_count"] = int(parser_core_m1_result.get("case_count", 0) or 0)
+    if not parser_core_m1_result["success"]:
         raise RuntimeError(
-            "Selfhost parser core parity-feil:\n"
-            + (parser_core_result.get("stderr", "").rstrip() or "ukjent feil")
+            "Selfhost parser parity-feil (M1):\n"
+            + (parser_core_m1_result.get("stderr", "").rstrip() or "ukjent feil")
         )
     if not json_output:
-        print(f"OK ({payload['parser_core_check']['case_count']} cases)")
+        print(f"OK ({payload['parser_core_m1_check']['case_count']} cases)")
 
     if not json_output:
-        print(f"[4/{total_steps}] Full test")
+        print(f"[4/{total_steps}] Selfhost parser parity (utvidet)")
+    started = time.perf_counter()
+    parser_core_extended_result = run_selfhost_parser_core_checks(
+        SELFHOST_PARSER_EXTENDED_FIXTURE, "Selfhost parser parity (utvidet)"
+    )
+    payload["timings_ms"]["parser_core_extended_check"] = int((time.perf_counter() - started) * 1000)
+    payload["timings_s"]["parser_core_extended_check"] = round(
+        payload["timings_ms"]["parser_core_extended_check"] / 1000.0, 3
+    )
+    payload["parser_core_extended_check"]["ok"] = parser_core_extended_result["success"]
+    payload["parser_core_extended_check"]["case_count"] = int(
+        parser_core_extended_result.get("case_count", 0) or 0
+    )
+    if not parser_core_extended_result["success"]:
+        raise RuntimeError(
+            "Selfhost parser parity-feil (utvidet):\n"
+            + (parser_core_extended_result.get("stderr", "").rstrip() or "ukjent feil")
+        )
+    if not json_output:
+        print(f"OK ({payload['parser_core_extended_check']['case_count']} cases)")
+
+    if not json_output:
+        print(f"[5/{total_steps}] Full test")
     started = time.perf_counter()
     results = run_all_tests(verbose=False, quiet=json_output)
     payload["timings_ms"]["test_check"] = int((time.perf_counter() - started) * 1000)
@@ -2868,7 +2895,7 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
         print("OK")
 
     if not json_output:
-        print(f"[5/{total_steps}] Workflow action version check")
+        print(f"[6/{total_steps}] Workflow action version check")
     started = time.perf_counter()
     workflow_check = check_workflow_action_versions()
     payload["timings_ms"]["workflow_action_check"] = int((time.perf_counter() - started) * 1000)
@@ -2887,7 +2914,7 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
 
     if check_names:
         if not json_output:
-            print(f"[6/{total_steps}] Name migration check")
+            print(f"[7/{total_steps}] Name migration check")
         started = time.perf_counter()
         migration = migrate_names(apply_changes=False, cleanup_legacy=True)
         payload["timings_ms"]["name_migration_check"] = int((time.perf_counter() - started) * 1000)
