@@ -107,13 +107,13 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "neq") {
         returner "ikke_er"
     }
-    hvis (tok == "is_not" eller tok == "isnot") {
+    hvis (tok == "is_not" eller tok == "isnot" eller tok == "isnt") {
         returner "ikke_er"
     }
-    hvis (tok == "not_equal" eller tok == "not_equals" eller tok == "not_equal_to" eller tok == "notequal" eller tok == "notequals") {
+    hvis (tok == "not_equal" eller tok == "not_equals" eller tok == "not_equal_to" eller tok == "notequal" eller tok == "notequals" eller tok == "is_not_equal" eller tok == "is_not_equals" eller tok == "is_not_equal_to" eller tok == "isnotequal" eller tok == "isnotequals" eller tok == "isnotequalto" eller tok == "isnt_equal" eller tok == "isnt_equals" eller tok == "isnt_equal_to" eller tok == "isntequal" eller tok == "isntequals" eller tok == "isntequalto") {
         returner "ikke_er"
     }
-    hvis (tok == "equals" eller tok == "equal" eller tok == "equal_to") {
+    hvis (tok == "equals" eller tok == "equal" eller tok == "equal_to" eller tok == "is_equal" eller tok == "is_equals" eller tok == "is_equal_to" eller tok == "isequal" eller tok == "isequals" eller tok == "isequalto") {
         returner "er"
     }
     hvis (tok == "less_than" eller tok == "lessthan") {

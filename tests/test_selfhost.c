@@ -404,13 +404,13 @@ char * selfhost__compiler__normaliser_norsk_token(char * tok) {
     if (nl_streq(tok, "neq")) {
         return "ikke_er";
     }
-    if (nl_streq(tok, "is_not") || nl_streq(tok, "isnot")) {
+    if ((nl_streq(tok, "is_not") || nl_streq(tok, "isnot")) || nl_streq(tok, "isnt")) {
         return "ikke_er";
     }
-    if ((((nl_streq(tok, "not_equal") || nl_streq(tok, "not_equals")) || nl_streq(tok, "not_equal_to")) || nl_streq(tok, "notequal")) || nl_streq(tok, "notequals")) {
+    if ((((((((((((((((nl_streq(tok, "not_equal") || nl_streq(tok, "not_equals")) || nl_streq(tok, "not_equal_to")) || nl_streq(tok, "notequal")) || nl_streq(tok, "notequals")) || nl_streq(tok, "is_not_equal")) || nl_streq(tok, "is_not_equals")) || nl_streq(tok, "is_not_equal_to")) || nl_streq(tok, "isnotequal")) || nl_streq(tok, "isnotequals")) || nl_streq(tok, "isnotequalto")) || nl_streq(tok, "isnt_equal")) || nl_streq(tok, "isnt_equals")) || nl_streq(tok, "isnt_equal_to")) || nl_streq(tok, "isntequal")) || nl_streq(tok, "isntequals")) || nl_streq(tok, "isntequalto")) {
         return "ikke_er";
     }
-    if ((nl_streq(tok, "equals") || nl_streq(tok, "equal")) || nl_streq(tok, "equal_to")) {
+    if ((((((((nl_streq(tok, "equals") || nl_streq(tok, "equal")) || nl_streq(tok, "equal_to")) || nl_streq(tok, "is_equal")) || nl_streq(tok, "is_equals")) || nl_streq(tok, "is_equal_to")) || nl_streq(tok, "isequal")) || nl_streq(tok, "isequals")) || nl_streq(tok, "isequalto")) {
         return "er";
     }
     if (nl_streq(tok, "less_than") || nl_streq(tok, "lessthan")) {
@@ -3646,12 +3646,18 @@ int start() {
     nl_assert_eq_text(expr_english_equal_to_phrase, "0: PUSH 7\n1: PUSH 7\n2: EQ\n3: PRINT\n4: HALT\n");
     char * expr_english_is_equal_to_phrase = selfhost__compiler__disasm_uttrykk("7 is equal to 7");
     nl_assert_eq_text(expr_english_is_equal_to_phrase, "0: PUSH 7\n1: PUSH 7\n2: EQ\n3: PRINT\n4: HALT\n");
+    char * expr_english_is_equal_to_compact_alias = selfhost__compiler__disasm_uttrykk("7 is_equal_to 7");
+    nl_assert_eq_text(expr_english_is_equal_to_compact_alias, "0: PUSH 7\n1: PUSH 7\n2: EQ\n3: PRINT\n4: HALT\n");
     char * expr_english_not_equal_to_alias = selfhost__compiler__disasm_uttrykk("7 not_equal_to 8");
     nl_assert_eq_text(expr_english_not_equal_to_alias, "0: PUSH 7\n1: PUSH 8\n2: EQ\n3: NOT\n4: PRINT\n5: HALT\n");
     char * expr_english_not_equal_to_phrase = selfhost__compiler__disasm_uttrykk("7 not equal to 8");
     nl_assert_eq_text(expr_english_not_equal_to_phrase, "0: PUSH 7\n1: PUSH 8\n2: EQ\n3: NOT\n4: PRINT\n5: HALT\n");
     char * expr_english_is_not_equal_to_phrase = selfhost__compiler__disasm_uttrykk("7 is not equal to 8");
     nl_assert_eq_text(expr_english_is_not_equal_to_phrase, "0: PUSH 7\n1: PUSH 8\n2: EQ\n3: NOT\n4: PRINT\n5: HALT\n");
+    char * expr_english_is_not_equal_to_compact_alias = selfhost__compiler__disasm_uttrykk("7 is_not_equal_to 8");
+    nl_assert_eq_text(expr_english_is_not_equal_to_compact_alias, "0: PUSH 7\n1: PUSH 8\n2: EQ\n3: NOT\n4: PRINT\n5: HALT\n");
+    char * expr_english_isnt_alias = selfhost__compiler__disasm_uttrykk("7 isnt 8");
+    nl_assert_eq_text(expr_english_isnt_alias, "0: PUSH 7\n1: PUSH 8\n2: EQ\n3: NOT\n4: PRINT\n5: HALT\n");
     char * expr_english_less_equal_alias = selfhost__compiler__disasm_uttrykk("3 less_equal 4");
     nl_assert_eq_text(expr_english_less_equal_alias, "0: PUSH 3\n1: PUSH 4\n2: GT\n3: NOT\n4: PRINT\n5: HALT\n");
     char * expr_english_greater_equal_alias = selfhost__compiler__disasm_uttrykk("4 greater_equal 4");
@@ -3815,8 +3821,14 @@ int start() {
     nl_assert_eq_text(script_english_cmp_equal_to_phrase, "0: PUSH 4\n1: PUSH 4\n2: EQ\n3: PRINT\n4: HALT\n");
     char * script_english_cmp_is_equal_to_phrase = selfhost__compiler__disasm_skript("let x=4;let y=4;return x is equal to y");
     nl_assert_eq_text(script_english_cmp_is_equal_to_phrase, "0: PUSH 4\n1: PUSH 4\n2: EQ\n3: PRINT\n4: HALT\n");
+    char * script_english_cmp_is_equal_to_compact_alias = selfhost__compiler__disasm_skript("let x=4;let y=4;return x is_equal_to y");
+    nl_assert_eq_text(script_english_cmp_is_equal_to_compact_alias, "0: PUSH 4\n1: PUSH 4\n2: EQ\n3: PRINT\n4: HALT\n");
     char * script_english_cmp_is_not_equal_to_phrase = selfhost__compiler__disasm_skript("let x=4;let y=5;return x is not equal to y");
     nl_assert_eq_text(script_english_cmp_is_not_equal_to_phrase, "0: PUSH 4\n1: PUSH 5\n2: EQ\n3: NOT\n4: PRINT\n5: HALT\n");
+    char * script_english_cmp_is_not_equal_to_compact_alias = selfhost__compiler__disasm_skript("let x=4;let y=5;return x is_not_equal_to y");
+    nl_assert_eq_text(script_english_cmp_is_not_equal_to_compact_alias, "0: PUSH 4\n1: PUSH 5\n2: EQ\n3: NOT\n4: PRINT\n5: HALT\n");
+    char * script_english_cmp_isnt_alias = selfhost__compiler__disasm_skript("let x=4;let y=5;return x isnt y");
+    nl_assert_eq_text(script_english_cmp_isnt_alias, "0: PUSH 4\n1: PUSH 5\n2: EQ\n3: NOT\n4: PRINT\n5: HALT\n");
     char * script_english_cmp_eq_alias = selfhost__compiler__disasm_skript("let x=4;let y=4;return x eq y");
     nl_assert_eq_text(script_english_cmp_eq_alias, "0: PUSH 4\n1: PUSH 4\n2: EQ\n3: PRINT\n4: HALT\n");
     char * script_english_on_off_alias = selfhost__compiler__disasm_skript("let x=on;return x and not off");

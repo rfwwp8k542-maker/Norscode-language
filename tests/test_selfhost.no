@@ -1521,6 +1521,9 @@ funksjon start() -> heltall {
     la expr_english_is_equal_to_phrase: tekst = sh.disasm_uttrykk("7 is equal to 7")
     assert_eq(expr_english_is_equal_to_phrase, "0: PUSH 7\n1: PUSH 7\n2: EQ\n3: PRINT\n4: HALT\n")
 
+    la expr_english_is_equal_to_compact_alias: tekst = sh.disasm_uttrykk("7 is_equal_to 7")
+    assert_eq(expr_english_is_equal_to_compact_alias, "0: PUSH 7\n1: PUSH 7\n2: EQ\n3: PRINT\n4: HALT\n")
+
     la expr_english_not_equal_to_alias: tekst = sh.disasm_uttrykk("7 not_equal_to 8")
     assert_eq(expr_english_not_equal_to_alias, "0: PUSH 7\n1: PUSH 8\n2: EQ\n3: NOT\n4: PRINT\n5: HALT\n")
 
@@ -1529,6 +1532,12 @@ funksjon start() -> heltall {
 
     la expr_english_is_not_equal_to_phrase: tekst = sh.disasm_uttrykk("7 is not equal to 8")
     assert_eq(expr_english_is_not_equal_to_phrase, "0: PUSH 7\n1: PUSH 8\n2: EQ\n3: NOT\n4: PRINT\n5: HALT\n")
+
+    la expr_english_is_not_equal_to_compact_alias: tekst = sh.disasm_uttrykk("7 is_not_equal_to 8")
+    assert_eq(expr_english_is_not_equal_to_compact_alias, "0: PUSH 7\n1: PUSH 8\n2: EQ\n3: NOT\n4: PRINT\n5: HALT\n")
+
+    la expr_english_isnt_alias: tekst = sh.disasm_uttrykk("7 isnt 8")
+    assert_eq(expr_english_isnt_alias, "0: PUSH 7\n1: PUSH 8\n2: EQ\n3: NOT\n4: PRINT\n5: HALT\n")
 
     la expr_english_less_equal_alias: tekst = sh.disasm_uttrykk("3 less_equal 4")
     assert_eq(expr_english_less_equal_alias, "0: PUSH 3\n1: PUSH 4\n2: GT\n3: NOT\n4: PRINT\n5: HALT\n")
@@ -1769,8 +1778,17 @@ funksjon start() -> heltall {
     la script_english_cmp_is_equal_to_phrase: tekst = sh.disasm_skript("let x=4;let y=4;return x is equal to y")
     assert_eq(script_english_cmp_is_equal_to_phrase, "0: PUSH 4\n1: PUSH 4\n2: EQ\n3: PRINT\n4: HALT\n")
 
+    la script_english_cmp_is_equal_to_compact_alias: tekst = sh.disasm_skript("let x=4;let y=4;return x is_equal_to y")
+    assert_eq(script_english_cmp_is_equal_to_compact_alias, "0: PUSH 4\n1: PUSH 4\n2: EQ\n3: PRINT\n4: HALT\n")
+
     la script_english_cmp_is_not_equal_to_phrase: tekst = sh.disasm_skript("let x=4;let y=5;return x is not equal to y")
     assert_eq(script_english_cmp_is_not_equal_to_phrase, "0: PUSH 4\n1: PUSH 5\n2: EQ\n3: NOT\n4: PRINT\n5: HALT\n")
+
+    la script_english_cmp_is_not_equal_to_compact_alias: tekst = sh.disasm_skript("let x=4;let y=5;return x is_not_equal_to y")
+    assert_eq(script_english_cmp_is_not_equal_to_compact_alias, "0: PUSH 4\n1: PUSH 5\n2: EQ\n3: NOT\n4: PRINT\n5: HALT\n")
+
+    la script_english_cmp_isnt_alias: tekst = sh.disasm_skript("let x=4;let y=5;return x isnt y")
+    assert_eq(script_english_cmp_isnt_alias, "0: PUSH 4\n1: PUSH 5\n2: EQ\n3: NOT\n4: PRINT\n5: HALT\n")
 
     la script_english_cmp_eq_alias: tekst = sh.disasm_skript("let x=4;let y=4;return x eq y")
     assert_eq(script_english_cmp_eq_alias, "0: PUSH 4\n1: PUSH 4\n2: EQ\n3: PRINT\n4: HALT\n")
