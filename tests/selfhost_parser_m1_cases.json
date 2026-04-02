@@ -136,6 +136,46 @@
       ]
     },
     {
+      "name": "neq_or_eq",
+      "source": "7!=7||2==2",
+      "expected_lines": [
+        "0: PUSH 7",
+        "1: PUSH 7",
+        "2: EQ",
+        "3: NOT",
+        "4: PUSH 2",
+        "5: PUSH 2",
+        "6: EQ",
+        "7: OR",
+        "8: PRINT",
+        "9: HALT"
+      ]
+    },
+    {
+      "name": "not_equal_angle",
+      "source": "7<>8",
+      "expected_lines": [
+        "0: PUSH 7",
+        "1: PUSH 8",
+        "2: EQ",
+        "3: NOT",
+        "4: PRINT",
+        "5: HALT"
+      ]
+    },
+    {
+      "name": "less_or_equal",
+      "source": "3 <= 4",
+      "expected_lines": [
+        "0: PUSH 3",
+        "1: PUSH 4",
+        "2: GT",
+        "3: NOT",
+        "4: PRINT",
+        "5: HALT"
+      ]
+    },
+    {
       "name": "error_trailing_operator",
       "source": "2 +",
       "expected_error": "/* feil: uttrykket avsluttes med operator ved token 1 */"
