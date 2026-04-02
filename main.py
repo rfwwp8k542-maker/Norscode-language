@@ -2226,10 +2226,20 @@ def summarize_test_results(results: list[dict]) -> dict:
 
 def check_workflow_action_versions(workflows_dir: Path | None = None) -> dict:
     base = workflows_dir or Path(".github/workflows")
-    payload = {"ok": True, "scanned_files": 0, "issue_count": 0, "issues": []}
     minimum_action_majors = {
         "actions/checkout": 6,
         "actions/setup-python": 6,
+    }
+    payload = {
+        "ok": True,
+        "scanned_files": 0,
+        "issue_count": 0,
+        "issues": [],
+        "policy": {
+            "minimum_action_majors": minimum_action_majors,
+            "require_node24_env": True,
+            "forbid_unsecure_node_opt_out": True,
+        },
     }
     if not base.exists():
         return payload
@@ -2296,7 +2306,20 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
         "snapshot_check": {"ok": False, "updated": None},
         "parity_check": {"ok": False},
         "test_check": {"ok": False, "passed": 0, "failed": 0, "total": 0},
-        "workflow_action_check": {"ok": False, "scanned_files": 0, "issue_count": 0, "issues": []},
+        "workflow_action_check": {
+            "ok": False,
+            "scanned_files": 0,
+            "issue_count": 0,
+            "issues": [],
+            "policy": {
+                "minimum_action_majors": {
+                    "actions/checkout": 6,
+                    "actions/setup-python": 6,
+                },
+                "require_node24_env": True,
+                "forbid_unsecure_node_opt_out": True,
+            },
+        },
         "name_migration_check": {"enabled": check_names, "ok": True, "needs_migration": False},
     }
 
