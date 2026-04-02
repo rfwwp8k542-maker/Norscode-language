@@ -2113,6 +2113,17 @@ def get_git_remote_repo_slug(remote_url: str | None) -> str | None:
     return None
 
 
+def get_git_remote_protocol(remote_url: str | None) -> str:
+    if not remote_url:
+        return "unknown"
+    parsed = urllib.parse.urlparse(remote_url)
+    if parsed.scheme:
+        return parsed.scheme.lower()
+    if "@" in remote_url and ":" in remote_url:
+        return "ssh"
+    return "unknown"
+
+
 def run_program(source_file: str):
     source_path, c_path, exe_path, _alias_map, _analyzer = build_program(source_file)
     print(f"Generert C-fil: {c_path}")
@@ -2462,6 +2473,7 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
         "source_ref": source_tag or source_branch,
         "source_ref_type": "tag" if source_tag else ("branch" if source_branch else "unknown"),
         "source_remote": source_remote,
+        "source_remote_protocol": get_git_remote_protocol(source_remote),
         "source_remote_host": get_git_remote_host(source_remote),
         "source_repo_slug": get_git_remote_repo_slug(source_remote),
         "source_is_tagged": source_tag is not None,

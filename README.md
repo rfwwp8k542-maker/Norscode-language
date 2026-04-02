@@ -340,6 +340,7 @@ python3 -m norcode ci --json
 # Inkluderer source_ref (tag eller branch) for entydig kilde-referanse
 # Inkluderer source_ref_type (tag/branch/unknown)
 # Inkluderer source_remote (git origin URL) når tilgjengelig
+# Inkluderer source_remote_protocol (https/ssh/unknown)
 # Inkluderer source_remote_host (f.eks. github.com) når tilgjengelig
 # Inkluderer source_repo_slug (f.eks. owner/repo) når tilgjengelig
 # Inkluderer source_is_tagged (om commit har eksakt tag)
