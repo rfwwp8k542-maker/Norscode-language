@@ -2413,6 +2413,7 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
         "source_revision_short": to_short_git_revision(source_revision),
         "source_branch": source_branch,
         "source_tag": source_tag,
+        "source_ref": source_tag or source_branch,
         "source_is_tagged": source_tag is not None,
         "source_is_main": source_branch == "main",
         "source_dirty": source_dirty,
