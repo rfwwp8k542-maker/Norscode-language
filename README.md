@@ -333,6 +333,7 @@ python3 -m norcode ci --json
 # Inkluderer invocation med brukte CI-flagg
 # Inkluderer source_revision (git commit hash) når tilgjengelig
 # Inkluderer source_branch (git branch) når tilgjengelig
+# Inkluderer source_dirty (om worktree har lokale endringer)
 
 # Valgfri ekstra-sjekk for navnemigrering i CI
 python3 -m norcode ci --check-names
