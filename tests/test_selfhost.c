@@ -470,6 +470,9 @@ char * selfhost__compiler__normaliser_norsk_token(char * tok) {
     if (((nl_streq(tok, "assuming_that") || nl_streq(tok, "assumingthat")) || nl_streq(tok, "antar_at")) || nl_streq(tok, "antarat")) {
         return "impliseres_av";
     }
+    if (((nl_streq(tok, "when_assuming") || nl_streq(tok, "whenassuming")) || nl_streq(tok, "nar_antatt")) || nl_streq(tok, "narantatt")) {
+        return "impliseres_av";
+    }
     if (nl_streq(tok, "presuming") || nl_streq(tok, "forutsattvis")) {
         return "impliseres_av";
     }
@@ -3310,6 +3313,10 @@ int start() {
     nl_assert_eq_text(expr_assuming_that_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n");
     char * expr_antar_at_alias = selfhost__compiler__disasm_uttrykk("1 antar_at 0");
     nl_assert_eq_text(expr_antar_at_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n");
+    char * expr_when_assuming_alias = selfhost__compiler__disasm_uttrykk("1 when_assuming 0");
+    nl_assert_eq_text(expr_when_assuming_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n");
+    char * expr_nar_antatt_alias = selfhost__compiler__disasm_uttrykk("1 nar_antatt 0");
+    nl_assert_eq_text(expr_nar_antatt_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n");
     char * expr_presuming_alias = selfhost__compiler__disasm_uttrykk("1 presuming 0");
     nl_assert_eq_text(expr_presuming_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n");
     char * expr_forutsattvis_alias = selfhost__compiler__disasm_uttrykk("1 forutsattvis 0");
@@ -4661,6 +4668,10 @@ int start() {
     nl_assert_eq_text(script_assuming_that_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n");
     char * script_antar_at_alias = selfhost__compiler__disasm_skript("returner 1 antar_at 0");
     nl_assert_eq_text(script_antar_at_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n");
+    char * script_when_assuming_alias = selfhost__compiler__disasm_skript("returner 1 when_assuming 0");
+    nl_assert_eq_text(script_when_assuming_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n");
+    char * script_nar_antatt_alias = selfhost__compiler__disasm_skript("returner 1 nar_antatt 0");
+    nl_assert_eq_text(script_nar_antatt_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n");
     char * script_presuming_alias = selfhost__compiler__disasm_skript("returner 1 presuming 0");
     nl_assert_eq_text(script_presuming_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n");
     char * script_forutsattvis_alias = selfhost__compiler__disasm_skript("returner 1 forutsattvis 0");

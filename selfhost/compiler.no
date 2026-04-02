@@ -173,6 +173,9 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "assuming_that" eller tok == "assumingthat" eller tok == "antar_at" eller tok == "antarat") {
         returner "impliseres_av"
     }
+    hvis (tok == "when_assuming" eller tok == "whenassuming" eller tok == "nar_antatt" eller tok == "narantatt") {
+        returner "impliseres_av"
+    }
     hvis (tok == "presuming" eller tok == "forutsattvis") {
         returner "impliseres_av"
     }
