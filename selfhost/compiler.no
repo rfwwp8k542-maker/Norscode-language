@@ -95,6 +95,12 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "is") {
         returner "er"
     }
+    hvis (tok == "eq") {
+        returner "er"
+    }
+    hvis (tok == "neq") {
+        returner "ikke_er"
+    }
     hvis (tok == "is_not" eller tok == "isnot") {
         returner "ikke_er"
     }
