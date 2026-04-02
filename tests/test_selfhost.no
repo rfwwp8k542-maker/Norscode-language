@@ -322,6 +322,12 @@ funksjon start() -> heltall {
     la expr_folger_hvis_alias: tekst = sh.disasm_uttrykk("1 folger_hvis 0")
     assert_eq(expr_folger_hvis_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n")
 
+    la expr_if_given_alias: tekst = sh.disasm_uttrykk("1 if_given 0")
+    assert_eq(expr_if_given_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n")
+
+    la expr_hvis_gitt_alias: tekst = sh.disasm_uttrykk("1 hvis_gitt 0")
+    assert_eq(expr_hvis_gitt_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n")
+
     la expr_as_alias: tekst = sh.disasm_uttrykk("1 as 0")
     assert_eq(expr_as_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n")
 
@@ -2257,6 +2263,12 @@ funksjon start() -> heltall {
 
     la script_folger_hvis_alias: tekst = sh.disasm_skript("returner 1 folger_hvis 0")
     assert_eq(script_folger_hvis_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n")
+
+    la script_if_given_alias: tekst = sh.disasm_skript("returner 1 if_given 0")
+    assert_eq(script_if_given_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n")
+
+    la script_hvis_gitt_alias: tekst = sh.disasm_skript("returner 1 hvis_gitt 0")
+    assert_eq(script_hvis_gitt_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n")
 
     la script_as_alias: tekst = sh.disasm_skript("returner 1 as 0")
     assert_eq(script_as_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n")
