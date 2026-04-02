@@ -323,6 +323,7 @@ python3 -m norcode ci --json
 # Inkluderer også steps.total og steps.name_check_enabled
 # Inkluderer workflow_action_check.policy med håndhevede regler
 # Inkluderer timings_ms per CI-del (millisekunder)
+# Inkluderer timings_s per CI-del (sekunder)
 # Inkluderer timings_ms.total for total CI-varighet
 # Inkluderer started_at_utc og finished_at_utc for kjøringstidsstempel
 # Inkluderer schema_version for stabil maskinlesbar kontrakt
