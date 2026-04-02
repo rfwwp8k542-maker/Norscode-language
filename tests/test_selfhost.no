@@ -1604,6 +1604,9 @@ funksjon start() -> heltall {
     la script_sett_ok: tekst = sh.disasm_skript("la x=2;sett x=x+3;returner x")
     assert_eq(script_sett_ok, "0: PUSH 5\n1: PRINT\n2: HALT\n")
 
+    la script_assign_alias: tekst = sh.disasm_skript("let x=2;assign x=x+3;return x")
+    assert_eq(script_assign_alias, "0: PUSH 5\n1: PRINT\n2: HALT\n")
+
     la script_compound_ok: tekst = sh.disasm_skript("la x=2;x+=3;x*=2;returner x")
     assert_eq(script_compound_ok, "0: PUSH 10\n1: PRINT\n2: HALT\n")
 
@@ -1633,6 +1636,9 @@ funksjon start() -> heltall {
 
     la script_var_alias: tekst = sh.disasm_skript("var x=2;return x+3")
     assert_eq(script_var_alias, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n")
+
+    la script_declare_alias: tekst = sh.disasm_skript("declare x=2;return x+3")
+    assert_eq(script_declare_alias, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n")
 
     la script_return_alias_only: tekst = sh.disasm_skript("la x=2;return x+3")
     assert_eq(script_return_alias_only, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n")

@@ -65,7 +65,13 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "var") {
         returner "la"
     }
+    hvis (tok == "declare") {
+        returner "la"
+    }
     hvis (tok == "set") {
+        returner "sett"
+    }
+    hvis (tok == "assign") {
         returner "sett"
     }
     hvis (tok == "return") {

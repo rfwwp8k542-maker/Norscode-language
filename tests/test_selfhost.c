@@ -362,7 +362,13 @@ char * selfhost__compiler__normaliser_norsk_token(char * tok) {
     if (nl_streq(tok, "var")) {
         return "la";
     }
+    if (nl_streq(tok, "declare")) {
+        return "la";
+    }
     if (nl_streq(tok, "set")) {
+        return "sett";
+    }
+    if (nl_streq(tok, "assign")) {
         return "sett";
     }
     if (nl_streq(tok, "return")) {
@@ -3566,6 +3572,8 @@ int start() {
     nl_assert_eq_text(script_returner_semicolon, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
     char * script_sett_ok = selfhost__compiler__disasm_skript("la x=2;sett x=x+3;returner x");
     nl_assert_eq_text(script_sett_ok, "0: PUSH 5\n1: PRINT\n2: HALT\n");
+    char * script_assign_alias = selfhost__compiler__disasm_skript("let x=2;assign x=x+3;return x");
+    nl_assert_eq_text(script_assign_alias, "0: PUSH 5\n1: PRINT\n2: HALT\n");
     char * script_compound_ok = selfhost__compiler__disasm_skript("la x=2;x+=3;x*=2;returner x");
     nl_assert_eq_text(script_compound_ok, "0: PUSH 10\n1: PRINT\n2: HALT\n");
     char * script_hvis_assignment = selfhost__compiler__disasm_skript("la x=hvis 1==1 da 7 ellers 9;returner x+1");
@@ -3586,6 +3594,8 @@ int start() {
     nl_assert_eq_text(script_const_alias, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
     char * script_var_alias = selfhost__compiler__disasm_skript("var x=2;return x+3");
     nl_assert_eq_text(script_var_alias, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
+    char * script_declare_alias = selfhost__compiler__disasm_skript("declare x=2;return x+3");
+    nl_assert_eq_text(script_declare_alias, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
     char * script_return_alias_only = selfhost__compiler__disasm_skript("la x=2;return x+3");
     nl_assert_eq_text(script_return_alias_only, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
     char * script_english_cmp_alias = selfhost__compiler__disasm_skript("let x=4;let y=4;return x greater_or_equal y");
