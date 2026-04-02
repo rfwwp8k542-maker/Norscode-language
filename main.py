@@ -2329,11 +2329,19 @@ def check_workflow_action_versions(workflows_dir: Path | None = None) -> dict:
 def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
     pipeline_started = time.perf_counter()
     started_at_utc = dt.datetime.now(dt.UTC).isoformat()
+    step_order = [
+        "snapshot_check",
+        "parity_check",
+        "test_check",
+        "workflow_action_check",
+    ]
+    if check_names:
+        step_order.append("name_migration_check")
     total_steps = 5 if check_names else 4
     payload = {
         "schema_version": 1,
         "ok": False,
-        "steps": {"total": total_steps, "name_check_enabled": check_names},
+        "steps": {"total": total_steps, "name_check_enabled": check_names, "order": step_order},
         "started_at_utc": started_at_utc,
         "finished_at_utc": None,
         "timings_ms": {},
