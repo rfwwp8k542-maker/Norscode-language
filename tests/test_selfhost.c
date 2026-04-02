@@ -404,6 +404,9 @@ char * selfhost__compiler__normaliser_norsk_token(char * tok) {
     if (nl_streq(tok, "implies")) {
         return "impliserer";
     }
+    if (((nl_streq(tok, "implies_that") || nl_streq(tok, "impliesthat")) || nl_streq(tok, "impliserer_at")) || nl_streq(tok, "implisererat")) {
+        return "impliserer";
+    }
     if (nl_streq(tok, "medforer")) {
         return "impliserer";
     }
@@ -3174,6 +3177,10 @@ int start() {
     nl_assert_eq_text(expr_nor_alias_eller_ikke, "0: PUSH 0\n1: PUSH 0\n2: OR\n3: NOT\n4: PRINT\n5: HALT\n");
     char * expr_implies_operator = selfhost__compiler__disasm_uttrykk("1 implies 0");
     nl_assert_eq_text(expr_implies_operator, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
+    char * expr_implies_that_alias = selfhost__compiler__disasm_uttrykk("1 implies_that 0");
+    nl_assert_eq_text(expr_implies_that_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
+    char * expr_impliserer_at_alias = selfhost__compiler__disasm_uttrykk("1 impliserer_at 0");
+    nl_assert_eq_text(expr_impliserer_at_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
     char * expr_norsk_impliserer_operator = selfhost__compiler__disasm_uttrykk("1 impliserer 0");
     nl_assert_eq_text(expr_norsk_impliserer_operator, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
     char * expr_norsk_medforer_alias = selfhost__compiler__disasm_uttrykk("1 medforer 0");
@@ -4477,6 +4484,10 @@ int start() {
     nl_assert_eq_text(script_nor_alias_or_not, "0: PUSH 0\n1: PUSH 0\n2: OR\n3: NOT\n4: PRINT\n5: HALT\n");
     char * script_implies_operator = selfhost__compiler__disasm_skript("returner 1 implies 0");
     nl_assert_eq_text(script_implies_operator, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
+    char * script_implies_that_alias = selfhost__compiler__disasm_skript("returner 1 implies_that 0");
+    nl_assert_eq_text(script_implies_that_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
+    char * script_impliserer_at_alias = selfhost__compiler__disasm_skript("returner 1 impliserer_at 0");
+    nl_assert_eq_text(script_impliserer_at_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
     char * script_norsk_medforer_alias = selfhost__compiler__disasm_skript("returner 1 medforer 0");
     nl_assert_eq_text(script_norsk_medforer_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
     char * script_impl_alias = selfhost__compiler__disasm_skript("returner 1 impl 0");
