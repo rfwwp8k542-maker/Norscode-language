@@ -113,6 +113,9 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "impl" eller tok == "impliser") {
         returner "impliserer"
     }
+    hvis (tok == "follows" eller tok == "folger_av" eller tok == "folgerav") {
+        returner "impliserer"
+    }
     hvis (tok == "iff") {
         returner "xnor"
     }
