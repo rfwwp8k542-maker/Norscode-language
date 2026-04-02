@@ -2124,6 +2124,15 @@ def get_git_remote_protocol(remote_url: str | None) -> str:
     return "unknown"
 
 
+def split_repo_slug(slug: str | None) -> tuple[str | None, str | None]:
+    if not slug or "/" not in slug:
+        return None, None
+    owner, name = slug.split("/", 1)
+    owner = owner.strip() or None
+    name = name.strip() or None
+    return owner, name
+
+
 def is_github_host(host: str | None) -> bool:
     return bool(host and host.lower() == "github.com")
 
@@ -2472,6 +2481,8 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
     source_remote = get_current_git_origin_url()
     source_remote_protocol = get_git_remote_protocol(source_remote)
     source_remote_host = get_git_remote_host(source_remote)
+    source_repo_slug = get_git_remote_repo_slug(source_remote)
+    source_repo_owner, source_repo_name = split_repo_slug(source_repo_slug)
     source_dirty = get_current_git_dirty_state()
     step_order = [
         "snapshot_check",
@@ -2498,7 +2509,9 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
         "source_remote_host": source_remote_host,
         "source_remote_is_github": is_github_host(source_remote_host),
         "source_remote_provider": get_git_remote_provider(source_remote_host),
-        "source_repo_slug": get_git_remote_repo_slug(source_remote),
+        "source_repo_slug": source_repo_slug,
+        "source_repo_owner": source_repo_owner,
+        "source_repo_name": source_repo_name,
         "source_is_tagged": source_tag is not None,
         "source_is_main": source_branch == "main",
         "source_dirty": source_dirty,
