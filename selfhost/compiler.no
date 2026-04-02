@@ -1218,6 +1218,15 @@ funksjon uttrykk_til_ops_og_verdier_med_miljo(tokens: liste_tekst, navn: liste_t
         } ellers hvis (i + 3 < lengde(tokens) og tok_raw == "er" og n1 == "ikke" og n2 == "lik" og n3 == "med") {
             tok = "ikke_er"
             tok_step = 4
+        } ellers hvis (i + 2 < lengde(tokens) og tok_raw == "ikke" og (n1 == "er" eller n1 == "equal" eller n1 == "equals") og n2 == "to") {
+            tok = "ikke_er"
+            tok_step = 3
+        } ellers hvis (i + 2 < lengde(tokens) og tok_raw == "not" og (n1 == "er" eller n1 == "equal" eller n1 == "equals") og n2 == "to") {
+            tok = "ikke_er"
+            tok_step = 3
+        } ellers hvis (i + 1 < lengde(tokens) og (tok_raw == "er" eller tok_raw == "equal" eller tok_raw == "equals") og n1 == "to") {
+            tok = "er"
+            tok_step = 2
         } ellers hvis (i + 2 < lengde(tokens) og tok_raw == "ikke" og n1 == "lik" og n2 == "med") {
             tok = "ikke_er"
             tok_step = 3
