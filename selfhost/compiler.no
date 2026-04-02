@@ -149,6 +149,9 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "because" eller tok == "fordi") {
         returner "impliseres_av"
     }
+    hvis (tok == "given_that" eller tok == "giventhat" eller tok == "gitt_at" eller tok == "gittat") {
+        returner "impliseres_av"
+    }
     hvis (tok == "as" eller tok == "ettersom") {
         returner "impliseres_av"
     }
