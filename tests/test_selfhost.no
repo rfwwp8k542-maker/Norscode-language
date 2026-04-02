@@ -1482,6 +1482,9 @@ funksjon start() -> heltall {
     la expr_if_elseif_alias: tekst = sh.disasm_uttrykk("if 0==1 then 10 elseif 1==1 then 20 else 30")
     assert_eq(expr_if_elseif_alias, "0: PUSH 0\n1: PUSH 1\n2: EQ\n3: JZ 6\n4: PUSH 10\n5: JMP 16\n6: LABEL 6\n7: PUSH 1\n8: PUSH 1\n9: EQ\n10: JZ 13\n11: PUSH 20\n12: JMP 15\n13: LABEL 13\n14: PUSH 30\n15: LABEL 15\n16: LABEL 16\n17: PRINT\n18: HALT\n")
 
+    la expr_if_elsif_alias: tekst = sh.disasm_uttrykk("if 0==1 then 10 elsif 1==1 then 20 else 30")
+    assert_eq(expr_if_elsif_alias, "0: PUSH 0\n1: PUSH 1\n2: EQ\n3: JZ 6\n4: PUSH 10\n5: JMP 16\n6: LABEL 6\n7: PUSH 1\n8: PUSH 1\n9: EQ\n10: JZ 13\n11: PUSH 20\n12: JMP 15\n13: LABEL 13\n14: PUSH 30\n15: LABEL 15\n16: LABEL 16\n17: PRINT\n18: HALT\n")
+
     la expr_and_or_not_alias: tekst = sh.disasm_uttrykk("not 0 and 1 or 0")
     assert_eq(expr_and_or_not_alias, "0: PUSH 0\n1: NOT\n2: PUSH 1\n3: AND\n4: PUSH 0\n5: OR\n6: PRINT\n7: HALT\n")
 

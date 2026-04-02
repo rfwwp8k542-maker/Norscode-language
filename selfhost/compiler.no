@@ -80,7 +80,7 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "else") {
         returner "ellers"
     }
-    hvis (tok == "elseif") {
+    hvis (tok == "elseif" eller tok == "elsif") {
         returner "ellers_hvis"
     }
     hvis (tok == "and") {

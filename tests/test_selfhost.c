@@ -377,7 +377,7 @@ char * selfhost__compiler__normaliser_norsk_token(char * tok) {
     if (nl_streq(tok, "else")) {
         return "ellers";
     }
-    if (nl_streq(tok, "elseif")) {
+    if (nl_streq(tok, "elseif") || nl_streq(tok, "elsif")) {
         return "ellers_hvis";
     }
     if (nl_streq(tok, "and")) {
@@ -3457,6 +3457,8 @@ int start() {
     nl_assert_eq_text(expr_if_then_else_alias, "0: PUSH 1\n1: PUSH 1\n2: EQ\n3: JZ 6\n4: PUSH 7\n5: JMP 8\n6: LABEL 6\n7: PUSH 9\n8: LABEL 8\n9: PRINT\n10: HALT\n");
     char * expr_if_elseif_alias = selfhost__compiler__disasm_uttrykk("if 0==1 then 10 elseif 1==1 then 20 else 30");
     nl_assert_eq_text(expr_if_elseif_alias, "0: PUSH 0\n1: PUSH 1\n2: EQ\n3: JZ 6\n4: PUSH 10\n5: JMP 16\n6: LABEL 6\n7: PUSH 1\n8: PUSH 1\n9: EQ\n10: JZ 13\n11: PUSH 20\n12: JMP 15\n13: LABEL 13\n14: PUSH 30\n15: LABEL 15\n16: LABEL 16\n17: PRINT\n18: HALT\n");
+    char * expr_if_elsif_alias = selfhost__compiler__disasm_uttrykk("if 0==1 then 10 elsif 1==1 then 20 else 30");
+    nl_assert_eq_text(expr_if_elsif_alias, "0: PUSH 0\n1: PUSH 1\n2: EQ\n3: JZ 6\n4: PUSH 10\n5: JMP 16\n6: LABEL 6\n7: PUSH 1\n8: PUSH 1\n9: EQ\n10: JZ 13\n11: PUSH 20\n12: JMP 15\n13: LABEL 13\n14: PUSH 30\n15: LABEL 15\n16: LABEL 16\n17: PRINT\n18: HALT\n");
     char * expr_and_or_not_alias = selfhost__compiler__disasm_uttrykk("not 0 and 1 or 0");
     nl_assert_eq_text(expr_and_or_not_alias, "0: PUSH 0\n1: NOT\n2: PUSH 1\n3: AND\n4: PUSH 0\n5: OR\n6: PRINT\n7: HALT\n");
     char * expr_english_cmp_alias = selfhost__compiler__disasm_uttrykk("4 greater_or_equal 4 and 3 less_than 4");
