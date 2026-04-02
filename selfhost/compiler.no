@@ -131,6 +131,9 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "given" eller tok == "gitt") {
         returner "impliseres_av"
     }
+    hvis (tok == "provided" eller tok == "forutsatt") {
+        returner "impliseres_av"
+    }
     hvis (tok == "follows_from" eller tok == "followsfrom" eller tok == "folger_fra" eller tok == "folgerfra") {
         returner "impliseres_av"
     }
