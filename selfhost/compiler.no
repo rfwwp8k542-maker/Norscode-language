@@ -1404,6 +1404,9 @@ funksjon uttrykk_til_ops_og_verdier_med_miljo(tokens: liste_tekst, navn: liste_t
         hvis (i + 1 < lengde(tokens) og tok_raw == "<" og n1 == ">") {
             tok = "ikke_er"
             tok_step = 2
+        } ellers hvis (i + 1 < lengde(tokens) og tok_raw == "-" og n1 == ">") {
+            tok = "impliserer"
+            tok_step = 2
         } ellers hvis (i + 1 < lengde(tokens) og ((tok_raw == "divided") eller (tok_raw == "/" og tok_kilde == "divide") eller (tok_raw == "*" og (tok_kilde == "multiply" eller tok_kilde == "multiplied")) eller tok_raw == "modulo" eller (tok_raw == "%" og tok_kilde == "remainder")) og (n1 == "by" eller n1 == "of")) {
             hvis (tok_raw == "divided" eller (tok_raw == "/" og tok_kilde == "divide")) {
                 tok = "/"
