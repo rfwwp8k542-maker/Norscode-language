@@ -461,6 +461,9 @@ char * selfhost__compiler__normaliser_norsk_token(char * tok) {
     if (nl_streq(tok, "assuming") || nl_streq(tok, "antar")) {
         return "impliseres_av";
     }
+    if (((nl_streq(tok, "assuming_that") || nl_streq(tok, "assumingthat")) || nl_streq(tok, "antar_at")) || nl_streq(tok, "antarat")) {
+        return "impliseres_av";
+    }
     if (nl_streq(tok, "since") || nl_streq(tok, "siden")) {
         return "impliseres_av";
     }
@@ -3274,6 +3277,10 @@ int start() {
     nl_assert_eq_text(expr_assuming_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n");
     char * expr_antar_alias = selfhost__compiler__disasm_uttrykk("1 antar 0");
     nl_assert_eq_text(expr_antar_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n");
+    char * expr_assuming_that_alias = selfhost__compiler__disasm_uttrykk("1 assuming_that 0");
+    nl_assert_eq_text(expr_assuming_that_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n");
+    char * expr_antar_at_alias = selfhost__compiler__disasm_uttrykk("1 antar_at 0");
+    nl_assert_eq_text(expr_antar_at_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n");
     char * expr_since_alias = selfhost__compiler__disasm_uttrykk("1 since 0");
     nl_assert_eq_text(expr_since_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n");
     char * expr_siden_alias = selfhost__compiler__disasm_uttrykk("1 siden 0");
@@ -4593,6 +4600,10 @@ int start() {
     nl_assert_eq_text(script_assuming_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n");
     char * script_antar_alias = selfhost__compiler__disasm_skript("returner 1 antar 0");
     nl_assert_eq_text(script_antar_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n");
+    char * script_assuming_that_alias = selfhost__compiler__disasm_skript("returner 1 assuming_that 0");
+    nl_assert_eq_text(script_assuming_that_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n");
+    char * script_antar_at_alias = selfhost__compiler__disasm_skript("returner 1 antar_at 0");
+    nl_assert_eq_text(script_antar_at_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n");
     char * script_since_alias = selfhost__compiler__disasm_skript("returner 1 since 0");
     nl_assert_eq_text(script_since_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n");
     char * script_siden_alias = selfhost__compiler__disasm_skript("returner 1 siden 0");

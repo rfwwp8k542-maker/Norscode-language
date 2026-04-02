@@ -164,6 +164,9 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "assuming" eller tok == "antar") {
         returner "impliseres_av"
     }
+    hvis (tok == "assuming_that" eller tok == "assumingthat" eller tok == "antar_at" eller tok == "antarat") {
+        returner "impliseres_av"
+    }
     hvis (tok == "since" eller tok == "siden") {
         returner "impliseres_av"
     }
