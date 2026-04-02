@@ -2555,6 +2555,7 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
             "python_version": platform.python_version(),
             "python_major_minor": py_major_minor,
             "python_api_version": sys.api_version,
+            "python_hexversion": sys.hexversion,
             "python_implementation": platform.python_implementation(),
             "python_compiler": platform.python_compiler(),
             "python_build": " ".join(platform.python_build()),
