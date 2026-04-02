@@ -92,10 +92,10 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "is_not" eller tok == "isnot") {
         returner "ikke_er"
     }
-    hvis (tok == "not_equal" eller tok == "not_equals" eller tok == "notequal" eller tok == "notequals") {
+    hvis (tok == "not_equal" eller tok == "not_equals" eller tok == "not_equal_to" eller tok == "notequal" eller tok == "notequals") {
         returner "ikke_er"
     }
-    hvis (tok == "equals" eller tok == "equal") {
+    hvis (tok == "equals" eller tok == "equal" eller tok == "equal_to") {
         returner "er"
     }
     hvis (tok == "less_than" eller tok == "lessthan") {
@@ -103,6 +103,12 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     }
     hvis (tok == "greater_than" eller tok == "greaterthan") {
         returner "storre_enn"
+    }
+    hvis (tok == "less_equal" eller tok == "lessequal") {
+        returner "mindre_eller_lik"
+    }
+    hvis (tok == "greater_equal" eller tok == "greaterequal") {
+        returner "storre_eller_lik"
     }
     hvis (tok == "less_or_equal" eller tok == "less_or_equals" eller tok == "lessorequal" eller tok == "lessorequals") {
         returner "mindre_eller_lik"

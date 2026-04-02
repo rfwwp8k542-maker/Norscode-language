@@ -389,10 +389,10 @@ char * selfhost__compiler__normaliser_norsk_token(char * tok) {
     if (nl_streq(tok, "is_not") || nl_streq(tok, "isnot")) {
         return "ikke_er";
     }
-    if (((nl_streq(tok, "not_equal") || nl_streq(tok, "not_equals")) || nl_streq(tok, "notequal")) || nl_streq(tok, "notequals")) {
+    if ((((nl_streq(tok, "not_equal") || nl_streq(tok, "not_equals")) || nl_streq(tok, "not_equal_to")) || nl_streq(tok, "notequal")) || nl_streq(tok, "notequals")) {
         return "ikke_er";
     }
-    if (nl_streq(tok, "equals") || nl_streq(tok, "equal")) {
+    if ((nl_streq(tok, "equals") || nl_streq(tok, "equal")) || nl_streq(tok, "equal_to")) {
         return "er";
     }
     if (nl_streq(tok, "less_than") || nl_streq(tok, "lessthan")) {
@@ -400,6 +400,12 @@ char * selfhost__compiler__normaliser_norsk_token(char * tok) {
     }
     if (nl_streq(tok, "greater_than") || nl_streq(tok, "greaterthan")) {
         return "storre_enn";
+    }
+    if (nl_streq(tok, "less_equal") || nl_streq(tok, "lessequal")) {
+        return "mindre_eller_lik";
+    }
+    if (nl_streq(tok, "greater_equal") || nl_streq(tok, "greaterequal")) {
+        return "storre_eller_lik";
     }
     if (((nl_streq(tok, "less_or_equal") || nl_streq(tok, "less_or_equals")) || nl_streq(tok, "lessorequal")) || nl_streq(tok, "lessorequals")) {
         return "mindre_eller_lik";
@@ -3430,6 +3436,14 @@ int start() {
     nl_assert_eq_text(expr_english_cmp_alias, "0: PUSH 4\n1: PUSH 4\n2: LT\n3: NOT\n4: PUSH 3\n5: PUSH 4\n6: LT\n7: AND\n8: PRINT\n9: HALT\n");
     char * expr_english_is_not_alias = selfhost__compiler__disasm_uttrykk("7 is_not 8");
     nl_assert_eq_text(expr_english_is_not_alias, "0: PUSH 7\n1: PUSH 8\n2: EQ\n3: NOT\n4: PRINT\n5: HALT\n");
+    char * expr_english_equal_to_alias = selfhost__compiler__disasm_uttrykk("7 equal_to 7");
+    nl_assert_eq_text(expr_english_equal_to_alias, "0: PUSH 7\n1: PUSH 7\n2: EQ\n3: PRINT\n4: HALT\n");
+    char * expr_english_not_equal_to_alias = selfhost__compiler__disasm_uttrykk("7 not_equal_to 8");
+    nl_assert_eq_text(expr_english_not_equal_to_alias, "0: PUSH 7\n1: PUSH 8\n2: EQ\n3: NOT\n4: PRINT\n5: HALT\n");
+    char * expr_english_less_equal_alias = selfhost__compiler__disasm_uttrykk("3 less_equal 4");
+    nl_assert_eq_text(expr_english_less_equal_alias, "0: PUSH 3\n1: PUSH 4\n2: GT\n3: NOT\n4: PRINT\n5: HALT\n");
+    char * expr_english_greater_equal_alias = selfhost__compiler__disasm_uttrykk("4 greater_equal 4");
+    nl_assert_eq_text(expr_english_greater_equal_alias, "0: PUSH 4\n1: PUSH 4\n2: LT\n3: NOT\n4: PRINT\n5: HALT\n");
     char * expr_english_times_alias = selfhost__compiler__disasm_uttrykk("3 times 4");
     nl_assert_eq_text(expr_english_times_alias, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n");
     char * expr_english_multiplied_by_alias = selfhost__compiler__disasm_uttrykk("3 multiplied_by 4");
@@ -3497,6 +3511,8 @@ int start() {
     nl_assert_eq_text(script_return_alias_only, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
     char * script_english_cmp_alias = selfhost__compiler__disasm_skript("let x=4;let y=4;return x greater_or_equal y");
     nl_assert_eq_text(script_english_cmp_alias, "0: PUSH 4\n1: PUSH 4\n2: LT\n3: NOT\n4: PRINT\n5: HALT\n");
+    char * script_english_cmp_equal_to_alias = selfhost__compiler__disasm_skript("let x=4;let y=4;return x equal_to y");
+    nl_assert_eq_text(script_english_cmp_equal_to_alias, "0: PUSH 4\n1: PUSH 4\n2: EQ\n3: PRINT\n4: HALT\n");
     char * script_english_math_alias = selfhost__compiler__disasm_skript("let x=8;let y=2;return x divided_by y");
     nl_assert_eq_text(script_english_math_alias, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * script_norsk_ops = selfhost__compiler__disasm_skript("x=sann;y=ikke usann;x og y");
