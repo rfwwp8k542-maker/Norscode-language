@@ -116,13 +116,13 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "er_større_enn" eller tok == "er_storre_enn" eller tok == "erstørreenn" eller tok == "erstorreenn") {
         returner "storre_enn"
     }
-    hvis (tok == "større_eller_lik") {
+    hvis (tok == "større_eller_lik" eller tok == "størreellerlik" eller tok == "storreellerlik") {
         returner "storre_eller_lik"
     }
     hvis (tok == "større_lik" eller tok == "storre_lik" eller tok == "størrelik" eller tok == "storrelik") {
         returner "storre_eller_lik"
     }
-    hvis (tok == "er_større_eller_lik" eller tok == "er_storre_eller_lik") {
+    hvis (tok == "er_større_eller_lik" eller tok == "er_storre_eller_lik" eller tok == "erstørreellerlik" eller tok == "erstorreellerlik") {
         returner "storre_eller_lik"
     }
     hvis (tok == "større_enn_eller_lik" eller tok == "storre_enn_eller_lik" eller tok == "størreennellerlik" eller tok == "storreennellerlik") {
@@ -137,13 +137,13 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "mindre_enn" eller tok == "mindreenn") {
         returner "mindre_enn"
     }
-    hvis (tok == "er_mindre_eller_lik" eller tok == "er_mindre_enn_eller_lik" eller tok == "ermindreennellerlik") {
+    hvis (tok == "er_mindre_eller_lik" eller tok == "er_mindre_enn_eller_lik" eller tok == "ermindreellerlik" eller tok == "ermindreennellerlik") {
         returner "mindre_eller_lik"
     }
     hvis (tok == "mindre_enn_eller_lik" eller tok == "mindreennellerlik") {
         returner "mindre_eller_lik"
     }
-    hvis (tok == "mindre_lik" eller tok == "mindrelik") {
+    hvis (tok == "mindre_lik" eller tok == "mindrelik" eller tok == "mindreellerlik") {
         returner "mindre_eller_lik"
     }
     hvis (tok == "ikke_lik" eller tok == "ikke_lik_med" eller tok == "ikkelikmed" eller tok == "er_ikke" eller tok == "erikke" eller tok == "er_ulik" eller tok == "er_ulik_med" eller tok == "erulik" eller tok == "erulikmed" eller tok == "erikkelik" eller tok == "erikkelikmed" eller tok == "ulik_med" eller tok == "ulikmed"
