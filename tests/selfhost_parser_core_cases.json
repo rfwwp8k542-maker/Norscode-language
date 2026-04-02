@@ -469,6 +469,24 @@
       ]
     },
     {
+      "name": "script_comma_trailing",
+      "source": "la x=2,returner x,",
+      "expected_lines": [
+        "0: PUSH 2",
+        "1: PRINT",
+        "2: HALT"
+      ]
+    },
+    {
+      "name": "script_colon_trailing",
+      "source": "la x=2:returner x:",
+      "expected_lines": [
+        "0: PUSH 2",
+        "1: PRINT",
+        "2: HALT"
+      ]
+    },
+    {
       "name": "error_missing_separator_after_assign",
       "source": "x=2+3",
       "expected_error": "/* feil: mangler ';', ',' eller ':' etter assignment til x ved token 0 */"

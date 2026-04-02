@@ -162,6 +162,24 @@
       ]
     },
     {
+      "name": "script_comma_trailing",
+      "source": "la x=2,returner x,",
+      "expected_lines": [
+        "0: PUSH 2",
+        "1: PRINT",
+        "2: HALT"
+      ]
+    },
+    {
+      "name": "script_colon_trailing",
+      "source": "la x=2:returner x:",
+      "expected_lines": [
+        "0: PUSH 2",
+        "1: PRINT",
+        "2: HALT"
+      ]
+    },
+    {
       "name": "error_la_missing_name",
       "source": "la ;x+1",
       "expected_error": "/* feil: 'la' må etterfølges av variabelnavn ved token 0 */"

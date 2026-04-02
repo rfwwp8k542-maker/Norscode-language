@@ -539,7 +539,7 @@ Neste steg:
 M1 er nå fullført og låst i CI:
 
 - `tests/selfhost_parser_m1_cases.json` er på 30 cases.
-- `tests/selfhost_parser_m2_cases.json` + M1 dekker 100% av `tests/selfhost_parser_core_cases.json` (47 cases totalt i utvidet suite).
+- `tests/selfhost_parser_m2_cases.json` + M1 dekker 100% av `tests/selfhost_parser_core_cases.json` (49 cases totalt i utvidet suite).
 - `norcode ci --check-names --require-selfhost-ready` verifiserer M1/M2/utvidet parity + consistency + progress-gate.
 - GitHub workflows (`ci.yml`, `publish.yml`) kjører nå med selfhost-ready-gate aktiv.
 
