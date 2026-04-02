@@ -2290,6 +2290,7 @@ def check_workflow_action_versions(workflows_dir: Path | None = None) -> dict:
 def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
     total_steps = 5 if check_names else 4
     payload = {
+        "steps": {"total": total_steps, "name_check_enabled": check_names},
         "snapshot_check": {"ok": False, "updated": None},
         "parity_check": {"ok": False},
         "test_check": {"ok": False, "passed": 0, "failed": 0, "total": 0},
