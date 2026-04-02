@@ -353,6 +353,18 @@ int selfhost__compiler__er_heltall_token(char * tok) {
 }
 
 char * selfhost__compiler__normaliser_norsk_token(char * tok) {
+    if (nl_streq(tok, "if")) {
+        return "hvis";
+    }
+    if (nl_streq(tok, "then")) {
+        return "da";
+    }
+    if (nl_streq(tok, "else")) {
+        return "ellers";
+    }
+    if (nl_streq(tok, "elseif")) {
+        return "ellers_hvis";
+    }
     if ((((nl_streq(tok, "elif") || nl_streq(tok, "else_if")) || nl_streq(tok, "else_hvis")) || nl_streq(tok, "elsehvis")) || nl_streq(tok, "else-hvis")) {
         return "ellers_hvis";
     }
@@ -1705,7 +1717,7 @@ char * selfhost__compiler__uttrykk_til_ops_og_verdier(nl_list_text* tokens, nl_l
 }
 
 char * selfhost__compiler__bygg_hvis_da_ellers_ops_med_miljo(nl_list_text* tokens, nl_list_text* navn, nl_list_int* miljo_verdier, nl_list_text* out_ops, nl_list_int* out_verdier) {
-    if ((nl_list_text_len(tokens) == 0) || !(nl_streq(tokens->data[0], "hvis"))) {
+    if ((nl_list_text_len(tokens) == 0) || !(nl_streq(selfhost__compiler__normaliser_norsk_token(tokens->data[0]), "hvis"))) {
         return "/* feil: intern hvis-parser forventer 'hvis' ved token 0 */";
     }
     int depth = 0;
@@ -1816,7 +1828,7 @@ char * selfhost__compiler__bygg_hvis_da_ellers_ops_med_miljo(nl_list_text* token
     if (!(nl_streq(feil, ""))) {
         return feil;
     }
-    if ((nl_list_text_len(then_tokens) > 0) && nl_streq(then_tokens->data[0], "hvis")) {
+    if ((nl_list_text_len(then_tokens) > 0) && nl_streq(selfhost__compiler__normaliser_norsk_token(then_tokens->data[0]), "hvis")) {
         feil = selfhost__compiler__bygg_hvis_da_ellers_ops_med_miljo(then_tokens, navn, miljo_verdier, then_ops, then_verdier);
     }
     else {
@@ -1825,7 +1837,7 @@ char * selfhost__compiler__bygg_hvis_da_ellers_ops_med_miljo(nl_list_text* token
     if (!(nl_streq(feil, ""))) {
         return feil;
     }
-    if ((nl_list_text_len(else_tokens) > 0) && nl_streq(else_tokens->data[0], "hvis")) {
+    if ((nl_list_text_len(else_tokens) > 0) && nl_streq(selfhost__compiler__normaliser_norsk_token(else_tokens->data[0]), "hvis")) {
         feil = selfhost__compiler__bygg_hvis_da_ellers_ops_med_miljo(else_tokens, navn, miljo_verdier, else_ops, else_verdier);
     }
     else {
@@ -1874,7 +1886,7 @@ char * selfhost__compiler__disasm_uttrykk(char * kilde) {
     char * feil = "";
     nl_list_text_remove(ops, 0);
     nl_list_int_remove(verdier, 0);
-    if ((nl_list_text_len(tokens) > 0) && nl_streq(tokens->data[0], "hvis")) {
+    if ((nl_list_text_len(tokens) > 0) && nl_streq(selfhost__compiler__normaliser_norsk_token(tokens->data[0]), "hvis")) {
         nl_list_text* navn = nl_list_text_new();
         nl_list_text_push(navn, "");
         nl_list_int* miljo_verdier = nl_list_int_new();
@@ -1906,7 +1918,7 @@ char * selfhost__compiler__disasm_uttrykk_med_miljo(char * kilde, nl_list_text* 
     char * feil = "";
     nl_list_text_remove(ops, 0);
     nl_list_int_remove(verdier, 0);
-    if ((nl_list_text_len(tokens) > 0) && nl_streq(tokens->data[0], "hvis")) {
+    if ((nl_list_text_len(tokens) > 0) && nl_streq(selfhost__compiler__normaliser_norsk_token(tokens->data[0]), "hvis")) {
         feil = selfhost__compiler__bygg_hvis_da_ellers_ops_med_miljo(tokens, navn, miljo_verdier, ops, verdier);
     }
     else {
@@ -1932,7 +1944,7 @@ char * selfhost__compiler__kompiler_uttrykk_til_c(char * kilde) {
     char * feil = "";
     nl_list_text_remove(ops, 0);
     nl_list_int_remove(verdier, 0);
-    if ((nl_list_text_len(tokens) > 0) && nl_streq(tokens->data[0], "hvis")) {
+    if ((nl_list_text_len(tokens) > 0) && nl_streq(selfhost__compiler__normaliser_norsk_token(tokens->data[0]), "hvis")) {
         nl_list_text* navn = nl_list_text_new();
         nl_list_text_push(navn, "");
         nl_list_int* miljo_verdier = nl_list_int_new();
@@ -2049,7 +2061,7 @@ char * selfhost__compiler__skript_til_ops_og_verdier(nl_list_text* tokens, nl_li
                     t = (t + 1);
                 }
             }
-            if ((nl_list_text_len(expr_tokens) > 0) && nl_streq(expr_tokens->data[0], "hvis")) {
+            if ((nl_list_text_len(expr_tokens) > 0) && nl_streq(selfhost__compiler__normaliser_norsk_token(expr_tokens->data[0]), "hvis")) {
                 feil = selfhost__compiler__bygg_hvis_da_ellers_ops_med_miljo(expr_tokens, navn, miljo_verdier, expr_ops, expr_verdier);
             }
             else {
@@ -2111,7 +2123,7 @@ char * selfhost__compiler__skript_til_ops_og_verdier(nl_list_text* tokens, nl_li
         char * final_feil = "";
         nl_list_text_remove(stmt_ops, 0);
         nl_list_int_remove(stmt_verdier, 0);
-        if ((nl_list_text_len(final_tokens) > 0) && nl_streq(final_tokens->data[0], "hvis")) {
+        if ((nl_list_text_len(final_tokens) > 0) && nl_streq(selfhost__compiler__normaliser_norsk_token(final_tokens->data[0]), "hvis")) {
             final_feil = selfhost__compiler__bygg_hvis_da_ellers_ops_med_miljo(final_tokens, navn, miljo_verdier, stmt_ops, stmt_verdier);
         }
         else {
@@ -2241,7 +2253,7 @@ char * selfhost__compiler__kompiler_uttrykk_til_c_med_miljo(char * kilde, nl_lis
     char * feil = "";
     nl_list_text_remove(ops, 0);
     nl_list_int_remove(verdier, 0);
-    if ((nl_list_text_len(tokens) > 0) && nl_streq(tokens->data[0], "hvis")) {
+    if ((nl_list_text_len(tokens) > 0) && nl_streq(selfhost__compiler__normaliser_norsk_token(tokens->data[0]), "hvis")) {
         feil = selfhost__compiler__bygg_hvis_da_ellers_ops_med_miljo(tokens, navn, miljo_verdier, ops, verdier);
     }
     else {
@@ -3356,6 +3368,10 @@ int start() {
     nl_assert_eq_text(expr_hvis_ellers_hvis, "0: PUSH 0\n1: PUSH 1\n2: EQ\n3: JZ 6\n4: PUSH 10\n5: JMP 16\n6: LABEL 6\n7: PUSH 1\n8: PUSH 1\n9: EQ\n10: JZ 13\n11: PUSH 20\n12: JMP 15\n13: LABEL 13\n14: PUSH 30\n15: LABEL 15\n16: LABEL 16\n17: PRINT\n18: HALT\n");
     char * expr_hvis_elif_alias = selfhost__compiler__disasm_uttrykk("hvis 0==1 da 10 elif 1==1 da 20 ellers 30");
     nl_assert_eq_text(expr_hvis_elif_alias, "0: PUSH 0\n1: PUSH 1\n2: EQ\n3: JZ 6\n4: PUSH 10\n5: JMP 16\n6: LABEL 6\n7: PUSH 1\n8: PUSH 1\n9: EQ\n10: JZ 13\n11: PUSH 20\n12: JMP 15\n13: LABEL 13\n14: PUSH 30\n15: LABEL 15\n16: LABEL 16\n17: PRINT\n18: HALT\n");
+    char * expr_if_then_else_alias = selfhost__compiler__disasm_uttrykk("if 1==1 then 7 else 9");
+    nl_assert_eq_text(expr_if_then_else_alias, "0: PUSH 1\n1: PUSH 1\n2: EQ\n3: JZ 6\n4: PUSH 7\n5: JMP 8\n6: LABEL 6\n7: PUSH 9\n8: LABEL 8\n9: PRINT\n10: HALT\n");
+    char * expr_if_elseif_alias = selfhost__compiler__disasm_uttrykk("if 0==1 then 10 elseif 1==1 then 20 else 30");
+    nl_assert_eq_text(expr_if_elseif_alias, "0: PUSH 0\n1: PUSH 1\n2: EQ\n3: JZ 6\n4: PUSH 10\n5: JMP 16\n6: LABEL 6\n7: PUSH 1\n8: PUSH 1\n9: EQ\n10: JZ 13\n11: PUSH 20\n12: JMP 15\n13: LABEL 13\n14: PUSH 30\n15: LABEL 15\n16: LABEL 16\n17: PRINT\n18: HALT\n");
     char * expr_hvis_env = selfhost__compiler__disasm_uttrykk_med_miljo("hvis x>y da x ellers y", env_navn, env_verdier);
     nl_assert_eq_text(expr_hvis_env, "0: PUSH 7\n1: PUSH 3\n2: GT\n3: JZ 6\n4: PUSH 7\n5: JMP 8\n6: LABEL 6\n7: PUSH 3\n8: LABEL 8\n9: PRINT\n10: HALT\n");
     char * expr_hvis_c = selfhost__compiler__kompiler_uttrykk_til_c("hvis 1==1 da 7 ellers 9");
@@ -3407,6 +3423,8 @@ int start() {
     nl_assert_eq_text(script_returner_hvis, "0: PUSH 0\n1: PUSH 1\n2: EQ\n3: JZ 6\n4: PUSH 10\n5: JMP 8\n6: LABEL 6\n7: PUSH 20\n8: LABEL 8\n9: PRINT\n10: HALT\n");
     char * script_nested_hvis = selfhost__compiler__disasm_skript("la x=1;hvis x==1 da hvis x==1 da 10 ellers 11 ellers 20");
     nl_assert_eq_text(script_nested_hvis, "0: PUSH 1\n1: PUSH 1\n2: EQ\n3: JZ 14\n4: PUSH 1\n5: PUSH 1\n6: EQ\n7: JZ 10\n8: PUSH 10\n9: JMP 12\n10: LABEL 10\n11: PUSH 11\n12: LABEL 12\n13: JMP 16\n14: LABEL 14\n15: PUSH 20\n16: LABEL 16\n17: PRINT\n18: HALT\n");
+    char * script_if_then_else_alias = selfhost__compiler__disasm_skript("la x=1;if x==1 then 10 else 20");
+    nl_assert_eq_text(script_if_then_else_alias, "0: PUSH 1\n1: PUSH 1\n2: EQ\n3: JZ 6\n4: PUSH 10\n5: JMP 8\n6: LABEL 6\n7: PUSH 20\n8: LABEL 8\n9: PRINT\n10: HALT\n");
     char * script_norsk_ops = selfhost__compiler__disasm_skript("x=sann;y=ikke usann;x og y");
     nl_assert_eq_text(script_norsk_ops, "0: PUSH 1\n1: PUSH 1\n2: AND\n3: PRINT\n4: HALT\n");
     char * script_norsk_ops_enten = selfhost__compiler__disasm_skript("x=usann;y=sann;x enten y");
