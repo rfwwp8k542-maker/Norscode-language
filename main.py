@@ -2544,6 +2544,94 @@ def run_selfhost_parser_parity(suite: str = "all") -> dict:
     }
 
 
+def run_selfhost_parser_suite_consistency_check(m1_fixture: Path, extended_fixture: Path) -> dict:
+    started = time.perf_counter()
+    mismatch_lines: list[str] = []
+    checked = 0
+
+    def _load_fixture(path: Path):
+        try:
+            return json.loads(path.resolve().read_text(encoding="utf-8"))
+        except Exception as exc:
+            mismatch_lines.append(f"Kunne ikke lese fixture {path.resolve()}: {exc}")
+            return None
+
+    def _normalize_case(item: dict):
+        normalized = {"source": str(item.get("source", ""))}
+        has_lines = "expected_lines" in item
+        has_error = "expected_error" in item
+        if has_lines == has_error:
+            normalized["invalid"] = True
+            return normalized
+        if has_error:
+            normalized["expected_error"] = str(item.get("expected_error", ""))
+        else:
+            normalized["expected_lines"] = [str(line) for line in item.get("expected_lines", [])]
+        return normalized
+
+    m1 = _load_fixture(m1_fixture)
+    extended = _load_fixture(extended_fixture)
+    if m1 is None or extended is None:
+        return {
+            "success": False,
+            "checked_cases": 0,
+            "mismatch_count": len(mismatch_lines),
+            "stderr": "\n".join(mismatch_lines) + "\n",
+            "duration_ms": int((time.perf_counter() - started) * 1000),
+        }
+
+    for mode in ("expressions", "scripts"):
+        m1_cases = m1.get(mode, [])
+        ext_cases = extended.get(mode, [])
+        ext_map: dict[str, dict] = {}
+
+        for idx, item in enumerate(ext_cases):
+            if "name" not in item:
+                mismatch_lines.append(f"[extended/{mode}#{idx}] mangler navn")
+                continue
+            name = str(item["name"])
+            if name in ext_map:
+                mismatch_lines.append(f"[extended/{mode}#{idx}] duplikat navn: {name}")
+                continue
+            ext_map[name] = _normalize_case(item)
+
+        for idx, item in enumerate(m1_cases):
+            if "name" not in item:
+                mismatch_lines.append(f"[m1/{mode}#{idx}] mangler navn")
+                continue
+            name = str(item["name"])
+            checked += 1
+            if name not in ext_map:
+                mismatch_lines.append(f"[m1/{mode}/{name}] finnes ikke i utvidet fixture")
+                continue
+
+            m1_norm = _normalize_case(item)
+            ext_norm = ext_map[name]
+            if m1_norm.get("invalid") or ext_norm.get("invalid"):
+                mismatch_lines.append(f"[m1/{mode}/{name}] ugyldig expected_* format")
+                continue
+            if m1_norm != ext_norm:
+                mismatch_lines.append(f"[m1/{mode}/{name}] avviker mellom M1 og utvidet")
+                mismatch_lines.extend(
+                    difflib.unified_diff(
+                        json.dumps(m1_norm, ensure_ascii=False, indent=2).splitlines(),
+                        json.dumps(ext_norm, ensure_ascii=False, indent=2).splitlines(),
+                        fromfile=f"m1/{name}",
+                        tofile=f"extended/{name}",
+                        lineterm="",
+                    )
+                )
+
+    success = len(mismatch_lines) == 0
+    return {
+        "success": success,
+        "checked_cases": checked,
+        "mismatch_count": len(mismatch_lines),
+        "stderr": "" if success else "\n".join(mismatch_lines) + "\n",
+        "duration_ms": int((time.perf_counter() - started) * 1000),
+    }
+
+
 def update_ir_snapshots(check_only: bool = False):
     fixture_path = IR_SNAPSHOT_FIXTURE.resolve()
     fixture = json.loads(fixture_path.read_text(encoding="utf-8"))
@@ -2732,11 +2820,10 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False, parity
         "snapshot_check",
         "parity_check",
         "parser_core_m1_check",
-        "test_check",
-        "workflow_action_check",
     ]
     if parity_suite == "all":
-        step_order.insert(3, "parser_core_extended_check")
+        step_order.append("parser_core_extended_check")
+    step_order.extend(["parser_suite_consistency_check", "test_check", "workflow_action_check"])
     if check_names:
         step_order.append("name_migration_check")
     total_steps = len(step_order)
@@ -2851,6 +2938,7 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False, parity
         "parity_check": {"ok": False},
         "parser_core_m1_check": {"ok": False, "case_count": 0, "error_cases": 0},
         "parser_core_extended_check": {"ok": False, "case_count": 0, "error_cases": 0},
+        "parser_suite_consistency_check": {"ok": False, "checked_cases": 0, "mismatch_count": 0},
         "test_check": {"ok": False, "passed": 0, "failed": 0, "total": 0},
         "workflow_action_check": {
             "ok": False,
@@ -2954,7 +3042,30 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False, parity
         payload["parser_core_extended_check"]["case_count"] = 0
         payload["parser_core_extended_check"]["error_cases"] = 0
 
-    test_step = 5 if parity_suite == "all" else 4
+    consistency_step = 5 if parity_suite == "all" else 4
+    if not json_output:
+        print(f"[{consistency_step}/{total_steps}] Parser suite consistency")
+    started = time.perf_counter()
+    consistency = run_selfhost_parser_suite_consistency_check(
+        SELFHOST_PARSER_M1_FIXTURE,
+        SELFHOST_PARSER_EXTENDED_FIXTURE,
+    )
+    payload["timings_ms"]["parser_suite_consistency_check"] = int((time.perf_counter() - started) * 1000)
+    payload["timings_s"]["parser_suite_consistency_check"] = round(
+        payload["timings_ms"]["parser_suite_consistency_check"] / 1000.0, 3
+    )
+    payload["parser_suite_consistency_check"]["ok"] = bool(consistency.get("success"))
+    payload["parser_suite_consistency_check"]["checked_cases"] = int(consistency.get("checked_cases", 0) or 0)
+    payload["parser_suite_consistency_check"]["mismatch_count"] = int(consistency.get("mismatch_count", 0) or 0)
+    if not consistency.get("success"):
+        raise RuntimeError(
+            "Parser suite consistency-feil:\n"
+            + (consistency.get("stderr", "").rstrip() or "ukjent feil")
+        )
+    if not json_output:
+        print(f"OK ({payload['parser_suite_consistency_check']['checked_cases']} cases)")
+
+    test_step = 6 if parity_suite == "all" else 5
     if not json_output:
         print(f"[{test_step}/{total_steps}] Full test")
     started = time.perf_counter()
@@ -2973,7 +3084,7 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False, parity
     if not json_output:
         print("OK")
 
-    workflow_step = 6 if parity_suite == "all" else 5
+    workflow_step = 7 if parity_suite == "all" else 6
     if not json_output:
         print(f"[{workflow_step}/{total_steps}] Workflow action version check")
     started = time.perf_counter()
@@ -2993,7 +3104,7 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False, parity
         print(f"OK ({workflow_check['scanned_files']} filer)")
 
     if check_names:
-        name_step = 7 if parity_suite == "all" else 6
+        name_step = 8 if parity_suite == "all" else 7
         if not json_output:
             print(f"[{name_step}/{total_steps}] Name migration check")
         started = time.perf_counter()
