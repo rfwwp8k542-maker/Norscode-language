@@ -2625,6 +2625,7 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
         "finished_at_epoch_ms": None,
         "timings_ms": {},
         "timings_s": {},
+        "timings_ratio": {},
         "snapshot_check": {"ok": False, "updated": None},
         "parity_check": {"ok": False},
         "test_check": {"ok": False, "passed": 0, "failed": 0, "total": 0},
@@ -2739,6 +2740,13 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
     payload["timings_s"]["total"] = round(payload["timings_ms"]["total"] / 1000.0, 3)
     payload["timings_s"]["step_sum"] = round(payload["timings_ms"]["step_sum"] / 1000.0, 3)
     payload["timings_s"]["overhead"] = round(payload["timings_ms"]["overhead"] / 1000.0, 3)
+    total_ms = payload["timings_ms"]["total"]
+    if total_ms > 0:
+        payload["timings_ratio"]["step_coverage"] = round(payload["timings_ms"]["step_sum"] / total_ms, 4)
+        payload["timings_ratio"]["overhead_share"] = round(payload["timings_ms"]["overhead"] / total_ms, 4)
+    else:
+        payload["timings_ratio"]["step_coverage"] = 0.0
+        payload["timings_ratio"]["overhead_share"] = 0.0
     payload["finished_at_utc"] = dt.datetime.now(dt.UTC).isoformat()
     payload["finished_at_epoch_ms"] = int(time.time() * 1000)
     payload["timings_ms"]["wallclock_total"] = payload["finished_at_epoch_ms"] - payload["started_at_epoch_ms"]
