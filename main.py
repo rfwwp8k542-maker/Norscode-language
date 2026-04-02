@@ -3,6 +3,7 @@ import datetime as dt
 import difflib
 import hashlib
 import json
+import locale
 import os
 import re
 import shutil
@@ -2562,6 +2563,8 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
             "python_cache_tag": sys.implementation.cache_tag,
             "python_executable": sys.executable,
             "byteorder": sys.byteorder,
+            "locale": locale.setlocale(locale.LC_CTYPE, None),
+            "encoding": locale.getpreferredencoding(False),
             "is_ci": bool(os.getenv("CI")),
             "is_github_actions": bool(os.getenv("GITHUB_ACTIONS")),
             "github_actions_run_id": os.getenv("GITHUB_RUN_ID"),
