@@ -2534,6 +2534,8 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
         "source_repo_owner": source_repo_owner,
         "source_repo_name": source_repo_name,
         "source_repo_url": get_source_repo_url(source_remote_host, source_repo_slug),
+        "source_branch_url": get_source_ref_url(source_remote_host, source_repo_slug, source_branch),
+        "source_tag_url": get_source_ref_url(source_remote_host, source_repo_slug, source_tag),
         "source_ref_url": get_source_ref_url(source_remote_host, source_repo_slug, source_tag or source_branch),
         "source_revision_url": get_source_revision_url(source_remote_host, source_repo_slug, source_revision),
         "source_is_tagged": source_tag is not None,
