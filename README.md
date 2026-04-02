@@ -301,6 +301,8 @@ on: [push, pull_request]
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
@@ -321,6 +323,13 @@ python3 -m norcode ci --json
 # Valgfri ekstra-sjekk for navnemigrering i CI
 python3 -m norcode ci --check-names
 ```
+
+`norcode ci` kjører nå disse stegene:
+1. Snapshot check
+2. Engine parity check
+3. Full test
+4. Workflow action version check (stopper på deprecated action-versjoner og usikker Node opt-out)
+5. Name migration check (kun med `--check-names`)
 
 ---
 
