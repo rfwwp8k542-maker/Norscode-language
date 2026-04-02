@@ -137,6 +137,9 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "thereby" eller tok == "derved") {
         returner "impliserer"
     }
+    hvis (tok == "thereupon" eller tok == "derpa") {
+        returner "impliserer"
+    }
     hvis (tok == "ergo" eller tok == "saledes") {
         returner "impliserer"
     }
