@@ -566,6 +566,9 @@ char * selfhost__compiler__normaliser_norsk_token(char * tok) {
     if (nl_streq(tok, "yes")) {
         return "sann";
     }
+    if (nl_streq(tok, "enabled")) {
+        return "sann";
+    }
     if (nl_streq(tok, "usant")) {
         return "usann";
     }
@@ -579,6 +582,9 @@ char * selfhost__compiler__normaliser_norsk_token(char * tok) {
         return "usann";
     }
     if (nl_streq(tok, "no")) {
+        return "usann";
+    }
+    if (nl_streq(tok, "disabled")) {
         return "usann";
     }
     if (((nl_streq(tok, "er_lik") || nl_streq(tok, "er_lik_med")) || nl_streq(tok, "erlik")) || nl_streq(tok, "erlikmed")) {
@@ -3485,6 +3491,8 @@ int start() {
     nl_assert_eq_text(expr_english_on_off_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: AND\n4: PRINT\n5: HALT\n");
     char * expr_english_yes_no_alias = selfhost__compiler__disasm_uttrykk("yes and not no");
     nl_assert_eq_text(expr_english_yes_no_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: AND\n4: PRINT\n5: HALT\n");
+    char * expr_english_enabled_disabled_alias = selfhost__compiler__disasm_uttrykk("enabled and not disabled");
+    nl_assert_eq_text(expr_english_enabled_disabled_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: AND\n4: PRINT\n5: HALT\n");
     char * expr_english_equal_to_alias = selfhost__compiler__disasm_uttrykk("7 equal_to 7");
     nl_assert_eq_text(expr_english_equal_to_alias, "0: PUSH 7\n1: PUSH 7\n2: EQ\n3: PRINT\n4: HALT\n");
     char * expr_english_not_equal_to_alias = selfhost__compiler__disasm_uttrykk("7 not_equal_to 8");
@@ -3582,6 +3590,8 @@ int start() {
     nl_assert_eq_text(script_english_on_off_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: AND\n4: PRINT\n5: HALT\n");
     char * script_english_yes_no_alias = selfhost__compiler__disasm_skript("let x=yes;return x and not no");
     nl_assert_eq_text(script_english_yes_no_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: AND\n4: PRINT\n5: HALT\n");
+    char * script_english_enabled_disabled_alias = selfhost__compiler__disasm_skript("let x=enabled;return x and not disabled");
+    nl_assert_eq_text(script_english_enabled_disabled_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: AND\n4: PRINT\n5: HALT\n");
     char * script_english_math_alias = selfhost__compiler__disasm_skript("let x=8;let y=2;return x divided_by y");
     nl_assert_eq_text(script_english_math_alias, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * script_english_math_short_alias = selfhost__compiler__disasm_skript("let x=8;let y=2;return x divide y");
