@@ -2162,6 +2162,12 @@ def get_source_ref_url(remote_host: str | None, repo_slug: str | None, source_re
     return f"https://{remote_host}/{repo_slug}/tree/{source_ref}"
 
 
+def get_source_repo_url(remote_host: str | None, repo_slug: str | None) -> str | None:
+    if not remote_host or not repo_slug:
+        return None
+    return f"https://{remote_host}/{repo_slug}"
+
+
 def run_program(source_file: str):
     source_path, c_path, exe_path, _alias_map, _analyzer = build_program(source_file)
     print(f"Generert C-fil: {c_path}")
@@ -2527,6 +2533,7 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
         "source_repo_slug": source_repo_slug,
         "source_repo_owner": source_repo_owner,
         "source_repo_name": source_repo_name,
+        "source_repo_url": get_source_repo_url(source_remote_host, source_repo_slug),
         "source_ref_url": get_source_ref_url(source_remote_host, source_repo_slug, source_tag or source_branch),
         "source_revision_url": get_source_revision_url(source_remote_host, source_repo_slug, source_revision),
         "source_is_tagged": source_tag is not None,
