@@ -335,6 +335,7 @@ python3 -m norcode ci --json
 # Inkluderer source_revision (git commit hash) når tilgjengelig
 # Inkluderer source_revision_short (kort commit hash) når tilgjengelig
 # Inkluderer source_branch (git branch) når tilgjengelig
+# Inkluderer source_is_main (om branch er main)
 # Inkluderer source_dirty (om worktree har lokale endringer)
 # Inkluderer runtime (python_version, python_implementation, python_executable, platform, hostname, pid, cwd, timezone) for miljøsporing
 

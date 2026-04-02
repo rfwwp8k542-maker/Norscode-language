@@ -2380,6 +2380,7 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
     pipeline_started = time.perf_counter()
     started_at_utc = dt.datetime.now(dt.UTC).isoformat()
     source_revision = get_current_git_revision()
+    source_branch = get_current_git_branch()
     step_order = [
         "snapshot_check",
         "parity_check",
@@ -2394,7 +2395,8 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
         "ok": False,
         "source_revision": source_revision,
         "source_revision_short": to_short_git_revision(source_revision),
-        "source_branch": get_current_git_branch(),
+        "source_branch": source_branch,
+        "source_is_main": source_branch == "main",
         "source_dirty": get_current_git_dirty_state(),
         "invocation": {
             "cmd": "norcode ci",
