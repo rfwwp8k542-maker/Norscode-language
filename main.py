@@ -2526,6 +2526,8 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
             "python_version": platform.python_version(),
             "python_implementation": platform.python_implementation(),
             "python_executable": sys.executable,
+            "os": platform.system(),
+            "arch": platform.machine(),
             "platform": platform.platform(),
             "hostname": platform.node(),
             "pid": os.getpid(),
