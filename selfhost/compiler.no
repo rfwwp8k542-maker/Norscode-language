@@ -110,10 +110,10 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "større") {
         returner "storre"
     }
-    hvis (tok == "større_enn") {
+    hvis (tok == "større_enn" eller tok == "størreenn" eller tok == "storreenn") {
         returner "storre_enn"
     }
-    hvis (tok == "er_større_enn" eller tok == "er_storre_enn") {
+    hvis (tok == "er_større_enn" eller tok == "er_storre_enn" eller tok == "erstørreenn" eller tok == "erstorreenn") {
         returner "storre_enn"
     }
     hvis (tok == "større_eller_lik") {
@@ -131,7 +131,10 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "er_større_enn_eller_lik" eller tok == "er_storre_enn_eller_lik") {
         returner "storre_eller_lik"
     }
-    hvis (tok == "er_mindre_enn") {
+    hvis (tok == "er_mindre_enn" eller tok == "ermindreenn") {
+        returner "mindre_enn"
+    }
+    hvis (tok == "mindre_enn" eller tok == "mindreenn") {
         returner "mindre_enn"
     }
     hvis (tok == "er_mindre_eller_lik" eller tok == "er_mindre_enn_eller_lik") {
