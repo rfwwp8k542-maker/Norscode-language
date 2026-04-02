@@ -148,6 +148,9 @@ funksjon start() -> heltall {
     la expr_dis_brace_group: tekst = sh.disasm_uttrykk("{2+3}*4")
     assert_eq(expr_dis_brace_group, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PUSH 4\n4: MUL\n5: PRINT\n6: HALT\n")
 
+    la expr_dis_bracket_group: tekst = sh.disasm_uttrykk("[2+3]*4")
+    assert_eq(expr_dis_bracket_group, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PUSH 4\n4: MUL\n5: PRINT\n6: HALT\n")
+
     la expr_c: tekst = sh.kompiler_uttrykk_til_c("10 + 32")
     assert_ne(expr_c, "")
 
@@ -3145,6 +3148,9 @@ funksjon start() -> heltall {
 
     la script_brace_group_assignment: tekst = sh.disasm_skript("la x={2+3};returner x*4")
     assert_eq(script_brace_group_assignment, "0: PUSH 5\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n")
+
+    la script_bracket_group_assignment: tekst = sh.disasm_skript("la x=[2+3];returner x*4")
+    assert_eq(script_bracket_group_assignment, "0: PUSH 5\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n")
 
     la script_norsk_dele_med: tekst = sh.disasm_skript("la x=8;la y=2;returner x dele med y")
     assert_eq(script_norsk_dele_med, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")

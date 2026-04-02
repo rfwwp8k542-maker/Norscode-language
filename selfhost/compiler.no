@@ -549,6 +549,12 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "}") {
         returner ")"
     }
+    hvis (tok == "[") {
+        returner "("
+    }
+    hvis (tok == "]") {
+        returner ")"
+    }
     returner tok
 }
 
