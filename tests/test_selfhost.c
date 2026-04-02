@@ -395,6 +395,18 @@ char * selfhost__compiler__normaliser_norsk_token(char * tok) {
     if (nl_streq(tok, "not")) {
         return "ikke";
     }
+    if (nl_streq(tok, "and_not") || nl_streq(tok, "andnot")) {
+        return "nand";
+    }
+    if (nl_streq(tok, "or_not") || nl_streq(tok, "ornot")) {
+        return "nor";
+    }
+    if (nl_streq(tok, "og_ikke") || nl_streq(tok, "ogikke")) {
+        return "nand";
+    }
+    if (nl_streq(tok, "eller_ikke") || nl_streq(tok, "ellerikke")) {
+        return "nor";
+    }
     if (nl_streq(tok, "xeller")) {
         return "xor";
     }
@@ -3029,8 +3041,16 @@ int start() {
     nl_assert_eq_text(expr_norsk_xeller_ikke_alias, "0: PUSH 1\n1: PUSH 1\n2: EQ\n3: PRINT\n4: HALT\n");
     char * expr_nand_operator = selfhost__compiler__disasm_uttrykk("1 nand 1");
     nl_assert_eq_text(expr_nand_operator, "0: PUSH 1\n1: PUSH 1\n2: AND\n3: NOT\n4: PRINT\n5: HALT\n");
+    char * expr_nand_alias_and_not = selfhost__compiler__disasm_uttrykk("1 and_not 1");
+    nl_assert_eq_text(expr_nand_alias_and_not, "0: PUSH 1\n1: PUSH 1\n2: AND\n3: NOT\n4: PRINT\n5: HALT\n");
+    char * expr_nand_alias_og_ikke = selfhost__compiler__disasm_uttrykk("1 og_ikke 1");
+    nl_assert_eq_text(expr_nand_alias_og_ikke, "0: PUSH 1\n1: PUSH 1\n2: AND\n3: NOT\n4: PRINT\n5: HALT\n");
     char * expr_nor_operator = selfhost__compiler__disasm_uttrykk("0 nor 0");
     nl_assert_eq_text(expr_nor_operator, "0: PUSH 0\n1: PUSH 0\n2: OR\n3: NOT\n4: PRINT\n5: HALT\n");
+    char * expr_nor_alias_or_not = selfhost__compiler__disasm_uttrykk("0 or_not 0");
+    nl_assert_eq_text(expr_nor_alias_or_not, "0: PUSH 0\n1: PUSH 0\n2: OR\n3: NOT\n4: PRINT\n5: HALT\n");
+    char * expr_nor_alias_eller_ikke = selfhost__compiler__disasm_uttrykk("0 eller_ikke 0");
+    nl_assert_eq_text(expr_nor_alias_eller_ikke, "0: PUSH 0\n1: PUSH 0\n2: OR\n3: NOT\n4: PRINT\n5: HALT\n");
     char * expr_le = selfhost__compiler__disasm_uttrykk("3 <= 4");
     nl_assert_eq_text(expr_le, "0: PUSH 3\n1: PUSH 4\n2: GT\n3: NOT\n4: PRINT\n5: HALT\n");
     char * expr_ge = selfhost__compiler__disasm_uttrykk("4 >= 3");
@@ -4226,8 +4246,12 @@ int start() {
     nl_assert_eq_text(script_xnor_alias, "0: PUSH 1\n1: PUSH 1\n2: EQ\n3: PRINT\n4: HALT\n");
     char * script_nand_operator = selfhost__compiler__disasm_skript("returner 1 nand 1");
     nl_assert_eq_text(script_nand_operator, "0: PUSH 1\n1: PUSH 1\n2: AND\n3: NOT\n4: PRINT\n5: HALT\n");
+    char * script_nand_alias_and_not = selfhost__compiler__disasm_skript("returner 1 and_not 1");
+    nl_assert_eq_text(script_nand_alias_and_not, "0: PUSH 1\n1: PUSH 1\n2: AND\n3: NOT\n4: PRINT\n5: HALT\n");
     char * script_nor_operator = selfhost__compiler__disasm_skript("returner 0 nor 0");
     nl_assert_eq_text(script_nor_operator, "0: PUSH 0\n1: PUSH 0\n2: OR\n3: NOT\n4: PRINT\n5: HALT\n");
+    char * script_nor_alias_or_not = selfhost__compiler__disasm_skript("returner 0 or_not 0");
+    nl_assert_eq_text(script_nor_alias_or_not, "0: PUSH 0\n1: PUSH 0\n2: OR\n3: NOT\n4: PRINT\n5: HALT\n");
     char * script_english_cmp_is_not_equal_to_compact_alias = selfhost__compiler__disasm_skript("let x=4;let y=5;return x is_not_equal_to y");
     nl_assert_eq_text(script_english_cmp_is_not_equal_to_compact_alias, "0: PUSH 4\n1: PUSH 5\n2: EQ\n3: NOT\n4: PRINT\n5: HALT\n");
     char * script_english_cmp_isnt_alias = selfhost__compiler__disasm_skript("let x=4;let y=5;return x isnt y");

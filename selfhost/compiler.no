@@ -98,6 +98,18 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "not") {
         returner "ikke"
     }
+    hvis (tok == "and_not" eller tok == "andnot") {
+        returner "nand"
+    }
+    hvis (tok == "or_not" eller tok == "ornot") {
+        returner "nor"
+    }
+    hvis (tok == "og_ikke" eller tok == "ogikke") {
+        returner "nand"
+    }
+    hvis (tok == "eller_ikke" eller tok == "ellerikke") {
+        returner "nor"
+    }
     hvis (tok == "xeller") {
         returner "xor"
     }
