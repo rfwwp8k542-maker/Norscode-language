@@ -577,7 +577,7 @@ funksjon er_operator_token(tok: tekst) -> bool {
     hvis (tok == "er" eller tok == "ikke_er" eller tok == "mindre_enn" eller tok == "storre_enn" eller tok == "mindre_eller_lik" eller tok == "storre_eller_lik") {
         returner sann
     }
-    hvis (tok == "&&" eller tok == "||" eller tok == "!" eller tok == "og" eller tok == "samt" eller tok == "eller" eller tok == "enten" eller tok == "ikke" eller tok == "xor" eller tok == "^^" eller tok == "xnor") {
+    hvis (tok == "&&" eller tok == "||" eller tok == "!" eller tok == "og" eller tok == "samt" eller tok == "eller" eller tok == "enten" eller tok == "ikke" eller tok == "xor" eller tok == "^^" eller tok == "xnor" eller tok == "nand" eller tok == "nor") {
         returner sann
     }
     returner usann
@@ -601,10 +601,10 @@ funksjon operator_precedens(tok: tekst) -> heltall {
     hvis (tok == "==" eller tok == "!=" eller tok == "er" eller tok == "ikke_er") {
         returner 3
     }
-    hvis (tok == "&&" eller tok == "og" eller tok == "samt") {
+    hvis (tok == "&&" eller tok == "og" eller tok == "samt" eller tok == "nand") {
         returner 2
     }
-    hvis (tok == "||" eller tok == "eller" eller tok == "enten" eller tok == "xor" eller tok == "^^" eller tok == "xnor") {
+    hvis (tok == "||" eller tok == "eller" eller tok == "enten" eller tok == "xor" eller tok == "^^" eller tok == "xnor" eller tok == "nor") {
         returner 1
     }
     returner 0
@@ -675,6 +675,20 @@ funksjon emitter_operator(ops: liste_tekst, verdier: liste_heltall, op: tekst) -
     }
     hvis (op == "xnor") {
         legg_til(ops, "EQ")
+        legg_til(verdier, 0)
+        returner sann
+    }
+    hvis (op == "nand") {
+        legg_til(ops, "AND")
+        legg_til(verdier, 0)
+        legg_til(ops, "NOT")
+        legg_til(verdier, 0)
+        returner sann
+    }
+    hvis (op == "nor") {
+        legg_til(ops, "OR")
+        legg_til(verdier, 0)
+        legg_til(ops, "NOT")
         legg_til(verdier, 0)
         returner sann
     }
