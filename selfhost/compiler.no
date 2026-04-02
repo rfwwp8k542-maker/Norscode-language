@@ -128,6 +128,9 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "implied_by" eller tok == "impliedby") {
         returner "impliseres_av"
     }
+    hvis (tok == "given" eller tok == "gitt") {
+        returner "impliseres_av"
+    }
     hvis (tok == "follows_from" eller tok == "followsfrom" eller tok == "folger_fra" eller tok == "folgerfra") {
         returner "impliseres_av"
     }
