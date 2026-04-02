@@ -2846,11 +2846,16 @@ def _selfhost_parity_suite_targets(suite: str) -> list[tuple[Path, str]]:
     return suites[suite]
 
 
-def update_selfhost_parser_fixtures(check_only: bool = False, suite: str = "all") -> dict:
+def update_selfhost_parser_fixtures(check_only: bool = False, suite: str = "all", sync_m2: bool = True) -> dict:
     targets = _selfhost_parity_suite_targets(suite)
     summaries: list[dict] = []
     total_updated = 0
     total_cases = 0
+    m2_sync_payload = None
+
+    if sync_m2 and suite in {"m2", "all"}:
+        m2_sync_payload = sync_selfhost_parser_m2_fixture(check_only=check_only)
+        total_updated += int(m2_sync_payload.get("updated", 0) or 0)
 
     for fixture_path, label in targets:
         fixture_abs = fixture_path.resolve()
@@ -2901,6 +2906,8 @@ def update_selfhost_parser_fixtures(check_only: bool = False, suite: str = "all"
     return {
         "suite": suite,
         "check_only": check_only,
+        "sync_m2": sync_m2,
+        "m2_sync": m2_sync_payload,
         "updated": total_updated,
         "cases": total_cases,
         "fixtures": summaries,
@@ -3732,6 +3739,7 @@ def main():
     )
     update_selfhost_parity.add_argument("--suite", choices=["m1", "m2", "extended", "all"], default="all", help="Velg fixtures å oppdatere")
     update_selfhost_parity.add_argument("--check", action="store_true", help="Feil hvis parity-fixtures er utdaterte (skriv ikke)")
+    update_selfhost_parity.add_argument("--no-sync-m2", action="store_true", help="Hopp over automatisk M2-sync (core minus M1)")
     update_selfhost_parity.add_argument("--json", action="store_true", help="Skriv resultat som JSON")
 
     sync_selfhost_parity_m2 = sub.add_parser(
@@ -4132,13 +4140,23 @@ def main():
                 sys.exit(1)
 
         elif args.cmd == "update-selfhost-parity-fixtures":
-            payload = update_selfhost_parser_fixtures(check_only=args.check, suite=args.suite)
+            payload = update_selfhost_parser_fixtures(
+                check_only=args.check,
+                suite=args.suite,
+                sync_m2=(not args.no_sync_m2),
+            )
             if args.json:
                 print(json.dumps(payload, ensure_ascii=False, indent=2))
             else:
                 print(f"Suite: {payload['suite']}")
                 print(f"Cases: {payload['cases']}")
                 print(f"Avvik: {payload['updated']}")
+                if payload.get("m2_sync") is not None:
+                    m2_sync = payload["m2_sync"]
+                    print(
+                        f"- M2 sync: {m2_sync.get('m2_cases', 0)} cases, "
+                        f"{m2_sync.get('updated', 0)} oppdateringer ({m2_sync.get('fixture')})"
+                    )
                 for row in payload["fixtures"]:
                     print(
                         f"- {row['label']}: {row['cases']} cases, "

@@ -467,6 +467,7 @@ python3 -m norcode update-selfhost-parity-fixtures --suite m1
 python3 -m norcode update-selfhost-parity-fixtures --suite m2
 python3 -m norcode update-selfhost-parity-fixtures --suite extended
 python3 -m norcode update-selfhost-parity-fixtures --suite all --check
+python3 -m norcode update-selfhost-parity-fixtures --suite all --no-sync-m2
 
 # Synk M2 deterministisk fra core - M1
 python3 -m norcode sync-selfhost-parity-m2
@@ -475,6 +476,7 @@ python3 -m norcode sync-selfhost-parity-m2 --check
 
 `selfhost-parity` rapporterer fordeling per suite: antall uttrykk, skript, linje-cases og feil-cases.
 `selfhost-parity-progress` viser samlet M1/M2-fremdrift mot utvidet suite (dekning, overlap, missing/extra, consistency), og kan brukes som egen gate med `--require-ready` og `--min-coverage`.
+`update-selfhost-parity-fixtures` synkroniserer nå automatisk M2 som `core - M1` for `--suite m2|all` (kan overstyres med `--no-sync-m2`).
 
 ---
 
