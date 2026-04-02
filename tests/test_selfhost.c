@@ -416,6 +416,9 @@ char * selfhost__compiler__normaliser_norsk_token(char * tok) {
     if (nl_streq(tok, "therefore") || nl_streq(tok, "derfor")) {
         return "impliserer";
     }
+    if (((nl_streq(tok, "only_if") || nl_streq(tok, "onlyif")) || nl_streq(tok, "kun_hvis")) || nl_streq(tok, "kunhvis")) {
+        return "impliserer";
+    }
     if (nl_streq(tok, "implied_by") || nl_streq(tok, "impliedby")) {
         return "impliseres_av";
     }
@@ -3145,6 +3148,10 @@ int start() {
     nl_assert_eq_text(expr_therefore_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
     char * expr_derfor_alias = selfhost__compiler__disasm_uttrykk("1 derfor 0");
     nl_assert_eq_text(expr_derfor_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
+    char * expr_only_if_alias = selfhost__compiler__disasm_uttrykk("1 only_if 0");
+    nl_assert_eq_text(expr_only_if_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
+    char * expr_kun_hvis_alias = selfhost__compiler__disasm_uttrykk("1 kun_hvis 0");
+    nl_assert_eq_text(expr_kun_hvis_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
     char * expr_arrow_implies_operator = selfhost__compiler__disasm_uttrykk("1 -> 0");
     nl_assert_eq_text(expr_arrow_implies_operator, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
     char * expr_fat_arrow_implies_operator = selfhost__compiler__disasm_uttrykk("1 => 0");
@@ -4380,6 +4387,10 @@ int start() {
     nl_assert_eq_text(script_follows_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
     char * script_therefore_alias = selfhost__compiler__disasm_skript("returner 1 therefore 0");
     nl_assert_eq_text(script_therefore_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
+    char * script_only_if_alias = selfhost__compiler__disasm_skript("returner 1 only_if 0");
+    nl_assert_eq_text(script_only_if_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
+    char * script_kun_hvis_alias = selfhost__compiler__disasm_skript("returner 1 kun_hvis 0");
+    nl_assert_eq_text(script_kun_hvis_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
     char * script_arrow_implies_operator = selfhost__compiler__disasm_skript("returner 1 -> 0");
     nl_assert_eq_text(script_arrow_implies_operator, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
     char * script_fat_arrow_implies_operator = selfhost__compiler__disasm_skript("returner 1 => 0");
