@@ -338,6 +338,7 @@ python3 -m norcode ci --json
 # Inkluderer timings_ratio.percent_delta (absolutt avvik fra 100.0 etter avrunding)
 # Inkluderer timings_ratio.overhead_level (low/medium/high basert på overhead_share)
 # Inkluderer timings_ratio.overhead_policy (terskler brukt for overhead_level)
+# Inkluderer timings_ratio.overhead_within_medium (boolsk gate: overhead_share <= medium_max)
 # Inkluderer started_at_utc og finished_at_utc for kjøringstidsstempel
 # Inkluderer started_at_epoch_ms og finished_at_epoch_ms for numerisk sortering
 # Inkluderer schema_version for stabil maskinlesbar kontrakt

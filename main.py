@@ -2771,6 +2771,9 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
         payload["timings_ratio"]["overhead_level"] = "medium"
     else:
         payload["timings_ratio"]["overhead_level"] = "high"
+    payload["timings_ratio"]["overhead_within_medium"] = (
+        overhead_share <= payload["timings_ratio"]["overhead_policy"]["medium_max"]
+    )
     payload["finished_at_utc"] = dt.datetime.now(dt.UTC).isoformat()
     payload["finished_at_epoch_ms"] = int(time.time() * 1000)
     payload["timings_ms"]["wallclock_total"] = payload["finished_at_epoch_ms"] - payload["started_at_epoch_ms"]
