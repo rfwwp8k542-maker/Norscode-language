@@ -2227,9 +2227,9 @@ def summarize_test_results(results: list[dict]) -> dict:
 def check_workflow_action_versions(workflows_dir: Path | None = None) -> dict:
     base = workflows_dir or Path(".github/workflows")
     payload = {"ok": True, "scanned_files": 0, "issue_count": 0, "issues": []}
-    deprecated_actions = {
-        "actions/checkout@v4": "actions/checkout@v6",
-        "actions/setup-python@v5": "actions/setup-python@v6",
+    minimum_action_majors = {
+        "actions/checkout": 6,
+        "actions/setup-python": 6,
     }
     if not base.exists():
         return payload
@@ -2243,14 +2243,17 @@ def check_workflow_action_versions(workflows_dir: Path | None = None) -> dict:
             continue
         for line_no, raw_line in enumerate(lines, start=1):
             line = raw_line.strip()
-            for old_ref, new_ref in deprecated_actions.items():
-                if old_ref in line:
+            for match in re.finditer(r"([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)@v(\d+)", line):
+                action_name = match.group(1)
+                major = int(match.group(2))
+                minimum_major = minimum_action_majors.get(action_name)
+                if minimum_major is not None and major < minimum_major:
                     payload["issues"].append(
                         {
                             "file": str(workflow_path),
                             "line": line_no,
-                            "found": old_ref,
-                            "expected": new_ref,
+                            "found": f"{action_name}@v{major}",
+                            "expected": f"{action_name}@v{minimum_major}",
                         }
                     )
             lower_line = line.lower()
