@@ -1055,6 +1055,7 @@ funksjon uttrykk_til_ops_og_verdier_med_miljo(tokens: liste_tekst, navn: liste_t
         la n2: tekst = ""
         la n3: tekst = ""
         la n4: tekst = ""
+        la n5: tekst = ""
 
         hvis (i + 1 < lengde(tokens)) {
             n1 = normaliser_norsk_token(tokens[i + 1])
@@ -1067,6 +1068,9 @@ funksjon uttrykk_til_ops_og_verdier_med_miljo(tokens: liste_tekst, navn: liste_t
         }
         hvis (i + 4 < lengde(tokens)) {
             n4 = normaliser_norsk_token(tokens[i + 4])
+        }
+        hvis (i + 5 < lengde(tokens)) {
+            n5 = normaliser_norsk_token(tokens[i + 5])
         }
 
         hvis (i + 1 < lengde(tokens) og ((tok_raw == "divided") eller (tok_raw == "/" og tok_kilde == "divide") eller (tok_raw == "*" og (tok_kilde == "multiply" eller tok_kilde == "multiplied")) eller tok_raw == "modulo" eller (tok_raw == "%" og tok_kilde == "remainder")) og (n1 == "by" eller n1 == "of")) {
@@ -1162,6 +1166,30 @@ funksjon uttrykk_til_ops_og_verdier_med_miljo(tokens: liste_tekst, navn: liste_t
         } ellers hvis (tok_raw == "mod" eller tok_raw == "mod_av" eller tok_raw == "modav" eller tok_raw == "modulo" eller tok_raw == "modulo_av" eller tok_raw == "moduloav" eller tok_raw == "modul" eller tok_raw == "modul_av" eller tok_raw == "modulav" eller tok_raw == "modulus" eller tok_raw == "modulus_av" eller tok_raw == "modulusav" eller tok_raw == "rest" eller tok_raw == "rest_av" eller tok_raw == "restav" eller tok_raw == "resten" eller tok_raw == "resten_av" eller tok_raw == "restenav") {
             tok = "%"
             tok_step = 1
+        } ellers hvis (i + 5 < lengde(tokens) og tok_raw == "er" og n1 == "less" og n2 == "than" og (n3 == "or" eller n3 == "eller") og (n4 == "equal" eller n4 == "equals" eller n4 == "er") og n5 == "to") {
+            tok = "mindre_eller_lik"
+            tok_step = 6
+        } ellers hvis (i + 5 < lengde(tokens) og tok_raw == "er" og n1 == "greater" og n2 == "than" og (n3 == "or" eller n3 == "eller") og (n4 == "equal" eller n4 == "equals" eller n4 == "er") og n5 == "to") {
+            tok = "storre_eller_lik"
+            tok_step = 6
+        } ellers hvis (i + 4 < lengde(tokens) og tok_raw == "er" og n1 == "less" og n2 == "than" og (n3 == "or" eller n3 == "eller") og (n4 == "equal" eller n4 == "equals" eller n4 == "er")) {
+            tok = "mindre_eller_lik"
+            tok_step = 5
+        } ellers hvis (i + 4 < lengde(tokens) og tok_raw == "er" og n1 == "greater" og n2 == "than" og (n3 == "or" eller n3 == "eller") og (n4 == "equal" eller n4 == "equals" eller n4 == "er")) {
+            tok = "storre_eller_lik"
+            tok_step = 5
+        } ellers hvis (i + 3 < lengde(tokens) og tok_raw == "er" og n1 == "less" og n2 == "than" og (n3 == "equal" eller n3 == "equals" eller n3 == "er")) {
+            tok = "mindre_eller_lik"
+            tok_step = 4
+        } ellers hvis (i + 3 < lengde(tokens) og tok_raw == "er" og n1 == "greater" og n2 == "than" og (n3 == "equal" eller n3 == "equals" eller n3 == "er")) {
+            tok = "storre_eller_lik"
+            tok_step = 4
+        } ellers hvis (i + 2 < lengde(tokens) og tok_raw == "er" og n1 == "less" og n2 == "than") {
+            tok = "mindre_enn"
+            tok_step = 3
+        } ellers hvis (i + 2 < lengde(tokens) og tok_raw == "er" og n1 == "greater" og n2 == "than") {
+            tok = "storre_enn"
+            tok_step = 3
         } ellers hvis (i + 4 < lengde(tokens) og tok_raw == "less" og n1 == "than" og (n2 == "or" eller n2 == "eller") og (n3 == "equal" eller n3 == "equals" eller n3 == "er") og n4 == "to") {
             tok = "mindre_eller_lik"
             tok_step = 5
