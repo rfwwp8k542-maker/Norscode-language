@@ -407,6 +407,9 @@ char * selfhost__compiler__normaliser_norsk_token(char * tok) {
     if (nl_streq(tok, "medforer")) {
         return "impliserer";
     }
+    if (nl_streq(tok, "impl") || nl_streq(tok, "impliser")) {
+        return "impliserer";
+    }
     if (nl_streq(tok, "iff")) {
         return "xnor";
     }
@@ -3080,6 +3083,10 @@ int start() {
     nl_assert_eq_text(expr_norsk_impliserer_operator, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
     char * expr_norsk_medforer_alias = selfhost__compiler__disasm_uttrykk("1 medforer 0");
     nl_assert_eq_text(expr_norsk_medforer_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
+    char * expr_impl_alias = selfhost__compiler__disasm_uttrykk("1 impl 0");
+    nl_assert_eq_text(expr_impl_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
+    char * expr_impliser_alias = selfhost__compiler__disasm_uttrykk("1 impliser 0");
+    nl_assert_eq_text(expr_impliser_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
     char * expr_iff_alias = selfhost__compiler__disasm_uttrykk("1 iff 1");
     nl_assert_eq_text(expr_iff_alias, "0: PUSH 1\n1: PUSH 1\n2: EQ\n3: PRINT\n4: HALT\n");
     char * expr_equiv_alias = selfhost__compiler__disasm_uttrykk("1 equiv 1");
@@ -4291,6 +4298,8 @@ int start() {
     nl_assert_eq_text(script_implies_operator, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
     char * script_norsk_medforer_alias = selfhost__compiler__disasm_skript("returner 1 medforer 0");
     nl_assert_eq_text(script_norsk_medforer_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
+    char * script_impl_alias = selfhost__compiler__disasm_skript("returner 1 impl 0");
+    nl_assert_eq_text(script_impl_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
     char * script_iff_alias = selfhost__compiler__disasm_skript("returner 1 iff 1");
     nl_assert_eq_text(script_iff_alias, "0: PUSH 1\n1: PUSH 1\n2: EQ\n3: PRINT\n4: HALT\n");
     char * script_equiv_alias = selfhost__compiler__disasm_skript("returner 1 equiv 1");

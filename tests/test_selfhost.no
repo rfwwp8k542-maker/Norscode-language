@@ -199,6 +199,12 @@ funksjon start() -> heltall {
     la expr_norsk_medforer_alias: tekst = sh.disasm_uttrykk("1 medforer 0")
     assert_eq(expr_norsk_medforer_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n")
 
+    la expr_impl_alias: tekst = sh.disasm_uttrykk("1 impl 0")
+    assert_eq(expr_impl_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n")
+
+    la expr_impliser_alias: tekst = sh.disasm_uttrykk("1 impliser 0")
+    assert_eq(expr_impliser_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n")
+
     la expr_iff_alias: tekst = sh.disasm_uttrykk("1 iff 1")
     assert_eq(expr_iff_alias, "0: PUSH 1\n1: PUSH 1\n2: EQ\n3: PRINT\n4: HALT\n")
 
@@ -2002,6 +2008,9 @@ funksjon start() -> heltall {
 
     la script_norsk_medforer_alias: tekst = sh.disasm_skript("returner 1 medforer 0")
     assert_eq(script_norsk_medforer_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n")
+
+    la script_impl_alias: tekst = sh.disasm_skript("returner 1 impl 0")
+    assert_eq(script_impl_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n")
 
     la script_iff_alias: tekst = sh.disasm_skript("returner 1 iff 1")
     assert_eq(script_iff_alias, "0: PUSH 1\n1: PUSH 1\n2: EQ\n3: PRINT\n4: HALT\n")
