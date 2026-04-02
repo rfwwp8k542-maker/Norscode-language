@@ -31,7 +31,7 @@ jobs:
           cache: "pip"
 
       - name: Run NorCode CI checks
-        run: python3 -m norcode ci --check-names
+        run: python3 -m norcode ci --check-names --require-selfhost-ready
 
       - name: Install packaging tools
         run: python3 -m pip install --upgrade build twine

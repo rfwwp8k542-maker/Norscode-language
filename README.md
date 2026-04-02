@@ -318,7 +318,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: Run NorCode CI checks
-        run: python3 -m norcode ci --check-names
+        run: python3 -m norcode ci --check-names --require-selfhost-ready
 ```
 
 Lokal kjøring av samme sekvens:
