@@ -188,6 +188,9 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "as" eller tok == "ettersom") {
         returner "impliseres_av"
     }
+    hvis (tok == "inasmuch_as" eller tok == "inasmuchas" eller tok == "i_og_med_at" eller tok == "iogmedat") {
+        returner "impliseres_av"
+    }
     hvis (tok == "follows_from" eller tok == "followsfrom" eller tok == "folger_fra" eller tok == "folgerfra") {
         returner "impliseres_av"
     }
