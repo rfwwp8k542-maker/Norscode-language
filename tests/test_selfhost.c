@@ -449,6 +449,9 @@ char * selfhost__compiler__normaliser_norsk_token(char * tok) {
     if (((nl_streq(tok, "given_that") || nl_streq(tok, "giventhat")) || nl_streq(tok, "gitt_at")) || nl_streq(tok, "gittat")) {
         return "impliseres_av";
     }
+    if (((nl_streq(tok, "follows_if") || nl_streq(tok, "followsif")) || nl_streq(tok, "folger_hvis")) || nl_streq(tok, "folgerhvis")) {
+        return "impliseres_av";
+    }
     if (nl_streq(tok, "as") || nl_streq(tok, "ettersom")) {
         return "impliseres_av";
     }
@@ -3228,6 +3231,10 @@ int start() {
     nl_assert_eq_text(expr_given_that_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n");
     char * expr_gitt_at_alias = selfhost__compiler__disasm_uttrykk("1 gitt_at 0");
     nl_assert_eq_text(expr_gitt_at_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n");
+    char * expr_follows_if_alias = selfhost__compiler__disasm_uttrykk("1 follows_if 0");
+    nl_assert_eq_text(expr_follows_if_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n");
+    char * expr_folger_hvis_alias = selfhost__compiler__disasm_uttrykk("1 folger_hvis 0");
+    nl_assert_eq_text(expr_folger_hvis_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n");
     char * expr_as_alias = selfhost__compiler__disasm_uttrykk("1 as 0");
     nl_assert_eq_text(expr_as_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n");
     char * expr_tersom_alias = selfhost__compiler__disasm_uttrykk("1 ettersom 0");
@@ -4507,6 +4514,10 @@ int start() {
     nl_assert_eq_text(script_given_that_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n");
     char * script_gitt_at_alias = selfhost__compiler__disasm_skript("returner 1 gitt_at 0");
     nl_assert_eq_text(script_gitt_at_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n");
+    char * script_follows_if_alias = selfhost__compiler__disasm_skript("returner 1 follows_if 0");
+    nl_assert_eq_text(script_follows_if_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n");
+    char * script_folger_hvis_alias = selfhost__compiler__disasm_skript("returner 1 folger_hvis 0");
+    nl_assert_eq_text(script_folger_hvis_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n");
     char * script_as_alias = selfhost__compiler__disasm_skript("returner 1 as 0");
     nl_assert_eq_text(script_as_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n");
     char * script_tersom_alias = selfhost__compiler__disasm_skript("returner 1 ettersom 0");

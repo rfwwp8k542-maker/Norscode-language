@@ -152,6 +152,9 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "given_that" eller tok == "giventhat" eller tok == "gitt_at" eller tok == "gittat") {
         returner "impliseres_av"
     }
+    hvis (tok == "follows_if" eller tok == "followsif" eller tok == "folger_hvis" eller tok == "folgerhvis") {
+        returner "impliseres_av"
+    }
     hvis (tok == "as" eller tok == "ettersom") {
         returner "impliseres_av"
     }
