@@ -411,9 +411,19 @@ Eksempel på `timings_ratio` i `ci --json`:
 `norcode ci` kjører nå disse stegene:
 1. Snapshot check
 2. Engine parity check
-3. Full test
-4. Workflow action version check (stopper på deprecated action-versjoner og usikker Node opt-out)
-5. Name migration check (kun med `--check-names`)
+3. Selfhost parser parity (M1)
+4. Selfhost parser parity (utvidet)
+5. Full test
+6. Workflow action version check (stopper på deprecated action-versjoner og usikker Node opt-out)
+7. Name migration check (kun med `--check-names`)
+
+Kjør parser parity separat uten full CI:
+
+```bash
+python3 -m norcode selfhost-parity --suite m1
+python3 -m norcode selfhost-parity --suite extended
+python3 -m norcode selfhost-parity --suite all --json
+```
 
 ---
 

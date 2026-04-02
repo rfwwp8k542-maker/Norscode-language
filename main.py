@@ -2490,6 +2490,33 @@ def run_selfhost_parser_core_checks(fixture_path: Path, label: str):
     }
 
 
+def run_selfhost_parser_parity(suite: str = "all") -> dict:
+    suites = {
+        "m1": [(SELFHOST_PARSER_M1_FIXTURE, "Selfhost parser parity (M1)")],
+        "extended": [(SELFHOST_PARSER_EXTENDED_FIXTURE, "Selfhost parser parity (utvidet)")],
+        "all": [
+            (SELFHOST_PARSER_M1_FIXTURE, "Selfhost parser parity (M1)"),
+            (SELFHOST_PARSER_EXTENDED_FIXTURE, "Selfhost parser parity (utvidet)"),
+        ],
+    }
+    if suite not in suites:
+        raise RuntimeError(f"Ugyldig suite: {suite}")
+
+    started = time.perf_counter()
+    results: list[dict] = []
+    for fixture_path, label in suites[suite]:
+        results.append(run_selfhost_parser_core_checks(fixture_path, label))
+
+    ok = all(item.get("success") for item in results)
+    return {
+        "suite": suite,
+        "ok": ok,
+        "case_count": sum(int(item.get("case_count", 0) or 0) for item in results),
+        "duration_ms": int((time.perf_counter() - started) * 1000),
+        "results": results,
+    }
+
+
 def update_ir_snapshots(check_only: bool = False):
     fixture_path = IR_SNAPSHOT_FIXTURE.resolve()
     fixture = json.loads(fixture_path.read_text(encoding="utf-8"))
@@ -3035,6 +3062,10 @@ def main():
     ci.add_argument("--json", action="store_true", help="Skriv CI-resultat som JSON")
     ci.add_argument("--check-names", action="store_true", help="Inkluder sjekk for navnemigrering (legacy -> NorCode)")
 
+    selfhost_parity = sub.add_parser("selfhost-parity", help="Kjør selfhost parser parity-suiter")
+    selfhost_parity.add_argument("--suite", choices=["m1", "extended", "all"], default="all", help="Velg parity-suite")
+    selfhost_parity.add_argument("--json", action="store_true", help="Skriv resultat som JSON")
+
     lock = sub.add_parser("lock", help="Generer dependency lockfile (norcode.lock)")
     lock.add_argument("--check", action="store_true", help="Feil hvis lockfile er manglende/utdatert")
     lock.add_argument("--verify", action="store_true", help="Verifiser path-digests i eksisterende lockfile")
@@ -3378,6 +3409,23 @@ def main():
             payload = run_ci_pipeline(json_output=args.json, check_names=args.check_names)
             if args.json:
                 print(json.dumps(payload, ensure_ascii=False, indent=2))
+
+        elif args.cmd == "selfhost-parity":
+            payload = run_selfhost_parser_parity(suite=args.suite)
+            if args.json:
+                print(json.dumps(payload, ensure_ascii=False, indent=2))
+            else:
+                print(f"Suite: {payload['suite']}")
+                print(f"OK: {'ja' if payload['ok'] else 'nei'}")
+                print(f"Cases: {payload['case_count']}")
+                print(f"Tid: {payload['duration_ms']} ms")
+                for item in payload["results"]:
+                    status = "OK" if item.get("success") else "FEIL"
+                    print(f"- {status}: {item['source']} ({item.get('case_count', 0)} cases)")
+                    if not item.get("success") and item.get("stderr"):
+                        print(item["stderr"].rstrip())
+            if not payload["ok"]:
+                sys.exit(1)
 
         elif args.cmd == "lock":
             if args.verify:
