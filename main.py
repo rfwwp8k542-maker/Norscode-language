@@ -2260,8 +2260,11 @@ def check_workflow_action_versions(workflows_dir: Path | None = None) -> dict:
             line = raw_line.strip()
             if not line or line.startswith("#"):
                 continue
-            lower_line = line.lower().replace(" ", "")
-            if "force_javascript_actions_to_node24:" in lower_line and "true" in lower_line:
+            if re.search(
+                r'^\s*FORCE_JAVASCRIPT_ACTIONS_TO_NODE24\s*:\s*("true"|true)\s*$',
+                line,
+                re.IGNORECASE,
+            ):
                 has_node24_env = True
             for match in re.finditer(r"([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)@v(\d+)", line):
                 action_name = match.group(1)
@@ -2277,9 +2280,10 @@ def check_workflow_action_versions(workflows_dir: Path | None = None) -> dict:
                             "expected": f"{action_name}@v{minimum_major}",
                         }
                     )
-            if (
-                "actions_allow_use_unsecure_node_version" in lower_line
-                and "true" in lower_line
+            if re.search(
+                r'^\s*ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION\s*:\s*("true"|true)\s*$',
+                line,
+                re.IGNORECASE,
             ):
                 payload["issues"].append(
                     {
