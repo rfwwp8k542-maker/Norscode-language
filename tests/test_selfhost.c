@@ -422,6 +422,9 @@ char * selfhost__compiler__normaliser_norsk_token(char * tok) {
     if (nl_streq(tok, "thus") || nl_streq(tok, "dermed")) {
         return "impliserer";
     }
+    if (nl_streq(tok, "consequently") || nl_streq(tok, "folgelig")) {
+        return "impliserer";
+    }
     if (((nl_streq(tok, "only_if") || nl_streq(tok, "onlyif")) || nl_streq(tok, "kun_hvis")) || nl_streq(tok, "kunhvis")) {
         return "impliserer";
     }
@@ -3189,6 +3192,10 @@ int start() {
     nl_assert_eq_text(expr_thus_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
     char * expr_dermed_alias = selfhost__compiler__disasm_uttrykk("1 dermed 0");
     nl_assert_eq_text(expr_dermed_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
+    char * expr_consequently_alias = selfhost__compiler__disasm_uttrykk("1 consequently 0");
+    nl_assert_eq_text(expr_consequently_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
+    char * expr_folgelig_alias = selfhost__compiler__disasm_uttrykk("1 folgelig 0");
+    nl_assert_eq_text(expr_folgelig_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
     char * expr_only_if_alias = selfhost__compiler__disasm_uttrykk("1 only_if 0");
     nl_assert_eq_text(expr_only_if_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
     char * expr_kun_hvis_alias = selfhost__compiler__disasm_uttrykk("1 kun_hvis 0");
@@ -4472,6 +4479,10 @@ int start() {
     nl_assert_eq_text(script_thus_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
     char * script_dermed_alias = selfhost__compiler__disasm_skript("returner 1 dermed 0");
     nl_assert_eq_text(script_dermed_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
+    char * script_consequently_alias = selfhost__compiler__disasm_skript("returner 1 consequently 0");
+    nl_assert_eq_text(script_consequently_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
+    char * script_folgelig_alias = selfhost__compiler__disasm_skript("returner 1 folgelig 0");
+    nl_assert_eq_text(script_folgelig_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
     char * script_only_if_alias = selfhost__compiler__disasm_skript("returner 1 only_if 0");
     nl_assert_eq_text(script_only_if_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
     char * script_kun_hvis_alias = selfhost__compiler__disasm_skript("returner 1 kun_hvis 0");

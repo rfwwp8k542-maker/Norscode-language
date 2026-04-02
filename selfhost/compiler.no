@@ -125,6 +125,9 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "thus" eller tok == "dermed") {
         returner "impliserer"
     }
+    hvis (tok == "consequently" eller tok == "folgelig") {
+        returner "impliserer"
+    }
     hvis (tok == "only_if" eller tok == "onlyif" eller tok == "kun_hvis" eller tok == "kunhvis") {
         returner "impliserer"
     }
