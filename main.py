@@ -51,6 +51,7 @@ IR_OPS_NO_ARG = {
 }
 IR_ALL_OPS = IR_OPS_WITH_ARG | IR_OPS_NO_ARG
 IR_SNAPSHOT_FIXTURE = Path("tests/ir_snapshot_cases.json")
+SELFHOST_PARSER_CORE_FIXTURE = Path("tests/selfhost_parser_core_cases.json")
 WORKFLOW_ACTION_POLICY = {
     "minimum_action_majors": {
         "actions/checkout": 6,
@@ -1988,6 +1989,74 @@ def _run_selfhost_disasm(tokens: list[str], strict: bool = False) -> list[str]:
                 pass
 
 
+def _run_selfhost_parser_disasm_cases(cases: list[str], mode: str) -> list[list[str]]:
+    if mode not in {"expression", "script"}:
+        raise RuntimeError(f"Ugyldig parsermodus: {mode}")
+
+    build_dir = Path("build").resolve()
+    build_dir.mkdir(parents=True, exist_ok=True)
+
+    suffix = uuid.uuid4().hex[:8]
+    source_path = build_dir / f"parser_core_{suffix}.no"
+    c_path = source_path.with_suffix(".c")
+    exe_path = source_path.with_suffix("")
+
+    fn_name = "disasm_uttrykk" if mode == "expression" else "disasm_skript"
+    lines = [
+        "bruk selfhost.compiler som sh",
+        "",
+        "funksjon start() -> heltall {",
+    ]
+    for i, source in enumerate(cases):
+        marker = f"__NORCODE_CASE_{i}__"
+        lines.append(f'    skriv("{marker}")')
+        lines.append(f'    skriv(sh.{fn_name}("{_escape_no_string(source)}"))')
+    lines.extend(
+        [
+            "    returner 0",
+            "}",
+            "",
+        ]
+    )
+    source = "\n".join(lines)
+
+    try:
+        source_path.write_text(source, encoding="utf-8")
+        _src, _c, built_exe, _alias_map, _analyzer = build_program(str(source_path))
+        result = subprocess.run(
+            [str(built_exe.resolve())],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        out_lines = result.stdout.splitlines()
+        parsed: list[list[str]] = [[] for _ in cases]
+        current = -1
+        for line in out_lines:
+            if line.startswith("__NORCODE_CASE_") and line.endswith("__"):
+                mid = line[len("__NORCODE_CASE_") : -2]
+                try:
+                    idx = int(mid)
+                except ValueError:
+                    continue
+                if idx < 0 or idx >= len(cases):
+                    continue
+                current = idx
+                continue
+            if current >= 0:
+                parsed[current].append(line)
+        for idx in range(len(parsed)):
+            while parsed[idx] and parsed[idx][-1] == "":
+                parsed[idx].pop()
+        return parsed
+    finally:
+        for path in (source_path, c_path, exe_path):
+            try:
+                path.unlink()
+            except FileNotFoundError:
+                pass
+
+
 def ir_disasm_source(source_file: str, strict: bool = False, engine: str = "python"):
     source_path = _resolve_source_path(source_file)
     source = source_path.read_text(encoding="utf-8")
@@ -2334,6 +2403,76 @@ def run_ir_snapshot_checks():
     }
 
 
+def run_selfhost_parser_core_checks():
+    started = time.perf_counter()
+    fixture_path = SELFHOST_PARSER_CORE_FIXTURE.resolve()
+    try:
+        fixture = json.loads(fixture_path.read_text(encoding="utf-8"))
+    except Exception as exc:
+        return {
+            "source": "Selfhost parser core parity",
+            "c_file": "",
+            "exe_file": "",
+            "returncode": 1,
+            "stdout": "",
+            "stderr": f"Kunne ikke lese fixture {fixture_path}: {exc}\n",
+            "success": False,
+            "duration_ms": int((time.perf_counter() - started) * 1000),
+            "case_count": 0,
+        }
+
+    expression_cases = fixture.get("expressions", [])
+    script_cases = fixture.get("scripts", [])
+    mismatch_lines: list[str] = []
+
+    def _validate_and_collect(cases: list[dict], mode: str):
+        if not cases:
+            return
+        for idx, item in enumerate(cases):
+            if "source" not in item or "expected_lines" not in item:
+                mismatch_lines.append(f"[{mode}#{idx}] mangler source eller expected_lines i fixture")
+                return
+        sources = [str(item["source"]) for item in cases]
+        actual_lists = _run_selfhost_parser_disasm_cases(sources, mode=mode)
+        if len(actual_lists) != len(cases):
+            mismatch_lines.append(f"[{mode}] intern feil: antall resultater avviker")
+            return
+        for idx, item in enumerate(cases):
+            name = str(item.get("name") or f"{mode}_{idx}")
+            expected_lines = [str(line) for line in item.get("expected_lines", [])]
+            actual_lines = actual_lists[idx]
+            if expected_lines != actual_lines:
+                mismatch_lines.append(f"[{name}] mismatch")
+                mismatch_lines.extend(
+                    difflib.unified_diff(
+                        expected_lines,
+                        actual_lines,
+                        fromfile=f"{name}/expected",
+                        tofile=f"{name}/actual",
+                        lineterm="",
+                    )
+                )
+
+    try:
+        _validate_and_collect(expression_cases, "expression")
+        _validate_and_collect(script_cases, "script")
+    except Exception as exc:
+        mismatch_lines.append(f"Kjøring feilet: {exc}")
+
+    success = len(mismatch_lines) == 0
+    return {
+        "source": "Selfhost parser core parity",
+        "c_file": "",
+        "exe_file": "",
+        "returncode": 0 if success else 1,
+        "stdout": "",
+        "stderr": "" if success else "\n".join(mismatch_lines) + "\n",
+        "success": success,
+        "duration_ms": int((time.perf_counter() - started) * 1000),
+        "case_count": len(expression_cases) + len(script_cases),
+    }
+
+
 def update_ir_snapshots(check_only: bool = False):
     fixture_path = IR_SNAPSHOT_FIXTURE.resolve()
     fixture = json.loads(fixture_path.read_text(encoding="utf-8"))
@@ -2519,12 +2658,13 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
     step_order = [
         "snapshot_check",
         "parity_check",
+        "parser_core_check",
         "test_check",
         "workflow_action_check",
     ]
     if check_names:
         step_order.append("name_migration_check")
-    total_steps = 5 if check_names else 4
+    total_steps = 6 if check_names else 5
     payload = {
         "schema_version": 1,
         "run_id": uuid.uuid4().hex,
@@ -2628,6 +2768,7 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
         "timings_ratio": {},
         "snapshot_check": {"ok": False, "updated": None},
         "parity_check": {"ok": False},
+        "parser_core_check": {"ok": False, "case_count": 0},
         "test_check": {"ok": False, "passed": 0, "failed": 0, "total": 0},
         "workflow_action_check": {
             "ok": False,
@@ -2677,7 +2818,23 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
         print("OK")
 
     if not json_output:
-        print(f"[3/{total_steps}] Full test")
+        print(f"[3/{total_steps}] Selfhost parser core parity")
+    started = time.perf_counter()
+    parser_core_result = run_selfhost_parser_core_checks()
+    payload["timings_ms"]["parser_core_check"] = int((time.perf_counter() - started) * 1000)
+    payload["timings_s"]["parser_core_check"] = round(payload["timings_ms"]["parser_core_check"] / 1000.0, 3)
+    payload["parser_core_check"]["ok"] = parser_core_result["success"]
+    payload["parser_core_check"]["case_count"] = int(parser_core_result.get("case_count", 0) or 0)
+    if not parser_core_result["success"]:
+        raise RuntimeError(
+            "Selfhost parser core parity-feil:\n"
+            + (parser_core_result.get("stderr", "").rstrip() or "ukjent feil")
+        )
+    if not json_output:
+        print(f"OK ({payload['parser_core_check']['case_count']} cases)")
+
+    if not json_output:
+        print(f"[4/{total_steps}] Full test")
     started = time.perf_counter()
     results = run_all_tests(verbose=False, quiet=json_output)
     payload["timings_ms"]["test_check"] = int((time.perf_counter() - started) * 1000)
@@ -2695,7 +2852,7 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
         print("OK")
 
     if not json_output:
-        print(f"[4/{total_steps}] Workflow action version check")
+        print(f"[5/{total_steps}] Workflow action version check")
     started = time.perf_counter()
     workflow_check = check_workflow_action_versions()
     payload["timings_ms"]["workflow_action_check"] = int((time.perf_counter() - started) * 1000)
@@ -2714,7 +2871,7 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
 
     if check_names:
         if not json_output:
-            print(f"[5/{total_steps}] Name migration check")
+            print(f"[6/{total_steps}] Name migration check")
         started = time.perf_counter()
         migration = migrate_names(apply_changes=False, cleanup_legacy=True)
         payload["timings_ms"]["name_migration_check"] = int((time.perf_counter() - started) * 1000)

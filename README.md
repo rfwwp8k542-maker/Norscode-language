@@ -482,7 +482,7 @@ Neste steg:
 
 | Område | Status | Notat |
 |---|---|---|
-| Uttrykksparser (prioritet/assosiativitet) | Delvis | Fungerer i stor bredde med aliaser; må låses med parity-sett |
+| Uttrykksparser (prioritet/assosiativitet) | Delvis | Fungerer i stor bredde med aliaser; første core-sett er lagt i `tests/selfhost_parser_core_cases.json` |
 | Mini-skriptparser (`la`/`sett`/`returner`) | Delvis | Stabil for kjerneflyt; trenger bredere statement-dekning |
 | Kontrollflyt (`hvis`/`ellers_hvis`/`ellers`) | Delvis | Nestede varianter støttes; trenger full parity mot Python-løpet |
 | Løkker (`while`/`for`) | Delvis | Grunnstøtte finnes, men må valideres i selfhost-parity |
@@ -490,7 +490,7 @@ Neste steg:
 | Semantiske feil/paritetsfeil | Ikke startet | Trenger målbar sammenligning av feiltype + posisjon |
 
 **Mangelliste for M1 (konkret):**
-- Definere et fast `core parser parity`-testsett (20-30 representative programmer).
+- Definere et fast `core parser parity`-testsett (20-30 representative programmer). Første batch (20) ligger i `tests/selfhost_parser_core_cases.json`.
 - Legge til en CI-jobb som sammenligner AST/IR mellom Python-compiler og selfhost på dette settet.
 - Dokumentere parser-begrensninger eksplisitt (hva som er støttet, hva som ikke er støttet).
 - Fryse alias-vekst midlertidig når parity-settet etableres, slik at vi får stabile milepæler.
