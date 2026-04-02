@@ -335,7 +335,7 @@ python3 -m norcode ci --json
 # Inkluderer source_revision_short (kort commit hash) når tilgjengelig
 # Inkluderer source_branch (git branch) når tilgjengelig
 # Inkluderer source_dirty (om worktree har lokale endringer)
-# Inkluderer runtime (python_version + platform) for miljøsporing
+# Inkluderer runtime (python_version, python_implementation, python_executable, platform) for miljøsporing
 
 # Valgfri ekstra-sjekk for navnemigrering i CI
 python3 -m norcode ci --check-names
