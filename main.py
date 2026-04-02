@@ -2751,6 +2751,10 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
         payload["timings_ratio"]["overhead_share"] = 0.0
         payload["timings_ratio"]["step_coverage_pct"] = 0.0
         payload["timings_ratio"]["overhead_share_pct"] = 0.0
+    payload["timings_ratio"]["ratio_sum"] = round(
+        payload["timings_ratio"]["step_coverage"] + payload["timings_ratio"]["overhead_share"], 4
+    )
+    payload["timings_ratio"]["ratio_delta"] = round(abs(1.0 - payload["timings_ratio"]["ratio_sum"]), 6)
     payload["finished_at_utc"] = dt.datetime.now(dt.UTC).isoformat()
     payload["finished_at_epoch_ms"] = int(time.time() * 1000)
     payload["timings_ms"]["wallclock_total"] = payload["finished_at_epoch_ms"] - payload["started_at_epoch_ms"]

@@ -332,6 +332,8 @@ python3 -m norcode ci --json
 # Inkluderer timings_ratio.overhead_share (andel av total tid brukt i overhead)
 # Inkluderer timings_ratio.step_coverage_pct (samme andel i prosent)
 # Inkluderer timings_ratio.overhead_share_pct (samme andel i prosent)
+# Inkluderer timings_ratio.ratio_sum (kontrollsum for andeler, forventet ~1.0)
+# Inkluderer timings_ratio.ratio_delta (absolutt avvik fra 1.0 etter avrunding)
 # Inkluderer started_at_utc og finished_at_utc for kjøringstidsstempel
 # Inkluderer started_at_epoch_ms og finished_at_epoch_ms for numerisk sortering
 # Inkluderer schema_version for stabil maskinlesbar kontrakt
