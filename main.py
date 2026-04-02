@@ -2240,6 +2240,7 @@ def check_workflow_action_versions(workflows_dir: Path | None = None) -> dict:
         "scanned_files": 0,
         "files": [],
         "issue_count": 0,
+        "issue_types": {},
         "issues": [],
         "policy": WORKFLOW_ACTION_POLICY,
     }
@@ -2271,6 +2272,7 @@ def check_workflow_action_versions(workflows_dir: Path | None = None) -> dict:
                         {
                             "file": str(workflow_path),
                             "line": line_no,
+                            "type": "deprecated_action_major",
                             "found": f"{action_name}@v{major}",
                             "expected": f"{action_name}@v{minimum_major}",
                         }
@@ -2283,6 +2285,7 @@ def check_workflow_action_versions(workflows_dir: Path | None = None) -> dict:
                     {
                         "file": str(workflow_path),
                         "line": line_no,
+                        "type": "unsecure_node_opt_out",
                         "found": "ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true",
                         "expected": "fjern opt-out og bruk Node 24-kompatible action-versjoner",
                     }
@@ -2292,12 +2295,18 @@ def check_workflow_action_versions(workflows_dir: Path | None = None) -> dict:
                 {
                     "file": str(workflow_path),
                     "line": 1,
+                    "type": "missing_node24_env",
                     "found": "FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 mangler/ikke true",
                     "expected": 'FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"',
                 }
             )
 
     payload["issue_count"] = len(payload["issues"])
+    issue_types: dict[str, int] = {}
+    for issue in payload["issues"]:
+        issue_type = str(issue.get("type", "unknown"))
+        issue_types[issue_type] = issue_types.get(issue_type, 0) + 1
+    payload["issue_types"] = issue_types
     payload["ok"] = payload["issue_count"] == 0
     return payload
 
@@ -2314,6 +2323,7 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
             "scanned_files": 0,
             "files": [],
             "issue_count": 0,
+            "issue_types": {},
             "issues": [],
             "policy": WORKFLOW_ACTION_POLICY,
         },
