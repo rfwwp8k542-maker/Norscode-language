@@ -115,6 +115,11 @@
       "expected_error": "/* feil: uttrykket avsluttes med operator ved token 1 */"
     },
     {
+      "name": "error_unknown_name",
+      "source": "foo+1",
+      "expected_error": "/* feil: ukjent token/navn i uttrykk foo ved token 0 */"
+    },
+    {
       "name": "error_missing_paren",
       "source": "(2+3",
       "expected_error": "/* feil: mangler ) i uttrykk ved token 0 */"
@@ -126,6 +131,17 @@
       "source": "x=2+3;y=x*4;y+1",
       "expected_lines": [
         "0: PUSH 20",
+        "1: PUSH 1",
+        "2: ADD",
+        "3: PRINT",
+        "4: HALT"
+      ]
+    },
+    {
+      "name": "empty_statements",
+      "source": ";;la x=2;;x+1;;",
+      "expected_lines": [
+        "0: PUSH 2",
         "1: PUSH 1",
         "2: ADD",
         "3: PRINT",
@@ -208,6 +224,11 @@
       "name": "error_missing_final_expression",
       "source": "x=2+3;",
       "expected_error": "/* feil: skriptet mangler sluttuttrykk */"
+    },
+    {
+      "name": "error_sett_without_declaration",
+      "source": "sett x=1;returner 0",
+      "expected_error": "/* feil: variabel 'x' er ikke deklarert (bruk 'la') ved token 0 */"
     },
     {
       "name": "error_if_missing_da",
