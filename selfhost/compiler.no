@@ -68,6 +68,15 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "elseif") {
         returner "ellers_hvis"
     }
+    hvis (tok == "and") {
+        returner "og"
+    }
+    hvis (tok == "or") {
+        returner "eller"
+    }
+    hvis (tok == "not") {
+        returner "ikke"
+    }
     hvis (tok == "elif" eller tok == "else_if" eller tok == "else_hvis" eller tok == "elsehvis" eller tok == "else-hvis") {
         returner "ellers_hvis"
     }

@@ -365,6 +365,15 @@ char * selfhost__compiler__normaliser_norsk_token(char * tok) {
     if (nl_streq(tok, "elseif")) {
         return "ellers_hvis";
     }
+    if (nl_streq(tok, "and")) {
+        return "og";
+    }
+    if (nl_streq(tok, "or")) {
+        return "eller";
+    }
+    if (nl_streq(tok, "not")) {
+        return "ikke";
+    }
     if ((((nl_streq(tok, "elif") || nl_streq(tok, "else_if")) || nl_streq(tok, "else_hvis")) || nl_streq(tok, "elsehvis")) || nl_streq(tok, "else-hvis")) {
         return "ellers_hvis";
     }
@@ -3372,6 +3381,8 @@ int start() {
     nl_assert_eq_text(expr_if_then_else_alias, "0: PUSH 1\n1: PUSH 1\n2: EQ\n3: JZ 6\n4: PUSH 7\n5: JMP 8\n6: LABEL 6\n7: PUSH 9\n8: LABEL 8\n9: PRINT\n10: HALT\n");
     char * expr_if_elseif_alias = selfhost__compiler__disasm_uttrykk("if 0==1 then 10 elseif 1==1 then 20 else 30");
     nl_assert_eq_text(expr_if_elseif_alias, "0: PUSH 0\n1: PUSH 1\n2: EQ\n3: JZ 6\n4: PUSH 10\n5: JMP 16\n6: LABEL 6\n7: PUSH 1\n8: PUSH 1\n9: EQ\n10: JZ 13\n11: PUSH 20\n12: JMP 15\n13: LABEL 13\n14: PUSH 30\n15: LABEL 15\n16: LABEL 16\n17: PRINT\n18: HALT\n");
+    char * expr_and_or_not_alias = selfhost__compiler__disasm_uttrykk("not 0 and 1 or 0");
+    nl_assert_eq_text(expr_and_or_not_alias, "0: PUSH 0\n1: NOT\n2: PUSH 1\n3: AND\n4: PUSH 0\n5: OR\n6: PRINT\n7: HALT\n");
     char * expr_hvis_env = selfhost__compiler__disasm_uttrykk_med_miljo("hvis x>y da x ellers y", env_navn, env_verdier);
     nl_assert_eq_text(expr_hvis_env, "0: PUSH 7\n1: PUSH 3\n2: GT\n3: JZ 6\n4: PUSH 7\n5: JMP 8\n6: LABEL 6\n7: PUSH 3\n8: LABEL 8\n9: PRINT\n10: HALT\n");
     char * expr_hvis_c = selfhost__compiler__kompiler_uttrykk_til_c("hvis 1==1 da 7 ellers 9");
@@ -3425,6 +3436,8 @@ int start() {
     nl_assert_eq_text(script_nested_hvis, "0: PUSH 1\n1: PUSH 1\n2: EQ\n3: JZ 14\n4: PUSH 1\n5: PUSH 1\n6: EQ\n7: JZ 10\n8: PUSH 10\n9: JMP 12\n10: LABEL 10\n11: PUSH 11\n12: LABEL 12\n13: JMP 16\n14: LABEL 14\n15: PUSH 20\n16: LABEL 16\n17: PRINT\n18: HALT\n");
     char * script_if_then_else_alias = selfhost__compiler__disasm_skript("la x=1;if x==1 then 10 else 20");
     nl_assert_eq_text(script_if_then_else_alias, "0: PUSH 1\n1: PUSH 1\n2: EQ\n3: JZ 6\n4: PUSH 10\n5: JMP 8\n6: LABEL 6\n7: PUSH 20\n8: LABEL 8\n9: PRINT\n10: HALT\n");
+    char * script_and_or_not_alias = selfhost__compiler__disasm_skript("la x=sann;la y=usann;returner x and not y or usann");
+    nl_assert_eq_text(script_and_or_not_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: AND\n4: PUSH 0\n5: OR\n6: PRINT\n7: HALT\n");
     char * script_norsk_ops = selfhost__compiler__disasm_skript("x=sann;y=ikke usann;x og y");
     nl_assert_eq_text(script_norsk_ops, "0: PUSH 1\n1: PUSH 1\n2: AND\n3: PRINT\n4: HALT\n");
     char * script_norsk_ops_enten = selfhost__compiler__disasm_skript("x=usann;y=sann;x enten y");
