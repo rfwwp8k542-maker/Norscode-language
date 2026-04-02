@@ -27,6 +27,32 @@
       ]
     },
     {
+      "name": "brace_grouped",
+      "source": "{2+3}*4",
+      "expected_lines": [
+        "0: PUSH 2",
+        "1: PUSH 3",
+        "2: ADD",
+        "3: PUSH 4",
+        "4: MUL",
+        "5: PRINT",
+        "6: HALT"
+      ]
+    },
+    {
+      "name": "bracket_grouped",
+      "source": "[2+3]*4",
+      "expected_lines": [
+        "0: PUSH 2",
+        "1: PUSH 3",
+        "2: ADD",
+        "3: PUSH 4",
+        "4: MUL",
+        "5: PRINT",
+        "6: HALT"
+      ]
+    },
+    {
       "name": "bool_and_cmp",
       "source": "5>3&&2<4",
       "expected_lines": [
@@ -58,6 +84,18 @@
       ]
     },
     {
+      "name": "not_equal_angle",
+      "source": "7<>8",
+      "expected_lines": [
+        "0: PUSH 7",
+        "1: PUSH 8",
+        "2: EQ",
+        "3: NOT",
+        "4: PRINT",
+        "5: HALT"
+      ]
+    },
+    {
       "name": "xor_alias",
       "source": "1 xor 0",
       "expected_lines": [
@@ -67,6 +105,17 @@
         "3: NOT",
         "4: PRINT",
         "5: HALT"
+      ]
+    },
+    {
+      "name": "xnor_alias",
+      "source": "1 xnor 1",
+      "expected_lines": [
+        "0: PUSH 1",
+        "1: PUSH 1",
+        "2: EQ",
+        "3: PRINT",
+        "4: HALT"
       ]
     },
     {
@@ -96,6 +145,18 @@
       ]
     },
     {
+      "name": "premise_condition_alias",
+      "source": "1 premise_condition 0",
+      "expected_lines": [
+        "0: PUSH 1",
+        "1: PUSH 0",
+        "2: NOT",
+        "3: OR",
+        "4: PRINT",
+        "5: HALT"
+      ]
+    },
+    {
       "name": "iff_alias",
       "source": "1 iff 1",
       "expected_lines": [
@@ -104,6 +165,30 @@
         "2: EQ",
         "3: PRINT",
         "4: HALT"
+      ]
+    },
+    {
+      "name": "less_or_equal",
+      "source": "3 <= 4",
+      "expected_lines": [
+        "0: PUSH 3",
+        "1: PUSH 4",
+        "2: GT",
+        "3: NOT",
+        "4: PRINT",
+        "5: HALT"
+      ]
+    },
+    {
+      "name": "greater_or_equal",
+      "source": "4 >= 3",
+      "expected_lines": [
+        "0: PUSH 4",
+        "1: PUSH 3",
+        "2: LT",
+        "3: NOT",
+        "4: PRINT",
+        "5: HALT"
       ]
     },
     {
@@ -131,6 +216,54 @@
         "6: PRINT",
         "7: HALT"
       ]
+    },
+    {
+      "name": "modulo_of_phrase",
+      "source": "17 modulo of 5",
+      "expected_lines": [
+        "0: PUSH 17",
+        "1: PUSH 5",
+        "2: MOD",
+        "3: PRINT",
+        "4: HALT"
+      ]
+    },
+    {
+      "name": "if_expression",
+      "source": "hvis 1==1 da 7 ellers 9",
+      "expected_lines": [
+        "0: PUSH 1",
+        "1: PUSH 1",
+        "2: EQ",
+        "3: JZ 6",
+        "4: PUSH 7",
+        "5: JMP 8",
+        "6: LABEL 6",
+        "7: PUSH 9",
+        "8: LABEL 8",
+        "9: PRINT",
+        "10: HALT"
+      ]
+    },
+    {
+      "name": "error_trailing_operator",
+      "source": "2 +",
+      "expected_error": "/* feil: uttrykket avsluttes med operator ved token 1 */"
+    },
+    {
+      "name": "error_missing_operand_before_close",
+      "source": "2 + )",
+      "expected_error": "/* feil: mangler verdi før ) ved token 2 */"
+    },
+    {
+      "name": "error_unknown_name",
+      "source": "foo+1",
+      "expected_error": "/* feil: ukjent token/navn i uttrykk foo ved token 0 */"
+    },
+    {
+      "name": "error_missing_paren",
+      "source": "(2+3",
+      "expected_error": "/* feil: mangler ) i uttrykk ved token 0 */"
     }
   ],
   "scripts": [
@@ -226,6 +359,45 @@
       ]
     },
     {
+      "name": "if_then_else_alias",
+      "source": "la x=1;if x==1 then 10 else 20",
+      "expected_lines": [
+        "0: PUSH 1",
+        "1: PUSH 1",
+        "2: EQ",
+        "3: JZ 6",
+        "4: PUSH 10",
+        "5: JMP 8",
+        "6: LABEL 6",
+        "7: PUSH 20",
+        "8: LABEL 8",
+        "9: PRINT",
+        "10: HALT"
+      ]
+    },
+    {
+      "name": "return_semicolon",
+      "source": "la x=2;returner x+3;",
+      "expected_lines": [
+        "0: PUSH 2",
+        "1: PUSH 3",
+        "2: ADD",
+        "3: PRINT",
+        "4: HALT"
+      ]
+    },
+    {
+      "name": "const_alias",
+      "source": "const x=2;return x+3",
+      "expected_lines": [
+        "0: PUSH 2",
+        "1: PUSH 3",
+        "2: ADD",
+        "3: PRINT",
+        "4: HALT"
+      ]
+    },
+    {
       "name": "script_implied_by",
       "source": "returner 1 implied_by 0",
       "expected_lines": [
@@ -250,6 +422,64 @@
         "6: PRINT",
         "7: HALT"
       ]
+    },
+    {
+      "name": "script_premise_condition",
+      "source": "returner 1 premise_condition 0",
+      "expected_lines": [
+        "0: PUSH 1",
+        "1: PUSH 0",
+        "2: NOT",
+        "3: OR",
+        "4: PRINT",
+        "5: HALT"
+      ]
+    },
+    {
+      "name": "script_divided_by_phrase",
+      "source": "let x=8;let y=2;return x divided by y",
+      "expected_lines": [
+        "0: PUSH 8",
+        "1: PUSH 2",
+        "2: DIV",
+        "3: PRINT",
+        "4: HALT"
+      ]
+    },
+    {
+      "name": "error_missing_separator_after_assign",
+      "source": "x=2+3",
+      "expected_error": "/* feil: mangler ';', ',' eller ':' etter assignment til x ved token 0 */"
+    },
+    {
+      "name": "error_missing_final_expression",
+      "source": "x=2+3;",
+      "expected_error": "/* feil: skriptet mangler sluttuttrykk */"
+    },
+    {
+      "name": "error_la_missing_name",
+      "source": "la ;x+1",
+      "expected_error": "/* feil: 'la' må etterfølges av variabelnavn ved token 0 */"
+    },
+    {
+      "name": "error_la_invalid_decl",
+      "source": "la x;x+1",
+      "expected_error": "/* feil: ugyldig deklarasjon etter 'la' ved token 0 */"
+    },
+    {
+      "name": "error_return_missing_expr",
+      "source": "la x=1;returner",
+      "expected_error": "/* feil: 'returner' må etterfølges av uttrykk ved token 5 */"
+    },
+    {
+      "name": "error_sett_without_declaration",
+      "source": "sett x=1;returner 0",
+      "expected_error": "/* feil: variabel 'x' er ikke deklarert (bruk 'la') ved token 0 */"
+    },
+    {
+      "name": "error_if_missing_da",
+      "source": "hvis 1==1 10 ellers 20",
+      "expected_error": "/* feil: hvis-uttrykk mangler 'da' ved token 0 */"
     }
   ]
 }

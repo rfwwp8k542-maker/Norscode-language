@@ -2429,8 +2429,15 @@ def run_selfhost_parser_core_checks():
         if not cases:
             return
         for idx, item in enumerate(cases):
-            if "source" not in item or "expected_lines" not in item:
-                mismatch_lines.append(f"[{mode}#{idx}] mangler source eller expected_lines i fixture")
+            has_expected_lines = "expected_lines" in item
+            has_expected_error = "expected_error" in item
+            if "source" not in item:
+                mismatch_lines.append(f"[{mode}#{idx}] mangler source i fixture")
+                return
+            if has_expected_lines == has_expected_error:
+                mismatch_lines.append(
+                    f"[{mode}#{idx}] må ha nøyaktig ett av feltene expected_lines eller expected_error"
+                )
                 return
         sources = [str(item["source"]) for item in cases]
         actual_lists = _run_selfhost_parser_disasm_cases(sources, mode=mode)
@@ -2439,8 +2446,17 @@ def run_selfhost_parser_core_checks():
             return
         for idx, item in enumerate(cases):
             name = str(item.get("name") or f"{mode}_{idx}")
-            expected_lines = [str(line) for line in item.get("expected_lines", [])]
             actual_lines = actual_lists[idx]
+            expected_error = item.get("expected_error")
+            if expected_error is not None:
+                actual_error = actual_lines[0] if actual_lines else ""
+                if actual_error != str(expected_error):
+                    mismatch_lines.append(f"[{name}] error mismatch")
+                    mismatch_lines.append(f"expected: {expected_error}")
+                    mismatch_lines.append(f"actual:   {actual_error}")
+                continue
+
+            expected_lines = [str(line) for line in item.get("expected_lines", [])]
             if expected_lines != actual_lines:
                 mismatch_lines.append(f"[{name}] mismatch")
                 mismatch_lines.extend(
