@@ -339,6 +339,7 @@ python3 -m norcode ci --json
 # Inkluderer source_tag (eksakt git tag) når tilgjengelig
 # Inkluderer source_ref (tag eller branch) for entydig kilde-referanse
 # Inkluderer source_ref_type (tag/branch/unknown)
+# Inkluderer source_remote (git origin URL) når tilgjengelig
 # Inkluderer source_is_tagged (om commit har eksakt tag)
 # Inkluderer source_is_main (om branch er main)
 # Inkluderer source_dirty (om worktree har lokale endringer)

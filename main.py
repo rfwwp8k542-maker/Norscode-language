@@ -2068,6 +2068,20 @@ def get_current_git_exact_tag() -> str | None:
         return None
 
 
+def get_current_git_origin_url() -> str | None:
+    try:
+        result = subprocess.run(
+            ["git", "config", "--get", "remote.origin.url"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        url = result.stdout.strip()
+        return url or None
+    except Exception:
+        return None
+
+
 def run_program(source_file: str):
     source_path, c_path, exe_path, _alias_map, _analyzer = build_program(source_file)
     print(f"Generert C-fil: {c_path}")
@@ -2415,6 +2429,7 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
         "source_tag": source_tag,
         "source_ref": source_tag or source_branch,
         "source_ref_type": "tag" if source_tag else ("branch" if source_branch else "unknown"),
+        "source_remote": get_current_git_origin_url(),
         "source_is_tagged": source_tag is not None,
         "source_is_main": source_branch == "main",
         "source_dirty": source_dirty,
