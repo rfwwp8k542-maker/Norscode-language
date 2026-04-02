@@ -2420,26 +2420,45 @@ def run_selfhost_parser_core_checks(fixture_path: Path, label: str):
             "success": False,
             "duration_ms": int((time.perf_counter() - started) * 1000),
             "case_count": 0,
+            "expression_cases": 0,
+            "script_cases": 0,
+            "line_cases": 0,
+            "error_cases": 0,
         }
 
     expression_cases = fixture.get("expressions", [])
     script_cases = fixture.get("scripts", [])
+    expression_count = len(expression_cases)
+    script_count = len(script_cases)
+    line_case_count = 0
+    error_case_count = 0
     mismatch_lines: list[str] = []
 
     def _validate_and_collect(cases: list[dict], mode: str):
+        nonlocal line_case_count, error_case_count
         if not cases:
             return
+        seen_names: set[str] = set()
         for idx, item in enumerate(cases):
             has_expected_lines = "expected_lines" in item
             has_expected_error = "expected_error" in item
             if "source" not in item:
                 mismatch_lines.append(f"[{mode}#{idx}] mangler source i fixture")
                 return
+            case_name = str(item.get("name") or f"{mode}_{idx}")
+            if case_name in seen_names:
+                mismatch_lines.append(f"[{mode}#{idx}] duplikat casenavn: {case_name}")
+                return
+            seen_names.add(case_name)
             if has_expected_lines == has_expected_error:
                 mismatch_lines.append(
                     f"[{mode}#{idx}] må ha nøyaktig ett av feltene expected_lines eller expected_error"
                 )
                 return
+            if has_expected_error:
+                error_case_count += 1
+            else:
+                line_case_count += 1
         sources = [str(item["source"]) for item in cases]
         actual_lists = _run_selfhost_parser_disasm_cases(sources, mode=mode)
         if len(actual_lists) != len(cases):
@@ -2486,7 +2505,11 @@ def run_selfhost_parser_core_checks(fixture_path: Path, label: str):
         "stderr": "" if success else "\n".join(mismatch_lines) + "\n",
         "success": success,
         "duration_ms": int((time.perf_counter() - started) * 1000),
-        "case_count": len(expression_cases) + len(script_cases),
+        "case_count": expression_count + script_count,
+        "expression_cases": expression_count,
+        "script_cases": script_count,
+        "line_cases": line_case_count,
+        "error_cases": error_case_count,
     }
 
 
@@ -2512,6 +2535,10 @@ def run_selfhost_parser_parity(suite: str = "all") -> dict:
         "suite": suite,
         "ok": ok,
         "case_count": sum(int(item.get("case_count", 0) or 0) for item in results),
+        "expression_cases": sum(int(item.get("expression_cases", 0) or 0) for item in results),
+        "script_cases": sum(int(item.get("script_cases", 0) or 0) for item in results),
+        "line_cases": sum(int(item.get("line_cases", 0) or 0) for item in results),
+        "error_cases": sum(int(item.get("error_cases", 0) or 0) for item in results),
         "duration_ms": int((time.perf_counter() - started) * 1000),
         "results": results,
     }
@@ -2813,8 +2840,8 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
         "timings_ratio": {},
         "snapshot_check": {"ok": False, "updated": None},
         "parity_check": {"ok": False},
-        "parser_core_m1_check": {"ok": False, "case_count": 0},
-        "parser_core_extended_check": {"ok": False, "case_count": 0},
+        "parser_core_m1_check": {"ok": False, "case_count": 0, "error_cases": 0},
+        "parser_core_extended_check": {"ok": False, "case_count": 0, "error_cases": 0},
         "test_check": {"ok": False, "passed": 0, "failed": 0, "total": 0},
         "workflow_action_check": {
             "ok": False,
@@ -2873,13 +2900,17 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
     payload["timings_s"]["parser_core_m1_check"] = round(payload["timings_ms"]["parser_core_m1_check"] / 1000.0, 3)
     payload["parser_core_m1_check"]["ok"] = parser_core_m1_result["success"]
     payload["parser_core_m1_check"]["case_count"] = int(parser_core_m1_result.get("case_count", 0) or 0)
+    payload["parser_core_m1_check"]["error_cases"] = int(parser_core_m1_result.get("error_cases", 0) or 0)
     if not parser_core_m1_result["success"]:
         raise RuntimeError(
             "Selfhost parser parity-feil (M1):\n"
             + (parser_core_m1_result.get("stderr", "").rstrip() or "ukjent feil")
         )
     if not json_output:
-        print(f"OK ({payload['parser_core_m1_check']['case_count']} cases)")
+        print(
+            f"OK ({payload['parser_core_m1_check']['case_count']} cases, "
+            f"{payload['parser_core_m1_check']['error_cases']} feil-cases)"
+        )
 
     if not json_output:
         print(f"[4/{total_steps}] Selfhost parser parity (utvidet)")
@@ -2895,13 +2926,19 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
     payload["parser_core_extended_check"]["case_count"] = int(
         parser_core_extended_result.get("case_count", 0) or 0
     )
+    payload["parser_core_extended_check"]["error_cases"] = int(
+        parser_core_extended_result.get("error_cases", 0) or 0
+    )
     if not parser_core_extended_result["success"]:
         raise RuntimeError(
             "Selfhost parser parity-feil (utvidet):\n"
             + (parser_core_extended_result.get("stderr", "").rstrip() or "ukjent feil")
         )
     if not json_output:
-        print(f"OK ({payload['parser_core_extended_check']['case_count']} cases)")
+        print(
+            f"OK ({payload['parser_core_extended_check']['case_count']} cases, "
+            f"{payload['parser_core_extended_check']['error_cases']} feil-cases)"
+        )
 
     if not json_output:
         print(f"[5/{total_steps}] Full test")
@@ -3418,10 +3455,19 @@ def main():
                 print(f"Suite: {payload['suite']}")
                 print(f"OK: {'ja' if payload['ok'] else 'nei'}")
                 print(f"Cases: {payload['case_count']}")
+                print(
+                    f"Fordeling: uttrykk={payload['expression_cases']} "
+                    f"skript={payload['script_cases']} "
+                    f"linje={payload['line_cases']} feil={payload['error_cases']}"
+                )
                 print(f"Tid: {payload['duration_ms']} ms")
                 for item in payload["results"]:
                     status = "OK" if item.get("success") else "FEIL"
-                    print(f"- {status}: {item['source']} ({item.get('case_count', 0)} cases)")
+                    print(
+                        f"- {status}: {item['source']} "
+                        f"({item.get('case_count', 0)} cases, "
+                        f"{item.get('error_cases', 0)} feil)"
+                    )
                     if not item.get("success") and item.get("stderr"):
                         print(item["stderr"].rstrip())
             if not payload["ok"]:

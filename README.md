@@ -425,6 +425,8 @@ python3 -m norcode selfhost-parity --suite extended
 python3 -m norcode selfhost-parity --suite all --json
 ```
 
+`selfhost-parity` rapporterer også fordeling per suite: antall uttrykk, skript, linje-cases og feil-cases.
+
 ---
 
 ## 🧠 Eksempel
