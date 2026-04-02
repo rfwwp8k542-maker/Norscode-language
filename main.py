@@ -2396,6 +2396,7 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
     source_revision = get_current_git_revision()
     source_branch = get_current_git_branch()
     source_tag = get_current_git_exact_tag()
+    source_dirty = get_current_git_dirty_state()
     step_order = [
         "snapshot_check",
         "parity_check",
@@ -2414,7 +2415,8 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
         "source_tag": source_tag,
         "source_is_tagged": source_tag is not None,
         "source_is_main": source_branch == "main",
-        "source_dirty": get_current_git_dirty_state(),
+        "source_dirty": source_dirty,
+        "source_clean": (not source_dirty) if source_dirty is not None else None,
         "invocation": {
             "cmd": "norcode ci",
             "json_output": json_output,

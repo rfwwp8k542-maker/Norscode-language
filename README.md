@@ -340,6 +340,7 @@ python3 -m norcode ci --json
 # Inkluderer source_is_tagged (om commit har eksakt tag)
 # Inkluderer source_is_main (om branch er main)
 # Inkluderer source_dirty (om worktree har lokale endringer)
+# Inkluderer source_clean (inverse av source_dirty når kjent)
 # Inkluderer runtime (python_version, python_implementation, python_executable, platform, hostname, pid, cwd, timezone) for miljøsporing
 
 # Valgfri ekstra-sjekk for navnemigrering i CI
