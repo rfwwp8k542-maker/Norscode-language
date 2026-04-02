@@ -2564,6 +2564,7 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
             "python_executable": sys.executable,
             "python_prefix": sys.prefix,
             "python_base_prefix": sys.base_prefix,
+            "python_is_venv": sys.prefix != sys.base_prefix,
             "byteorder": sys.byteorder,
             "locale": locale.setlocale(locale.LC_CTYPE, None),
             "encoding": locale.getpreferredencoding(False),
