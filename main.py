@@ -2226,7 +2226,7 @@ def summarize_test_results(results: list[dict]) -> dict:
 
 def check_workflow_action_versions(workflows_dir: Path | None = None) -> dict:
     base = workflows_dir or Path(".github/workflows")
-    payload = {"ok": True, "scanned_files": 0, "issues": []}
+    payload = {"ok": True, "scanned_files": 0, "issue_count": 0, "issues": []}
     deprecated_actions = {
         "actions/checkout@v4": "actions/checkout@v6",
         "actions/setup-python@v5": "actions/setup-python@v6",
@@ -2267,7 +2267,8 @@ def check_workflow_action_versions(workflows_dir: Path | None = None) -> dict:
                     }
                 )
 
-    payload["ok"] = len(payload["issues"]) == 0
+    payload["issue_count"] = len(payload["issues"])
+    payload["ok"] = payload["issue_count"] == 0
     return payload
 
 
@@ -2277,7 +2278,7 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
         "snapshot_check": {"ok": False, "updated": None},
         "parity_check": {"ok": False},
         "test_check": {"ok": False, "passed": 0, "failed": 0, "total": 0},
-        "workflow_action_check": {"ok": False, "scanned_files": 0, "issues": []},
+        "workflow_action_check": {"ok": False, "scanned_files": 0, "issue_count": 0, "issues": []},
         "name_migration_check": {"enabled": check_names, "ok": True, "needs_migration": False},
     }
 

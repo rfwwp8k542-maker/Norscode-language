@@ -319,6 +319,7 @@ python3 -m norcode ci
 
 # Maskinlesbar output
 python3 -m norcode ci --json
+# Inkluderer workflow_action_check.issue_count for CI-policy funn
 
 # Valgfri ekstra-sjekk for navnemigrering i CI
 python3 -m norcode ci --check-names
