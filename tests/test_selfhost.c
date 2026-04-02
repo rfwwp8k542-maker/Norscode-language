@@ -1547,11 +1547,27 @@ char * selfhost__compiler__uttrykk_til_ops_og_verdier_med_miljo(nl_list_text* to
             tok = "%";
             tok_step = 1;
         }
+        else if (((((((i + 4) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "less")) && nl_streq(n1, "than")) && (nl_streq(n2, "or") || nl_streq(n2, "eller"))) && ((nl_streq(n3, "equal") || nl_streq(n3, "equals")) || nl_streq(n3, "er"))) && nl_streq(n4, "to")) {
+            tok = "mindre_eller_lik";
+            tok_step = 5;
+        }
+        else if (((((((i + 4) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "greater")) && nl_streq(n1, "than")) && (nl_streq(n2, "or") || nl_streq(n2, "eller"))) && ((nl_streq(n3, "equal") || nl_streq(n3, "equals")) || nl_streq(n3, "er"))) && nl_streq(n4, "to")) {
+            tok = "storre_eller_lik";
+            tok_step = 5;
+        }
         else if ((((((i + 3) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "less")) && nl_streq(n1, "than")) && (nl_streq(n2, "or") || nl_streq(n2, "eller"))) && ((nl_streq(n3, "equal") || nl_streq(n3, "equals")) || nl_streq(n3, "er"))) {
             tok = "mindre_eller_lik";
             tok_step = 4;
         }
         else if ((((((i + 3) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "greater")) && nl_streq(n1, "than")) && (nl_streq(n2, "or") || nl_streq(n2, "eller"))) && ((nl_streq(n3, "equal") || nl_streq(n3, "equals")) || nl_streq(n3, "er"))) {
+            tok = "storre_eller_lik";
+            tok_step = 4;
+        }
+        else if ((((((i + 3) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "less")) && nl_streq(n1, "than")) && ((nl_streq(n2, "equal") || nl_streq(n2, "equals")) || nl_streq(n2, "er"))) && nl_streq(n3, "to")) {
+            tok = "mindre_eller_lik";
+            tok_step = 4;
+        }
+        else if ((((((i + 3) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "greater")) && nl_streq(n1, "than")) && ((nl_streq(n2, "equal") || nl_streq(n2, "equals")) || nl_streq(n2, "er"))) && nl_streq(n3, "to")) {
             tok = "storre_eller_lik";
             tok_step = 4;
         }
@@ -1666,6 +1682,14 @@ char * selfhost__compiler__uttrykk_til_ops_og_verdier_med_miljo(nl_list_text* to
         else if ((((((i + 3) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "er")) && nl_streq(n1, "ikke")) && nl_streq(n2, "lik")) && nl_streq(n3, "med")) {
             tok = "ikke_er";
             tok_step = 4;
+        }
+        else if ((((((i + 3) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "er")) && nl_streq(n1, "ikke")) && nl_streq(n2, "er")) && nl_streq(n3, "to")) {
+            tok = "ikke_er";
+            tok_step = 4;
+        }
+        else if (((((i + 2) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "er")) && nl_streq(n1, "er")) && nl_streq(n2, "to")) {
+            tok = "er";
+            tok_step = 3;
         }
         else if (((((i + 2) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "ikke")) && ((nl_streq(n1, "er") || nl_streq(n1, "equal")) || nl_streq(n1, "equals"))) && nl_streq(n2, "to")) {
             tok = "ikke_er";
@@ -3568,10 +3592,14 @@ int start() {
     nl_assert_eq_text(expr_english_equal_to_alias, "0: PUSH 7\n1: PUSH 7\n2: EQ\n3: PRINT\n4: HALT\n");
     char * expr_english_equal_to_phrase = selfhost__compiler__disasm_uttrykk("7 equal to 7");
     nl_assert_eq_text(expr_english_equal_to_phrase, "0: PUSH 7\n1: PUSH 7\n2: EQ\n3: PRINT\n4: HALT\n");
+    char * expr_english_is_equal_to_phrase = selfhost__compiler__disasm_uttrykk("7 is equal to 7");
+    nl_assert_eq_text(expr_english_is_equal_to_phrase, "0: PUSH 7\n1: PUSH 7\n2: EQ\n3: PRINT\n4: HALT\n");
     char * expr_english_not_equal_to_alias = selfhost__compiler__disasm_uttrykk("7 not_equal_to 8");
     nl_assert_eq_text(expr_english_not_equal_to_alias, "0: PUSH 7\n1: PUSH 8\n2: EQ\n3: NOT\n4: PRINT\n5: HALT\n");
     char * expr_english_not_equal_to_phrase = selfhost__compiler__disasm_uttrykk("7 not equal to 8");
     nl_assert_eq_text(expr_english_not_equal_to_phrase, "0: PUSH 7\n1: PUSH 8\n2: EQ\n3: NOT\n4: PRINT\n5: HALT\n");
+    char * expr_english_is_not_equal_to_phrase = selfhost__compiler__disasm_uttrykk("7 is not equal to 8");
+    nl_assert_eq_text(expr_english_is_not_equal_to_phrase, "0: PUSH 7\n1: PUSH 8\n2: EQ\n3: NOT\n4: PRINT\n5: HALT\n");
     char * expr_english_less_equal_alias = selfhost__compiler__disasm_uttrykk("3 less_equal 4");
     nl_assert_eq_text(expr_english_less_equal_alias, "0: PUSH 3\n1: PUSH 4\n2: GT\n3: NOT\n4: PRINT\n5: HALT\n");
     char * expr_english_greater_equal_alias = selfhost__compiler__disasm_uttrykk("4 greater_equal 4");
@@ -3582,8 +3610,12 @@ int start() {
     nl_assert_eq_text(expr_english_greater_than_phrase, "0: PUSH 4\n1: PUSH 3\n2: GT\n3: PRINT\n4: HALT\n");
     char * expr_english_less_than_or_equal_phrase = selfhost__compiler__disasm_uttrykk("3 less than or equal 3");
     nl_assert_eq_text(expr_english_less_than_or_equal_phrase, "0: PUSH 3\n1: PUSH 3\n2: GT\n3: NOT\n4: PRINT\n5: HALT\n");
+    char * expr_english_less_than_or_equal_to_phrase = selfhost__compiler__disasm_uttrykk("3 less than or equal to 3");
+    nl_assert_eq_text(expr_english_less_than_or_equal_to_phrase, "0: PUSH 3\n1: PUSH 3\n2: GT\n3: NOT\n4: PRINT\n5: HALT\n");
     char * expr_english_greater_than_or_equal_phrase = selfhost__compiler__disasm_uttrykk("4 greater than or equal 4");
     nl_assert_eq_text(expr_english_greater_than_or_equal_phrase, "0: PUSH 4\n1: PUSH 4\n2: LT\n3: NOT\n4: PRINT\n5: HALT\n");
+    char * expr_english_greater_than_or_equal_to_phrase = selfhost__compiler__disasm_uttrykk("4 greater than or equal to 4");
+    nl_assert_eq_text(expr_english_greater_than_or_equal_to_phrase, "0: PUSH 4\n1: PUSH 4\n2: LT\n3: NOT\n4: PRINT\n5: HALT\n");
     char * expr_english_times_alias = selfhost__compiler__disasm_uttrykk("3 times 4");
     nl_assert_eq_text(expr_english_times_alias, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n");
     char * expr_english_multiplied_by_alias = selfhost__compiler__disasm_uttrykk("3 multiplied_by 4");
@@ -3683,12 +3715,20 @@ int start() {
     nl_assert_eq_text(script_english_greater_than_phrase, "0: PUSH 4\n1: PUSH 3\n2: GT\n3: PRINT\n4: HALT\n");
     char * script_english_less_than_or_equal_phrase = selfhost__compiler__disasm_skript("let x=3;let y=3;return x less than or equal y");
     nl_assert_eq_text(script_english_less_than_or_equal_phrase, "0: PUSH 3\n1: PUSH 3\n2: GT\n3: NOT\n4: PRINT\n5: HALT\n");
+    char * script_english_less_than_or_equal_to_phrase = selfhost__compiler__disasm_skript("let x=3;let y=3;return x less than or equal to y");
+    nl_assert_eq_text(script_english_less_than_or_equal_to_phrase, "0: PUSH 3\n1: PUSH 3\n2: GT\n3: NOT\n4: PRINT\n5: HALT\n");
     char * script_english_greater_than_or_equal_phrase = selfhost__compiler__disasm_skript("let x=4;let y=4;return x greater than or equal y");
     nl_assert_eq_text(script_english_greater_than_or_equal_phrase, "0: PUSH 4\n1: PUSH 4\n2: LT\n3: NOT\n4: PRINT\n5: HALT\n");
+    char * script_english_greater_than_or_equal_to_phrase = selfhost__compiler__disasm_skript("let x=4;let y=4;return x greater than or equal to y");
+    nl_assert_eq_text(script_english_greater_than_or_equal_to_phrase, "0: PUSH 4\n1: PUSH 4\n2: LT\n3: NOT\n4: PRINT\n5: HALT\n");
     char * script_english_cmp_equal_to_alias = selfhost__compiler__disasm_skript("let x=4;let y=4;return x equal_to y");
     nl_assert_eq_text(script_english_cmp_equal_to_alias, "0: PUSH 4\n1: PUSH 4\n2: EQ\n3: PRINT\n4: HALT\n");
     char * script_english_cmp_equal_to_phrase = selfhost__compiler__disasm_skript("let x=4;let y=4;return x equal to y");
     nl_assert_eq_text(script_english_cmp_equal_to_phrase, "0: PUSH 4\n1: PUSH 4\n2: EQ\n3: PRINT\n4: HALT\n");
+    char * script_english_cmp_is_equal_to_phrase = selfhost__compiler__disasm_skript("let x=4;let y=4;return x is equal to y");
+    nl_assert_eq_text(script_english_cmp_is_equal_to_phrase, "0: PUSH 4\n1: PUSH 4\n2: EQ\n3: PRINT\n4: HALT\n");
+    char * script_english_cmp_is_not_equal_to_phrase = selfhost__compiler__disasm_skript("let x=4;let y=5;return x is not equal to y");
+    nl_assert_eq_text(script_english_cmp_is_not_equal_to_phrase, "0: PUSH 4\n1: PUSH 5\n2: EQ\n3: NOT\n4: PRINT\n5: HALT\n");
     char * script_english_cmp_eq_alias = selfhost__compiler__disasm_skript("let x=4;let y=4;return x eq y");
     nl_assert_eq_text(script_english_cmp_eq_alias, "0: PUSH 4\n1: PUSH 4\n2: EQ\n3: PRINT\n4: HALT\n");
     char * script_english_on_off_alias = selfhost__compiler__disasm_skript("let x=on;return x and not off");
