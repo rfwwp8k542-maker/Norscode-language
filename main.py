@@ -2484,6 +2484,7 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
     source_repo_slug = get_git_remote_repo_slug(source_remote)
     source_repo_owner, source_repo_name = split_repo_slug(source_repo_slug)
     source_dirty = get_current_git_dirty_state()
+    py_major_minor = f"{sys.version_info.major}.{sys.version_info.minor}"
     step_order = [
         "snapshot_check",
         "parity_check",
@@ -2524,6 +2525,7 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
         },
         "runtime": {
             "python_version": platform.python_version(),
+            "python_major_minor": py_major_minor,
             "python_implementation": platform.python_implementation(),
             "python_executable": sys.executable,
             "os": platform.system(),
