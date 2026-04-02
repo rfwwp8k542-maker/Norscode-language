@@ -378,6 +378,9 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "reachable") {
         returner "sann"
     }
+    hvis (tok == "working") {
+        returner "sann"
+    }
     hvis (tok == "enabled") {
         returner "sann"
     }
@@ -469,6 +472,9 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
         returner "usann"
     }
     hvis (tok == "unreachable") {
+        returner "usann"
+    }
+    hvis (tok == "broken") {
         returner "usann"
     }
     hvis (tok == "disabled") {
