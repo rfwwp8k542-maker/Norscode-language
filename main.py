@@ -2569,6 +2569,8 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
             "locale": locale.setlocale(locale.LC_CTYPE, None),
             "encoding": locale.getpreferredencoding(False),
             "path_entries": len(os.getenv("PATH", "").split(os.pathsep)) if os.getenv("PATH") else 0,
+            "shell": os.getenv("SHELL"),
+            "term": os.getenv("TERM"),
             "virtual_env": os.getenv("VIRTUAL_ENV"),
             "virtual_env_name": Path(os.getenv("VIRTUAL_ENV")).name if os.getenv("VIRTUAL_ENV") else None,
             "is_ci": bool(os.getenv("CI")),
