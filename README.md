@@ -327,6 +327,7 @@ python3 -m norcode ci --json
 # Inkluderer timings_ms.total for total CI-varighet
 # Inkluderer timings_ms.wallclock_total / timings_s.wallclock_total basert på epoch-tid
 # Inkluderer timings_ms.step_sum / timings_s.step_sum (sum av delsteg)
+# Inkluderer timings_ms.overhead / timings_s.overhead (total minus sum av delsteg)
 # Inkluderer started_at_utc og finished_at_utc for kjøringstidsstempel
 # Inkluderer started_at_epoch_ms og finished_at_epoch_ms for numerisk sortering
 # Inkluderer schema_version for stabil maskinlesbar kontrakt
