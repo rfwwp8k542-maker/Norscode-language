@@ -107,6 +107,9 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "neq") {
         returner "ikke_er"
     }
+    hvis (tok == "<>") {
+        returner "ikke_er"
+    }
     hvis (tok == "is_not" eller tok == "isnot" eller tok == "isnt") {
         returner "ikke_er"
     }
@@ -1319,7 +1322,10 @@ funksjon uttrykk_til_ops_og_verdier_med_miljo(tokens: liste_tekst, navn: liste_t
             n5 = normaliser_norsk_token(tokens[i + 5])
         }
 
-        hvis (i + 1 < lengde(tokens) og ((tok_raw == "divided") eller (tok_raw == "/" og tok_kilde == "divide") eller (tok_raw == "*" og (tok_kilde == "multiply" eller tok_kilde == "multiplied")) eller tok_raw == "modulo" eller (tok_raw == "%" og tok_kilde == "remainder")) og (n1 == "by" eller n1 == "of")) {
+        hvis (i + 1 < lengde(tokens) og tok_raw == "<" og n1 == ">") {
+            tok = "ikke_er"
+            tok_step = 2
+        } ellers hvis (i + 1 < lengde(tokens) og ((tok_raw == "divided") eller (tok_raw == "/" og tok_kilde == "divide") eller (tok_raw == "*" og (tok_kilde == "multiply" eller tok_kilde == "multiplied")) eller tok_raw == "modulo" eller (tok_raw == "%" og tok_kilde == "remainder")) og (n1 == "by" eller n1 == "of")) {
             hvis (tok_raw == "divided" eller (tok_raw == "/" og tok_kilde == "divide")) {
                 tok = "/"
             } ellers hvis (tok_raw == "*" og (tok_kilde == "multiply" eller tok_kilde == "multiplied")) {

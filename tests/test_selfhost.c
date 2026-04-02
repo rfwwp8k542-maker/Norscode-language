@@ -404,6 +404,9 @@ char * selfhost__compiler__normaliser_norsk_token(char * tok) {
     if (nl_streq(tok, "neq")) {
         return "ikke_er";
     }
+    if (nl_streq(tok, "<>")) {
+        return "ikke_er";
+    }
     if ((nl_streq(tok, "is_not") || nl_streq(tok, "isnot")) || nl_streq(tok, "isnt")) {
         return "ikke_er";
     }
@@ -1673,7 +1676,11 @@ char * selfhost__compiler__uttrykk_til_ops_og_verdier_med_miljo(nl_list_text* to
         if ((i + 5) < nl_list_text_len(tokens)) {
             n5 = selfhost__compiler__normaliser_norsk_token(tokens->data[(i + 5)]);
         }
-        if ((((i + 1) < nl_list_text_len(tokens)) && ((((nl_streq(tok_raw, "divided") || (nl_streq(tok_raw, "/") && nl_streq(tok_kilde, "divide"))) || (nl_streq(tok_raw, "*") && (nl_streq(tok_kilde, "multiply") || nl_streq(tok_kilde, "multiplied")))) || nl_streq(tok_raw, "modulo")) || (nl_streq(tok_raw, "%") && nl_streq(tok_kilde, "remainder")))) && (nl_streq(n1, "by") || nl_streq(n1, "of"))) {
+        if ((((i + 1) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "<")) && nl_streq(n1, ">")) {
+            tok = "ikke_er";
+            tok_step = 2;
+        }
+        else if ((((i + 1) < nl_list_text_len(tokens)) && ((((nl_streq(tok_raw, "divided") || (nl_streq(tok_raw, "/") && nl_streq(tok_kilde, "divide"))) || (nl_streq(tok_raw, "*") && (nl_streq(tok_kilde, "multiply") || nl_streq(tok_kilde, "multiplied")))) || nl_streq(tok_raw, "modulo")) || (nl_streq(tok_raw, "%") && nl_streq(tok_kilde, "remainder")))) && (nl_streq(n1, "by") || nl_streq(n1, "of"))) {
             if (nl_streq(tok_raw, "divided") || (nl_streq(tok_raw, "/") && nl_streq(tok_kilde, "divide"))) {
                 tok = "/";
             }
@@ -2980,6 +2987,8 @@ int start() {
     nl_assert_eq_text(expr_cmp, "0: PUSH 5\n1: PUSH 3\n2: GT\n3: PUSH 2\n4: PUSH 4\n5: LT\n6: AND\n7: PRINT\n8: HALT\n");
     char * expr_eq = selfhost__compiler__disasm_uttrykk("7!=7||2==2");
     nl_assert_eq_text(expr_eq, "0: PUSH 7\n1: PUSH 7\n2: EQ\n3: NOT\n4: PUSH 2\n5: PUSH 2\n6: EQ\n7: OR\n8: PRINT\n9: HALT\n");
+    char * expr_not_equal_angle_alias = selfhost__compiler__disasm_uttrykk("7<>8");
+    nl_assert_eq_text(expr_not_equal_angle_alias, "0: PUSH 7\n1: PUSH 8\n2: EQ\n3: NOT\n4: PRINT\n5: HALT\n");
     char * expr_le = selfhost__compiler__disasm_uttrykk("3 <= 4");
     nl_assert_eq_text(expr_le, "0: PUSH 3\n1: PUSH 4\n2: GT\n3: NOT\n4: PRINT\n5: HALT\n");
     char * expr_ge = selfhost__compiler__disasm_uttrykk("4 >= 3");
@@ -4167,6 +4176,8 @@ int start() {
     nl_assert_eq_text(script_english_cmp_is_equal_to_compact_alias, "0: PUSH 4\n1: PUSH 4\n2: EQ\n3: PRINT\n4: HALT\n");
     char * script_english_cmp_is_not_equal_to_phrase = selfhost__compiler__disasm_skript("let x=4;let y=5;return x is not equal to y");
     nl_assert_eq_text(script_english_cmp_is_not_equal_to_phrase, "0: PUSH 4\n1: PUSH 5\n2: EQ\n3: NOT\n4: PRINT\n5: HALT\n");
+    char * script_not_equal_angle_alias = selfhost__compiler__disasm_skript("returner 7<>8");
+    nl_assert_eq_text(script_not_equal_angle_alias, "0: PUSH 7\n1: PUSH 8\n2: EQ\n3: NOT\n4: PRINT\n5: HALT\n");
     char * script_english_cmp_is_not_equal_to_compact_alias = selfhost__compiler__disasm_skript("let x=4;let y=5;return x is_not_equal_to y");
     nl_assert_eq_text(script_english_cmp_is_not_equal_to_compact_alias, "0: PUSH 4\n1: PUSH 5\n2: EQ\n3: NOT\n4: PRINT\n5: HALT\n");
     char * script_english_cmp_isnt_alias = selfhost__compiler__disasm_skript("let x=4;let y=5;return x isnt y");
