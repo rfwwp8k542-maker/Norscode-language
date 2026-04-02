@@ -2583,6 +2583,7 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
             "encoding": locale.getpreferredencoding(False),
             "path_entries": len(os.getenv("PATH", "").split(os.pathsep)) if os.getenv("PATH") else 0,
             "path_separator": os.pathsep,
+            "env_var_count": len(os.environ),
             "shell": os.getenv("SHELL"),
             "term": os.getenv("TERM"),
             "virtual_env": os.getenv("VIRTUAL_ENV"),
