@@ -107,6 +107,9 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "implies") {
         returner "impliserer"
     }
+    hvis (tok == "this_implies" eller tok == "thisimplies" eller tok == "dette_impliserer" eller tok == "detteimpliserer") {
+        returner "impliserer"
+    }
     hvis (tok == "implies_that" eller tok == "impliesthat" eller tok == "impliserer_at" eller tok == "implisererat") {
         returner "impliserer"
     }
