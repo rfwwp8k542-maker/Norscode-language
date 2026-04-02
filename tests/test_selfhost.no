@@ -190,6 +190,12 @@ funksjon start() -> heltall {
     la expr_nor_alias_eller_ikke: tekst = sh.disasm_uttrykk("0 eller_ikke 0")
     assert_eq(expr_nor_alias_eller_ikke, "0: PUSH 0\n1: PUSH 0\n2: OR\n3: NOT\n4: PRINT\n5: HALT\n")
 
+    la expr_implies_operator: tekst = sh.disasm_uttrykk("1 implies 0")
+    assert_eq(expr_implies_operator, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n")
+
+    la expr_norsk_impliserer_operator: tekst = sh.disasm_uttrykk("1 impliserer 0")
+    assert_eq(expr_norsk_impliserer_operator, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n")
+
     la expr_le: tekst = sh.disasm_uttrykk("3 <= 4")
     assert_eq(expr_le, "0: PUSH 3\n1: PUSH 4\n2: GT\n3: NOT\n4: PRINT\n5: HALT\n")
 
@@ -1978,6 +1984,9 @@ funksjon start() -> heltall {
 
     la script_nor_alias_or_not: tekst = sh.disasm_skript("returner 0 or_not 0")
     assert_eq(script_nor_alias_or_not, "0: PUSH 0\n1: PUSH 0\n2: OR\n3: NOT\n4: PRINT\n5: HALT\n")
+
+    la script_implies_operator: tekst = sh.disasm_skript("returner 1 implies 0")
+    assert_eq(script_implies_operator, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n")
 
     la script_english_cmp_is_not_equal_to_compact_alias: tekst = sh.disasm_skript("let x=4;let y=5;return x is_not_equal_to y")
     assert_eq(script_english_cmp_is_not_equal_to_compact_alias, "0: PUSH 4\n1: PUSH 5\n2: EQ\n3: NOT\n4: PRINT\n5: HALT\n")
