@@ -217,6 +217,12 @@ funksjon start() -> heltall {
     la expr_folger_av_alias: tekst = sh.disasm_uttrykk("1 folger_av 0")
     assert_eq(expr_folger_av_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n")
 
+    la expr_it_follows_that_alias: tekst = sh.disasm_uttrykk("1 it_follows_that 0")
+    assert_eq(expr_it_follows_that_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n")
+
+    la expr_det_folger_at_alias: tekst = sh.disasm_uttrykk("1 det_folger_at 0")
+    assert_eq(expr_det_folger_at_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n")
+
     la expr_therefore_alias: tekst = sh.disasm_uttrykk("1 therefore 0")
     assert_eq(expr_therefore_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n")
 
@@ -2173,6 +2179,12 @@ funksjon start() -> heltall {
 
     la script_follows_alias: tekst = sh.disasm_skript("returner 1 follows 0")
     assert_eq(script_follows_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n")
+
+    la script_it_follows_that_alias: tekst = sh.disasm_skript("returner 1 it_follows_that 0")
+    assert_eq(script_it_follows_that_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n")
+
+    la script_det_folger_at_alias: tekst = sh.disasm_skript("returner 1 det_folger_at 0")
+    assert_eq(script_det_folger_at_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n")
 
     la script_therefore_alias: tekst = sh.disasm_skript("returner 1 therefore 0")
     assert_eq(script_therefore_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n")

@@ -416,6 +416,9 @@ char * selfhost__compiler__normaliser_norsk_token(char * tok) {
     if ((nl_streq(tok, "follows") || nl_streq(tok, "folger_av")) || nl_streq(tok, "folgerav")) {
         return "impliserer";
     }
+    if (((nl_streq(tok, "it_follows_that") || nl_streq(tok, "itfollowsthat")) || nl_streq(tok, "det_folger_at")) || nl_streq(tok, "detfolgerat")) {
+        return "impliserer";
+    }
     if (nl_streq(tok, "therefore") || nl_streq(tok, "derfor")) {
         return "impliserer";
     }
@@ -3202,6 +3205,10 @@ int start() {
     nl_assert_eq_text(expr_follows_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
     char * expr_folger_av_alias = selfhost__compiler__disasm_uttrykk("1 folger_av 0");
     nl_assert_eq_text(expr_folger_av_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
+    char * expr_it_follows_that_alias = selfhost__compiler__disasm_uttrykk("1 it_follows_that 0");
+    nl_assert_eq_text(expr_it_follows_that_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
+    char * expr_det_folger_at_alias = selfhost__compiler__disasm_uttrykk("1 det_folger_at 0");
+    nl_assert_eq_text(expr_det_folger_at_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
     char * expr_therefore_alias = selfhost__compiler__disasm_uttrykk("1 therefore 0");
     nl_assert_eq_text(expr_therefore_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
     char * expr_derfor_alias = selfhost__compiler__disasm_uttrykk("1 derfor 0");
@@ -4515,6 +4522,10 @@ int start() {
     nl_assert_eq_text(script_impl_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
     char * script_follows_alias = selfhost__compiler__disasm_skript("returner 1 follows 0");
     nl_assert_eq_text(script_follows_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
+    char * script_it_follows_that_alias = selfhost__compiler__disasm_skript("returner 1 it_follows_that 0");
+    nl_assert_eq_text(script_it_follows_that_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
+    char * script_det_folger_at_alias = selfhost__compiler__disasm_skript("returner 1 det_folger_at 0");
+    nl_assert_eq_text(script_det_folger_at_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
     char * script_therefore_alias = selfhost__compiler__disasm_skript("returner 1 therefore 0");
     nl_assert_eq_text(script_therefore_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
     char * script_hence_alias = selfhost__compiler__disasm_skript("returner 1 hence 0");

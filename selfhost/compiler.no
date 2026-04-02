@@ -119,6 +119,9 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "follows" eller tok == "folger_av" eller tok == "folgerav") {
         returner "impliserer"
     }
+    hvis (tok == "it_follows_that" eller tok == "itfollowsthat" eller tok == "det_folger_at" eller tok == "detfolgerat") {
+        returner "impliserer"
+    }
     hvis (tok == "therefore" eller tok == "derfor") {
         returner "impliserer"
     }
