@@ -1562,6 +1562,12 @@ funksjon start() -> heltall {
     la script_and_or_not_alias: tekst = sh.disasm_skript("la x=sann;la y=usann;returner x and not y or usann")
     assert_eq(script_and_or_not_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: AND\n4: PUSH 0\n5: OR\n6: PRINT\n7: HALT\n")
 
+    la script_let_set_return_alias: tekst = sh.disasm_skript("let x=2;set x=x+3;return x")
+    assert_eq(script_let_set_return_alias, "0: PUSH 5\n1: PRINT\n2: HALT\n")
+
+    la script_return_alias_only: tekst = sh.disasm_skript("la x=2;return x+3")
+    assert_eq(script_return_alias_only, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n")
+
     la script_norsk_ops: tekst = sh.disasm_skript("x=sann;y=ikke usann;x og y")
     assert_eq(script_norsk_ops, "0: PUSH 1\n1: PUSH 1\n2: AND\n3: PRINT\n4: HALT\n")
 

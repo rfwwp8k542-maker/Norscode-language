@@ -353,6 +353,15 @@ int selfhost__compiler__er_heltall_token(char * tok) {
 }
 
 char * selfhost__compiler__normaliser_norsk_token(char * tok) {
+    if (nl_streq(tok, "let")) {
+        return "la";
+    }
+    if (nl_streq(tok, "set")) {
+        return "sett";
+    }
+    if (nl_streq(tok, "return")) {
+        return "returner";
+    }
     if (nl_streq(tok, "if")) {
         return "hvis";
     }
@@ -2003,11 +2012,12 @@ char * selfhost__compiler__skript_til_ops_og_verdier(nl_list_text* tokens, nl_li
         int ass_start = 0;
         int har_la = 0;
         int har_sett = 0;
-        if (nl_streq(stmt_tokens->data[ass_start], "la")) {
+        char * stmt_head = selfhost__compiler__normaliser_norsk_token(stmt_tokens->data[ass_start]);
+        if (nl_streq(stmt_head, "la")) {
             har_la = 1;
             ass_start = (ass_start + 1);
         }
-        else if (nl_streq(stmt_tokens->data[ass_start], "sett")) {
+        else if (nl_streq(stmt_head, "sett")) {
             har_sett = 1;
             ass_start = (ass_start + 1);
         }
@@ -2108,7 +2118,7 @@ char * selfhost__compiler__skript_til_ops_og_verdier(nl_list_text* tokens, nl_li
         nl_list_text* final_tokens = nl_list_text_new();
         nl_list_text_push(final_tokens, "");
         nl_list_text_remove(final_tokens, 0);
-        if (nl_streq(stmt_tokens->data[0], "returner")) {
+        if (nl_streq(selfhost__compiler__normaliser_norsk_token(stmt_tokens->data[0]), "returner")) {
             int r = 1;
             while (r < nl_list_text_len(stmt_tokens)) {
                 nl_list_text_push(final_tokens, stmt_tokens->data[r]);
@@ -2160,7 +2170,7 @@ char * selfhost__compiler__skript_til_ops_og_verdier(nl_list_text* tokens, nl_li
                 i = nl_list_text_len(tokens);
                 break;
             }
-            if (nl_streq(stmt_tokens->data[0], "returner")) {
+            if (nl_streq(selfhost__compiler__normaliser_norsk_token(stmt_tokens->data[0]), "returner")) {
                 char * kopier_feil = selfhost__compiler__append_ops(out_ops, out_verdier, stmt_ops, stmt_verdier);
                 if (!(nl_streq(kopier_feil, ""))) {
                     return kopier_feil;
@@ -3438,6 +3448,10 @@ int start() {
     nl_assert_eq_text(script_if_then_else_alias, "0: PUSH 1\n1: PUSH 1\n2: EQ\n3: JZ 6\n4: PUSH 10\n5: JMP 8\n6: LABEL 6\n7: PUSH 20\n8: LABEL 8\n9: PRINT\n10: HALT\n");
     char * script_and_or_not_alias = selfhost__compiler__disasm_skript("la x=sann;la y=usann;returner x and not y or usann");
     nl_assert_eq_text(script_and_or_not_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: AND\n4: PUSH 0\n5: OR\n6: PRINT\n7: HALT\n");
+    char * script_let_set_return_alias = selfhost__compiler__disasm_skript("let x=2;set x=x+3;return x");
+    nl_assert_eq_text(script_let_set_return_alias, "0: PUSH 5\n1: PRINT\n2: HALT\n");
+    char * script_return_alias_only = selfhost__compiler__disasm_skript("la x=2;return x+3");
+    nl_assert_eq_text(script_return_alias_only, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
     char * script_norsk_ops = selfhost__compiler__disasm_skript("x=sann;y=ikke usann;x og y");
     nl_assert_eq_text(script_norsk_ops, "0: PUSH 1\n1: PUSH 1\n2: AND\n3: PRINT\n4: HALT\n");
     char * script_norsk_ops_enten = selfhost__compiler__disasm_skript("x=usann;y=sann;x enten y");
