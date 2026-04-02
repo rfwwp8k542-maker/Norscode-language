@@ -2496,6 +2496,7 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
     total_steps = 5 if check_names else 4
     payload = {
         "schema_version": 1,
+        "run_id": uuid.uuid4().hex,
         "ok": False,
         "source_revision": source_revision,
         "source_revision_short": to_short_git_revision(source_revision),
