@@ -2241,8 +2241,12 @@ def check_workflow_action_versions(workflows_dir: Path | None = None) -> dict:
             lines = workflow_path.read_text(encoding="utf-8").splitlines()
         except OSError:
             continue
+        has_node24_env = False
         for line_no, raw_line in enumerate(lines, start=1):
             line = raw_line.strip()
+            lower_line = line.lower().replace(" ", "")
+            if "force_javascript_actions_to_node24:" in lower_line and "true" in lower_line:
+                has_node24_env = True
             for match in re.finditer(r"([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)@v(\d+)", line):
                 action_name = match.group(1)
                 major = int(match.group(2))
@@ -2256,7 +2260,6 @@ def check_workflow_action_versions(workflows_dir: Path | None = None) -> dict:
                             "expected": f"{action_name}@v{minimum_major}",
                         }
                     )
-            lower_line = line.lower()
             if (
                 "actions_allow_use_unsecure_node_version" in lower_line
                 and "true" in lower_line
@@ -2269,6 +2272,15 @@ def check_workflow_action_versions(workflows_dir: Path | None = None) -> dict:
                         "expected": "fjern opt-out og bruk Node 24-kompatible action-versjoner",
                     }
                 )
+        if not has_node24_env:
+            payload["issues"].append(
+                {
+                    "file": str(workflow_path),
+                    "line": 1,
+                    "found": "FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 mangler/ikke true",
+                    "expected": 'FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"',
+                }
+            )
 
     payload["issue_count"] = len(payload["issues"])
     payload["ok"] = payload["issue_count"] == 0
