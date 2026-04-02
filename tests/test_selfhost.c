@@ -416,7 +416,7 @@ char * selfhost__compiler__normaliser_norsk_token(char * tok) {
     if (nl_streq(tok, "større_eller_lik")) {
         return "storre_eller_lik";
     }
-    if ((nl_streq(tok, "større_lik") || nl_streq(tok, "storre_lik")) || nl_streq(tok, "storrelik")) {
+    if (((nl_streq(tok, "større_lik") || nl_streq(tok, "storre_lik")) || nl_streq(tok, "størrelik")) || nl_streq(tok, "storrelik")) {
         return "storre_eller_lik";
     }
     if (nl_streq(tok, "er_større_eller_lik") || nl_streq(tok, "er_storre_eller_lik")) {
@@ -3173,6 +3173,8 @@ int start() {
     nl_assert_eq_text(expr_norsk_cmp_phrase19_storrelik_kompakt, "0: PUSH 4\n1: PUSH 4\n2: LT\n3: NOT\n4: PRINT\n5: HALT\n");
     char * expr_norsk_cmp_phrase19_underscore_utf8 = selfhost__compiler__disasm_uttrykk("4 større_lik 4");
     nl_assert_eq_text(expr_norsk_cmp_phrase19_underscore_utf8, "0: PUSH 4\n1: PUSH 4\n2: LT\n3: NOT\n4: PRINT\n5: HALT\n");
+    char * expr_norsk_cmp_phrase19_storrelik_kompakt_utf8 = selfhost__compiler__disasm_uttrykk("4 størrelik 4");
+    nl_assert_eq_text(expr_norsk_cmp_phrase19_storrelik_kompakt_utf8, "0: PUSH 4\n1: PUSH 4\n2: LT\n3: NOT\n4: PRINT\n5: HALT\n");
     char * expr_norsk_cmp_phrase20 = selfhost__compiler__disasm_uttrykk("4 er storre lik 4");
     nl_assert_eq_text(expr_norsk_cmp_phrase20, "0: PUSH 4\n1: PUSH 4\n2: LT\n3: NOT\n4: PRINT\n5: HALT\n");
     char * expr_norsk_cmp_phrase_utf8 = selfhost__compiler__disasm_uttrykk("4 er større enn eller lik 4");
@@ -3368,6 +3370,8 @@ int start() {
     nl_assert_eq_text(script_norsk_cmp_phrase12_storrelik_kompakt, "0: PUSH 4\n1: PUSH 4\n2: LT\n3: NOT\n4: JZ 7\n5: PUSH 1\n6: JMP 9\n7: LABEL 7\n8: PUSH 0\n9: LABEL 9\n10: PRINT\n11: HALT\n");
     char * script_norsk_cmp_phrase12_underscore_storre_lik_utf8 = selfhost__compiler__disasm_skript("la x=4;la y=4;hvis x større_lik y da 1 ellers 0");
     nl_assert_eq_text(script_norsk_cmp_phrase12_underscore_storre_lik_utf8, "0: PUSH 4\n1: PUSH 4\n2: LT\n3: NOT\n4: JZ 7\n5: PUSH 1\n6: JMP 9\n7: LABEL 7\n8: PUSH 0\n9: LABEL 9\n10: PRINT\n11: HALT\n");
+    char * script_norsk_cmp_phrase12_storrelik_kompakt_utf8 = selfhost__compiler__disasm_skript("la x=4;la y=4;hvis x størrelik y da 1 ellers 0");
+    nl_assert_eq_text(script_norsk_cmp_phrase12_storrelik_kompakt_utf8, "0: PUSH 4\n1: PUSH 4\n2: LT\n3: NOT\n4: JZ 7\n5: PUSH 1\n6: JMP 9\n7: LABEL 7\n8: PUSH 0\n9: LABEL 9\n10: PRINT\n11: HALT\n");
     char * script_norsk_cmp_phrase12_underscore_utf8 = selfhost__compiler__disasm_skript("la x=4;la y=4;hvis x er_større_eller_lik y da 1 ellers 0");
     nl_assert_eq_text(script_norsk_cmp_phrase12_underscore_utf8, "0: PUSH 4\n1: PUSH 4\n2: LT\n3: NOT\n4: JZ 7\n5: PUSH 1\n6: JMP 9\n7: LABEL 7\n8: PUSH 0\n9: LABEL 9\n10: PRINT\n11: HALT\n");
     char * script_norsk_cmp_phrase12_underscore_gt = selfhost__compiler__disasm_skript("la x=4;la y=3;hvis x er_storre_enn y da 1 ellers 0");

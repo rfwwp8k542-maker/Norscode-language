@@ -119,7 +119,7 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "større_eller_lik") {
         returner "storre_eller_lik"
     }
-    hvis (tok == "større_lik" eller tok == "storre_lik" eller tok == "storrelik") {
+    hvis (tok == "større_lik" eller tok == "storre_lik" eller tok == "størrelik" eller tok == "storrelik") {
         returner "storre_eller_lik"
     }
     hvis (tok == "er_større_eller_lik" eller tok == "er_storre_eller_lik") {
