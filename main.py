@@ -2054,6 +2054,20 @@ def to_short_git_revision(revision: str | None) -> str | None:
     return revision[:7]
 
 
+def get_current_git_exact_tag() -> str | None:
+    try:
+        result = subprocess.run(
+            ["git", "describe", "--tags", "--exact-match"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        tag = result.stdout.strip()
+        return tag or None
+    except Exception:
+        return None
+
+
 def run_program(source_file: str):
     source_path, c_path, exe_path, _alias_map, _analyzer = build_program(source_file)
     print(f"Generert C-fil: {c_path}")
@@ -2396,6 +2410,7 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
         "source_revision": source_revision,
         "source_revision_short": to_short_git_revision(source_revision),
         "source_branch": source_branch,
+        "source_tag": get_current_git_exact_tag(),
         "source_is_main": source_branch == "main",
         "source_dirty": get_current_git_dirty_state(),
         "invocation": {
