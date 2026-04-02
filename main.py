@@ -2276,6 +2276,7 @@ def check_workflow_action_versions(workflows_dir: Path | None = None) -> dict:
                             "file": str(workflow_path),
                             "line": line_no,
                             "type": "deprecated_action_major",
+                            "rule": "action_min_major",
                             "found": f"{action_name}@v{major}",
                             "expected": f"{action_name}@v{minimum_major}",
                         }
@@ -2290,6 +2291,7 @@ def check_workflow_action_versions(workflows_dir: Path | None = None) -> dict:
                         "file": str(workflow_path),
                         "line": line_no,
                         "type": "unsecure_node_opt_out",
+                        "rule": "forbid_unsecure_opt_out",
                         "found": "ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true",
                         "expected": "fjern opt-out og bruk Node 24-kompatible action-versjoner",
                     }
@@ -2300,6 +2302,7 @@ def check_workflow_action_versions(workflows_dir: Path | None = None) -> dict:
                     "file": str(workflow_path),
                     "line": 1,
                     "type": "missing_node24_env",
+                    "rule": "require_node24_env",
                     "found": "FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 mangler/ikke true",
                     "expected": 'FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"',
                 }
