@@ -3330,6 +3330,12 @@ def main():
     selfhost_parity.add_argument("--suite", choices=["m1", "extended", "all"], default="all", help="Velg parity-suite")
     selfhost_parity.add_argument("--json", action="store_true", help="Skriv resultat som JSON")
 
+    selfhost_parity_consistency = sub.add_parser(
+        "selfhost-parity-consistency",
+        help="Sjekk at M1-parity-cases finnes identisk i utvidet parity-suite",
+    )
+    selfhost_parity_consistency.add_argument("--json", action="store_true", help="Skriv resultat som JSON")
+
     lock = sub.add_parser("lock", help="Generer dependency lockfile (norcode.lock)")
     lock.add_argument("--check", action="store_true", help="Feil hvis lockfile er manglende/utdatert")
     lock.add_argument("--verify", action="store_true", help="Verifiser path-digests i eksisterende lockfile")
@@ -3731,6 +3737,23 @@ def main():
                     if not item.get("success") and item.get("stderr"):
                         print(item["stderr"].rstrip())
             if not payload["ok"]:
+                sys.exit(1)
+
+        elif args.cmd == "selfhost-parity-consistency":
+            payload = run_selfhost_parser_suite_consistency_check(
+                SELFHOST_PARSER_M1_FIXTURE,
+                SELFHOST_PARSER_EXTENDED_FIXTURE,
+            )
+            if args.json:
+                print(json.dumps(payload, ensure_ascii=False, indent=2))
+            else:
+                print(f"OK: {'ja' if payload.get('success') else 'nei'}")
+                print(f"Sjekkede cases: {payload.get('checked_cases', 0)}")
+                print(f"Avvik: {payload.get('mismatch_count', 0)}")
+                print(f"Tid: {payload.get('duration_ms', 0)} ms")
+                if not payload.get("success") and payload.get("stderr"):
+                    print(payload["stderr"].rstrip())
+            if not payload.get("success"):
                 sys.exit(1)
 
         elif args.cmd == "lock":

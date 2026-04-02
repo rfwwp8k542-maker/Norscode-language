@@ -440,6 +440,8 @@ Kjør parser parity separat uten full CI:
 python3 -m norcode selfhost-parity --suite m1
 python3 -m norcode selfhost-parity --suite extended
 python3 -m norcode selfhost-parity --suite all --json
+python3 -m norcode selfhost-parity-consistency
+python3 -m norcode selfhost-parity-consistency --json
 
 # Regenerer forventninger for parity-fixtures
 python3 -m norcode update-selfhost-parity-fixtures --suite m1
