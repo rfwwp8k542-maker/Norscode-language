@@ -1547,6 +1547,38 @@ char * selfhost__compiler__uttrykk_til_ops_og_verdier_med_miljo(nl_list_text* to
             tok = "%";
             tok_step = 1;
         }
+        else if ((((((i + 3) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "less")) && nl_streq(n1, "than")) && (nl_streq(n2, "or") || nl_streq(n2, "eller"))) && ((nl_streq(n3, "equal") || nl_streq(n3, "equals")) || nl_streq(n3, "er"))) {
+            tok = "mindre_eller_lik";
+            tok_step = 4;
+        }
+        else if ((((((i + 3) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "greater")) && nl_streq(n1, "than")) && (nl_streq(n2, "or") || nl_streq(n2, "eller"))) && ((nl_streq(n3, "equal") || nl_streq(n3, "equals")) || nl_streq(n3, "er"))) {
+            tok = "storre_eller_lik";
+            tok_step = 4;
+        }
+        else if (((((i + 2) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "less")) && nl_streq(n1, "than")) && ((nl_streq(n2, "equal") || nl_streq(n2, "equals")) || nl_streq(n2, "er"))) {
+            tok = "mindre_eller_lik";
+            tok_step = 3;
+        }
+        else if (((((i + 2) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "greater")) && nl_streq(n1, "than")) && ((nl_streq(n2, "equal") || nl_streq(n2, "equals")) || nl_streq(n2, "er"))) {
+            tok = "storre_eller_lik";
+            tok_step = 3;
+        }
+        else if (((((i + 2) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "less")) && nl_streq(n1, "or")) && ((nl_streq(n2, "equal") || nl_streq(n2, "equals")) || nl_streq(n2, "er"))) {
+            tok = "mindre_eller_lik";
+            tok_step = 3;
+        }
+        else if (((((i + 2) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "greater")) && nl_streq(n1, "or")) && ((nl_streq(n2, "equal") || nl_streq(n2, "equals")) || nl_streq(n2, "er"))) {
+            tok = "storre_eller_lik";
+            tok_step = 3;
+        }
+        else if (((((i + 1) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "less")) && nl_streq(n1, "than")) && (((i + 2) >= nl_list_text_len(tokens)) || (((!(nl_streq(n2, "or")) && !(nl_streq(n2, "equal"))) && !(nl_streq(n2, "equals"))) && !(nl_streq(n2, "er"))))) {
+            tok = "mindre_enn";
+            tok_step = 2;
+        }
+        else if (((((i + 1) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "greater")) && nl_streq(n1, "than")) && (((i + 2) >= nl_list_text_len(tokens)) || (((!(nl_streq(n2, "or")) && !(nl_streq(n2, "equal"))) && !(nl_streq(n2, "equals"))) && !(nl_streq(n2, "er"))))) {
+            tok = "storre_enn";
+            tok_step = 2;
+        }
         else if ((((((i + 3) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "mindre")) && nl_streq(n1, "enn")) && nl_streq(n2, "eller")) && nl_streq(n3, "lik")) {
             tok = "mindre_eller_lik";
             tok_step = 4;
@@ -3544,6 +3576,14 @@ int start() {
     nl_assert_eq_text(expr_english_less_equal_alias, "0: PUSH 3\n1: PUSH 4\n2: GT\n3: NOT\n4: PRINT\n5: HALT\n");
     char * expr_english_greater_equal_alias = selfhost__compiler__disasm_uttrykk("4 greater_equal 4");
     nl_assert_eq_text(expr_english_greater_equal_alias, "0: PUSH 4\n1: PUSH 4\n2: LT\n3: NOT\n4: PRINT\n5: HALT\n");
+    char * expr_english_less_than_phrase = selfhost__compiler__disasm_uttrykk("3 less than 4");
+    nl_assert_eq_text(expr_english_less_than_phrase, "0: PUSH 3\n1: PUSH 4\n2: LT\n3: PRINT\n4: HALT\n");
+    char * expr_english_greater_than_phrase = selfhost__compiler__disasm_uttrykk("4 greater than 3");
+    nl_assert_eq_text(expr_english_greater_than_phrase, "0: PUSH 4\n1: PUSH 3\n2: GT\n3: PRINT\n4: HALT\n");
+    char * expr_english_less_than_or_equal_phrase = selfhost__compiler__disasm_uttrykk("3 less than or equal 3");
+    nl_assert_eq_text(expr_english_less_than_or_equal_phrase, "0: PUSH 3\n1: PUSH 3\n2: GT\n3: NOT\n4: PRINT\n5: HALT\n");
+    char * expr_english_greater_than_or_equal_phrase = selfhost__compiler__disasm_uttrykk("4 greater than or equal 4");
+    nl_assert_eq_text(expr_english_greater_than_or_equal_phrase, "0: PUSH 4\n1: PUSH 4\n2: LT\n3: NOT\n4: PRINT\n5: HALT\n");
     char * expr_english_times_alias = selfhost__compiler__disasm_uttrykk("3 times 4");
     nl_assert_eq_text(expr_english_times_alias, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n");
     char * expr_english_multiplied_by_alias = selfhost__compiler__disasm_uttrykk("3 multiplied_by 4");
@@ -3637,6 +3677,14 @@ int start() {
     nl_assert_eq_text(script_return_alias_only, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
     char * script_english_cmp_alias = selfhost__compiler__disasm_skript("let x=4;let y=4;return x greater_or_equal y");
     nl_assert_eq_text(script_english_cmp_alias, "0: PUSH 4\n1: PUSH 4\n2: LT\n3: NOT\n4: PRINT\n5: HALT\n");
+    char * script_english_less_than_phrase = selfhost__compiler__disasm_skript("let x=3;let y=4;return x less than y");
+    nl_assert_eq_text(script_english_less_than_phrase, "0: PUSH 3\n1: PUSH 4\n2: LT\n3: PRINT\n4: HALT\n");
+    char * script_english_greater_than_phrase = selfhost__compiler__disasm_skript("let x=4;let y=3;return x greater than y");
+    nl_assert_eq_text(script_english_greater_than_phrase, "0: PUSH 4\n1: PUSH 3\n2: GT\n3: PRINT\n4: HALT\n");
+    char * script_english_less_than_or_equal_phrase = selfhost__compiler__disasm_skript("let x=3;let y=3;return x less than or equal y");
+    nl_assert_eq_text(script_english_less_than_or_equal_phrase, "0: PUSH 3\n1: PUSH 3\n2: GT\n3: NOT\n4: PRINT\n5: HALT\n");
+    char * script_english_greater_than_or_equal_phrase = selfhost__compiler__disasm_skript("let x=4;let y=4;return x greater than or equal y");
+    nl_assert_eq_text(script_english_greater_than_or_equal_phrase, "0: PUSH 4\n1: PUSH 4\n2: LT\n3: NOT\n4: PRINT\n5: HALT\n");
     char * script_english_cmp_equal_to_alias = selfhost__compiler__disasm_skript("let x=4;let y=4;return x equal_to y");
     nl_assert_eq_text(script_english_cmp_equal_to_alias, "0: PUSH 4\n1: PUSH 4\n2: EQ\n3: PRINT\n4: HALT\n");
     char * script_english_cmp_equal_to_phrase = selfhost__compiler__disasm_skript("let x=4;let y=4;return x equal to y");

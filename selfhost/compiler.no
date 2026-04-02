@@ -1162,6 +1162,30 @@ funksjon uttrykk_til_ops_og_verdier_med_miljo(tokens: liste_tekst, navn: liste_t
         } ellers hvis (tok_raw == "mod" eller tok_raw == "mod_av" eller tok_raw == "modav" eller tok_raw == "modulo" eller tok_raw == "modulo_av" eller tok_raw == "moduloav" eller tok_raw == "modul" eller tok_raw == "modul_av" eller tok_raw == "modulav" eller tok_raw == "modulus" eller tok_raw == "modulus_av" eller tok_raw == "modulusav" eller tok_raw == "rest" eller tok_raw == "rest_av" eller tok_raw == "restav" eller tok_raw == "resten" eller tok_raw == "resten_av" eller tok_raw == "restenav") {
             tok = "%"
             tok_step = 1
+        } ellers hvis (i + 3 < lengde(tokens) og tok_raw == "less" og n1 == "than" og (n2 == "or" eller n2 == "eller") og (n3 == "equal" eller n3 == "equals" eller n3 == "er")) {
+            tok = "mindre_eller_lik"
+            tok_step = 4
+        } ellers hvis (i + 3 < lengde(tokens) og tok_raw == "greater" og n1 == "than" og (n2 == "or" eller n2 == "eller") og (n3 == "equal" eller n3 == "equals" eller n3 == "er")) {
+            tok = "storre_eller_lik"
+            tok_step = 4
+        } ellers hvis (i + 2 < lengde(tokens) og tok_raw == "less" og n1 == "than" og (n2 == "equal" eller n2 == "equals" eller n2 == "er")) {
+            tok = "mindre_eller_lik"
+            tok_step = 3
+        } ellers hvis (i + 2 < lengde(tokens) og tok_raw == "greater" og n1 == "than" og (n2 == "equal" eller n2 == "equals" eller n2 == "er")) {
+            tok = "storre_eller_lik"
+            tok_step = 3
+        } ellers hvis (i + 2 < lengde(tokens) og tok_raw == "less" og n1 == "or" og (n2 == "equal" eller n2 == "equals" eller n2 == "er")) {
+            tok = "mindre_eller_lik"
+            tok_step = 3
+        } ellers hvis (i + 2 < lengde(tokens) og tok_raw == "greater" og n1 == "or" og (n2 == "equal" eller n2 == "equals" eller n2 == "er")) {
+            tok = "storre_eller_lik"
+            tok_step = 3
+        } ellers hvis (i + 1 < lengde(tokens) og tok_raw == "less" og n1 == "than" og (i + 2 >= lengde(tokens) eller (n2 != "or" og n2 != "equal" og n2 != "equals" og n2 != "er"))) {
+            tok = "mindre_enn"
+            tok_step = 2
+        } ellers hvis (i + 1 < lengde(tokens) og tok_raw == "greater" og n1 == "than" og (i + 2 >= lengde(tokens) eller (n2 != "or" og n2 != "equal" og n2 != "equals" og n2 != "er"))) {
+            tok = "storre_enn"
+            tok_step = 2
         } ellers hvis (i + 3 < lengde(tokens) og tok_raw == "mindre" og n1 == "enn" og n2 == "eller" og n3 == "lik") {
             tok = "mindre_eller_lik"
             tok_step = 4
