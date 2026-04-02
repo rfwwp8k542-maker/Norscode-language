@@ -2343,6 +2343,11 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
     payload = {
         "schema_version": 1,
         "ok": False,
+        "invocation": {
+            "cmd": "norcode ci",
+            "json_output": json_output,
+            "check_names": check_names,
+        },
         "steps": {"total": total_steps, "name_check_enabled": check_names, "order": step_order},
         "started_at_utc": started_at_utc,
         "finished_at_utc": None,

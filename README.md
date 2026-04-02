@@ -330,6 +330,7 @@ python3 -m norcode ci --json
 # Inkluderer steps.order for eksplisitt sjekkrekkefølge
 # Inkluderer workflow_action_check.file_extensions for skannegrunnlag
 # Inkluderer workflow_action_check.scanned_dir for skannemappe
+# Inkluderer invocation med brukte CI-flagg
 
 # Valgfri ekstra-sjekk for navnemigrering i CI
 python3 -m norcode ci --check-names
