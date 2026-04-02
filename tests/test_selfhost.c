@@ -416,6 +416,9 @@ char * selfhost__compiler__normaliser_norsk_token(char * tok) {
     if (nl_streq(tok, "therefore") || nl_streq(tok, "derfor")) {
         return "impliserer";
     }
+    if (nl_streq(tok, "hence") || nl_streq(tok, "altsa")) {
+        return "impliserer";
+    }
     if (((nl_streq(tok, "only_if") || nl_streq(tok, "onlyif")) || nl_streq(tok, "kun_hvis")) || nl_streq(tok, "kunhvis")) {
         return "impliserer";
     }
@@ -3160,6 +3163,10 @@ int start() {
     nl_assert_eq_text(expr_therefore_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
     char * expr_derfor_alias = selfhost__compiler__disasm_uttrykk("1 derfor 0");
     nl_assert_eq_text(expr_derfor_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
+    char * expr_hence_alias = selfhost__compiler__disasm_uttrykk("1 hence 0");
+    nl_assert_eq_text(expr_hence_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
+    char * expr_altsa_alias = selfhost__compiler__disasm_uttrykk("1 altsa 0");
+    nl_assert_eq_text(expr_altsa_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
     char * expr_only_if_alias = selfhost__compiler__disasm_uttrykk("1 only_if 0");
     nl_assert_eq_text(expr_only_if_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
     char * expr_kun_hvis_alias = selfhost__compiler__disasm_uttrykk("1 kun_hvis 0");
@@ -4415,6 +4422,10 @@ int start() {
     nl_assert_eq_text(script_follows_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
     char * script_therefore_alias = selfhost__compiler__disasm_skript("returner 1 therefore 0");
     nl_assert_eq_text(script_therefore_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
+    char * script_hence_alias = selfhost__compiler__disasm_skript("returner 1 hence 0");
+    nl_assert_eq_text(script_hence_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
+    char * script_altsa_alias = selfhost__compiler__disasm_skript("returner 1 altsa 0");
+    nl_assert_eq_text(script_altsa_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
     char * script_only_if_alias = selfhost__compiler__disasm_skript("returner 1 only_if 0");
     nl_assert_eq_text(script_only_if_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
     char * script_kun_hvis_alias = selfhost__compiler__disasm_skript("returner 1 kun_hvis 0");

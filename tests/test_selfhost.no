@@ -217,6 +217,12 @@ funksjon start() -> heltall {
     la expr_derfor_alias: tekst = sh.disasm_uttrykk("1 derfor 0")
     assert_eq(expr_derfor_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n")
 
+    la expr_hence_alias: tekst = sh.disasm_uttrykk("1 hence 0")
+    assert_eq(expr_hence_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n")
+
+    la expr_altsa_alias: tekst = sh.disasm_uttrykk("1 altsa 0")
+    assert_eq(expr_altsa_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n")
+
     la expr_only_if_alias: tekst = sh.disasm_uttrykk("1 only_if 0")
     assert_eq(expr_only_if_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n")
 
@@ -2086,6 +2092,12 @@ funksjon start() -> heltall {
 
     la script_therefore_alias: tekst = sh.disasm_skript("returner 1 therefore 0")
     assert_eq(script_therefore_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n")
+
+    la script_hence_alias: tekst = sh.disasm_skript("returner 1 hence 0")
+    assert_eq(script_hence_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n")
+
+    la script_altsa_alias: tekst = sh.disasm_skript("returner 1 altsa 0")
+    assert_eq(script_altsa_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n")
 
     la script_only_if_alias: tekst = sh.disasm_skript("returner 1 only_if 0")
     assert_eq(script_only_if_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n")
