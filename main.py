@@ -2095,6 +2095,24 @@ def get_git_remote_host(remote_url: str | None) -> str | None:
     return None
 
 
+def get_git_remote_repo_slug(remote_url: str | None) -> str | None:
+    if not remote_url:
+        return None
+    parsed = urllib.parse.urlparse(remote_url)
+    path = ""
+    if parsed.scheme and parsed.netloc:
+        path = parsed.path
+    elif "@" in remote_url and ":" in remote_url:
+        path = remote_url.split(":", 1)[1]
+    cleaned = path.strip().lstrip("/")
+    if cleaned.endswith(".git"):
+        cleaned = cleaned[:-4]
+    parts = [p for p in cleaned.split("/") if p]
+    if len(parts) >= 2:
+        return "/".join(parts[-2:])
+    return None
+
+
 def run_program(source_file: str):
     source_path, c_path, exe_path, _alias_map, _analyzer = build_program(source_file)
     print(f"Generert C-fil: {c_path}")
@@ -2445,6 +2463,7 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
         "source_ref_type": "tag" if source_tag else ("branch" if source_branch else "unknown"),
         "source_remote": source_remote,
         "source_remote_host": get_git_remote_host(source_remote),
+        "source_repo_slug": get_git_remote_repo_slug(source_remote),
         "source_is_tagged": source_tag is not None,
         "source_is_main": source_branch == "main",
         "source_dirty": source_dirty,
