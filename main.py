@@ -3069,7 +3069,12 @@ def check_workflow_action_versions(workflows_dir: Path | None = None) -> dict:
     return payload
 
 
-def run_ci_pipeline(json_output: bool = False, check_names: bool = False, parity_suite: str = "all"):
+def run_ci_pipeline(
+    json_output: bool = False,
+    check_names: bool = False,
+    parity_suite: str = "all",
+    require_selfhost_ready: bool = False,
+):
     if parity_suite not in {"m1", "m2", "all"}:
         raise RuntimeError(f"Ugyldig parity-suite for CI: {parity_suite}")
     pipeline_started = time.perf_counter()
@@ -3094,7 +3099,10 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False, parity
     else:
         step_order.append("parser_core_m1_check")
         step_order.append("parser_core_extended_check")
-    step_order.extend(["parser_suite_consistency_check", "test_check", "workflow_action_check"])
+    step_order.append("parser_suite_consistency_check")
+    if require_selfhost_ready:
+        step_order.append("selfhost_progress_check")
+    step_order.extend(["test_check", "workflow_action_check"])
     if check_names:
         step_order.append("name_migration_check")
     total_steps = len(step_order)
@@ -3137,6 +3145,7 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False, parity
             "json_output": json_output,
             "check_names": check_names,
             "parity_suite": parity_suite,
+            "require_selfhost_ready": require_selfhost_ready,
             "argv": sys.argv[1:],
         },
         "runtime": {
@@ -3196,6 +3205,7 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False, parity
             "total": total_steps,
             "name_check_enabled": check_names,
             "parity_suite": parity_suite,
+            "require_selfhost_ready": require_selfhost_ready,
             "order": step_order,
         },
         "started_at_utc": started_at_utc,
@@ -3212,6 +3222,7 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False, parity
         "parser_core_m2_check": {"ok": False, "case_count": 0, "error_cases": 0},
         "parser_core_extended_check": {"ok": False, "case_count": 0, "error_cases": 0},
         "parser_suite_consistency_check": {"ok": False, "checked_cases": 0, "mismatch_count": 0},
+        "selfhost_progress_check": {"enabled": require_selfhost_ready, "ok": True, "ready": None, "coverage_total_pct": None},
         "test_check": {"ok": False, "passed": 0, "failed": 0, "total": 0},
         "workflow_action_check": {
             "ok": False,
@@ -3409,7 +3420,45 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False, parity
     if not json_output:
         print(f"OK ({payload['parser_suite_consistency_check']['checked_cases']} cases)")
 
-    test_step = 7 if parity_suite == "all" else 6
+    progress_step = consistency_step + 1
+    if require_selfhost_ready:
+        if not json_output:
+            print(f"[{progress_step}/{total_steps}] Selfhost parity progress check")
+        started = time.perf_counter()
+        progress = run_selfhost_parity_progress()
+        payload["timings_ms"]["selfhost_progress_check"] = int((time.perf_counter() - started) * 1000)
+        payload["timings_s"]["selfhost_progress_check"] = round(
+            payload["timings_ms"]["selfhost_progress_check"] / 1000.0, 3
+        )
+        payload["selfhost_progress_check"]["enabled"] = True
+        payload["selfhost_progress_check"]["ok"] = bool(progress.get("ok"))
+        payload["selfhost_progress_check"]["ready"] = bool(progress.get("ready"))
+        payload["selfhost_progress_check"]["coverage_total_pct"] = (
+            progress.get("coverage", {}).get("total_pct") if isinstance(progress.get("coverage"), dict) else None
+        )
+        payload["selfhost_progress_check"]["result"] = progress
+        if not progress.get("ok"):
+            raise RuntimeError(
+                "Selfhost parity progress-feil:\n"
+                + (str(progress.get("stderr", "")).rstrip() or "ukjent feil")
+            )
+        if not progress.get("ready"):
+            coverage_pct = (
+                progress.get("coverage", {}).get("total_pct")
+                if isinstance(progress.get("coverage"), dict)
+                else None
+            )
+            raise RuntimeError(
+                "Selfhost parity progress er ikke klar for full coverage"
+                + (f" (dekning={coverage_pct}%)" if coverage_pct is not None else "")
+            )
+        if not json_output:
+            print(
+                "OK "
+                f"(ready=ja, total_dekning={payload['selfhost_progress_check']['coverage_total_pct']}%)"
+            )
+
+    test_step = consistency_step + (2 if require_selfhost_ready else 1)
     if not json_output:
         print(f"[{test_step}/{total_steps}] Full test")
     started = time.perf_counter()
@@ -3428,7 +3477,7 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False, parity
     if not json_output:
         print("OK")
 
-    workflow_step = 8 if parity_suite == "all" else 7
+    workflow_step = test_step + 1
     if not json_output:
         print(f"[{workflow_step}/{total_steps}] Workflow action version check")
     started = time.perf_counter()
@@ -3448,7 +3497,7 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False, parity
         print(f"OK ({workflow_check['scanned_files']} filer)")
 
     if check_names:
-        name_step = 9 if parity_suite == "all" else 8
+        name_step = workflow_step + 1
         if not json_output:
             print(f"[{name_step}/{total_steps}] Name migration check")
         started = time.perf_counter()
@@ -3580,6 +3629,11 @@ def main():
     ci.add_argument("--json", action="store_true", help="Skriv CI-resultat som JSON")
     ci.add_argument("--check-names", action="store_true", help="Inkluder sjekk for navnemigrering (legacy -> NorCode)")
     ci.add_argument("--parity-suite", choices=["m1", "m2", "all"], default="all", help="Velg parity-scope i CI")
+    ci.add_argument(
+        "--require-selfhost-ready",
+        action="store_true",
+        help="Feil hvis selfhost parity progress ikke er fullført/ready",
+    )
 
     selfhost_parity = sub.add_parser("selfhost-parity", help="Kjør selfhost parser parity-suiter")
     selfhost_parity.add_argument("--suite", choices=["m1", "m2", "extended", "all"], default="all", help="Velg parity-suite")
@@ -3976,6 +4030,7 @@ def main():
                 json_output=args.json,
                 check_names=args.check_names,
                 parity_suite=args.parity_suite,
+                require_selfhost_ready=args.require_selfhost_ready,
             )
             if args.json:
                 print(json.dumps(payload, ensure_ascii=False, indent=2))
