@@ -2238,6 +2238,7 @@ def check_workflow_action_versions(workflows_dir: Path | None = None) -> dict:
     payload = {
         "ok": True,
         "scanned_files": 0,
+        "files": [],
         "issue_count": 0,
         "issues": [],
         "policy": WORKFLOW_ACTION_POLICY,
@@ -2247,6 +2248,7 @@ def check_workflow_action_versions(workflows_dir: Path | None = None) -> dict:
 
     workflow_files = sorted([*base.glob("*.yml"), *base.glob("*.yaml")])
     payload["scanned_files"] = len(workflow_files)
+    payload["files"] = [str(path) for path in workflow_files]
     for workflow_path in workflow_files:
         try:
             lines = workflow_path.read_text(encoding="utf-8").splitlines()
@@ -2310,6 +2312,7 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
         "workflow_action_check": {
             "ok": False,
             "scanned_files": 0,
+            "files": [],
             "issue_count": 0,
             "issues": [],
             "policy": WORKFLOW_ACTION_POLICY,
