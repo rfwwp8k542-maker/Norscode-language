@@ -2006,6 +2006,20 @@ def ir_disasm_source_captured(source_file: str, strict: bool, engine: str):
         return source_path, False, [], str(exc)
 
 
+def get_current_git_revision() -> str | None:
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        revision = result.stdout.strip()
+        return revision or None
+    except Exception:
+        return None
+
+
 def run_program(source_file: str):
     source_path, c_path, exe_path, _alias_map, _analyzer = build_program(source_file)
     print(f"Generert C-fil: {c_path}")
@@ -2343,6 +2357,7 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
     payload = {
         "schema_version": 1,
         "ok": False,
+        "source_revision": get_current_git_revision(),
         "invocation": {
             "cmd": "norcode ci",
             "json_output": json_output,
