@@ -2565,6 +2565,7 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
             "byteorder": sys.byteorder,
             "locale": locale.setlocale(locale.LC_CTYPE, None),
             "encoding": locale.getpreferredencoding(False),
+            "path_entries": len(os.getenv("PATH", "").split(os.pathsep)) if os.getenv("PATH") else 0,
             "is_ci": bool(os.getenv("CI")),
             "is_github_actions": bool(os.getenv("GITHUB_ACTIONS")),
             "github_actions_run_id": os.getenv("GITHUB_RUN_ID"),
