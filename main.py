@@ -2047,6 +2047,12 @@ def get_current_git_dirty_state() -> bool | None:
         return None
 
 
+def to_short_git_revision(revision: str | None) -> str | None:
+    if not revision:
+        return None
+    return revision[:7]
+
+
 def run_program(source_file: str):
     source_path, c_path, exe_path, _alias_map, _analyzer = build_program(source_file)
     print(f"Generert C-fil: {c_path}")
@@ -2372,6 +2378,7 @@ def check_workflow_action_versions(workflows_dir: Path | None = None) -> dict:
 def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
     pipeline_started = time.perf_counter()
     started_at_utc = dt.datetime.now(dt.UTC).isoformat()
+    source_revision = get_current_git_revision()
     step_order = [
         "snapshot_check",
         "parity_check",
@@ -2384,7 +2391,8 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
     payload = {
         "schema_version": 1,
         "ok": False,
-        "source_revision": get_current_git_revision(),
+        "source_revision": source_revision,
+        "source_revision_short": to_short_git_revision(source_revision),
         "source_branch": get_current_git_branch(),
         "source_dirty": get_current_git_dirty_state(),
         "invocation": {
