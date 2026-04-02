@@ -215,7 +215,7 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "with_premise" eller tok == "withpremise" eller tok == "med_premiss" eller tok == "medpremiss") {
         returner "impliseres_av"
     }
-    hvis (tok == "given_premise" eller tok == "givenpremise" eller tok == "gitt_premiss" eller tok == "gittpremiss") {
+    hvis (tok == "given_premise" eller tok == "givenpremise" eller tok == "gitt_premiss" eller tok == "gittpremiss" eller tok == "premise_given" eller tok == "premisegiven" eller tok == "premiss_gitt" eller tok == "premissgitt") {
         returner "impliseres_av"
     }
     hvis (tok == "follows_from" eller tok == "followsfrom" eller tok == "folger_fra" eller tok == "folgerfra") {
