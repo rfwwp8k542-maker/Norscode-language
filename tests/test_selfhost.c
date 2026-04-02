@@ -434,6 +434,9 @@ char * selfhost__compiler__normaliser_norsk_token(char * tok) {
     if (nl_streq(tok, "thereby") || nl_streq(tok, "derved")) {
         return "impliserer";
     }
+    if (nl_streq(tok, "ergo") || nl_streq(tok, "saledes")) {
+        return "impliserer";
+    }
     if (nl_streq(tok, "infer") || nl_streq(tok, "derav")) {
         return "impliserer";
     }
@@ -3229,6 +3232,10 @@ int start() {
     nl_assert_eq_text(expr_thereby_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
     char * expr_derved_alias = selfhost__compiler__disasm_uttrykk("1 derved 0");
     nl_assert_eq_text(expr_derved_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
+    char * expr_ergo_alias = selfhost__compiler__disasm_uttrykk("1 ergo 0");
+    nl_assert_eq_text(expr_ergo_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
+    char * expr_saledes_alias = selfhost__compiler__disasm_uttrykk("1 saledes 0");
+    nl_assert_eq_text(expr_saledes_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
     char * expr_infer_alias = selfhost__compiler__disasm_uttrykk("1 infer 0");
     nl_assert_eq_text(expr_infer_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
     char * expr_derav_alias = selfhost__compiler__disasm_uttrykk("1 derav 0");
@@ -4544,6 +4551,10 @@ int start() {
     nl_assert_eq_text(script_thereby_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
     char * script_derved_alias = selfhost__compiler__disasm_skript("returner 1 derved 0");
     nl_assert_eq_text(script_derved_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
+    char * script_ergo_alias = selfhost__compiler__disasm_skript("returner 1 ergo 0");
+    nl_assert_eq_text(script_ergo_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
+    char * script_saledes_alias = selfhost__compiler__disasm_skript("returner 1 saledes 0");
+    nl_assert_eq_text(script_saledes_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
     char * script_infer_alias = selfhost__compiler__disasm_skript("returner 1 infer 0");
     nl_assert_eq_text(script_infer_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
     char * script_derav_alias = selfhost__compiler__disasm_skript("returner 1 derav 0");

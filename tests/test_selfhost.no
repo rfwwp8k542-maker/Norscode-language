@@ -253,6 +253,12 @@ funksjon start() -> heltall {
     la expr_derved_alias: tekst = sh.disasm_uttrykk("1 derved 0")
     assert_eq(expr_derved_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n")
 
+    la expr_ergo_alias: tekst = sh.disasm_uttrykk("1 ergo 0")
+    assert_eq(expr_ergo_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n")
+
+    la expr_saledes_alias: tekst = sh.disasm_uttrykk("1 saledes 0")
+    assert_eq(expr_saledes_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n")
+
     la expr_infer_alias: tekst = sh.disasm_uttrykk("1 infer 0")
     assert_eq(expr_infer_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n")
 
@@ -2212,6 +2218,12 @@ funksjon start() -> heltall {
 
     la script_derved_alias: tekst = sh.disasm_skript("returner 1 derved 0")
     assert_eq(script_derved_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n")
+
+    la script_ergo_alias: tekst = sh.disasm_skript("returner 1 ergo 0")
+    assert_eq(script_ergo_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n")
+
+    la script_saledes_alias: tekst = sh.disasm_skript("returner 1 saledes 0")
+    assert_eq(script_saledes_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n")
 
     la script_infer_alias: tekst = sh.disasm_skript("returner 1 infer 0")
     assert_eq(script_infer_alias, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n")
