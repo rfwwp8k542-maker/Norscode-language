@@ -294,6 +294,9 @@ python3 -m norcode update-selfhost-parity-fixtures --suite all
 # CI-sjekk: feiler hvis snapshots er utdaterte
 norcode update-snapshots --check
 
+# Maskinlesbar snapshot-status
+norcode update-snapshots --check --json
+
 # CI-sjekk: feiler hvis parity-fixtures er utdaterte
 python3 -m norcode update-selfhost-parity-fixtures --suite all --check
 ```

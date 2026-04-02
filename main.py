@@ -3287,6 +3287,7 @@ def main():
 
     update_snapshots = sub.add_parser("update-snapshots", help="Regenerer IR snapshot-forventninger")
     update_snapshots.add_argument("--check", action="store_true", help="Feil hvis snapshots er utdaterte (skriv ikke)")
+    update_snapshots.add_argument("--json", action="store_true", help="Skriv resultat som JSON")
 
     update_selfhost_parity = sub.add_parser(
         "update-selfhost-parity-fixtures",
@@ -3635,14 +3636,23 @@ def main():
 
         elif args.cmd == "update-snapshots":
             fixture_path, updated, total = update_ir_snapshots(check_only=args.check)
-            print(f"Oppdatert snapshot-fixture: {fixture_path}")
-            print(f"Strict-cases: {total}")
-            if args.check:
-                print(f"Avvik funnet: {updated}")
-                if updated > 0:
-                    sys.exit(1)
+            payload = {
+                "fixture": str(Path(fixture_path).resolve()),
+                "check_only": bool(args.check),
+                "updated": int(updated),
+                "strict_cases": int(total),
+            }
+            if args.json:
+                print(json.dumps(payload, ensure_ascii=False, indent=2))
             else:
-                print(f"Endringer skrevet: {updated}")
+                print(f"Oppdatert snapshot-fixture: {fixture_path}")
+                print(f"Strict-cases: {total}")
+                if args.check:
+                    print(f"Avvik funnet: {updated}")
+                else:
+                    print(f"Endringer skrevet: {updated}")
+            if args.check and updated > 0:
+                sys.exit(1)
 
         elif args.cmd == "update-selfhost-parity-fixtures":
             payload = update_selfhost_parser_fixtures(check_only=args.check, suite=args.suite)
