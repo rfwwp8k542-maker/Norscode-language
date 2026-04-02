@@ -2400,7 +2400,7 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
             f"(forventet: {issue['expected']})"
         )
     if not json_output:
-        print("OK")
+        print(f"OK ({workflow_check['scanned_files']} filer)")
 
     if check_names:
         if not json_output:
