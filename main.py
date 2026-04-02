@@ -2542,6 +2542,7 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
         "source_remote_is_gitlab": is_gitlab_host(source_remote_host),
         "source_remote_is_bitbucket": is_bitbucket_host(source_remote_host),
         "source_remote_provider": get_git_remote_provider(source_remote_host),
+        "source_remote_is_unknown": get_git_remote_provider(source_remote_host) == "unknown",
         "source_repo_slug": source_repo_slug,
         "source_repo_owner": source_repo_owner,
         "source_repo_name": source_repo_name,
