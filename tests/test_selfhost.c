@@ -1755,7 +1755,19 @@ char * selfhost__compiler__uttrykk_til_ops_og_verdier_med_miljo(nl_list_text* to
         if ((i + 5) < nl_list_text_len(tokens)) {
             n5 = selfhost__compiler__normaliser_norsk_token(tokens->data[(i + 5)]);
         }
-        if ((((i + 1) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "<")) && nl_streq(n1, ">")) {
+        if (((((i + 2) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "<")) && nl_streq(n1, "-")) && nl_streq(n2, ">")) {
+            tok = "xnor";
+            tok_step = 3;
+        }
+        else if (((((i + 2) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "<")) && nl_streq(n1, "=")) && nl_streq(n2, ">")) {
+            tok = "xnor";
+            tok_step = 3;
+        }
+        else if ((((i + 1) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "<=")) && nl_streq(n1, ">")) {
+            tok = "xnor";
+            tok_step = 2;
+        }
+        else if ((((i + 1) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "<")) && nl_streq(n1, ">")) {
             tok = "ikke_er";
             tok_step = 2;
         }
@@ -3126,6 +3138,10 @@ int start() {
     nl_assert_eq_text(expr_if_and_only_if_alias, "0: PUSH 1\n1: PUSH 1\n2: EQ\n3: PRINT\n4: HALT\n");
     char * expr_hvis_og_bare_hvis_alias = selfhost__compiler__disasm_uttrykk("1 hvis_og_bare_hvis 1");
     nl_assert_eq_text(expr_hvis_og_bare_hvis_alias, "0: PUSH 1\n1: PUSH 1\n2: EQ\n3: PRINT\n4: HALT\n");
+    char * expr_equiv_arrow_operator = selfhost__compiler__disasm_uttrykk("1 <-> 1");
+    nl_assert_eq_text(expr_equiv_arrow_operator, "0: PUSH 1\n1: PUSH 1\n2: EQ\n3: PRINT\n4: HALT\n");
+    char * expr_equiv_fat_arrow_operator = selfhost__compiler__disasm_uttrykk("1 <=> 1");
+    nl_assert_eq_text(expr_equiv_fat_arrow_operator, "0: PUSH 1\n1: PUSH 1\n2: EQ\n3: PRINT\n4: HALT\n");
     char * expr_le = selfhost__compiler__disasm_uttrykk("3 <= 4");
     nl_assert_eq_text(expr_le, "0: PUSH 3\n1: PUSH 4\n2: GT\n3: NOT\n4: PRINT\n5: HALT\n");
     char * expr_ge = selfhost__compiler__disasm_uttrykk("4 >= 3");
@@ -4347,6 +4363,10 @@ int start() {
     nl_assert_eq_text(script_equiv_alias, "0: PUSH 1\n1: PUSH 1\n2: EQ\n3: PRINT\n4: HALT\n");
     char * script_if_and_only_if_alias = selfhost__compiler__disasm_skript("returner 1 if_and_only_if 1");
     nl_assert_eq_text(script_if_and_only_if_alias, "0: PUSH 1\n1: PUSH 1\n2: EQ\n3: PRINT\n4: HALT\n");
+    char * script_equiv_arrow_operator = selfhost__compiler__disasm_skript("returner 1 <-> 1");
+    nl_assert_eq_text(script_equiv_arrow_operator, "0: PUSH 1\n1: PUSH 1\n2: EQ\n3: PRINT\n4: HALT\n");
+    char * script_equiv_fat_arrow_operator = selfhost__compiler__disasm_skript("returner 1 <=> 1");
+    nl_assert_eq_text(script_equiv_fat_arrow_operator, "0: PUSH 1\n1: PUSH 1\n2: EQ\n3: PRINT\n4: HALT\n");
     char * script_english_cmp_is_not_equal_to_compact_alias = selfhost__compiler__disasm_skript("let x=4;let y=5;return x is_not_equal_to y");
     nl_assert_eq_text(script_english_cmp_is_not_equal_to_compact_alias, "0: PUSH 4\n1: PUSH 5\n2: EQ\n3: NOT\n4: PRINT\n5: HALT\n");
     char * script_english_cmp_isnt_alias = selfhost__compiler__disasm_skript("let x=4;let y=5;return x isnt y");

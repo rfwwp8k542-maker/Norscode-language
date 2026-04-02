@@ -1401,7 +1401,16 @@ funksjon uttrykk_til_ops_og_verdier_med_miljo(tokens: liste_tekst, navn: liste_t
             n5 = normaliser_norsk_token(tokens[i + 5])
         }
 
-        hvis (i + 1 < lengde(tokens) og tok_raw == "<" og n1 == ">") {
+        hvis (i + 2 < lengde(tokens) og tok_raw == "<" og n1 == "-" og n2 == ">") {
+            tok = "xnor"
+            tok_step = 3
+        } ellers hvis (i + 2 < lengde(tokens) og tok_raw == "<" og n1 == "=" og n2 == ">") {
+            tok = "xnor"
+            tok_step = 3
+        } ellers hvis (i + 1 < lengde(tokens) og tok_raw == "<=" og n1 == ">") {
+            tok = "xnor"
+            tok_step = 2
+        } ellers hvis (i + 1 < lengde(tokens) og tok_raw == "<" og n1 == ">") {
             tok = "ikke_er"
             tok_step = 2
         } ellers hvis (i + 1 < lengde(tokens) og tok_raw == "-" og n1 == ">") {
