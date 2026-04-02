@@ -2082,6 +2082,19 @@ def get_current_git_origin_url() -> str | None:
         return None
 
 
+def get_git_remote_host(remote_url: str | None) -> str | None:
+    if not remote_url:
+        return None
+    parsed = urllib.parse.urlparse(remote_url)
+    if parsed.hostname:
+        return parsed.hostname
+    if "@" in remote_url and ":" in remote_url:
+        rhs = remote_url.split("@", 1)[1]
+        host = rhs.split(":", 1)[0].strip()
+        return host or None
+    return None
+
+
 def run_program(source_file: str):
     source_path, c_path, exe_path, _alias_map, _analyzer = build_program(source_file)
     print(f"Generert C-fil: {c_path}")
@@ -2410,6 +2423,7 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
     source_revision = get_current_git_revision()
     source_branch = get_current_git_branch()
     source_tag = get_current_git_exact_tag()
+    source_remote = get_current_git_origin_url()
     source_dirty = get_current_git_dirty_state()
     step_order = [
         "snapshot_check",
@@ -2429,7 +2443,8 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
         "source_tag": source_tag,
         "source_ref": source_tag or source_branch,
         "source_ref_type": "tag" if source_tag else ("branch" if source_branch else "unknown"),
-        "source_remote": get_current_git_origin_url(),
+        "source_remote": source_remote,
+        "source_remote_host": get_git_remote_host(source_remote),
         "source_is_tagged": source_tag is not None,
         "source_is_main": source_branch == "main",
         "source_dirty": source_dirty,
