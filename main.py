@@ -2731,7 +2731,12 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
             print("OK")
 
     payload["timings_ms"]["total"] = int((time.perf_counter() - pipeline_started) * 1000)
+    step_keys = [k for k in payload["timings_ms"].keys() if k not in ("total", "wallclock_total")]
+    payload["timings_ms"]["step_sum"] = sum(
+        payload["timings_ms"][k] for k in step_keys if isinstance(payload["timings_ms"].get(k), int)
+    )
     payload["timings_s"]["total"] = round(payload["timings_ms"]["total"] / 1000.0, 3)
+    payload["timings_s"]["step_sum"] = round(payload["timings_ms"]["step_sum"] / 1000.0, 3)
     payload["finished_at_utc"] = dt.datetime.now(dt.UTC).isoformat()
     payload["finished_at_epoch_ms"] = int(time.time() * 1000)
     payload["timings_ms"]["wallclock_total"] = payload["finished_at_epoch_ms"] - payload["started_at_epoch_ms"]
