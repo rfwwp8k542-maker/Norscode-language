@@ -613,7 +613,7 @@ funksjon er_operator_token(tok: tekst) -> bool {
     hvis (tok == "er" eller tok == "ikke_er" eller tok == "mindre_enn" eller tok == "storre_enn" eller tok == "mindre_eller_lik" eller tok == "storre_eller_lik") {
         returner sann
     }
-    hvis (tok == "&&" eller tok == "||" eller tok == "!" eller tok == "og" eller tok == "samt" eller tok == "eller" eller tok == "enten" eller tok == "ikke" eller tok == "xor" eller tok == "^^" eller tok == "xnor" eller tok == "nand" eller tok == "nor" eller tok == "impliserer") {
+    hvis (tok == "&&" eller tok == "||" eller tok == "!" eller tok == "og" eller tok == "samt" eller tok == "eller" eller tok == "enten" eller tok == "ikke" eller tok == "xor" eller tok == "^^" eller tok == "xnor" eller tok == "nand" eller tok == "nor" eller tok == "impliserer" eller tok == "impliseres_av") {
         returner sann
     }
     returner usann
@@ -640,7 +640,7 @@ funksjon operator_precedens(tok: tekst) -> heltall {
     hvis (tok == "&&" eller tok == "og" eller tok == "samt" eller tok == "nand") {
         returner 2
     }
-    hvis (tok == "||" eller tok == "eller" eller tok == "enten" eller tok == "xor" eller tok == "^^" eller tok == "xnor" eller tok == "nor" eller tok == "impliserer") {
+    hvis (tok == "||" eller tok == "eller" eller tok == "enten" eller tok == "xor" eller tok == "^^" eller tok == "xnor" eller tok == "nor" eller tok == "impliserer" eller tok == "impliseres_av") {
         returner 1
     }
     returner 0
@@ -734,6 +734,13 @@ funksjon emitter_operator(ops: liste_tekst, verdier: liste_heltall, op: tekst) -
         legg_til(ops, "NOT")
         legg_til(verdier, 0)
         legg_til(ops, "SWAP")
+        legg_til(verdier, 0)
+        legg_til(ops, "OR")
+        legg_til(verdier, 0)
+        returner sann
+    }
+    hvis (op == "impliseres_av") {
+        legg_til(ops, "NOT")
         legg_til(verdier, 0)
         legg_til(ops, "OR")
         legg_til(verdier, 0)
@@ -1410,6 +1417,9 @@ funksjon uttrykk_til_ops_og_verdier_med_miljo(tokens: liste_tekst, navn: liste_t
         } ellers hvis (i + 1 < lengde(tokens) og tok_raw == "<=" og n1 == ">") {
             tok = "xnor"
             tok_step = 2
+        } ellers hvis (i + 1 < lengde(tokens) og tok_raw == "<" og n1 == "-") {
+            tok = "impliseres_av"
+            tok_step = 2
         } ellers hvis (i + 1 < lengde(tokens) og tok_raw == "<" og n1 == ">") {
             tok = "ikke_er"
             tok_step = 2
@@ -1419,6 +1429,9 @@ funksjon uttrykk_til_ops_og_verdier_med_miljo(tokens: liste_tekst, navn: liste_t
         } ellers hvis (i + 1 < lengde(tokens) og tok_raw == "=" og n1 == ">") {
             tok = "impliserer"
             tok_step = 2
+        } ellers hvis (tok_raw == "<-") {
+            tok = "impliseres_av"
+            tok_step = 1
         } ellers hvis (i + 1 < lengde(tokens) og ((tok_raw == "divided") eller (tok_raw == "/" og tok_kilde == "divide") eller (tok_raw == "*" og (tok_kilde == "multiply" eller tok_kilde == "multiplied")) eller tok_raw == "modulo" eller (tok_raw == "%" og tok_kilde == "remainder")) og (n1 == "by" eller n1 == "of")) {
             hvis (tok_raw == "divided" eller (tok_raw == "/" og tok_kilde == "divide")) {
                 tok = "/"

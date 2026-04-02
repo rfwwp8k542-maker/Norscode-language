@@ -910,7 +910,7 @@ int selfhost__compiler__er_operator_token(char * tok) {
     if (((((nl_streq(tok, "er") || nl_streq(tok, "ikke_er")) || nl_streq(tok, "mindre_enn")) || nl_streq(tok, "storre_enn")) || nl_streq(tok, "mindre_eller_lik")) || nl_streq(tok, "storre_eller_lik")) {
         return 1;
     }
-    if (((((((((((((nl_streq(tok, "&&") || nl_streq(tok, "||")) || nl_streq(tok, "!")) || nl_streq(tok, "og")) || nl_streq(tok, "samt")) || nl_streq(tok, "eller")) || nl_streq(tok, "enten")) || nl_streq(tok, "ikke")) || nl_streq(tok, "xor")) || nl_streq(tok, "^^")) || nl_streq(tok, "xnor")) || nl_streq(tok, "nand")) || nl_streq(tok, "nor")) || nl_streq(tok, "impliserer")) {
+    if ((((((((((((((nl_streq(tok, "&&") || nl_streq(tok, "||")) || nl_streq(tok, "!")) || nl_streq(tok, "og")) || nl_streq(tok, "samt")) || nl_streq(tok, "eller")) || nl_streq(tok, "enten")) || nl_streq(tok, "ikke")) || nl_streq(tok, "xor")) || nl_streq(tok, "^^")) || nl_streq(tok, "xnor")) || nl_streq(tok, "nand")) || nl_streq(tok, "nor")) || nl_streq(tok, "impliserer")) || nl_streq(tok, "impliseres_av")) {
         return 1;
     }
     return 0;
@@ -936,7 +936,7 @@ int selfhost__compiler__operator_precedens(char * tok) {
     if (((nl_streq(tok, "&&") || nl_streq(tok, "og")) || nl_streq(tok, "samt")) || nl_streq(tok, "nand")) {
         return 2;
     }
-    if (((((((nl_streq(tok, "||") || nl_streq(tok, "eller")) || nl_streq(tok, "enten")) || nl_streq(tok, "xor")) || nl_streq(tok, "^^")) || nl_streq(tok, "xnor")) || nl_streq(tok, "nor")) || nl_streq(tok, "impliserer")) {
+    if ((((((((nl_streq(tok, "||") || nl_streq(tok, "eller")) || nl_streq(tok, "enten")) || nl_streq(tok, "xor")) || nl_streq(tok, "^^")) || nl_streq(tok, "xnor")) || nl_streq(tok, "nor")) || nl_streq(tok, "impliserer")) || nl_streq(tok, "impliseres_av")) {
         return 1;
     }
     return 0;
@@ -1032,6 +1032,13 @@ int selfhost__compiler__emitter_operator(nl_list_text* ops, nl_list_int* verdier
         nl_list_text_push(ops, "NOT");
         nl_list_int_push(verdier, 0);
         nl_list_text_push(ops, "SWAP");
+        nl_list_int_push(verdier, 0);
+        nl_list_text_push(ops, "OR");
+        nl_list_int_push(verdier, 0);
+        return 1;
+    }
+    if (nl_streq(op, "impliseres_av")) {
+        nl_list_text_push(ops, "NOT");
         nl_list_int_push(verdier, 0);
         nl_list_text_push(ops, "OR");
         nl_list_int_push(verdier, 0);
@@ -1767,6 +1774,10 @@ char * selfhost__compiler__uttrykk_til_ops_og_verdier_med_miljo(nl_list_text* to
             tok = "xnor";
             tok_step = 2;
         }
+        else if ((((i + 1) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "<")) && nl_streq(n1, "-")) {
+            tok = "impliseres_av";
+            tok_step = 2;
+        }
         else if ((((i + 1) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "<")) && nl_streq(n1, ">")) {
             tok = "ikke_er";
             tok_step = 2;
@@ -1778,6 +1789,10 @@ char * selfhost__compiler__uttrykk_til_ops_og_verdier_med_miljo(nl_list_text* to
         else if ((((i + 1) < nl_list_text_len(tokens)) && nl_streq(tok_raw, "=")) && nl_streq(n1, ">")) {
             tok = "impliserer";
             tok_step = 2;
+        }
+        else if (nl_streq(tok_raw, "<-")) {
+            tok = "impliseres_av";
+            tok_step = 1;
         }
         else if ((((i + 1) < nl_list_text_len(tokens)) && ((((nl_streq(tok_raw, "divided") || (nl_streq(tok_raw, "/") && nl_streq(tok_kilde, "divide"))) || (nl_streq(tok_raw, "*") && (nl_streq(tok_kilde, "multiply") || nl_streq(tok_kilde, "multiplied")))) || nl_streq(tok_raw, "modulo")) || (nl_streq(tok_raw, "%") && nl_streq(tok_kilde, "remainder")))) && (nl_streq(n1, "by") || nl_streq(n1, "of"))) {
             if (nl_streq(tok_raw, "divided") || (nl_streq(tok_raw, "/") && nl_streq(tok_kilde, "divide"))) {
@@ -3128,6 +3143,8 @@ int start() {
     nl_assert_eq_text(expr_arrow_implies_operator, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
     char * expr_fat_arrow_implies_operator = selfhost__compiler__disasm_uttrykk("1 => 0");
     nl_assert_eq_text(expr_fat_arrow_implies_operator, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
+    char * expr_left_arrow_implied_by_operator = selfhost__compiler__disasm_uttrykk("1 <- 0");
+    nl_assert_eq_text(expr_left_arrow_implied_by_operator, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n");
     char * expr_iff_alias = selfhost__compiler__disasm_uttrykk("1 iff 1");
     nl_assert_eq_text(expr_iff_alias, "0: PUSH 1\n1: PUSH 1\n2: EQ\n3: PRINT\n4: HALT\n");
     char * expr_equiv_alias = selfhost__compiler__disasm_uttrykk("1 equiv 1");
@@ -4357,6 +4374,8 @@ int start() {
     nl_assert_eq_text(script_arrow_implies_operator, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
     char * script_fat_arrow_implies_operator = selfhost__compiler__disasm_skript("returner 1 => 0");
     nl_assert_eq_text(script_fat_arrow_implies_operator, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n");
+    char * script_left_arrow_implied_by_operator = selfhost__compiler__disasm_skript("returner 1 <- 0");
+    nl_assert_eq_text(script_left_arrow_implied_by_operator, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n");
     char * script_iff_alias = selfhost__compiler__disasm_skript("returner 1 iff 1");
     nl_assert_eq_text(script_iff_alias, "0: PUSH 1\n1: PUSH 1\n2: EQ\n3: PRINT\n4: HALT\n");
     char * script_equiv_alias = selfhost__compiler__disasm_skript("returner 1 equiv 1");

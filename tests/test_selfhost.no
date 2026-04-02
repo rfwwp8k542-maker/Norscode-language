@@ -223,6 +223,9 @@ funksjon start() -> heltall {
     la expr_fat_arrow_implies_operator: tekst = sh.disasm_uttrykk("1 => 0")
     assert_eq(expr_fat_arrow_implies_operator, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n")
 
+    la expr_left_arrow_implied_by_operator: tekst = sh.disasm_uttrykk("1 <- 0")
+    assert_eq(expr_left_arrow_implied_by_operator, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n")
+
     la expr_iff_alias: tekst = sh.disasm_uttrykk("1 iff 1")
     assert_eq(expr_iff_alias, "0: PUSH 1\n1: PUSH 1\n2: EQ\n3: PRINT\n4: HALT\n")
 
@@ -2053,6 +2056,9 @@ funksjon start() -> heltall {
 
     la script_fat_arrow_implies_operator: tekst = sh.disasm_skript("returner 1 => 0")
     assert_eq(script_fat_arrow_implies_operator, "0: PUSH 1\n1: PUSH 0\n2: SWAP\n3: NOT\n4: SWAP\n5: OR\n6: PRINT\n7: HALT\n")
+
+    la script_left_arrow_implied_by_operator: tekst = sh.disasm_skript("returner 1 <- 0")
+    assert_eq(script_left_arrow_implied_by_operator, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n")
 
     la script_iff_alias: tekst = sh.disasm_skript("returner 1 iff 1")
     assert_eq(script_iff_alias, "0: PUSH 1\n1: PUSH 1\n2: EQ\n3: PRINT\n4: HALT\n")
