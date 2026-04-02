@@ -359,6 +359,9 @@ char * selfhost__compiler__normaliser_norsk_token(char * tok) {
     if (nl_streq(tok, "const")) {
         return "la";
     }
+    if (nl_streq(tok, "var")) {
+        return "la";
+    }
     if (nl_streq(tok, "set")) {
         return "sett";
     }
@@ -3537,6 +3540,8 @@ int start() {
     nl_assert_eq_text(script_let_set_return_alias, "0: PUSH 5\n1: PRINT\n2: HALT\n");
     char * script_const_alias = selfhost__compiler__disasm_skript("const x=2;return x+3");
     nl_assert_eq_text(script_const_alias, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
+    char * script_var_alias = selfhost__compiler__disasm_skript("var x=2;return x+3");
+    nl_assert_eq_text(script_var_alias, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
     char * script_return_alias_only = selfhost__compiler__disasm_skript("la x=2;return x+3");
     nl_assert_eq_text(script_return_alias_only, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
     char * script_english_cmp_alias = selfhost__compiler__disasm_skript("let x=4;let y=4;return x greater_or_equal y");
