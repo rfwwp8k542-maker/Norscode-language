@@ -10,6 +10,7 @@ import subprocess
 import sys
 import tarfile
 import time
+import platform
 import tomllib
 import urllib.parse
 import urllib.request
@@ -2399,6 +2400,10 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
             "cmd": "norcode ci",
             "json_output": json_output,
             "check_names": check_names,
+        },
+        "runtime": {
+            "python_version": platform.python_version(),
+            "platform": platform.platform(),
         },
         "steps": {"total": total_steps, "name_check_enabled": check_names, "order": step_order},
         "started_at_utc": started_at_utc,
