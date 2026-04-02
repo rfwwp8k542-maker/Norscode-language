@@ -439,7 +439,7 @@ Eksempel på `timings_ratio` i `ci --json`:
 6. Parser suite consistency (verifiserer valgt scope: M1, M2 eller M1+M2 mot utvidet suite)
 7. Selfhost parity progress check (kun med `--require-selfhost-ready`)
 8. Full test
-9. Workflow action version check (stopper på deprecated action-versjoner og usikker Node opt-out)
+9. Workflow action version check (stopper på deprecated action-versjoner, usikker Node opt-out og manglende `--require-selfhost-ready`/`--check-names` i `norcode ci`-run-linjer)
 10. Name migration check (kun med `--check-names`)
 
 Med `--parity-suite m1` eller `--parity-suite m2` hopper `norcode ci` over steget for utvidet parity (steg 5 i full kjøring) for raskere lokal iterasjon.

@@ -61,6 +61,10 @@ WORKFLOW_ACTION_POLICY = {
     },
     "require_node24_env": True,
     "forbid_unsecure_node_opt_out": True,
+    "required_norcode_ci_flags": [
+        "--check-names",
+        "--require-selfhost-ready",
+    ],
 }
 PROJECT_CONFIG_NAME = "norcode.toml"
 LEGACY_PROJECT_CONFIG_NAME = "norsklang.toml"
@@ -2976,6 +2980,7 @@ def summarize_test_results(results: list[dict]) -> dict:
 def check_workflow_action_versions(workflows_dir: Path | None = None) -> dict:
     base = workflows_dir or Path(".github/workflows")
     minimum_action_majors = WORKFLOW_ACTION_POLICY["minimum_action_majors"]
+    required_norcode_ci_flags = [str(flag) for flag in WORKFLOW_ACTION_POLICY.get("required_norcode_ci_flags", [])]
     payload = {
         "ok": True,
         "scanned_dir": str(base),
@@ -2999,6 +3004,7 @@ def check_workflow_action_versions(workflows_dir: Path | None = None) -> dict:
         except OSError:
             continue
         has_node24_env = False
+        saw_norcode_ci_command = False
         for line_no, raw_line in enumerate(lines, start=1):
             line = raw_line.strip()
             if not line or line.startswith("#"):
@@ -3039,6 +3045,23 @@ def check_workflow_action_versions(workflows_dir: Path | None = None) -> dict:
                         "expected": "fjern opt-out og bruk Node 24-kompatible action-versjoner",
                     }
                 )
+            run_match = re.search(r"^\s*run\s*:\s*(.+)$", raw_line)
+            if run_match:
+                run_cmd = run_match.group(1).strip()
+                if "norcode ci" in run_cmd:
+                    saw_norcode_ci_command = True
+                    for flag in required_norcode_ci_flags:
+                        if flag not in run_cmd:
+                            payload["issues"].append(
+                                {
+                                    "file": str(workflow_path),
+                                    "line": line_no,
+                                    "type": "missing_norcode_ci_flag",
+                                    "rule": "require_norcode_ci_flag",
+                                    "found": run_cmd,
+                                    "expected": f"run-linje med norcode ci må inkludere {flag}",
+                                }
+                            )
         if not has_node24_env:
             payload["issues"].append(
                 {
@@ -3048,6 +3071,17 @@ def check_workflow_action_versions(workflows_dir: Path | None = None) -> dict:
                     "rule": "require_node24_env",
                     "found": "FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 mangler/ikke true",
                     "expected": 'FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"',
+                }
+            )
+        if required_norcode_ci_flags and not saw_norcode_ci_command:
+            payload["issues"].append(
+                {
+                    "file": str(workflow_path),
+                    "line": 1,
+                    "type": "missing_norcode_ci_command",
+                    "rule": "require_norcode_ci_command",
+                    "found": "mangler run-linje med 'norcode ci'",
+                    "expected": "legg til run: python3 -m norcode ci --check-names --require-selfhost-ready",
                 }
             )
 
