@@ -315,6 +315,10 @@ jobs:
 Lokal kjøring av samme sekvens:
 
 ```bash
+# Rask CI-løkke (kun M1 parity)
+python3 -m norcode ci --parity-suite m1
+
+# Full CI-løkke (M1 + utvidet parity)
 python3 -m norcode ci
 
 # Maskinlesbar output
@@ -416,6 +420,8 @@ Eksempel på `timings_ratio` i `ci --json`:
 5. Full test
 6. Workflow action version check (stopper på deprecated action-versjoner og usikker Node opt-out)
 7. Name migration check (kun med `--check-names`)
+
+Med `--parity-suite m1` hopper `norcode ci` over steg 4 for raskere lokal iterasjon.
 
 Kjør parser parity separat uten full CI:
 

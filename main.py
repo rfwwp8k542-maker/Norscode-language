@@ -2711,7 +2711,9 @@ def check_workflow_action_versions(workflows_dir: Path | None = None) -> dict:
     return payload
 
 
-def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
+def run_ci_pipeline(json_output: bool = False, check_names: bool = False, parity_suite: str = "all"):
+    if parity_suite not in {"m1", "all"}:
+        raise RuntimeError(f"Ugyldig parity-suite for CI: {parity_suite}")
     pipeline_started = time.perf_counter()
     started_at_utc = dt.datetime.now(dt.UTC).isoformat()
     started_at_epoch_ms = int(time.time() * 1000)
@@ -2730,13 +2732,14 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
         "snapshot_check",
         "parity_check",
         "parser_core_m1_check",
-        "parser_core_extended_check",
         "test_check",
         "workflow_action_check",
     ]
+    if parity_suite == "all":
+        step_order.insert(3, "parser_core_extended_check")
     if check_names:
         step_order.append("name_migration_check")
-    total_steps = 7 if check_names else 6
+    total_steps = len(step_order)
     payload = {
         "schema_version": 1,
         "run_id": uuid.uuid4().hex,
@@ -2775,6 +2778,7 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
             "raw": " ".join(shlex.quote(arg) for arg in sys.argv),
             "json_output": json_output,
             "check_names": check_names,
+            "parity_suite": parity_suite,
             "argv": sys.argv[1:],
         },
         "runtime": {
@@ -2830,7 +2834,12 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
             "cwd_has_spaces": " " in str(Path.cwd()),
             "timezone": dt.datetime.now().astimezone().tzname(),
         },
-        "steps": {"total": total_steps, "name_check_enabled": check_names, "order": step_order},
+        "steps": {
+            "total": total_steps,
+            "name_check_enabled": check_names,
+            "parity_suite": parity_suite,
+            "order": step_order,
+        },
         "started_at_utc": started_at_utc,
         "started_at_epoch_ms": started_at_epoch_ms,
         "finished_at_utc": None,
@@ -2912,36 +2921,42 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
             f"{payload['parser_core_m1_check']['error_cases']} feil-cases)"
         )
 
-    if not json_output:
-        print(f"[4/{total_steps}] Selfhost parser parity (utvidet)")
-    started = time.perf_counter()
-    parser_core_extended_result = run_selfhost_parser_core_checks(
-        SELFHOST_PARSER_EXTENDED_FIXTURE, "Selfhost parser parity (utvidet)"
-    )
-    payload["timings_ms"]["parser_core_extended_check"] = int((time.perf_counter() - started) * 1000)
-    payload["timings_s"]["parser_core_extended_check"] = round(
-        payload["timings_ms"]["parser_core_extended_check"] / 1000.0, 3
-    )
-    payload["parser_core_extended_check"]["ok"] = parser_core_extended_result["success"]
-    payload["parser_core_extended_check"]["case_count"] = int(
-        parser_core_extended_result.get("case_count", 0) or 0
-    )
-    payload["parser_core_extended_check"]["error_cases"] = int(
-        parser_core_extended_result.get("error_cases", 0) or 0
-    )
-    if not parser_core_extended_result["success"]:
-        raise RuntimeError(
-            "Selfhost parser parity-feil (utvidet):\n"
-            + (parser_core_extended_result.get("stderr", "").rstrip() or "ukjent feil")
+    if parity_suite == "all":
+        if not json_output:
+            print(f"[4/{total_steps}] Selfhost parser parity (utvidet)")
+        started = time.perf_counter()
+        parser_core_extended_result = run_selfhost_parser_core_checks(
+            SELFHOST_PARSER_EXTENDED_FIXTURE, "Selfhost parser parity (utvidet)"
         )
-    if not json_output:
-        print(
-            f"OK ({payload['parser_core_extended_check']['case_count']} cases, "
-            f"{payload['parser_core_extended_check']['error_cases']} feil-cases)"
+        payload["timings_ms"]["parser_core_extended_check"] = int((time.perf_counter() - started) * 1000)
+        payload["timings_s"]["parser_core_extended_check"] = round(
+            payload["timings_ms"]["parser_core_extended_check"] / 1000.0, 3
         )
+        payload["parser_core_extended_check"]["ok"] = parser_core_extended_result["success"]
+        payload["parser_core_extended_check"]["case_count"] = int(
+            parser_core_extended_result.get("case_count", 0) or 0
+        )
+        payload["parser_core_extended_check"]["error_cases"] = int(
+            parser_core_extended_result.get("error_cases", 0) or 0
+        )
+        if not parser_core_extended_result["success"]:
+            raise RuntimeError(
+                "Selfhost parser parity-feil (utvidet):\n"
+                + (parser_core_extended_result.get("stderr", "").rstrip() or "ukjent feil")
+            )
+        if not json_output:
+            print(
+                f"OK ({payload['parser_core_extended_check']['case_count']} cases, "
+                f"{payload['parser_core_extended_check']['error_cases']} feil-cases)"
+            )
+    else:
+        payload["parser_core_extended_check"]["ok"] = True
+        payload["parser_core_extended_check"]["case_count"] = 0
+        payload["parser_core_extended_check"]["error_cases"] = 0
 
+    test_step = 5 if parity_suite == "all" else 4
     if not json_output:
-        print(f"[5/{total_steps}] Full test")
+        print(f"[{test_step}/{total_steps}] Full test")
     started = time.perf_counter()
     results = run_all_tests(verbose=False, quiet=json_output)
     payload["timings_ms"]["test_check"] = int((time.perf_counter() - started) * 1000)
@@ -2958,8 +2973,9 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
     if not json_output:
         print("OK")
 
+    workflow_step = 6 if parity_suite == "all" else 5
     if not json_output:
-        print(f"[6/{total_steps}] Workflow action version check")
+        print(f"[{workflow_step}/{total_steps}] Workflow action version check")
     started = time.perf_counter()
     workflow_check = check_workflow_action_versions()
     payload["timings_ms"]["workflow_action_check"] = int((time.perf_counter() - started) * 1000)
@@ -2977,8 +2993,9 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
         print(f"OK ({workflow_check['scanned_files']} filer)")
 
     if check_names:
+        name_step = 7 if parity_suite == "all" else 6
         if not json_output:
-            print(f"[7/{total_steps}] Name migration check")
+            print(f"[{name_step}/{total_steps}] Name migration check")
         started = time.perf_counter()
         migration = migrate_names(apply_changes=False, cleanup_legacy=True)
         payload["timings_ms"]["name_migration_check"] = int((time.perf_counter() - started) * 1000)
@@ -3098,6 +3115,7 @@ def main():
     ci = sub.add_parser("ci", help="Kjør lokal CI-sekvens (snapshot, parity, test)")
     ci.add_argument("--json", action="store_true", help="Skriv CI-resultat som JSON")
     ci.add_argument("--check-names", action="store_true", help="Inkluder sjekk for navnemigrering (legacy -> NorCode)")
+    ci.add_argument("--parity-suite", choices=["m1", "all"], default="all", help="Velg parity-scope i CI")
 
     selfhost_parity = sub.add_parser("selfhost-parity", help="Kjør selfhost parser parity-suiter")
     selfhost_parity.add_argument("--suite", choices=["m1", "extended", "all"], default="all", help="Velg parity-suite")
@@ -3443,7 +3461,11 @@ def main():
                 print(f"Endringer skrevet: {updated}")
 
         elif args.cmd == "ci":
-            payload = run_ci_pipeline(json_output=args.json, check_names=args.check_names)
+            payload = run_ci_pipeline(
+                json_output=args.json,
+                check_names=args.check_names,
+                parity_suite=args.parity_suite,
+            )
             if args.json:
                 print(json.dumps(payload, ensure_ascii=False, indent=2))
 
