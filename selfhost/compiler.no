@@ -360,6 +360,9 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "public") {
         returner "sann"
     }
+    hvis (tok == "visible") {
+        returner "sann"
+    }
     hvis (tok == "enabled") {
         returner "sann"
     }
@@ -433,6 +436,9 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
         returner "usann"
     }
     hvis (tok == "private") {
+        returner "usann"
+    }
+    hvis (tok == "hidden") {
         returner "usann"
     }
     hvis (tok == "disabled") {

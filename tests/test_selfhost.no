@@ -1566,6 +1566,9 @@ funksjon start() -> heltall {
     la expr_english_public_private_alias: tekst = sh.disasm_uttrykk("public and not private")
     assert_eq(expr_english_public_private_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: AND\n4: PRINT\n5: HALT\n")
 
+    la expr_english_visible_hidden_alias: tekst = sh.disasm_uttrykk("visible and not hidden")
+    assert_eq(expr_english_visible_hidden_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: AND\n4: PRINT\n5: HALT\n")
+
     la expr_english_equal_to_alias: tekst = sh.disasm_uttrykk("7 equal_to 7")
     assert_eq(expr_english_equal_to_alias, "0: PUSH 7\n1: PUSH 7\n2: EQ\n3: PRINT\n4: HALT\n")
 
@@ -1948,6 +1951,9 @@ funksjon start() -> heltall {
 
     la script_english_public_private_alias: tekst = sh.disasm_skript("let x=public;return x and not private")
     assert_eq(script_english_public_private_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: AND\n4: PRINT\n5: HALT\n")
+
+    la script_english_visible_hidden_alias: tekst = sh.disasm_skript("let x=visible;return x and not hidden")
+    assert_eq(script_english_visible_hidden_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: AND\n4: PRINT\n5: HALT\n")
 
     la script_english_math_alias: tekst = sh.disasm_skript("let x=8;let y=2;return x divided_by y")
     assert_eq(script_english_math_alias, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
