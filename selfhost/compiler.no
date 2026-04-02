@@ -119,6 +119,12 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "therefore" eller tok == "derfor") {
         returner "impliserer"
     }
+    hvis (tok == "implied_by" eller tok == "impliedby") {
+        returner "impliseres_av"
+    }
+    hvis (tok == "follows_from" eller tok == "followsfrom" eller tok == "folger_fra" eller tok == "folgerfra") {
+        returner "impliseres_av"
+    }
     hvis (tok == "iff") {
         returner "xnor"
     }
