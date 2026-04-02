@@ -110,6 +110,15 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "greater_or_equal" eller tok == "greater_or_equals" eller tok == "greaterorequal" eller tok == "greaterorequals") {
         returner "storre_eller_lik"
     }
+    hvis (tok == "times" eller tok == "multiply" eller tok == "multiplies" eller tok == "multiplied") {
+        returner "*"
+    }
+    hvis (tok == "multiplied_by" eller tok == "multipliedby" eller tok == "multiply_by" eller tok == "multiplyby") {
+        returner "*"
+    }
+    hvis (tok == "divided_by" eller tok == "dividedby" eller tok == "divide_by" eller tok == "divideby") {
+        returner "/"
+    }
     hvis (tok == "elif" eller tok == "else_if" eller tok == "else_hvis" eller tok == "elsehvis" eller tok == "else-hvis") {
         returner "ellers_hvis"
     }
