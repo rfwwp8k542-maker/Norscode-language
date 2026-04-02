@@ -52,6 +52,7 @@ IR_OPS_NO_ARG = {
 IR_ALL_OPS = IR_OPS_WITH_ARG | IR_OPS_NO_ARG
 IR_SNAPSHOT_FIXTURE = Path("tests/ir_snapshot_cases.json")
 SELFHOST_PARSER_M1_FIXTURE = Path("tests/selfhost_parser_m1_cases.json")
+SELFHOST_PARSER_M2_FIXTURE = Path("tests/selfhost_parser_m2_cases.json")
 SELFHOST_PARSER_EXTENDED_FIXTURE = Path("tests/selfhost_parser_core_cases.json")
 WORKFLOW_ACTION_POLICY = {
     "minimum_action_majors": {
@@ -2625,6 +2626,7 @@ def run_selfhost_parser_suite_consistency_check(m1_fixture: Path, extended_fixtu
 def _selfhost_parity_suite_targets(suite: str) -> list[tuple[Path, str]]:
     suites = {
         "m1": [(SELFHOST_PARSER_M1_FIXTURE, "Selfhost parser parity (M1)")],
+        "m2": [(SELFHOST_PARSER_M2_FIXTURE, "Selfhost parser parity (M2)")],
         "extended": [(SELFHOST_PARSER_EXTENDED_FIXTURE, "Selfhost parser parity (utvidet)")],
         "all": [
             (SELFHOST_PARSER_M1_FIXTURE, "Selfhost parser parity (M1)"),
@@ -3317,7 +3319,7 @@ def main():
         "update-selfhost-parity-fixtures",
         help="Regenerer selfhost parser parity-forventninger",
     )
-    update_selfhost_parity.add_argument("--suite", choices=["m1", "extended", "all"], default="all", help="Velg fixtures å oppdatere")
+    update_selfhost_parity.add_argument("--suite", choices=["m1", "m2", "extended", "all"], default="all", help="Velg fixtures å oppdatere")
     update_selfhost_parity.add_argument("--check", action="store_true", help="Feil hvis parity-fixtures er utdaterte (skriv ikke)")
     update_selfhost_parity.add_argument("--json", action="store_true", help="Skriv resultat som JSON")
 
@@ -3327,7 +3329,7 @@ def main():
     ci.add_argument("--parity-suite", choices=["m1", "all"], default="all", help="Velg parity-scope i CI")
 
     selfhost_parity = sub.add_parser("selfhost-parity", help="Kjør selfhost parser parity-suiter")
-    selfhost_parity.add_argument("--suite", choices=["m1", "extended", "all"], default="all", help="Velg parity-suite")
+    selfhost_parity.add_argument("--suite", choices=["m1", "m2", "extended", "all"], default="all", help="Velg parity-suite")
     selfhost_parity.add_argument("--json", action="store_true", help="Skriv resultat som JSON")
 
     selfhost_parity_consistency = sub.add_parser(

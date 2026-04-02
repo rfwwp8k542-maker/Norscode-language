@@ -432,12 +432,13 @@ Eksempel på `timings_ratio` i `ci --json`:
 8. Workflow action version check (stopper på deprecated action-versjoner og usikker Node opt-out)
 9. Name migration check (kun med `--check-names`)
 
-Med `--parity-suite m1` hopper `norcode ci` over steg 4 for raskere lokal iterasjon.
+Med `--parity-suite m1` hopper `norcode ci` over steget for utvidet parity (steg 5 i full kjøring) for raskere lokal iterasjon.
 
 Kjør parser parity separat uten full CI:
 
 ```bash
 python3 -m norcode selfhost-parity --suite m1
+python3 -m norcode selfhost-parity --suite m2
 python3 -m norcode selfhost-parity --suite extended
 python3 -m norcode selfhost-parity --suite all --json
 python3 -m norcode selfhost-parity-consistency
@@ -445,6 +446,7 @@ python3 -m norcode selfhost-parity-consistency --json
 
 # Regenerer forventninger for parity-fixtures
 python3 -m norcode update-selfhost-parity-fixtures --suite m1
+python3 -m norcode update-selfhost-parity-fixtures --suite m2
 python3 -m norcode update-selfhost-parity-fixtures --suite extended
 python3 -m norcode update-selfhost-parity-fixtures --suite all --check
 ```
