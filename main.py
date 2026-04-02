@@ -2730,6 +2730,8 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
     payload["timings_s"]["total"] = round(payload["timings_ms"]["total"] / 1000.0, 3)
     payload["finished_at_utc"] = dt.datetime.now(dt.UTC).isoformat()
     payload["finished_at_epoch_ms"] = int(time.time() * 1000)
+    payload["timings_ms"]["wallclock_total"] = payload["finished_at_epoch_ms"] - payload["started_at_epoch_ms"]
+    payload["timings_s"]["wallclock_total"] = round(payload["timings_ms"]["wallclock_total"] / 1000.0, 3)
     payload["ok"] = True
     return payload
 
