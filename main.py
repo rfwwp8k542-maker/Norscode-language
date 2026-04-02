@@ -2224,16 +2224,52 @@ def summarize_test_results(results: list[dict]) -> dict:
     }
 
 
+def check_workflow_action_versions(workflows_dir: Path | None = None) -> dict:
+    base = workflows_dir or Path(".github/workflows")
+    payload = {"ok": True, "scanned_files": 0, "issues": []}
+    deprecated_actions = {
+        "actions/checkout@v4": "actions/checkout@v6",
+        "actions/setup-python@v5": "actions/setup-python@v6",
+    }
+    if not base.exists():
+        return payload
+
+    workflow_files = sorted([*base.glob("*.yml"), *base.glob("*.yaml")])
+    payload["scanned_files"] = len(workflow_files)
+    for workflow_path in workflow_files:
+        try:
+            lines = workflow_path.read_text(encoding="utf-8").splitlines()
+        except OSError:
+            continue
+        for line_no, raw_line in enumerate(lines, start=1):
+            line = raw_line.strip()
+            for old_ref, new_ref in deprecated_actions.items():
+                if old_ref in line:
+                    payload["issues"].append(
+                        {
+                            "file": str(workflow_path),
+                            "line": line_no,
+                            "found": old_ref,
+                            "expected": new_ref,
+                        }
+                    )
+
+    payload["ok"] = len(payload["issues"]) == 0
+    return payload
+
+
 def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
+    total_steps = 5 if check_names else 4
     payload = {
         "snapshot_check": {"ok": False, "updated": None},
         "parity_check": {"ok": False},
         "test_check": {"ok": False, "passed": 0, "failed": 0, "total": 0},
+        "workflow_action_check": {"ok": False, "scanned_files": 0, "issues": []},
         "name_migration_check": {"enabled": check_names, "ok": True, "needs_migration": False},
     }
 
     if not json_output:
-        print("[1/3] Snapshot check")
+        print(f"[1/{total_steps}] Snapshot check")
     _fixture_path, updated, _total = update_ir_snapshots(check_only=True)
     payload["snapshot_check"]["updated"] = updated
     if updated > 0:
@@ -2243,7 +2279,7 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
         print("OK")
 
     if not json_output:
-        print("[2/3] Engine parity check")
+        print(f"[2/{total_steps}] Engine parity check")
     _, py_ok, py_lines, py_err = ir_disasm_source_captured("tests/ir_sample.nlir", strict=False, engine="python")
     _, sh_ok, sh_lines, sh_err = ir_disasm_source_captured("tests/ir_sample.nlir", strict=False, engine="selfhost")
     if py_ok != sh_ok:
@@ -2260,7 +2296,7 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
         print("OK")
 
     if not json_output:
-        print("[3/3] Full test")
+        print(f"[3/{total_steps}] Full test")
     results = run_all_tests(verbose=False, quiet=json_output)
     failed = sum(1 for r in results if not r["success"])
     total = len(results)
@@ -2274,9 +2310,23 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
     if not json_output:
         print("OK")
 
+    if not json_output:
+        print(f"[4/{total_steps}] Workflow action version check")
+    workflow_check = check_workflow_action_versions()
+    payload["workflow_action_check"] = workflow_check
+    if not workflow_check["ok"]:
+        issue = workflow_check["issues"][0]
+        raise RuntimeError(
+            "Deprecated GitHub Action oppdaget: "
+            f"{issue['found']} i {issue['file']}:{issue['line']} "
+            f"(oppdater til {issue['expected']})"
+        )
+    if not json_output:
+        print("OK")
+
     if check_names:
         if not json_output:
-            print("[4/4] Name migration check")
+            print(f"[5/{total_steps}] Name migration check")
         migration = migrate_names(apply_changes=False, cleanup_legacy=True)
         payload["name_migration_check"]["needs_migration"] = migration["needs_migration"]
         payload["name_migration_check"]["ok"] = not migration["needs_migration"]
