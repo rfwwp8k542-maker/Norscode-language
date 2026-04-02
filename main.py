@@ -2457,6 +2457,7 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
     source_branch = get_current_git_branch()
     source_tag = get_current_git_exact_tag()
     source_remote = get_current_git_origin_url()
+    source_remote_protocol = get_git_remote_protocol(source_remote)
     source_remote_host = get_git_remote_host(source_remote)
     source_dirty = get_current_git_dirty_state()
     step_order = [
@@ -2478,7 +2479,9 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
         "source_ref": source_tag or source_branch,
         "source_ref_type": "tag" if source_tag else ("branch" if source_branch else "unknown"),
         "source_remote": source_remote,
-        "source_remote_protocol": get_git_remote_protocol(source_remote),
+        "source_remote_protocol": source_remote_protocol,
+        "source_remote_is_https": source_remote_protocol == "https",
+        "source_remote_is_ssh": source_remote_protocol == "ssh",
         "source_remote_host": source_remote_host,
         "source_remote_is_github": is_github_host(source_remote_host),
         "source_repo_slug": get_git_remote_repo_slug(source_remote),
