@@ -668,6 +668,9 @@ char * selfhost__compiler__normaliser_norsk_token(char * tok) {
     if (nl_streq(tok, "connected")) {
         return "sann";
     }
+    if (nl_streq(tok, "available")) {
+        return "sann";
+    }
     if (nl_streq(tok, "enabled")) {
         return "sann";
     }
@@ -753,6 +756,9 @@ char * selfhost__compiler__normaliser_norsk_token(char * tok) {
         return "usann";
     }
     if (nl_streq(tok, "disconnected")) {
+        return "usann";
+    }
+    if (nl_streq(tok, "unavailable")) {
         return "usann";
     }
     if (nl_streq(tok, "disabled")) {
@@ -3846,6 +3852,8 @@ int start() {
     nl_assert_eq_text(expr_english_online_offline_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: AND\n4: PRINT\n5: HALT\n");
     char * expr_english_connected_disconnected_alias = selfhost__compiler__disasm_uttrykk("connected and not disconnected");
     nl_assert_eq_text(expr_english_connected_disconnected_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: AND\n4: PRINT\n5: HALT\n");
+    char * expr_english_available_unavailable_alias = selfhost__compiler__disasm_uttrykk("available and not unavailable");
+    nl_assert_eq_text(expr_english_available_unavailable_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: AND\n4: PRINT\n5: HALT\n");
     char * expr_english_equal_to_alias = selfhost__compiler__disasm_uttrykk("7 equal_to 7");
     nl_assert_eq_text(expr_english_equal_to_alias, "0: PUSH 7\n1: PUSH 7\n2: EQ\n3: PRINT\n4: HALT\n");
     char * expr_english_equal_to_phrase = selfhost__compiler__disasm_uttrykk("7 equal to 7");
@@ -4113,6 +4121,8 @@ int start() {
     nl_assert_eq_text(script_english_online_offline_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: AND\n4: PRINT\n5: HALT\n");
     char * script_english_connected_disconnected_alias = selfhost__compiler__disasm_skript("let x=connected;return x and not disconnected");
     nl_assert_eq_text(script_english_connected_disconnected_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: AND\n4: PRINT\n5: HALT\n");
+    char * script_english_available_unavailable_alias = selfhost__compiler__disasm_skript("let x=available;return x and not unavailable");
+    nl_assert_eq_text(script_english_available_unavailable_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: AND\n4: PRINT\n5: HALT\n");
     char * script_english_math_alias = selfhost__compiler__disasm_skript("let x=8;let y=2;return x divided_by y");
     nl_assert_eq_text(script_english_math_alias, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * script_english_divided_by_phrase = selfhost__compiler__disasm_skript("let x=8;let y=2;return x divided by y");
