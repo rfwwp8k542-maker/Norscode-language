@@ -554,6 +554,9 @@ char * selfhost__compiler__normaliser_norsk_token(char * tok) {
     if (nl_streq(tok, "sant")) {
         return "sann";
     }
+    if (nl_streq(tok, "on")) {
+        return "sann";
+    }
     if (nl_streq(tok, "true")) {
         return "sann";
     }
@@ -561,6 +564,9 @@ char * selfhost__compiler__normaliser_norsk_token(char * tok) {
         return "sann";
     }
     if (nl_streq(tok, "usant")) {
+        return "usann";
+    }
+    if (nl_streq(tok, "off")) {
         return "usann";
     }
     if (nl_streq(tok, "false")) {
@@ -3469,6 +3475,8 @@ int start() {
     nl_assert_eq_text(expr_english_eq_alias, "0: PUSH 7\n1: PUSH 7\n2: EQ\n3: PRINT\n4: HALT\n");
     char * expr_english_neq_alias = selfhost__compiler__disasm_uttrykk("7 neq 8");
     nl_assert_eq_text(expr_english_neq_alias, "0: PUSH 7\n1: PUSH 8\n2: EQ\n3: NOT\n4: PRINT\n5: HALT\n");
+    char * expr_english_on_off_alias = selfhost__compiler__disasm_uttrykk("on and not off");
+    nl_assert_eq_text(expr_english_on_off_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: AND\n4: PRINT\n5: HALT\n");
     char * expr_english_equal_to_alias = selfhost__compiler__disasm_uttrykk("7 equal_to 7");
     nl_assert_eq_text(expr_english_equal_to_alias, "0: PUSH 7\n1: PUSH 7\n2: EQ\n3: PRINT\n4: HALT\n");
     char * expr_english_not_equal_to_alias = selfhost__compiler__disasm_uttrykk("7 not_equal_to 8");
@@ -3562,6 +3570,8 @@ int start() {
     nl_assert_eq_text(script_english_cmp_equal_to_alias, "0: PUSH 4\n1: PUSH 4\n2: EQ\n3: PRINT\n4: HALT\n");
     char * script_english_cmp_eq_alias = selfhost__compiler__disasm_skript("let x=4;let y=4;return x eq y");
     nl_assert_eq_text(script_english_cmp_eq_alias, "0: PUSH 4\n1: PUSH 4\n2: EQ\n3: PRINT\n4: HALT\n");
+    char * script_english_on_off_alias = selfhost__compiler__disasm_skript("let x=on;return x and not off");
+    nl_assert_eq_text(script_english_on_off_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: AND\n4: PRINT\n5: HALT\n");
     char * script_english_math_alias = selfhost__compiler__disasm_skript("let x=8;let y=2;return x divided_by y");
     nl_assert_eq_text(script_english_math_alias, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * script_english_math_short_alias = selfhost__compiler__disasm_skript("let x=8;let y=2;return x divide y");
