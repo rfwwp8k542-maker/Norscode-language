@@ -358,7 +358,7 @@ python3 -m norcode ci --json
 # Inkluderer source_is_main (om branch er main)
 # Inkluderer source_dirty (om worktree har lokale endringer)
 # Inkluderer source_clean (inverse av source_dirty når kjent)
-# Inkluderer runtime (python_version, python_major_minor, python_implementation, python_build, python_cache_tag, python_executable, byteorder, is_ci, is_github_actions, github_actions_run_id, github_actions_run_number, github_actions_run_attempt, github_actions_workflow, github_actions_job, github_actions_ref, github_actions_sha, github_actions_actor, github_actions_event_name, os, arch, platform, hostname, pid, cwd, timezone) for miljøsporing
+# Inkluderer runtime (python_version, python_major_minor, python_implementation, python_compiler, python_build, python_cache_tag, python_executable, byteorder, is_ci, is_github_actions, github_actions_run_id, github_actions_run_number, github_actions_run_attempt, github_actions_workflow, github_actions_job, github_actions_ref, github_actions_sha, github_actions_actor, github_actions_event_name, os, arch, platform, hostname, pid, cwd, timezone) for miljøsporing
 
 # Valgfri ekstra-sjekk for navnemigrering i CI
 python3 -m norcode ci --check-names
