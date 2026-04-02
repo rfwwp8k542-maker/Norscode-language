@@ -332,6 +332,7 @@ python3 -m norcode ci --json
 # Inkluderer workflow_action_check.scanned_dir for skannemappe
 # Inkluderer invocation med brukte CI-flagg
 # Inkluderer source_revision (git commit hash) når tilgjengelig
+# Inkluderer source_branch (git branch) når tilgjengelig
 
 # Valgfri ekstra-sjekk for navnemigrering i CI
 python3 -m norcode ci --check-names

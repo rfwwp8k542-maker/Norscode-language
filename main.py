@@ -2020,6 +2020,20 @@ def get_current_git_revision() -> str | None:
         return None
 
 
+def get_current_git_branch() -> str | None:
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        branch = result.stdout.strip()
+        return branch or None
+    except Exception:
+        return None
+
+
 def run_program(source_file: str):
     source_path, c_path, exe_path, _alias_map, _analyzer = build_program(source_file)
     print(f"Generert C-fil: {c_path}")
@@ -2358,6 +2372,7 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
         "schema_version": 1,
         "ok": False,
         "source_revision": get_current_git_revision(),
+        "source_branch": get_current_git_branch(),
         "invocation": {
             "cmd": "norcode ci",
             "json_output": json_output,
