@@ -1423,8 +1423,8 @@ char * selfhost__compiler__uttrykk_til_ops_og_verdier_med_miljo(nl_list_text* to
         if ((i + 4) < nl_list_text_len(tokens)) {
             n4 = selfhost__compiler__normaliser_norsk_token(tokens->data[(i + 4)]);
         }
-        if ((((i + 1) < nl_list_text_len(tokens)) && ((nl_streq(tok_raw, "divided") || (nl_streq(tok_raw, "*") && (nl_streq(tok_kilde, "multiply") || nl_streq(tok_kilde, "multiplied")))) || nl_streq(tok_raw, "modulo"))) && (nl_streq(n1, "by") || nl_streq(n1, "of"))) {
-            if (nl_streq(tok_raw, "divided")) {
+        if ((((i + 1) < nl_list_text_len(tokens)) && ((((nl_streq(tok_raw, "divided") || (nl_streq(tok_raw, "/") && nl_streq(tok_kilde, "divide"))) || (nl_streq(tok_raw, "*") && (nl_streq(tok_kilde, "multiply") || nl_streq(tok_kilde, "multiplied")))) || nl_streq(tok_raw, "modulo")) || (nl_streq(tok_raw, "%") && nl_streq(tok_kilde, "remainder")))) && (nl_streq(n1, "by") || nl_streq(n1, "of"))) {
+            if (nl_streq(tok_raw, "divided") || (nl_streq(tok_raw, "/") && nl_streq(tok_kilde, "divide"))) {
                 tok = "/";
             }
             else if (nl_streq(tok_raw, "*") && (nl_streq(tok_kilde, "multiply") || nl_streq(tok_kilde, "multiplied"))) {
@@ -3628,6 +3628,8 @@ int start() {
     nl_assert_eq_text(expr_english_divided_by_alias, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * expr_english_divided_by_phrase = selfhost__compiler__disasm_uttrykk("8 divided by 2");
     nl_assert_eq_text(expr_english_divided_by_phrase, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
+    char * expr_english_divide_by_phrase = selfhost__compiler__disasm_uttrykk("8 divide by 2");
+    nl_assert_eq_text(expr_english_divide_by_phrase, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * expr_english_add_alias = selfhost__compiler__disasm_uttrykk("3 add 4");
     nl_assert_eq_text(expr_english_add_alias, "0: PUSH 3\n1: PUSH 4\n2: ADD\n3: PRINT\n4: HALT\n");
     char * expr_english_subtract_alias = selfhost__compiler__disasm_uttrykk("10 subtract 3");
@@ -3640,6 +3642,8 @@ int start() {
     nl_assert_eq_text(expr_english_modulo_of_phrase, "0: PUSH 17\n1: PUSH 5\n2: MOD\n3: PRINT\n4: HALT\n");
     char * expr_english_remainder_alias = selfhost__compiler__disasm_uttrykk("17 remainder 5");
     nl_assert_eq_text(expr_english_remainder_alias, "0: PUSH 17\n1: PUSH 5\n2: MOD\n3: PRINT\n4: HALT\n");
+    char * expr_english_remainder_of_phrase = selfhost__compiler__disasm_uttrykk("17 remainder of 5");
+    nl_assert_eq_text(expr_english_remainder_of_phrase, "0: PUSH 17\n1: PUSH 5\n2: MOD\n3: PRINT\n4: HALT\n");
     char * expr_hvis_env = selfhost__compiler__disasm_uttrykk_med_miljo("hvis x>y da x ellers y", env_navn, env_verdier);
     nl_assert_eq_text(expr_hvis_env, "0: PUSH 7\n1: PUSH 3\n2: GT\n3: JZ 6\n4: PUSH 7\n5: JMP 8\n6: LABEL 6\n7: PUSH 3\n8: LABEL 8\n9: PRINT\n10: HALT\n");
     char * expr_hvis_c = selfhost__compiler__kompiler_uttrykk_til_c("hvis 1==1 da 7 ellers 9");
@@ -3743,6 +3747,8 @@ int start() {
     nl_assert_eq_text(script_english_math_alias, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * script_english_divided_by_phrase = selfhost__compiler__disasm_skript("let x=8;let y=2;return x divided by y");
     nl_assert_eq_text(script_english_divided_by_phrase, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
+    char * script_english_divide_by_phrase = selfhost__compiler__disasm_skript("let x=8;let y=2;return x divide by y");
+    nl_assert_eq_text(script_english_divide_by_phrase, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * script_english_multiply_by_phrase = selfhost__compiler__disasm_skript("let x=3;let y=4;return x multiply by y");
     nl_assert_eq_text(script_english_multiply_by_phrase, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n");
     char * script_english_multiplied_by_phrase = selfhost__compiler__disasm_skript("let x=3;let y=4;return x multiplied by y");
@@ -3753,6 +3759,8 @@ int start() {
     nl_assert_eq_text(script_english_modulo_alias, "0: PUSH 17\n1: PUSH 5\n2: MOD\n3: PRINT\n4: HALT\n");
     char * script_english_modulo_of_phrase = selfhost__compiler__disasm_skript("let x=17;let y=5;return x modulo of y");
     nl_assert_eq_text(script_english_modulo_of_phrase, "0: PUSH 17\n1: PUSH 5\n2: MOD\n3: PRINT\n4: HALT\n");
+    char * script_english_remainder_of_phrase = selfhost__compiler__disasm_skript("let x=17;let y=5;return x remainder of y");
+    nl_assert_eq_text(script_english_remainder_of_phrase, "0: PUSH 17\n1: PUSH 5\n2: MOD\n3: PRINT\n4: HALT\n");
     char * script_norsk_ops = selfhost__compiler__disasm_skript("x=sann;y=ikke usann;x og y");
     nl_assert_eq_text(script_norsk_ops, "0: PUSH 1\n1: PUSH 1\n2: AND\n3: PRINT\n4: HALT\n");
     char * script_norsk_ops_enten = selfhost__compiler__disasm_skript("x=usann;y=sann;x enten y");

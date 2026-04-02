@@ -1069,8 +1069,8 @@ funksjon uttrykk_til_ops_og_verdier_med_miljo(tokens: liste_tekst, navn: liste_t
             n4 = normaliser_norsk_token(tokens[i + 4])
         }
 
-        hvis (i + 1 < lengde(tokens) og ((tok_raw == "divided") eller (tok_raw == "*" og (tok_kilde == "multiply" eller tok_kilde == "multiplied")) eller tok_raw == "modulo") og (n1 == "by" eller n1 == "of")) {
-            hvis (tok_raw == "divided") {
+        hvis (i + 1 < lengde(tokens) og ((tok_raw == "divided") eller (tok_raw == "/" og tok_kilde == "divide") eller (tok_raw == "*" og (tok_kilde == "multiply" eller tok_kilde == "multiplied")) eller tok_raw == "modulo" eller (tok_raw == "%" og tok_kilde == "remainder")) og (n1 == "by" eller n1 == "of")) {
+            hvis (tok_raw == "divided" eller (tok_raw == "/" og tok_kilde == "divide")) {
                 tok = "/"
             } ellers hvis (tok_raw == "*" og (tok_kilde == "multiply" eller tok_kilde == "multiplied")) {
                 tok = "*"
