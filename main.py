@@ -3681,6 +3681,16 @@ def main():
         help="Vis fremdrift for M1/M2 dekning mot utvidet parity-suite",
     )
     selfhost_parity_progress.add_argument("--json", action="store_true", help="Skriv resultat som JSON")
+    selfhost_parity_progress.add_argument(
+        "--require-ready",
+        action="store_true",
+        help="Feil hvis progress ikke er ready",
+    )
+    selfhost_parity_progress.add_argument(
+        "--min-coverage",
+        type=float,
+        help="Krev minimum total dekningsprosent (0-100)",
+    )
 
     selfhost_parity_consistency = sub.add_parser(
         "selfhost-parity-consistency",
@@ -4100,18 +4110,36 @@ def main():
 
         elif args.cmd == "selfhost-parity-progress":
             payload = run_selfhost_parity_progress()
+            coverage = payload.get("coverage", {}) if isinstance(payload.get("coverage"), dict) else {}
+            total_coverage = coverage.get("total_pct")
+            if args.min_coverage is not None:
+                threshold = float(args.min_coverage)
+                if threshold < 0 or threshold > 100:
+                    raise RuntimeError("--min-coverage må være mellom 0 og 100")
+                payload["min_coverage_required"] = threshold
+                payload["min_coverage_ok"] = (
+                    isinstance(total_coverage, (int, float)) and float(total_coverage) >= threshold
+                )
+            else:
+                payload["min_coverage_required"] = None
+                payload["min_coverage_ok"] = True
             if args.json:
                 print(json.dumps(payload, ensure_ascii=False, indent=2))
             else:
                 print(f"OK: {'ja' if payload.get('ok') else 'nei'}")
                 print(f"Klar for full coverage: {'ja' if payload.get('ready') else 'nei'}")
-                coverage = payload.get("coverage", {})
                 print(
                     "Dekning: "
                     f"uttrykk={coverage.get('expression_pct', 0)}% "
                     f"skript={coverage.get('script_pct', 0)}% "
                     f"total={coverage.get('total_pct', 0)}%"
                 )
+                if args.min_coverage is not None:
+                    print(
+                        "Coverage-gate: "
+                        f"min={payload.get('min_coverage_required')}% "
+                        f"status={'OK' if payload.get('min_coverage_ok') else 'FEIL'}"
+                    )
                 print(
                     "Cases: "
                     f"m1={payload.get('m1', {}).get('case_count', 0)} "
@@ -4135,6 +4163,17 @@ def main():
                 if payload.get("stderr") and not payload.get("ok"):
                     print(str(payload.get("stderr", "")).rstrip())
             if not payload.get("ok"):
+                sys.exit(1)
+            if args.require_ready and not payload.get("ready"):
+                if not args.json:
+                    print("Gate-feil: progress er ikke ready")
+                sys.exit(1)
+            if not payload.get("min_coverage_ok"):
+                if not args.json:
+                    print(
+                        "Gate-feil: total dekningsprosent under minimum "
+                        f"({coverage.get('total_pct', 0)} < {payload.get('min_coverage_required')})"
+                    )
                 sys.exit(1)
 
         elif args.cmd == "selfhost-parity-consistency":
