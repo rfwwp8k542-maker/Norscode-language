@@ -491,6 +491,9 @@ char * selfhost__compiler__normaliser_norsk_token(char * tok) {
     if (((nl_streq(tok, "on_condition_that") || nl_streq(tok, "onconditionthat")) || nl_streq(tok, "pa_vilkar_av_at")) || nl_streq(tok, "pavilkaravat")) {
         return "impliseres_av";
     }
+    if ((nl_streq(tok, "granted") || nl_streq(tok, "gitt_dette")) || nl_streq(tok, "gittdette")) {
+        return "impliseres_av";
+    }
     if (((nl_streq(tok, "follows_from") || nl_streq(tok, "followsfrom")) || nl_streq(tok, "folger_fra")) || nl_streq(tok, "folgerfra")) {
         return "impliseres_av";
     }
@@ -3323,6 +3326,10 @@ int start() {
     nl_assert_eq_text(expr_on_condition_that_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n");
     char * expr_pa_vilkar_av_at_alias = selfhost__compiler__disasm_uttrykk("1 pa_vilkar_av_at 0");
     nl_assert_eq_text(expr_pa_vilkar_av_at_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n");
+    char * expr_granted_alias = selfhost__compiler__disasm_uttrykk("1 granted 0");
+    nl_assert_eq_text(expr_granted_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n");
+    char * expr_gitt_dette_alias = selfhost__compiler__disasm_uttrykk("1 gitt_dette 0");
+    nl_assert_eq_text(expr_gitt_dette_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n");
     char * expr_iff_alias = selfhost__compiler__disasm_uttrykk("1 iff 1");
     nl_assert_eq_text(expr_iff_alias, "0: PUSH 1\n1: PUSH 1\n2: EQ\n3: PRINT\n4: HALT\n");
     char * expr_equiv_alias = selfhost__compiler__disasm_uttrykk("1 equiv 1");
@@ -4654,6 +4661,10 @@ int start() {
     nl_assert_eq_text(script_on_condition_that_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n");
     char * script_pa_vilkar_av_at_alias = selfhost__compiler__disasm_skript("returner 1 pa_vilkar_av_at 0");
     nl_assert_eq_text(script_pa_vilkar_av_at_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n");
+    char * script_granted_alias = selfhost__compiler__disasm_skript("returner 1 granted 0");
+    nl_assert_eq_text(script_granted_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n");
+    char * script_gitt_dette_alias = selfhost__compiler__disasm_skript("returner 1 gitt_dette 0");
+    nl_assert_eq_text(script_gitt_dette_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n");
     char * script_iff_alias = selfhost__compiler__disasm_skript("returner 1 iff 1");
     nl_assert_eq_text(script_iff_alias, "0: PUSH 1\n1: PUSH 1\n2: EQ\n3: PRINT\n4: HALT\n");
     char * script_equiv_alias = selfhost__compiler__disasm_skript("returner 1 equiv 1");
