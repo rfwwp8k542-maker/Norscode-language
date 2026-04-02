@@ -384,6 +384,9 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "stable") {
         returner "sann"
     }
+    hvis (tok == "correct") {
+        returner "sann"
+    }
     hvis (tok == "enabled") {
         returner "sann"
     }
@@ -481,6 +484,9 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
         returner "usann"
     }
     hvis (tok == "unstable") {
+        returner "usann"
+    }
+    hvis (tok == "incorrect") {
         returner "usann"
     }
     hvis (tok == "disabled") {
