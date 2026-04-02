@@ -952,6 +952,9 @@ funksjon start() -> heltall {
     la expr_norsk_del_paa_underscore_ascii: tekst = sh.disasm_uttrykk("8 del_pa 2")
     assert_eq(expr_norsk_del_paa_underscore_ascii, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
 
+    la expr_norsk_delpa_kompakt: tekst = sh.disasm_uttrykk("8 delpa 2")
+    assert_eq(expr_norsk_delpa_kompakt, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
+
     la expr_norsk_del_paa_double_a_phrase: tekst = sh.disasm_uttrykk("8 del paa 2")
     assert_eq(expr_norsk_del_paa_double_a_phrase, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
 
@@ -967,6 +970,9 @@ funksjon start() -> heltall {
     la expr_norsk_deles_paa_underscore_ascii: tekst = sh.disasm_uttrykk("8 deles_pa 2")
     assert_eq(expr_norsk_deles_paa_underscore_ascii, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
 
+    la expr_norsk_delespa_kompakt: tekst = sh.disasm_uttrykk("8 delespa 2")
+    assert_eq(expr_norsk_delespa_kompakt, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
+
     la expr_norsk_deles_paa_double_a_phrase: tekst = sh.disasm_uttrykk("8 deles paa 2")
     assert_eq(expr_norsk_deles_paa_double_a_phrase, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
 
@@ -979,11 +985,17 @@ funksjon start() -> heltall {
     la expr_norsk_divider_paa_underscore_ascii: tekst = sh.disasm_uttrykk("8 divider_pa 2")
     assert_eq(expr_norsk_divider_paa_underscore_ascii, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
 
+    la expr_norsk_dividerpa_kompakt: tekst = sh.disasm_uttrykk("8 dividerpa 2")
+    assert_eq(expr_norsk_dividerpa_kompakt, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
+
     la expr_norsk_dividere_paa_utf8: tekst = sh.disasm_uttrykk("8 dividere på 2")
     assert_eq(expr_norsk_dividere_paa_utf8, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
 
     la expr_norsk_dividere_paa_underscore_ascii: tekst = sh.disasm_uttrykk("8 dividere_pa 2")
     assert_eq(expr_norsk_dividere_paa_underscore_ascii, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
+
+    la expr_norsk_dividerepa_kompakt: tekst = sh.disasm_uttrykk("8 dividerepa 2")
+    assert_eq(expr_norsk_dividerepa_kompakt, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
 
     la expr_norsk_dividerer_paa_utf8: tekst = sh.disasm_uttrykk("8 dividerer på 2")
     assert_eq(expr_norsk_dividerer_paa_utf8, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
@@ -991,11 +1003,17 @@ funksjon start() -> heltall {
     la expr_norsk_dividerer_paa_underscore_ascii: tekst = sh.disasm_uttrykk("8 dividerer_pa 2")
     assert_eq(expr_norsk_dividerer_paa_underscore_ascii, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
 
+    la expr_norsk_dividererpa_kompakt: tekst = sh.disasm_uttrykk("8 dividererpa 2")
+    assert_eq(expr_norsk_dividererpa_kompakt, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
+
     la expr_norsk_dividert_paa_utf8: tekst = sh.disasm_uttrykk("8 dividert på 2")
     assert_eq(expr_norsk_dividert_paa_utf8, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
 
     la expr_norsk_dividert_paa_underscore_ascii: tekst = sh.disasm_uttrykk("8 dividert_pa 2")
     assert_eq(expr_norsk_dividert_paa_underscore_ascii, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
+
+    la expr_norsk_dividertpa_kompakt: tekst = sh.disasm_uttrykk("8 dividertpa 2")
+    assert_eq(expr_norsk_dividertpa_kompakt, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
 
     la expr_norsk_divideres_paa_utf8: tekst = sh.disasm_uttrykk("8 divideres på 2")
     assert_eq(expr_norsk_divideres_paa_utf8, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
@@ -1005,6 +1023,9 @@ funksjon start() -> heltall {
 
     la expr_norsk_divideres_paa_underscore_ascii: tekst = sh.disasm_uttrykk("8 divideres_pa 2")
     assert_eq(expr_norsk_divideres_paa_underscore_ascii, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
+
+    la expr_norsk_dividerespa_kompakt: tekst = sh.disasm_uttrykk("8 dividerespa 2")
+    assert_eq(expr_norsk_dividerespa_kompakt, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
 
     la expr_norsk_divideres_paa_double_a_phrase: tekst = sh.disasm_uttrykk("8 divideres paa 2")
     assert_eq(expr_norsk_divideres_paa_double_a_phrase, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
@@ -1020,6 +1041,9 @@ funksjon start() -> heltall {
 
     la expr_norsk_delt_paa_underscore_ascii: tekst = sh.disasm_uttrykk("8 delt_pa 2")
     assert_eq(expr_norsk_delt_paa_underscore_ascii, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
+
+    la expr_norsk_deltpa_kompakt: tekst = sh.disasm_uttrykk("8 deltpa 2")
+    assert_eq(expr_norsk_deltpa_kompakt, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
 
     la expr_norsk_delt_paa_double_a_phrase: tekst = sh.disasm_uttrykk("8 delt paa 2")
     assert_eq(expr_norsk_delt_paa_double_a_phrase, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
@@ -1038,6 +1062,9 @@ funksjon start() -> heltall {
 
     la expr_norsk_deler_pa_underscore: tekst = sh.disasm_uttrykk("8 deler_pa 2")
     assert_eq(expr_norsk_deler_pa_underscore, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
+
+    la expr_norsk_delerpa_kompakt: tekst = sh.disasm_uttrykk("8 delerpa 2")
+    assert_eq(expr_norsk_delerpa_kompakt, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
 
     la expr_norsk_deler_med_underscore: tekst = sh.disasm_uttrykk("8 deler_med 2")
     assert_eq(expr_norsk_deler_med_underscore, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
@@ -2276,6 +2303,9 @@ funksjon start() -> heltall {
     la script_norsk_del_paa_underscore_ascii: tekst = sh.disasm_skript("la x=8;la y=2;returner x del_pa y")
     assert_eq(script_norsk_del_paa_underscore_ascii, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
 
+    la script_norsk_delpa_kompakt: tekst = sh.disasm_skript("la x=8;la y=2;returner x delpa y")
+    assert_eq(script_norsk_delpa_kompakt, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
+
     la script_norsk_del_paa_double_a_phrase: tekst = sh.disasm_skript("la x=8;la y=2;returner x del paa y")
     assert_eq(script_norsk_del_paa_double_a_phrase, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
 
@@ -2291,6 +2321,9 @@ funksjon start() -> heltall {
     la script_norsk_deles_paa_underscore_ascii: tekst = sh.disasm_skript("la x=8;la y=2;returner x deles_pa y")
     assert_eq(script_norsk_deles_paa_underscore_ascii, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
 
+    la script_norsk_delespa_kompakt: tekst = sh.disasm_skript("la x=8;la y=2;returner x delespa y")
+    assert_eq(script_norsk_delespa_kompakt, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
+
     la script_norsk_deles_paa_double_a_phrase: tekst = sh.disasm_skript("la x=8;la y=2;returner x deles paa y")
     assert_eq(script_norsk_deles_paa_double_a_phrase, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
 
@@ -2303,11 +2336,17 @@ funksjon start() -> heltall {
     la script_norsk_divider_paa_underscore_ascii: tekst = sh.disasm_skript("la x=8;la y=2;returner x divider_pa y")
     assert_eq(script_norsk_divider_paa_underscore_ascii, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
 
+    la script_norsk_dividerpa_kompakt: tekst = sh.disasm_skript("la x=8;la y=2;returner x dividerpa y")
+    assert_eq(script_norsk_dividerpa_kompakt, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
+
     la script_norsk_dividere_paa_utf8: tekst = sh.disasm_skript("la x=8;la y=2;returner x dividere på y")
     assert_eq(script_norsk_dividere_paa_utf8, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
 
     la script_norsk_dividere_paa_underscore_ascii: tekst = sh.disasm_skript("la x=8;la y=2;returner x dividere_pa y")
     assert_eq(script_norsk_dividere_paa_underscore_ascii, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
+
+    la script_norsk_dividerepa_kompakt: tekst = sh.disasm_skript("la x=8;la y=2;returner x dividerepa y")
+    assert_eq(script_norsk_dividerepa_kompakt, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
 
     la script_norsk_dividerer_paa_utf8: tekst = sh.disasm_skript("la x=8;la y=2;returner x dividerer på y")
     assert_eq(script_norsk_dividerer_paa_utf8, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
@@ -2315,11 +2354,17 @@ funksjon start() -> heltall {
     la script_norsk_dividerer_paa_underscore_ascii: tekst = sh.disasm_skript("la x=8;la y=2;returner x dividerer_pa y")
     assert_eq(script_norsk_dividerer_paa_underscore_ascii, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
 
+    la script_norsk_dividererpa_kompakt: tekst = sh.disasm_skript("la x=8;la y=2;returner x dividererpa y")
+    assert_eq(script_norsk_dividererpa_kompakt, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
+
     la script_norsk_dividert_paa_utf8: tekst = sh.disasm_skript("la x=8;la y=2;returner x dividert på y")
     assert_eq(script_norsk_dividert_paa_utf8, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
 
     la script_norsk_dividert_paa_underscore_ascii: tekst = sh.disasm_skript("la x=8;la y=2;returner x dividert_pa y")
     assert_eq(script_norsk_dividert_paa_underscore_ascii, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
+
+    la script_norsk_dividertpa_kompakt: tekst = sh.disasm_skript("la x=8;la y=2;returner x dividertpa y")
+    assert_eq(script_norsk_dividertpa_kompakt, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
 
     la script_norsk_divideres_paa_utf8: tekst = sh.disasm_skript("la x=8;la y=2;returner x divideres på y")
     assert_eq(script_norsk_divideres_paa_utf8, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
@@ -2329,6 +2374,9 @@ funksjon start() -> heltall {
 
     la script_norsk_divideres_paa_underscore_ascii: tekst = sh.disasm_skript("la x=8;la y=2;returner x divideres_pa y")
     assert_eq(script_norsk_divideres_paa_underscore_ascii, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
+
+    la script_norsk_dividerespa_kompakt: tekst = sh.disasm_skript("la x=8;la y=2;returner x dividerespa y")
+    assert_eq(script_norsk_dividerespa_kompakt, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
 
     la script_norsk_divideres_paa_double_a_phrase: tekst = sh.disasm_skript("la x=8;la y=2;returner x divideres paa y")
     assert_eq(script_norsk_divideres_paa_double_a_phrase, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
@@ -2344,6 +2392,9 @@ funksjon start() -> heltall {
 
     la script_norsk_delt_paa_underscore_ascii: tekst = sh.disasm_skript("la x=8;la y=2;returner x delt_pa y")
     assert_eq(script_norsk_delt_paa_underscore_ascii, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
+
+    la script_norsk_deltpa_kompakt: tekst = sh.disasm_skript("la x=8;la y=2;returner x deltpa y")
+    assert_eq(script_norsk_deltpa_kompakt, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
 
     la script_norsk_delt_paa_double_a_phrase: tekst = sh.disasm_skript("la x=8;la y=2;returner x delt paa y")
     assert_eq(script_norsk_delt_paa_double_a_phrase, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
@@ -2362,6 +2413,9 @@ funksjon start() -> heltall {
 
     la script_norsk_deler_pa_underscore: tekst = sh.disasm_skript("la x=8;la y=2;returner x deler_pa y")
     assert_eq(script_norsk_deler_pa_underscore, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
+
+    la script_norsk_delerpa_kompakt: tekst = sh.disasm_skript("la x=8;la y=2;returner x delerpa y")
+    assert_eq(script_norsk_delerpa_kompakt, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")
 
     la script_norsk_deler_med_underscore: tekst = sh.disasm_skript("la x=8;la y=2;returner x deler_med y")
     assert_eq(script_norsk_deler_med_underscore, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n")

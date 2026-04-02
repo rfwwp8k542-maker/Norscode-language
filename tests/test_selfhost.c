@@ -1287,7 +1287,7 @@ char * selfhost__compiler__uttrykk_til_ops_og_verdier_med_miljo(nl_list_text* to
         if ((i + 4) < nl_list_text_len(tokens)) {
             n4 = selfhost__compiler__normaliser_norsk_token(tokens->data[(i + 4)]);
         }
-        if ((((((((((((((((nl_streq(tok_raw, "delt_pa") || nl_streq(tok_raw, "deler_pa")) || nl_streq(tok_raw, "dele_pa")) || nl_streq(tok_raw, "delepa")) || nl_streq(tok_raw, "delepaa")) || nl_streq(tok_raw, "deles_pa")) || nl_streq(tok_raw, "del_pa")) || nl_streq(tok_raw, "dele_seg_pa")) || nl_streq(tok_raw, "deler_seg_pa")) || nl_streq(tok_raw, "divider_seg_pa")) || nl_streq(tok_raw, "dividere_seg_pa")) || nl_streq(tok_raw, "dividerer_seg_pa")) || nl_streq(tok_raw, "divider_pa")) || nl_streq(tok_raw, "dividere_pa")) || nl_streq(tok_raw, "dividerer_pa")) || nl_streq(tok_raw, "dividert_pa")) || nl_streq(tok_raw, "divideres_pa")) {
+        if (((((((((((((((((((((((((nl_streq(tok_raw, "delt_pa") || nl_streq(tok_raw, "deltpa")) || nl_streq(tok_raw, "deler_pa")) || nl_streq(tok_raw, "delerpa")) || nl_streq(tok_raw, "dele_pa")) || nl_streq(tok_raw, "delepa")) || nl_streq(tok_raw, "delepaa")) || nl_streq(tok_raw, "deles_pa")) || nl_streq(tok_raw, "delespa")) || nl_streq(tok_raw, "del_pa")) || nl_streq(tok_raw, "delpa")) || nl_streq(tok_raw, "dele_seg_pa")) || nl_streq(tok_raw, "deler_seg_pa")) || nl_streq(tok_raw, "divider_seg_pa")) || nl_streq(tok_raw, "dividere_seg_pa")) || nl_streq(tok_raw, "dividerer_seg_pa")) || nl_streq(tok_raw, "divider_pa")) || nl_streq(tok_raw, "dividerpa")) || nl_streq(tok_raw, "dividere_pa")) || nl_streq(tok_raw, "dividerepa")) || nl_streq(tok_raw, "dividerer_pa")) || nl_streq(tok_raw, "dividererpa")) || nl_streq(tok_raw, "dividert_pa")) || nl_streq(tok_raw, "dividertpa")) || nl_streq(tok_raw, "divideres_pa")) || nl_streq(tok_raw, "dividerespa")) {
             tok = "/";
             tok_step = 1;
         }
@@ -2935,6 +2935,8 @@ int start() {
     nl_assert_eq_text(expr_norsk_del_paa_underscore_utf8, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * expr_norsk_del_paa_underscore_ascii = selfhost__compiler__disasm_uttrykk("8 del_pa 2");
     nl_assert_eq_text(expr_norsk_del_paa_underscore_ascii, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
+    char * expr_norsk_delpa_kompakt = selfhost__compiler__disasm_uttrykk("8 delpa 2");
+    nl_assert_eq_text(expr_norsk_delpa_kompakt, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * expr_norsk_del_paa_double_a_phrase = selfhost__compiler__disasm_uttrykk("8 del paa 2");
     nl_assert_eq_text(expr_norsk_del_paa_double_a_phrase, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * expr_norsk_del_paa_double_a_underscore = selfhost__compiler__disasm_uttrykk("8 del_paa 2");
@@ -2945,6 +2947,8 @@ int start() {
     nl_assert_eq_text(expr_norsk_deles_paa_underscore_utf8, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * expr_norsk_deles_paa_underscore_ascii = selfhost__compiler__disasm_uttrykk("8 deles_pa 2");
     nl_assert_eq_text(expr_norsk_deles_paa_underscore_ascii, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
+    char * expr_norsk_delespa_kompakt = selfhost__compiler__disasm_uttrykk("8 delespa 2");
+    nl_assert_eq_text(expr_norsk_delespa_kompakt, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * expr_norsk_deles_paa_double_a_phrase = selfhost__compiler__disasm_uttrykk("8 deles paa 2");
     nl_assert_eq_text(expr_norsk_deles_paa_double_a_phrase, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * expr_norsk_deles_paa_double_a_underscore = selfhost__compiler__disasm_uttrykk("8 deles_paa 2");
@@ -2953,24 +2957,34 @@ int start() {
     nl_assert_eq_text(expr_norsk_divider_paa_utf8, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * expr_norsk_divider_paa_underscore_ascii = selfhost__compiler__disasm_uttrykk("8 divider_pa 2");
     nl_assert_eq_text(expr_norsk_divider_paa_underscore_ascii, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
+    char * expr_norsk_dividerpa_kompakt = selfhost__compiler__disasm_uttrykk("8 dividerpa 2");
+    nl_assert_eq_text(expr_norsk_dividerpa_kompakt, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * expr_norsk_dividere_paa_utf8 = selfhost__compiler__disasm_uttrykk("8 dividere på 2");
     nl_assert_eq_text(expr_norsk_dividere_paa_utf8, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * expr_norsk_dividere_paa_underscore_ascii = selfhost__compiler__disasm_uttrykk("8 dividere_pa 2");
     nl_assert_eq_text(expr_norsk_dividere_paa_underscore_ascii, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
+    char * expr_norsk_dividerepa_kompakt = selfhost__compiler__disasm_uttrykk("8 dividerepa 2");
+    nl_assert_eq_text(expr_norsk_dividerepa_kompakt, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * expr_norsk_dividerer_paa_utf8 = selfhost__compiler__disasm_uttrykk("8 dividerer på 2");
     nl_assert_eq_text(expr_norsk_dividerer_paa_utf8, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * expr_norsk_dividerer_paa_underscore_ascii = selfhost__compiler__disasm_uttrykk("8 dividerer_pa 2");
     nl_assert_eq_text(expr_norsk_dividerer_paa_underscore_ascii, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
+    char * expr_norsk_dividererpa_kompakt = selfhost__compiler__disasm_uttrykk("8 dividererpa 2");
+    nl_assert_eq_text(expr_norsk_dividererpa_kompakt, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * expr_norsk_dividert_paa_utf8 = selfhost__compiler__disasm_uttrykk("8 dividert på 2");
     nl_assert_eq_text(expr_norsk_dividert_paa_utf8, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * expr_norsk_dividert_paa_underscore_ascii = selfhost__compiler__disasm_uttrykk("8 dividert_pa 2");
     nl_assert_eq_text(expr_norsk_dividert_paa_underscore_ascii, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
+    char * expr_norsk_dividertpa_kompakt = selfhost__compiler__disasm_uttrykk("8 dividertpa 2");
+    nl_assert_eq_text(expr_norsk_dividertpa_kompakt, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * expr_norsk_divideres_paa_utf8 = selfhost__compiler__disasm_uttrykk("8 divideres på 2");
     nl_assert_eq_text(expr_norsk_divideres_paa_utf8, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * expr_norsk_divideres_paa_underscore_utf8 = selfhost__compiler__disasm_uttrykk("8 divideres_på 2");
     nl_assert_eq_text(expr_norsk_divideres_paa_underscore_utf8, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * expr_norsk_divideres_paa_underscore_ascii = selfhost__compiler__disasm_uttrykk("8 divideres_pa 2");
     nl_assert_eq_text(expr_norsk_divideres_paa_underscore_ascii, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
+    char * expr_norsk_dividerespa_kompakt = selfhost__compiler__disasm_uttrykk("8 dividerespa 2");
+    nl_assert_eq_text(expr_norsk_dividerespa_kompakt, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * expr_norsk_divideres_paa_double_a_phrase = selfhost__compiler__disasm_uttrykk("8 divideres paa 2");
     nl_assert_eq_text(expr_norsk_divideres_paa_double_a_phrase, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * expr_norsk_divideres_paa_double_a_underscore = selfhost__compiler__disasm_uttrykk("8 divideres_paa 2");
@@ -2981,6 +2995,8 @@ int start() {
     nl_assert_eq_text(expr_norsk_delt_paa_underscore_utf8, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * expr_norsk_delt_paa_underscore_ascii = selfhost__compiler__disasm_uttrykk("8 delt_pa 2");
     nl_assert_eq_text(expr_norsk_delt_paa_underscore_ascii, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
+    char * expr_norsk_deltpa_kompakt = selfhost__compiler__disasm_uttrykk("8 deltpa 2");
+    nl_assert_eq_text(expr_norsk_deltpa_kompakt, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * expr_norsk_delt_paa_double_a_phrase = selfhost__compiler__disasm_uttrykk("8 delt paa 2");
     nl_assert_eq_text(expr_norsk_delt_paa_double_a_phrase, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * expr_norsk_delt_paa_double_a_underscore = selfhost__compiler__disasm_uttrykk("8 delt_paa 2");
@@ -2993,6 +3009,8 @@ int start() {
     nl_assert_eq_text(expr_norsk_deler_med, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * expr_norsk_deler_pa_underscore = selfhost__compiler__disasm_uttrykk("8 deler_pa 2");
     nl_assert_eq_text(expr_norsk_deler_pa_underscore, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
+    char * expr_norsk_delerpa_kompakt = selfhost__compiler__disasm_uttrykk("8 delerpa 2");
+    nl_assert_eq_text(expr_norsk_delerpa_kompakt, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * expr_norsk_deler_med_underscore = selfhost__compiler__disasm_uttrykk("8 deler_med 2");
     nl_assert_eq_text(expr_norsk_deler_med_underscore, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * expr_norsk_dele_kort = selfhost__compiler__disasm_uttrykk("8 dele 2");
@@ -3826,6 +3844,8 @@ int start() {
     nl_assert_eq_text(script_norsk_del_paa_underscore_utf8, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * script_norsk_del_paa_underscore_ascii = selfhost__compiler__disasm_skript("la x=8;la y=2;returner x del_pa y");
     nl_assert_eq_text(script_norsk_del_paa_underscore_ascii, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
+    char * script_norsk_delpa_kompakt = selfhost__compiler__disasm_skript("la x=8;la y=2;returner x delpa y");
+    nl_assert_eq_text(script_norsk_delpa_kompakt, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * script_norsk_del_paa_double_a_phrase = selfhost__compiler__disasm_skript("la x=8;la y=2;returner x del paa y");
     nl_assert_eq_text(script_norsk_del_paa_double_a_phrase, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * script_norsk_del_paa_double_a_underscore = selfhost__compiler__disasm_skript("la x=8;la y=2;returner x del_paa y");
@@ -3836,6 +3856,8 @@ int start() {
     nl_assert_eq_text(script_norsk_deles_paa_underscore_utf8, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * script_norsk_deles_paa_underscore_ascii = selfhost__compiler__disasm_skript("la x=8;la y=2;returner x deles_pa y");
     nl_assert_eq_text(script_norsk_deles_paa_underscore_ascii, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
+    char * script_norsk_delespa_kompakt = selfhost__compiler__disasm_skript("la x=8;la y=2;returner x delespa y");
+    nl_assert_eq_text(script_norsk_delespa_kompakt, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * script_norsk_deles_paa_double_a_phrase = selfhost__compiler__disasm_skript("la x=8;la y=2;returner x deles paa y");
     nl_assert_eq_text(script_norsk_deles_paa_double_a_phrase, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * script_norsk_deles_paa_double_a_underscore = selfhost__compiler__disasm_skript("la x=8;la y=2;returner x deles_paa y");
@@ -3844,24 +3866,34 @@ int start() {
     nl_assert_eq_text(script_norsk_divider_paa_utf8, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * script_norsk_divider_paa_underscore_ascii = selfhost__compiler__disasm_skript("la x=8;la y=2;returner x divider_pa y");
     nl_assert_eq_text(script_norsk_divider_paa_underscore_ascii, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
+    char * script_norsk_dividerpa_kompakt = selfhost__compiler__disasm_skript("la x=8;la y=2;returner x dividerpa y");
+    nl_assert_eq_text(script_norsk_dividerpa_kompakt, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * script_norsk_dividere_paa_utf8 = selfhost__compiler__disasm_skript("la x=8;la y=2;returner x dividere på y");
     nl_assert_eq_text(script_norsk_dividere_paa_utf8, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * script_norsk_dividere_paa_underscore_ascii = selfhost__compiler__disasm_skript("la x=8;la y=2;returner x dividere_pa y");
     nl_assert_eq_text(script_norsk_dividere_paa_underscore_ascii, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
+    char * script_norsk_dividerepa_kompakt = selfhost__compiler__disasm_skript("la x=8;la y=2;returner x dividerepa y");
+    nl_assert_eq_text(script_norsk_dividerepa_kompakt, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * script_norsk_dividerer_paa_utf8 = selfhost__compiler__disasm_skript("la x=8;la y=2;returner x dividerer på y");
     nl_assert_eq_text(script_norsk_dividerer_paa_utf8, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * script_norsk_dividerer_paa_underscore_ascii = selfhost__compiler__disasm_skript("la x=8;la y=2;returner x dividerer_pa y");
     nl_assert_eq_text(script_norsk_dividerer_paa_underscore_ascii, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
+    char * script_norsk_dividererpa_kompakt = selfhost__compiler__disasm_skript("la x=8;la y=2;returner x dividererpa y");
+    nl_assert_eq_text(script_norsk_dividererpa_kompakt, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * script_norsk_dividert_paa_utf8 = selfhost__compiler__disasm_skript("la x=8;la y=2;returner x dividert på y");
     nl_assert_eq_text(script_norsk_dividert_paa_utf8, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * script_norsk_dividert_paa_underscore_ascii = selfhost__compiler__disasm_skript("la x=8;la y=2;returner x dividert_pa y");
     nl_assert_eq_text(script_norsk_dividert_paa_underscore_ascii, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
+    char * script_norsk_dividertpa_kompakt = selfhost__compiler__disasm_skript("la x=8;la y=2;returner x dividertpa y");
+    nl_assert_eq_text(script_norsk_dividertpa_kompakt, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * script_norsk_divideres_paa_utf8 = selfhost__compiler__disasm_skript("la x=8;la y=2;returner x divideres på y");
     nl_assert_eq_text(script_norsk_divideres_paa_utf8, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * script_norsk_divideres_paa_underscore_utf8 = selfhost__compiler__disasm_skript("la x=8;la y=2;returner x divideres_på y");
     nl_assert_eq_text(script_norsk_divideres_paa_underscore_utf8, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * script_norsk_divideres_paa_underscore_ascii = selfhost__compiler__disasm_skript("la x=8;la y=2;returner x divideres_pa y");
     nl_assert_eq_text(script_norsk_divideres_paa_underscore_ascii, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
+    char * script_norsk_dividerespa_kompakt = selfhost__compiler__disasm_skript("la x=8;la y=2;returner x dividerespa y");
+    nl_assert_eq_text(script_norsk_dividerespa_kompakt, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * script_norsk_divideres_paa_double_a_phrase = selfhost__compiler__disasm_skript("la x=8;la y=2;returner x divideres paa y");
     nl_assert_eq_text(script_norsk_divideres_paa_double_a_phrase, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * script_norsk_divideres_paa_double_a_underscore = selfhost__compiler__disasm_skript("la x=8;la y=2;returner x divideres_paa y");
@@ -3872,6 +3904,8 @@ int start() {
     nl_assert_eq_text(script_norsk_delt_paa_underscore_utf8, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * script_norsk_delt_paa_underscore_ascii = selfhost__compiler__disasm_skript("la x=8;la y=2;returner x delt_pa y");
     nl_assert_eq_text(script_norsk_delt_paa_underscore_ascii, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
+    char * script_norsk_deltpa_kompakt = selfhost__compiler__disasm_skript("la x=8;la y=2;returner x deltpa y");
+    nl_assert_eq_text(script_norsk_deltpa_kompakt, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * script_norsk_delt_paa_double_a_phrase = selfhost__compiler__disasm_skript("la x=8;la y=2;returner x delt paa y");
     nl_assert_eq_text(script_norsk_delt_paa_double_a_phrase, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * script_norsk_delt_paa_double_a_underscore = selfhost__compiler__disasm_skript("la x=8;la y=2;returner x delt_paa y");
@@ -3884,6 +3918,8 @@ int start() {
     nl_assert_eq_text(script_norsk_deler_med, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * script_norsk_deler_pa_underscore = selfhost__compiler__disasm_skript("la x=8;la y=2;returner x deler_pa y");
     nl_assert_eq_text(script_norsk_deler_pa_underscore, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
+    char * script_norsk_delerpa_kompakt = selfhost__compiler__disasm_skript("la x=8;la y=2;returner x delerpa y");
+    nl_assert_eq_text(script_norsk_delerpa_kompakt, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * script_norsk_deler_med_underscore = selfhost__compiler__disasm_skript("la x=8;la y=2;returner x deler_med y");
     nl_assert_eq_text(script_norsk_deler_med_underscore, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * script_norsk_dele_kort = selfhost__compiler__disasm_skript("la x=8;la y=2;returner x dele y");
