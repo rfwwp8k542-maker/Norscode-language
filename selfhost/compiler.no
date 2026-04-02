@@ -134,6 +134,9 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "thereby" eller tok == "derved") {
         returner "impliserer"
     }
+    hvis (tok == "infer" eller tok == "derav") {
+        returner "impliserer"
+    }
     hvis (tok == "only_if" eller tok == "onlyif" eller tok == "kun_hvis" eller tok == "kunhvis") {
         returner "impliserer"
     }
