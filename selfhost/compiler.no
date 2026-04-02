@@ -122,6 +122,9 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "only_if" eller tok == "onlyif" eller tok == "kun_hvis" eller tok == "kunhvis") {
         returner "impliserer"
     }
+    hvis (tok == "requires" eller tok == "krever") {
+        returner "impliserer"
+    }
     hvis (tok == "implied_by" eller tok == "impliedby") {
         returner "impliseres_av"
     }
