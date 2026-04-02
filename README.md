@@ -378,6 +378,14 @@ python3 -m norcode ci --json
 python3 -m norcode ci --check-names
 ```
 
+Tolkning av `timings_ratio` (hurtigguide):
+
+- `step_coverage` / `step_coverage_pct`: hvor mye av total CI-tid som er direkte målt i delsteg.
+- `overhead_share` / `overhead_share_pct`: tid utenfor målte delsteg (oppstart, avrunding, osv.).
+- `overhead_level`: grov klassifisering (`low`, `medium`, `high`) basert på policy i `overhead_policy`.
+- `overhead_within_medium`: enkel boolsk gate for automasjon (`true` når overhead er innen medium-grensen).
+- `ratio_sum` og `percent_sum` bør være nær `1.0` / `100.0`; `ratio_delta` og `percent_delta` viser avrundingsavvik.
+
 `norcode ci` kjører nå disse stegene:
 1. Snapshot check
 2. Engine parity check
