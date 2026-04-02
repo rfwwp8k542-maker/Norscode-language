@@ -2837,6 +2837,7 @@ def _selfhost_parity_suite_targets(suite: str) -> list[tuple[Path, str]]:
         "extended": [(SELFHOST_PARSER_EXTENDED_FIXTURE, "Selfhost parser parity (utvidet)")],
         "all": [
             (SELFHOST_PARSER_M1_FIXTURE, "Selfhost parser parity (M1)"),
+            (SELFHOST_PARSER_M2_FIXTURE, "Selfhost parser parity (M2)"),
             (SELFHOST_PARSER_EXTENDED_FIXTURE, "Selfhost parser parity (utvidet)"),
         ],
     }
@@ -3132,6 +3133,7 @@ def run_ci_pipeline(
         step_order.append("parser_core_m2_check")
     else:
         step_order.append("parser_core_m1_check")
+        step_order.append("parser_core_m2_check")
         step_order.append("parser_core_extended_check")
     step_order.append("parser_suite_consistency_check")
     if require_selfhost_ready:
@@ -3356,9 +3358,10 @@ def run_ci_pipeline(
         payload["parser_core_m1_check"]["case_count"] = 0
         payload["parser_core_m1_check"]["error_cases"] = 0
 
-    if parity_suite == "m2":
+    if parity_suite in {"m2", "all"}:
         if not json_output:
-            print(f"[4/{total_steps}] Selfhost parser parity (M2)")
+            m2_step = 5 if parity_suite == "all" else 4
+            print(f"[{m2_step}/{total_steps}] Selfhost parser parity (M2)")
         started = time.perf_counter()
         parser_core_m2_result = run_selfhost_parser_core_checks(
             SELFHOST_PARSER_M2_FIXTURE, "Selfhost parser parity (M2)"
@@ -3387,7 +3390,7 @@ def run_ci_pipeline(
 
     if parity_suite == "all":
         if not json_output:
-            print(f"[5/{total_steps}] Selfhost parser parity (utvidet)")
+            print(f"[6/{total_steps}] Selfhost parser parity (utvidet)")
         started = time.perf_counter()
         parser_core_extended_result = run_selfhost_parser_core_checks(
             SELFHOST_PARSER_EXTENDED_FIXTURE, "Selfhost parser parity (utvidet)"
@@ -3418,7 +3421,7 @@ def run_ci_pipeline(
         payload["parser_core_extended_check"]["case_count"] = 0
         payload["parser_core_extended_check"]["error_cases"] = 0
 
-    consistency_step = 6 if parity_suite == "all" else 5
+    consistency_step = 7 if parity_suite == "all" else 5
     if not json_output:
         print(f"[{consistency_step}/{total_steps}] Parser suite consistency")
     started = time.perf_counter()

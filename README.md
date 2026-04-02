@@ -330,7 +330,7 @@ python3 -m norcode ci --parity-suite m1
 # Rask CI-løkke (kun M2 parity)
 python3 -m norcode ci --parity-suite m2
 
-# Full CI-løkke (M1 + utvidet parity)
+# Full CI-løkke (M1 + M2 + utvidet parity)
 python3 -m norcode ci
 
 # Full CI + selfhost readiness-gate
@@ -436,13 +436,14 @@ Eksempel på `timings_ratio` i `ci --json`:
 3. Engine parity check
 4. Selfhost parser parity (M1)
 5. Selfhost parser parity (utvidet)
-6. Parser suite consistency (verifiserer valgt scope: M1, M2 eller M1+M2 mot utvidet suite)
-7. Selfhost parity progress check (kun med `--require-selfhost-ready`)
-8. Full test
-9. Workflow action version check (stopper på deprecated action-versjoner, usikker Node opt-out og manglende `--require-selfhost-ready`/`--check-names` i `norcode ci`-run-linjer)
-10. Name migration check (kun med `--check-names`)
+6. Selfhost parser parity (M2)
+7. Parser suite consistency (verifiserer valgt scope: M1, M2 eller M1+M2 mot utvidet suite)
+8. Selfhost parity progress check (kun med `--require-selfhost-ready`)
+9. Full test
+10. Workflow action version check (stopper på deprecated action-versjoner, usikker Node opt-out og manglende `--require-selfhost-ready`/`--check-names` i `norcode ci`-run-linjer)
+11. Name migration check (kun med `--check-names`)
 
-Med `--parity-suite m1` eller `--parity-suite m2` hopper `norcode ci` over steget for utvidet parity (steg 5 i full kjøring) for raskere lokal iterasjon.
+Med `--parity-suite m1` eller `--parity-suite m2` hopper `norcode ci` over stegene for de andre parser-suitene for raskere lokal iterasjon.
 
 Kjør parser parity separat uten full CI:
 
