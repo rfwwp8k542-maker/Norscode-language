@@ -1689,14 +1689,69 @@ funksjon skript_til_ops_og_verdier(tokens: liste_tekst, navn: liste_tekst, miljo
             }
         }
 
+        la stmt_ops: liste_tekst = [""]
+        la stmt_verdier: liste_heltall = [0]
         la final_feil: tekst = ""
+        fjern_indeks(stmt_ops, 0)
+        fjern_indeks(stmt_verdier, 0)
+
         hvis (lengde(final_tokens) > 0 og final_tokens[0] == "hvis") {
-            final_feil = bygg_hvis_da_ellers_ops_med_miljo(final_tokens, navn, miljo_verdier, out_ops, out_verdier)
+            final_feil = bygg_hvis_da_ellers_ops_med_miljo(final_tokens, navn, miljo_verdier, stmt_ops, stmt_verdier)
         } ellers {
-            final_feil = uttrykk_til_ops_og_verdier_med_miljo(final_tokens, navn, miljo_verdier, out_ops, out_verdier)
+            final_feil = uttrykk_til_ops_og_verdier_med_miljo(final_tokens, navn, miljo_verdier, stmt_ops, stmt_verdier)
         }
         hvis (final_feil != "") {
             returner final_feil
+        }
+
+        hvis (stmt_has_semicolon) {
+            la bare_tomme_etter: bool = sann
+            la sjekk_i: heltall = i
+            mens (sjekk_i < lengde(tokens)) {
+                hvis (tokens[sjekk_i] != ";" og tokens[sjekk_i] != "") {
+                    bare_tomme_etter = usann
+                    bryt
+                }
+                sjekk_i = sjekk_i + 1
+            }
+
+            hvis (i >= lengde(tokens) eller bare_tomme_etter) {
+                la kopier_feil_slutt: tekst = append_ops(out_ops, out_verdier, stmt_ops, stmt_verdier)
+                hvis (kopier_feil_slutt != "") {
+                    returner kopier_feil_slutt
+                }
+                fant_sluttuttrykk = sann
+                i = lengde(tokens)
+                bryt
+            }
+
+            hvis (stmt_tokens[0] == "returner") {
+                la kopier_feil: tekst = append_ops(out_ops, out_verdier, stmt_ops, stmt_verdier)
+                hvis (kopier_feil != "") {
+                    returner kopier_feil
+                }
+                fant_sluttuttrykk = sann
+                mens (i < lengde(tokens)) {
+                    hvis (tokens[i] != ";" og tokens[i] != "") {
+                        returner "/* feil: kun ';' er tillatt etter 'returner' (token " + tekst_fra_heltall(i) + ") */"
+                    }
+                    i = i + 1
+                }
+                bryt
+            }
+
+            la stmt_eval: liste_heltall = [0]
+            fjern_indeks(stmt_eval, 0)
+            final_feil = eval_ops_til_verdi(stmt_ops, stmt_verdier, stmt_eval)
+            hvis (final_feil != "") {
+                returner final_feil
+            }
+            fortsett
+        }
+
+        la kopier_feil2: tekst = append_ops(out_ops, out_verdier, stmt_ops, stmt_verdier)
+        hvis (kopier_feil2 != "") {
+            returner kopier_feil2
         }
         fant_sluttuttrykk = sann
 

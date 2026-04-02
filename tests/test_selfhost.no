@@ -1511,6 +1511,12 @@ funksjon start() -> heltall {
     la script_empty_statements: tekst = sh.disasm_skript(";;la x=2;;x+1;;")
     assert_eq(script_empty_statements, "0: PUSH 2\n1: PUSH 1\n2: ADD\n3: PRINT\n4: HALT\n")
 
+    la script_if_statement_before_final: tekst = sh.disasm_skript("la x=1;hvis x==1 da 10 ellers 20;returner x+2")
+    assert_eq(script_if_statement_before_final, "0: PUSH 1\n1: PUSH 2\n2: ADD\n3: PRINT\n4: HALT\n")
+
+    la script_expr_statement_before_final: tekst = sh.disasm_skript("1+1;la y=2;y")
+    assert_eq(script_expr_statement_before_final, "0: PUSH 2\n1: PRINT\n2: HALT\n")
+
     la script_returner: tekst = sh.disasm_skript("la x=2;returner x+3")
     assert_eq(script_returner, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n")
 
@@ -2811,7 +2817,7 @@ funksjon start() -> heltall {
     assert_eq(script_err5, "/* feil: ugyldig deklarasjon etter 'la' ved token 0 */")
 
     la script_err6: tekst = sh.disasm_skript("1+1; y=2; y")
-    assert_eq(script_err6, "/* feil: kun siste statement kan være uttrykk (token 4) */")
+    assert_eq(script_err6, "0: PUSH 2\n1: PRINT\n2: HALT\n")
 
     la script_err7: tekst = sh.disasm_skript("la x=1;returner")
     assert_eq(script_err7, "/* feil: 'returner' må etterfølges av uttrykk ved token 5 */")

@@ -2092,15 +2092,67 @@ char * selfhost__compiler__skript_til_ops_og_verdier(nl_list_text* tokens, nl_li
                 r2 = (r2 + 1);
             }
         }
+        nl_list_text* stmt_ops = nl_list_text_new();
+        nl_list_text_push(stmt_ops, "");
+        nl_list_int* stmt_verdier = nl_list_int_new();
+        nl_list_int_push(stmt_verdier, 0);
         char * final_feil = "";
+        nl_list_text_remove(stmt_ops, 0);
+        nl_list_int_remove(stmt_verdier, 0);
         if ((nl_list_text_len(final_tokens) > 0) && nl_streq(final_tokens->data[0], "hvis")) {
-            final_feil = selfhost__compiler__bygg_hvis_da_ellers_ops_med_miljo(final_tokens, navn, miljo_verdier, out_ops, out_verdier);
+            final_feil = selfhost__compiler__bygg_hvis_da_ellers_ops_med_miljo(final_tokens, navn, miljo_verdier, stmt_ops, stmt_verdier);
         }
         else {
-            final_feil = selfhost__compiler__uttrykk_til_ops_og_verdier_med_miljo(final_tokens, navn, miljo_verdier, out_ops, out_verdier);
+            final_feil = selfhost__compiler__uttrykk_til_ops_og_verdier_med_miljo(final_tokens, navn, miljo_verdier, stmt_ops, stmt_verdier);
         }
         if (!(nl_streq(final_feil, ""))) {
             return final_feil;
+        }
+        if (stmt_has_semicolon) {
+            int bare_tomme_etter = 1;
+            int sjekk_i = i;
+            while (sjekk_i < nl_list_text_len(tokens)) {
+                if (!(nl_streq(tokens->data[sjekk_i], ";")) && !(nl_streq(tokens->data[sjekk_i], ""))) {
+                    bare_tomme_etter = 0;
+                    break;
+                }
+                sjekk_i = (sjekk_i + 1);
+            }
+            if ((i >= nl_list_text_len(tokens)) || bare_tomme_etter) {
+                char * kopier_feil_slutt = selfhost__compiler__append_ops(out_ops, out_verdier, stmt_ops, stmt_verdier);
+                if (!(nl_streq(kopier_feil_slutt, ""))) {
+                    return kopier_feil_slutt;
+                }
+                fant_sluttuttrykk = 1;
+                i = nl_list_text_len(tokens);
+                break;
+            }
+            if (nl_streq(stmt_tokens->data[0], "returner")) {
+                char * kopier_feil = selfhost__compiler__append_ops(out_ops, out_verdier, stmt_ops, stmt_verdier);
+                if (!(nl_streq(kopier_feil, ""))) {
+                    return kopier_feil;
+                }
+                fant_sluttuttrykk = 1;
+                while (i < nl_list_text_len(tokens)) {
+                    if (!(nl_streq(tokens->data[i], ";")) && !(nl_streq(tokens->data[i], ""))) {
+                        return nl_concat(nl_concat("/* feil: kun ';' er tillatt etter 'returner' (token ", nl_int_to_text(i)), ") */");
+                    }
+                    i = (i + 1);
+                }
+                break;
+            }
+            nl_list_int* stmt_eval = nl_list_int_new();
+            nl_list_int_push(stmt_eval, 0);
+            nl_list_int_remove(stmt_eval, 0);
+            final_feil = selfhost__compiler__eval_ops_til_verdi(stmt_ops, stmt_verdier, stmt_eval);
+            if (!(nl_streq(final_feil, ""))) {
+                return final_feil;
+            }
+            continue;
+        }
+        char * kopier_feil2 = selfhost__compiler__append_ops(out_ops, out_verdier, stmt_ops, stmt_verdier);
+        if (!(nl_streq(kopier_feil2, ""))) {
+            return kopier_feil2;
         }
         fant_sluttuttrykk = 1;
         while (i < nl_list_text_len(tokens)) {
@@ -3319,6 +3371,10 @@ int start() {
     nl_assert_eq_text(script_trailing_semicolon, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
     char * script_empty_statements = selfhost__compiler__disasm_skript(";;la x=2;;x+1;;");
     nl_assert_eq_text(script_empty_statements, "0: PUSH 2\n1: PUSH 1\n2: ADD\n3: PRINT\n4: HALT\n");
+    char * script_if_statement_before_final = selfhost__compiler__disasm_skript("la x=1;hvis x==1 da 10 ellers 20;returner x+2");
+    nl_assert_eq_text(script_if_statement_before_final, "0: PUSH 1\n1: PUSH 2\n2: ADD\n3: PRINT\n4: HALT\n");
+    char * script_expr_statement_before_final = selfhost__compiler__disasm_skript("1+1;la y=2;y");
+    nl_assert_eq_text(script_expr_statement_before_final, "0: PUSH 2\n1: PRINT\n2: HALT\n");
     char * script_returner = selfhost__compiler__disasm_skript("la x=2;returner x+3");
     nl_assert_eq_text(script_returner, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n");
     char * script_returner_semicolon = selfhost__compiler__disasm_skript("la x=2;returner x+3;");
@@ -4186,7 +4242,7 @@ int start() {
     char * script_err5 = selfhost__compiler__disasm_skript("la x;x+1");
     nl_assert_eq_text(script_err5, "/* feil: ugyldig deklarasjon etter 'la' ved token 0 */");
     char * script_err6 = selfhost__compiler__disasm_skript("1+1; y=2; y");
-    nl_assert_eq_text(script_err6, "/* feil: kun siste statement kan være uttrykk (token 4) */");
+    nl_assert_eq_text(script_err6, "0: PUSH 2\n1: PRINT\n2: HALT\n");
     char * script_err7 = selfhost__compiler__disasm_skript("la x=1;returner");
     nl_assert_eq_text(script_err7, "/* feil: 'returner' må etterfølges av uttrykk ved token 5 */");
     char * script_err8 = selfhost__compiler__disasm_skript("sett x=1;returner 0");
