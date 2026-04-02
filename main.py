@@ -2139,6 +2139,14 @@ def is_github_host(host: str | None) -> bool:
     return bool(host and host.lower() == "github.com")
 
 
+def is_gitlab_host(host: str | None) -> bool:
+    return bool(host and host.lower() == "gitlab.com")
+
+
+def is_bitbucket_host(host: str | None) -> bool:
+    return bool(host and host.lower() == "bitbucket.org")
+
+
 def get_git_remote_provider(host: str | None) -> str:
     if not host:
         return "unknown"
@@ -2531,6 +2539,8 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
         "source_remote_is_ssh": source_remote_protocol == "ssh",
         "source_remote_host": source_remote_host,
         "source_remote_is_github": is_github_host(source_remote_host),
+        "source_remote_is_gitlab": is_gitlab_host(source_remote_host),
+        "source_remote_is_bitbucket": is_bitbucket_host(source_remote_host),
         "source_remote_provider": get_git_remote_provider(source_remote_host),
         "source_repo_slug": source_repo_slug,
         "source_repo_owner": source_repo_owner,
