@@ -286,6 +286,12 @@ funksjon start() -> heltall {
     la expr_fordi_alias: tekst = sh.disasm_uttrykk("1 fordi 0")
     assert_eq(expr_fordi_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n")
 
+    la expr_as_alias: tekst = sh.disasm_uttrykk("1 as 0")
+    assert_eq(expr_as_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n")
+
+    la expr_tersom_alias: tekst = sh.disasm_uttrykk("1 ettersom 0")
+    assert_eq(expr_tersom_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n")
+
     la expr_iff_alias: tekst = sh.disasm_uttrykk("1 iff 1")
     assert_eq(expr_iff_alias, "0: PUSH 1\n1: PUSH 1\n2: EQ\n3: PRINT\n4: HALT\n")
 
@@ -2179,6 +2185,12 @@ funksjon start() -> heltall {
 
     la script_fordi_alias: tekst = sh.disasm_skript("returner 1 fordi 0")
     assert_eq(script_fordi_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n")
+
+    la script_as_alias: tekst = sh.disasm_skript("returner 1 as 0")
+    assert_eq(script_as_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n")
+
+    la script_tersom_alias: tekst = sh.disasm_skript("returner 1 ettersom 0")
+    assert_eq(script_tersom_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n")
 
     la script_iff_alias: tekst = sh.disasm_skript("returner 1 iff 1")
     assert_eq(script_iff_alias, "0: PUSH 1\n1: PUSH 1\n2: EQ\n3: PRINT\n4: HALT\n")
