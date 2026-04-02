@@ -143,8 +143,8 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "mindre_lik") {
         returner "mindre_eller_lik"
     }
-    hvis (tok == "ikke_lik" eller tok == "ikke_lik_med" eller tok == "ikkelikmed" eller tok == "er_ikke" eller tok == "er_ulik" eller tok == "er_ulik_med" eller tok == "erulikmed" eller tok == "erikkelikmed" eller tok == "ulik_med" eller tok == "ulikmed"
-        eller tok == "ikkje_lik" eller tok == "ikkje_lik_med" eller tok == "ikkjelikmed" eller tok == "ikkje_er" eller tok == "er_ikkje" eller tok == "erikkjelikmed") {
+    hvis (tok == "ikke_lik" eller tok == "ikke_lik_med" eller tok == "ikkelikmed" eller tok == "er_ikke" eller tok == "er_ulik" eller tok == "er_ulik_med" eller tok == "erulik" eller tok == "erulikmed" eller tok == "erikkelikmed" eller tok == "ulik_med" eller tok == "ulikmed"
+        eller tok == "ikkje_lik" eller tok == "ikkje_lik_med" eller tok == "ikkjelikmed" eller tok == "ikkje_er" eller tok == "er_ikkje" eller tok == "erikkje" eller tok == "erikkjelikmed") {
         returner "ikke_er"
     }
     hvis (tok == "ikkje") {
@@ -168,7 +168,7 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "nei") {
         returner "usann"
     }
-    hvis (tok == "er_lik" eller tok == "er_lik_med" eller tok == "erlikmed") {
+    hvis (tok == "er_lik" eller tok == "er_lik_med" eller tok == "erlik" eller tok == "erlikmed") {
         returner "er"
     }
     hvis (tok == "lik_med" eller tok == "likmed") {
