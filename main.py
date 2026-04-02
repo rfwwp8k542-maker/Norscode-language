@@ -2535,79 +2535,90 @@ def run_selfhost_parser_parity(suite: str = "all") -> dict:
     }
 
 
-def run_selfhost_parser_suite_consistency_check(m1_fixture: Path, extended_fixture: Path) -> dict:
+def _load_selfhost_parity_fixture(path: Path, mismatch_lines: list[str]) -> dict | None:
+    try:
+        return json.loads(path.resolve().read_text(encoding="utf-8"))
+    except Exception as exc:
+        mismatch_lines.append(f"Kunne ikke lese fixture {path.resolve()}: {exc}")
+        return None
+
+
+def _normalize_selfhost_parity_case(item: dict) -> dict:
+    normalized = {"source": str(item.get("source", ""))}
+    has_lines = "expected_lines" in item
+    has_error = "expected_error" in item
+    if has_lines == has_error:
+        normalized["invalid"] = True
+        return normalized
+    if has_error:
+        normalized["expected_error"] = str(item.get("expected_error", ""))
+    else:
+        normalized["expected_lines"] = [str(line) for line in item.get("expected_lines", [])]
+    return normalized
+
+
+def _selfhost_parity_fixture_case_maps(
+    fixture: dict,
+    fixture_tag: str,
+    mismatch_lines: list[str],
+) -> tuple[dict[str, dict[str, dict]], int]:
+    maps: dict[str, dict[str, dict]] = {"expressions": {}, "scripts": {}}
+    checked = 0
+    for mode in ("expressions", "scripts"):
+        cases = fixture.get(mode, [])
+        mode_map = maps[mode]
+        for idx, item in enumerate(cases):
+            if "name" not in item:
+                mismatch_lines.append(f"[{fixture_tag}/{mode}#{idx}] mangler navn")
+                continue
+            name = str(item["name"])
+            if name in mode_map:
+                mismatch_lines.append(f"[{fixture_tag}/{mode}#{idx}] duplikat navn: {name}")
+                continue
+            mode_map[name] = _normalize_selfhost_parity_case(item)
+            checked += 1
+    return maps, checked
+
+
+def run_selfhost_parser_suite_subset_consistency_check(
+    subset_fixture: Path,
+    extended_fixture: Path,
+    subset_tag: str,
+) -> dict:
     started = time.perf_counter()
     mismatch_lines: list[str] = []
-    checked = 0
 
-    def _load_fixture(path: Path):
-        try:
-            return json.loads(path.resolve().read_text(encoding="utf-8"))
-        except Exception as exc:
-            mismatch_lines.append(f"Kunne ikke lese fixture {path.resolve()}: {exc}")
-            return None
-
-    def _normalize_case(item: dict):
-        normalized = {"source": str(item.get("source", ""))}
-        has_lines = "expected_lines" in item
-        has_error = "expected_error" in item
-        if has_lines == has_error:
-            normalized["invalid"] = True
-            return normalized
-        if has_error:
-            normalized["expected_error"] = str(item.get("expected_error", ""))
-        else:
-            normalized["expected_lines"] = [str(line) for line in item.get("expected_lines", [])]
-        return normalized
-
-    m1 = _load_fixture(m1_fixture)
-    extended = _load_fixture(extended_fixture)
-    if m1 is None or extended is None:
+    subset = _load_selfhost_parity_fixture(subset_fixture, mismatch_lines)
+    extended = _load_selfhost_parity_fixture(extended_fixture, mismatch_lines)
+    if subset is None or extended is None:
         return {
             "success": False,
             "checked_cases": 0,
             "mismatch_count": len(mismatch_lines),
             "stderr": "\n".join(mismatch_lines) + "\n",
             "duration_ms": int((time.perf_counter() - started) * 1000),
+            "scope": subset_tag,
         }
 
+    subset_maps, checked = _selfhost_parity_fixture_case_maps(subset, subset_tag, mismatch_lines)
+    ext_maps, _ = _selfhost_parity_fixture_case_maps(extended, "extended", mismatch_lines)
+
     for mode in ("expressions", "scripts"):
-        m1_cases = m1.get(mode, [])
-        ext_cases = extended.get(mode, [])
-        ext_map: dict[str, dict] = {}
-
-        for idx, item in enumerate(ext_cases):
-            if "name" not in item:
-                mismatch_lines.append(f"[extended/{mode}#{idx}] mangler navn")
+        for name, subset_norm in subset_maps[mode].items():
+            ext_norm = ext_maps[mode].get(name)
+            if ext_norm is None:
+                mismatch_lines.append(f"[{subset_tag}/{mode}/{name}] finnes ikke i utvidet fixture")
                 continue
-            name = str(item["name"])
-            if name in ext_map:
-                mismatch_lines.append(f"[extended/{mode}#{idx}] duplikat navn: {name}")
+            if subset_norm.get("invalid") or ext_norm.get("invalid"):
+                mismatch_lines.append(f"[{subset_tag}/{mode}/{name}] ugyldig expected_* format")
                 continue
-            ext_map[name] = _normalize_case(item)
-
-        for idx, item in enumerate(m1_cases):
-            if "name" not in item:
-                mismatch_lines.append(f"[m1/{mode}#{idx}] mangler navn")
-                continue
-            name = str(item["name"])
-            checked += 1
-            if name not in ext_map:
-                mismatch_lines.append(f"[m1/{mode}/{name}] finnes ikke i utvidet fixture")
-                continue
-
-            m1_norm = _normalize_case(item)
-            ext_norm = ext_map[name]
-            if m1_norm.get("invalid") or ext_norm.get("invalid"):
-                mismatch_lines.append(f"[m1/{mode}/{name}] ugyldig expected_* format")
-                continue
-            if m1_norm != ext_norm:
-                mismatch_lines.append(f"[m1/{mode}/{name}] avviker mellom M1 og utvidet")
+            if subset_norm != ext_norm:
+                mismatch_lines.append(f"[{subset_tag}/{mode}/{name}] avviker mot utvidet")
                 mismatch_lines.extend(
                     difflib.unified_diff(
-                        json.dumps(m1_norm, ensure_ascii=False, indent=2).splitlines(),
+                        json.dumps(subset_norm, ensure_ascii=False, indent=2).splitlines(),
                         json.dumps(ext_norm, ensure_ascii=False, indent=2).splitlines(),
-                        fromfile=f"m1/{name}",
+                        fromfile=f"{subset_tag}/{name}",
                         tofile=f"extended/{name}",
                         lineterm="",
                     )
@@ -2620,7 +2631,87 @@ def run_selfhost_parser_suite_consistency_check(m1_fixture: Path, extended_fixtu
         "mismatch_count": len(mismatch_lines),
         "stderr": "" if success else "\n".join(mismatch_lines) + "\n",
         "duration_ms": int((time.perf_counter() - started) * 1000),
+        "scope": subset_tag,
     }
+
+
+def run_selfhost_parser_suite_all_consistency_check(
+    m1_fixture: Path,
+    m2_fixture: Path,
+    extended_fixture: Path,
+) -> dict:
+    started = time.perf_counter()
+    mismatch_lines: list[str] = []
+
+    m1 = run_selfhost_parser_suite_subset_consistency_check(m1_fixture, extended_fixture, "m1")
+    m2 = run_selfhost_parser_suite_subset_consistency_check(m2_fixture, extended_fixture, "m2")
+
+    m1_fixture_obj = _load_selfhost_parity_fixture(m1_fixture, mismatch_lines)
+    m2_fixture_obj = _load_selfhost_parity_fixture(m2_fixture, mismatch_lines)
+    ext_fixture_obj = _load_selfhost_parity_fixture(extended_fixture, mismatch_lines)
+
+    coverage_checked = 0
+    if m1_fixture_obj is not None and m2_fixture_obj is not None and ext_fixture_obj is not None:
+        m1_maps, _ = _selfhost_parity_fixture_case_maps(m1_fixture_obj, "m1", mismatch_lines)
+        m2_maps, _ = _selfhost_parity_fixture_case_maps(m2_fixture_obj, "m2", mismatch_lines)
+        ext_maps, _ = _selfhost_parity_fixture_case_maps(ext_fixture_obj, "extended", mismatch_lines)
+
+        for mode in ("expressions", "scripts"):
+            union_names = set(m1_maps[mode].keys()) | set(m2_maps[mode].keys())
+            coverage_checked += len(union_names)
+
+            overlap = set(m1_maps[mode].keys()) & set(m2_maps[mode].keys())
+            for name in sorted(overlap):
+                if m1_maps[mode][name] != m2_maps[mode][name]:
+                    mismatch_lines.append(f"[all/{mode}/{name}] finnes i både m1 og m2 med ulikt innhold")
+
+            for name in sorted(union_names):
+                union_case = m1_maps[mode].get(name) or m2_maps[mode].get(name)
+                ext_case = ext_maps[mode].get(name)
+                if ext_case is None:
+                    mismatch_lines.append(f"[all/{mode}/{name}] finnes i m1/m2 men ikke i utvidet fixture")
+                    continue
+                if union_case.get("invalid") or ext_case.get("invalid"):
+                    mismatch_lines.append(f"[all/{mode}/{name}] ugyldig expected_* format")
+                    continue
+                if union_case != ext_case:
+                    mismatch_lines.append(f"[all/{mode}/{name}] avviker mellom m1/m2-union og utvidet")
+
+            extra_in_extended = set(ext_maps[mode].keys()) - union_names
+            for name in sorted(extra_in_extended):
+                mismatch_lines.append(f"[all/{mode}/{name}] finnes i utvidet fixture, men mangler i m1+m2")
+
+    all_success = m1.get("success") and m2.get("success") and not mismatch_lines
+    total_mismatch = int(m1.get("mismatch_count", 0) or 0) + int(m2.get("mismatch_count", 0) or 0) + len(mismatch_lines)
+
+    details: list[str] = []
+    if not m1.get("success") and m1.get("stderr"):
+        details.append("[m1]\n" + str(m1.get("stderr", "")).rstrip())
+    if not m2.get("success") and m2.get("stderr"):
+        details.append("[m2]\n" + str(m2.get("stderr", "")).rstrip())
+    if mismatch_lines:
+        details.append("[all]\n" + "\n".join(mismatch_lines))
+
+    return {
+        "success": bool(all_success),
+        "checked_cases": int(m1.get("checked_cases", 0) or 0)
+        + int(m2.get("checked_cases", 0) or 0)
+        + coverage_checked,
+        "mismatch_count": total_mismatch,
+        "stderr": "" if all_success else ("\n\n".join(details).rstrip() + "\n"),
+        "duration_ms": int((time.perf_counter() - started) * 1000),
+        "scope": "all",
+        "checks": {
+            "m1": m1,
+            "m2": m2,
+            "coverage_checked_cases": coverage_checked,
+            "coverage_mismatch_count": len(mismatch_lines),
+        },
+    }
+
+
+def run_selfhost_parser_suite_consistency_check(m1_fixture: Path, extended_fixture: Path) -> dict:
+    return run_selfhost_parser_suite_subset_consistency_check(m1_fixture, extended_fixture, "m1")
 
 
 def _selfhost_parity_suite_targets(suite: str) -> list[tuple[Path, str]]:
@@ -3334,7 +3425,13 @@ def main():
 
     selfhost_parity_consistency = sub.add_parser(
         "selfhost-parity-consistency",
-        help="Sjekk at M1-parity-cases finnes identisk i utvidet parity-suite",
+        help="Sjekk consistency mellom parity-suiter og utvidet suite",
+    )
+    selfhost_parity_consistency.add_argument(
+        "--scope",
+        choices=["m1", "m2", "all"],
+        default="m1",
+        help="Velg hvilke consistency-sjekker som kjøres",
     )
     selfhost_parity_consistency.add_argument("--json", action="store_true", help="Skriv resultat som JSON")
 
@@ -3742,17 +3839,47 @@ def main():
                 sys.exit(1)
 
         elif args.cmd == "selfhost-parity-consistency":
-            payload = run_selfhost_parser_suite_consistency_check(
-                SELFHOST_PARSER_M1_FIXTURE,
-                SELFHOST_PARSER_EXTENDED_FIXTURE,
-            )
+            if args.scope == "m1":
+                payload = run_selfhost_parser_suite_consistency_check(
+                    SELFHOST_PARSER_M1_FIXTURE,
+                    SELFHOST_PARSER_EXTENDED_FIXTURE,
+                )
+            elif args.scope == "m2":
+                payload = run_selfhost_parser_suite_subset_consistency_check(
+                    SELFHOST_PARSER_M2_FIXTURE,
+                    SELFHOST_PARSER_EXTENDED_FIXTURE,
+                    "m2",
+                )
+            else:
+                payload = run_selfhost_parser_suite_all_consistency_check(
+                    SELFHOST_PARSER_M1_FIXTURE,
+                    SELFHOST_PARSER_M2_FIXTURE,
+                    SELFHOST_PARSER_EXTENDED_FIXTURE,
+                )
             if args.json:
                 print(json.dumps(payload, ensure_ascii=False, indent=2))
             else:
+                print(f"Scope: {payload.get('scope', 'm1')}")
                 print(f"OK: {'ja' if payload.get('success') else 'nei'}")
                 print(f"Sjekkede cases: {payload.get('checked_cases', 0)}")
                 print(f"Avvik: {payload.get('mismatch_count', 0)}")
                 print(f"Tid: {payload.get('duration_ms', 0)} ms")
+                checks = payload.get("checks")
+                if isinstance(checks, dict):
+                    m1 = checks.get("m1", {})
+                    m2 = checks.get("m2", {})
+                    print(
+                        f"- m1: {'OK' if m1.get('success') else 'FEIL'} "
+                        f"({m1.get('checked_cases', 0)} cases, {m1.get('mismatch_count', 0)} avvik)"
+                    )
+                    print(
+                        f"- m2: {'OK' if m2.get('success') else 'FEIL'} "
+                        f"({m2.get('checked_cases', 0)} cases, {m2.get('mismatch_count', 0)} avvik)"
+                    )
+                    print(
+                        f"- coverage: {checks.get('coverage_checked_cases', 0)} cases, "
+                        f"{checks.get('coverage_mismatch_count', 0)} avvik"
+                    )
                 if not payload.get("success") and payload.get("stderr"):
                     print(payload["stderr"].rstrip())
             if not payload.get("success"):

@@ -442,6 +442,8 @@ python3 -m norcode selfhost-parity --suite m2
 python3 -m norcode selfhost-parity --suite extended
 python3 -m norcode selfhost-parity --suite all --json
 python3 -m norcode selfhost-parity-consistency
+python3 -m norcode selfhost-parity-consistency --scope m2
+python3 -m norcode selfhost-parity-consistency --scope all
 python3 -m norcode selfhost-parity-consistency --json
 
 # Regenerer forventninger for parity-fixtures
