@@ -2406,6 +2406,8 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
             "python_implementation": platform.python_implementation(),
             "python_executable": sys.executable,
             "platform": platform.platform(),
+            "hostname": platform.node(),
+            "pid": os.getpid(),
         },
         "steps": {"total": total_steps, "name_check_enabled": check_names, "order": step_order},
         "started_at_utc": started_at_utc,
