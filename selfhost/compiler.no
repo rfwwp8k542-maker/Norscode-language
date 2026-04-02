@@ -125,10 +125,10 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "er_større_eller_lik" eller tok == "er_storre_eller_lik") {
         returner "storre_eller_lik"
     }
-    hvis (tok == "større_enn_eller_lik" eller tok == "storre_enn_eller_lik") {
+    hvis (tok == "større_enn_eller_lik" eller tok == "storre_enn_eller_lik" eller tok == "størreennellerlik" eller tok == "storreennellerlik") {
         returner "storre_eller_lik"
     }
-    hvis (tok == "er_større_enn_eller_lik" eller tok == "er_storre_enn_eller_lik") {
+    hvis (tok == "er_større_enn_eller_lik" eller tok == "er_storre_enn_eller_lik" eller tok == "erstørreennellerlik" eller tok == "erstorreennellerlik") {
         returner "storre_eller_lik"
     }
     hvis (tok == "er_mindre_enn" eller tok == "ermindreenn") {
@@ -137,10 +137,10 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "mindre_enn" eller tok == "mindreenn") {
         returner "mindre_enn"
     }
-    hvis (tok == "er_mindre_eller_lik" eller tok == "er_mindre_enn_eller_lik") {
+    hvis (tok == "er_mindre_eller_lik" eller tok == "er_mindre_enn_eller_lik" eller tok == "ermindreennellerlik") {
         returner "mindre_eller_lik"
     }
-    hvis (tok == "mindre_enn_eller_lik") {
+    hvis (tok == "mindre_enn_eller_lik" eller tok == "mindreennellerlik") {
         returner "mindre_eller_lik"
     }
     hvis (tok == "mindre_lik" eller tok == "mindrelik") {
