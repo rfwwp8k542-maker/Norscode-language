@@ -1172,6 +1172,18 @@ funksjon uttrykk_til_ops_og_verdier_med_miljo(tokens: liste_tekst, navn: liste_t
         } ellers hvis (i + 5 < lengde(tokens) og tok_raw == "er" og n1 == "greater" og n2 == "than" og (n3 == "or" eller n3 == "eller") og (n4 == "equal" eller n4 == "equals" eller n4 == "er") og n5 == "to") {
             tok = "storre_eller_lik"
             tok_step = 6
+        } ellers hvis (i + 4 < lengde(tokens) og tok_raw == "er" og n1 == "less" og (n2 == "or" eller n2 == "eller") og (n3 == "equal" eller n3 == "equals" eller n3 == "er") og n4 == "to") {
+            tok = "mindre_eller_lik"
+            tok_step = 5
+        } ellers hvis (i + 4 < lengde(tokens) og tok_raw == "er" og n1 == "greater" og (n2 == "or" eller n2 == "eller") og (n3 == "equal" eller n3 == "equals" eller n3 == "er") og n4 == "to") {
+            tok = "storre_eller_lik"
+            tok_step = 5
+        } ellers hvis (i + 3 < lengde(tokens) og tok_raw == "er" og n1 == "less" og (n2 == "or" eller n2 == "eller") og (n3 == "equal" eller n3 == "equals" eller n3 == "er")) {
+            tok = "mindre_eller_lik"
+            tok_step = 4
+        } ellers hvis (i + 3 < lengde(tokens) og tok_raw == "er" og n1 == "greater" og (n2 == "or" eller n2 == "eller") og (n3 == "equal" eller n3 == "equals" eller n3 == "er")) {
+            tok = "storre_eller_lik"
+            tok_step = 4
         } ellers hvis (i + 4 < lengde(tokens) og tok_raw == "er" og n1 == "less" og n2 == "than" og (n3 == "or" eller n3 == "eller") og (n4 == "equal" eller n4 == "equals" eller n4 == "er")) {
             tok = "mindre_eller_lik"
             tok_step = 5
