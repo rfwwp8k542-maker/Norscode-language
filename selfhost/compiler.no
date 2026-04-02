@@ -122,6 +122,9 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "equiv" eller tok == "ekvivalent") {
         returner "xnor"
     }
+    hvis (tok == "if_and_only_if" eller tok == "ifandonlyif" eller tok == "hvis_og_bare_hvis" eller tok == "hvisogbarehvis") {
+        returner "xnor"
+    }
     hvis (tok == "og_ikke" eller tok == "ogikke") {
         returner "nand"
     }
