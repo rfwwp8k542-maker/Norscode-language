@@ -119,7 +119,7 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "større_eller_lik") {
         returner "storre_eller_lik"
     }
-    hvis (tok == "større_lik" eller tok == "storre_lik") {
+    hvis (tok == "større_lik" eller tok == "storre_lik" eller tok == "storrelik") {
         returner "storre_eller_lik"
     }
     hvis (tok == "er_større_eller_lik" eller tok == "er_storre_eller_lik") {
@@ -140,7 +140,7 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "mindre_enn_eller_lik") {
         returner "mindre_eller_lik"
     }
-    hvis (tok == "mindre_lik") {
+    hvis (tok == "mindre_lik" eller tok == "mindrelik") {
         returner "mindre_eller_lik"
     }
     hvis (tok == "ikke_lik" eller tok == "ikke_lik_med" eller tok == "ikkelikmed" eller tok == "er_ikke" eller tok == "erikke" eller tok == "er_ulik" eller tok == "er_ulik_med" eller tok == "erulik" eller tok == "erulikmed" eller tok == "erikkelik" eller tok == "erikkelikmed" eller tok == "ulik_med" eller tok == "ulikmed"
