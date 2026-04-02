@@ -494,6 +494,9 @@ char * selfhost__compiler__normaliser_norsk_token(char * tok) {
     if ((nl_streq(tok, "granted") || nl_streq(tok, "gitt_dette")) || nl_streq(tok, "gittdette")) {
         return "impliseres_av";
     }
+    if (((nl_streq(tok, "with_premise") || nl_streq(tok, "withpremise")) || nl_streq(tok, "med_premiss")) || nl_streq(tok, "medpremiss")) {
+        return "impliseres_av";
+    }
     if (((nl_streq(tok, "follows_from") || nl_streq(tok, "followsfrom")) || nl_streq(tok, "folger_fra")) || nl_streq(tok, "folgerfra")) {
         return "impliseres_av";
     }
@@ -3330,6 +3333,10 @@ int start() {
     nl_assert_eq_text(expr_granted_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n");
     char * expr_gitt_dette_alias = selfhost__compiler__disasm_uttrykk("1 gitt_dette 0");
     nl_assert_eq_text(expr_gitt_dette_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n");
+    char * expr_with_premise_alias = selfhost__compiler__disasm_uttrykk("1 with_premise 0");
+    nl_assert_eq_text(expr_with_premise_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n");
+    char * expr_med_premiss_alias = selfhost__compiler__disasm_uttrykk("1 med_premiss 0");
+    nl_assert_eq_text(expr_med_premiss_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n");
     char * expr_iff_alias = selfhost__compiler__disasm_uttrykk("1 iff 1");
     nl_assert_eq_text(expr_iff_alias, "0: PUSH 1\n1: PUSH 1\n2: EQ\n3: PRINT\n4: HALT\n");
     char * expr_equiv_alias = selfhost__compiler__disasm_uttrykk("1 equiv 1");
@@ -4665,6 +4672,10 @@ int start() {
     nl_assert_eq_text(script_granted_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n");
     char * script_gitt_dette_alias = selfhost__compiler__disasm_skript("returner 1 gitt_dette 0");
     nl_assert_eq_text(script_gitt_dette_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n");
+    char * script_with_premise_alias = selfhost__compiler__disasm_skript("returner 1 with_premise 0");
+    nl_assert_eq_text(script_with_premise_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n");
+    char * script_med_premiss_alias = selfhost__compiler__disasm_skript("returner 1 med_premiss 0");
+    nl_assert_eq_text(script_med_premiss_alias, "0: PUSH 1\n1: PUSH 0\n2: NOT\n3: OR\n4: PRINT\n5: HALT\n");
     char * script_iff_alias = selfhost__compiler__disasm_skript("returner 1 iff 1");
     nl_assert_eq_text(script_iff_alias, "0: PUSH 1\n1: PUSH 1\n2: EQ\n3: PRINT\n4: HALT\n");
     char * script_equiv_alias = selfhost__compiler__disasm_skript("returner 1 equiv 1");

@@ -197,6 +197,9 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "granted" eller tok == "gitt_dette" eller tok == "gittdette") {
         returner "impliseres_av"
     }
+    hvis (tok == "with_premise" eller tok == "withpremise" eller tok == "med_premiss" eller tok == "medpremiss") {
+        returner "impliseres_av"
+    }
     hvis (tok == "follows_from" eller tok == "followsfrom" eller tok == "folger_fra" eller tok == "folgerfra") {
         returner "impliseres_av"
     }
