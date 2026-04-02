@@ -1587,6 +1587,12 @@ funksjon start() -> heltall {
     la expr_english_is_greater_or_equal_to_phrase: tekst = sh.disasm_uttrykk("4 is greater or equal to 4")
     assert_eq(expr_english_is_greater_or_equal_to_phrase, "0: PUSH 4\n1: PUSH 4\n2: LT\n3: NOT\n4: PRINT\n5: HALT\n")
 
+    la expr_english_is_less_than_compact_alias: tekst = sh.disasm_uttrykk("3 is_less_than 4")
+    assert_eq(expr_english_is_less_than_compact_alias, "0: PUSH 3\n1: PUSH 4\n2: LT\n3: PRINT\n4: HALT\n")
+
+    la expr_english_is_greater_or_equal_compact_alias: tekst = sh.disasm_uttrykk("4 is_greater_or_equal 4")
+    assert_eq(expr_english_is_greater_or_equal_compact_alias, "0: PUSH 4\n1: PUSH 4\n2: LT\n3: NOT\n4: PRINT\n5: HALT\n")
+
     la expr_english_times_alias: tekst = sh.disasm_uttrykk("3 times 4")
     assert_eq(expr_english_times_alias, "0: PUSH 3\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n")
 
@@ -1768,6 +1774,12 @@ funksjon start() -> heltall {
 
     la script_english_is_greater_or_equal_to_phrase: tekst = sh.disasm_skript("let x=4;let y=4;return x is greater or equal to y")
     assert_eq(script_english_is_greater_or_equal_to_phrase, "0: PUSH 4\n1: PUSH 4\n2: LT\n3: NOT\n4: PRINT\n5: HALT\n")
+
+    la script_english_is_less_than_compact_alias: tekst = sh.disasm_skript("let x=3;let y=4;return x is_less_than y")
+    assert_eq(script_english_is_less_than_compact_alias, "0: PUSH 3\n1: PUSH 4\n2: LT\n3: PRINT\n4: HALT\n")
+
+    la script_english_is_greater_or_equal_compact_alias: tekst = sh.disasm_skript("let x=4;let y=4;return x is_greater_or_equal y")
+    assert_eq(script_english_is_greater_or_equal_compact_alias, "0: PUSH 4\n1: PUSH 4\n2: LT\n3: NOT\n4: PRINT\n5: HALT\n")
 
     la script_english_cmp_equal_to_alias: tekst = sh.disasm_skript("let x=4;let y=4;return x equal_to y")
     assert_eq(script_english_cmp_equal_to_alias, "0: PUSH 4\n1: PUSH 4\n2: EQ\n3: PRINT\n4: HALT\n")

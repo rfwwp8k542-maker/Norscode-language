@@ -119,19 +119,37 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "less_than" eller tok == "lessthan") {
         returner "mindre_enn"
     }
+    hvis (tok == "is_less_than" eller tok == "is_lessthan" eller tok == "islessthan") {
+        returner "mindre_enn"
+    }
     hvis (tok == "greater_than" eller tok == "greaterthan") {
+        returner "storre_enn"
+    }
+    hvis (tok == "is_greater_than" eller tok == "is_greaterthan" eller tok == "isgreaterthan") {
         returner "storre_enn"
     }
     hvis (tok == "less_equal" eller tok == "lessequal") {
         returner "mindre_eller_lik"
     }
+    hvis (tok == "is_less_equal" eller tok == "is_lessequal" eller tok == "islessequal") {
+        returner "mindre_eller_lik"
+    }
     hvis (tok == "greater_equal" eller tok == "greaterequal") {
+        returner "storre_eller_lik"
+    }
+    hvis (tok == "is_greater_equal" eller tok == "is_greaterequal" eller tok == "isgreaterequal") {
         returner "storre_eller_lik"
     }
     hvis (tok == "less_or_equal" eller tok == "less_or_equals" eller tok == "lessorequal" eller tok == "lessorequals") {
         returner "mindre_eller_lik"
     }
+    hvis (tok == "is_less_or_equal" eller tok == "is_less_or_equals" eller tok == "islessorequal" eller tok == "islessorequals") {
+        returner "mindre_eller_lik"
+    }
     hvis (tok == "greater_or_equal" eller tok == "greater_or_equals" eller tok == "greaterorequal" eller tok == "greaterorequals") {
+        returner "storre_eller_lik"
+    }
+    hvis (tok == "is_greater_or_equal" eller tok == "is_greater_or_equals" eller tok == "isgreaterorequal" eller tok == "isgreaterorequals") {
         returner "storre_eller_lik"
     }
     hvis (tok == "times" eller tok == "multiply" eller tok == "multiplies" eller tok == "multiplied") {
