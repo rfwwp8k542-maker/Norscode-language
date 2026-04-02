@@ -326,6 +326,7 @@ python3 -m norcode ci --json
 # Inkluderer timings_s per CI-del (sekunder)
 # Inkluderer timings_ms.total for total CI-varighet
 # Inkluderer started_at_utc og finished_at_utc for kjøringstidsstempel
+# Inkluderer started_at_epoch_ms og finished_at_epoch_ms for numerisk sortering
 # Inkluderer schema_version for stabil maskinlesbar kontrakt
 # Inkluderer run_id (unik ID per CI-kjøring)
 # Inkluderer toppnivå ok for samlet CI-status

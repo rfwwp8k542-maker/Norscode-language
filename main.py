@@ -2475,6 +2475,7 @@ def check_workflow_action_versions(workflows_dir: Path | None = None) -> dict:
 def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
     pipeline_started = time.perf_counter()
     started_at_utc = dt.datetime.now(dt.UTC).isoformat()
+    started_at_epoch_ms = int(time.time() * 1000)
     source_revision = get_current_git_revision()
     source_branch = get_current_git_branch()
     source_tag = get_current_git_exact_tag()
@@ -2541,7 +2542,9 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
         },
         "steps": {"total": total_steps, "name_check_enabled": check_names, "order": step_order},
         "started_at_utc": started_at_utc,
+        "started_at_epoch_ms": started_at_epoch_ms,
         "finished_at_utc": None,
+        "finished_at_epoch_ms": None,
         "timings_ms": {},
         "timings_s": {},
         "snapshot_check": {"ok": False, "updated": None},
@@ -2652,6 +2655,7 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
     payload["timings_ms"]["total"] = int((time.perf_counter() - pipeline_started) * 1000)
     payload["timings_s"]["total"] = round(payload["timings_ms"]["total"] / 1000.0, 3)
     payload["finished_at_utc"] = dt.datetime.now(dt.UTC).isoformat()
+    payload["finished_at_epoch_ms"] = int(time.time() * 1000)
     payload["ok"] = True
     return payload
 
