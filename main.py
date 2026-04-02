@@ -2308,6 +2308,14 @@ def check_workflow_action_versions(workflows_dir: Path | None = None) -> dict:
                 }
             )
 
+    payload["issues"] = sorted(
+        payload["issues"],
+        key=lambda issue: (
+            str(issue.get("file", "")),
+            int(issue.get("line", 0)),
+            str(issue.get("type", "")),
+        ),
+    )
     payload["issue_count"] = len(payload["issues"])
     issue_types: dict[str, int] = {}
     for issue in payload["issues"]:
