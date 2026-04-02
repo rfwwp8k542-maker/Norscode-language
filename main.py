@@ -3150,6 +3150,7 @@ def run_ci_pipeline(
 ):
     if parity_suite not in {"m1", "m2", "all"}:
         raise RuntimeError(f"Ugyldig parity-suite for CI: {parity_suite}")
+    run_m2_sync_check = parity_suite in {"m2", "all"}
     pipeline_started = time.perf_counter()
     started_at_utc = dt.datetime.now(dt.UTC).isoformat()
     started_at_epoch_ms = int(time.time() * 1000)
@@ -3174,6 +3175,8 @@ def run_ci_pipeline(
         step_order.append("parser_core_m2_check")
         step_order.append("parser_core_extended_check")
     step_order.append("parser_suite_consistency_check")
+    if run_m2_sync_check:
+        step_order.append("selfhost_m2_sync_check")
     if require_selfhost_ready:
         step_order.append("selfhost_progress_check")
     step_order.extend(["test_check", "workflow_action_check"])
@@ -3296,6 +3299,7 @@ def run_ci_pipeline(
         "parser_core_m2_check": {"ok": False, "case_count": 0, "error_cases": 0},
         "parser_core_extended_check": {"ok": False, "case_count": 0, "error_cases": 0},
         "parser_suite_consistency_check": {"ok": False, "checked_cases": 0, "mismatch_count": 0},
+        "selfhost_m2_sync_check": {"enabled": run_m2_sync_check, "ok": True, "updated": 0, "missing_m1_from_core_count": 0},
         "selfhost_progress_check": {"enabled": require_selfhost_ready, "ok": True, "ready": None, "coverage_total_pct": None},
         "test_check": {"ok": False, "passed": 0, "failed": 0, "total": 0},
         "workflow_action_check": {
@@ -3495,7 +3499,37 @@ def run_ci_pipeline(
     if not json_output:
         print(f"OK ({payload['parser_suite_consistency_check']['checked_cases']} cases)")
 
-    progress_step = consistency_step + 1
+    post_consistency_offset = 0
+    if run_m2_sync_check:
+        sync_step = consistency_step + 1
+        if not json_output:
+            print(f"[{sync_step}/{total_steps}] Selfhost M2 sync check")
+        started = time.perf_counter()
+        m2_sync = sync_selfhost_parser_m2_fixture(check_only=True)
+        payload["timings_ms"]["selfhost_m2_sync_check"] = int((time.perf_counter() - started) * 1000)
+        payload["timings_s"]["selfhost_m2_sync_check"] = round(
+            payload["timings_ms"]["selfhost_m2_sync_check"] / 1000.0, 3
+        )
+        payload["selfhost_m2_sync_check"]["enabled"] = True
+        payload["selfhost_m2_sync_check"]["updated"] = int(m2_sync.get("updated", 0) or 0)
+        payload["selfhost_m2_sync_check"]["missing_m1_from_core_count"] = int(
+            m2_sync.get("missing_m1_from_core_count", 0) or 0
+        )
+        payload["selfhost_m2_sync_check"]["ok"] = (
+            payload["selfhost_m2_sync_check"]["updated"] == 0
+            and payload["selfhost_m2_sync_check"]["missing_m1_from_core_count"] == 0
+        )
+        payload["selfhost_m2_sync_check"]["result"] = m2_sync
+        if not payload["selfhost_m2_sync_check"]["ok"]:
+            raise RuntimeError(
+                "Selfhost M2 sync-feil: M2-fixture er ute av synk med core minus M1. "
+                "Kjør: python3 -m norcode sync-selfhost-parity-m2"
+            )
+        if not json_output:
+            print("OK")
+        post_consistency_offset += 1
+
+    progress_step = consistency_step + 1 + post_consistency_offset
     if require_selfhost_ready:
         if not json_output:
             print(f"[{progress_step}/{total_steps}] Selfhost parity progress check")
@@ -3533,7 +3567,7 @@ def run_ci_pipeline(
                 f"(ready=ja, total_dekning={payload['selfhost_progress_check']['coverage_total_pct']}%)"
             )
 
-    test_step = consistency_step + (2 if require_selfhost_ready else 1)
+    test_step = progress_step + (1 if require_selfhost_ready else 0)
     if not json_output:
         print(f"[{test_step}/{total_steps}] Full test")
     started = time.perf_counter()
