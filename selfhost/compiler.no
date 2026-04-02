@@ -146,6 +146,9 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "since" eller tok == "siden") {
         returner "impliseres_av"
     }
+    hvis (tok == "because" eller tok == "fordi") {
+        returner "impliseres_av"
+    }
     hvis (tok == "follows_from" eller tok == "followsfrom" eller tok == "folger_fra" eller tok == "folgerfra") {
         returner "impliseres_av"
     }
