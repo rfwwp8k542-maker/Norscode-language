@@ -2578,6 +2578,7 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
             "platform": platform.platform(),
             "hostname": platform.node(),
             "pid": os.getpid(),
+            "ppid": os.getppid(),
             "cwd": str(Path.cwd()),
             "timezone": dt.datetime.now().astimezone().tzname(),
         },
