@@ -839,6 +839,12 @@ char * selfhost__compiler__normaliser_norsk_token(char * tok) {
     if (nl_streq(tok, "lik_med") || nl_streq(tok, "likmed")) {
         return "er";
     }
+    if (nl_streq(tok, "{")) {
+        return "(";
+    }
+    if (nl_streq(tok, "}")) {
+        return ")";
+    }
     return tok;
     return "";
 }
@@ -2958,6 +2964,8 @@ int start() {
     nl_assert_eq_text(expr_dis, "0: PUSH 2\n1: PUSH 3\n2: PUSH 4\n3: MUL\n4: ADD\n5: PRINT\n6: HALT\n");
     char * expr_dis_paren = selfhost__compiler__disasm_uttrykk("(2+3)*4");
     nl_assert_eq_text(expr_dis_paren, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PUSH 4\n4: MUL\n5: PRINT\n6: HALT\n");
+    char * expr_dis_brace_group = selfhost__compiler__disasm_uttrykk("{2+3}*4");
+    nl_assert_eq_text(expr_dis_brace_group, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PUSH 4\n4: MUL\n5: PRINT\n6: HALT\n");
     char * expr_c = selfhost__compiler__kompiler_uttrykk_til_c("10 + 32");
     nl_assert_ne_text(expr_c, "");
     char * expr_cmp = selfhost__compiler__disasm_uttrykk("5>3&&2<4");
@@ -4963,6 +4971,8 @@ int start() {
     nl_assert_eq_text(script_norsk_del_med_underscore, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * script_norsk_delmed_kompakt = selfhost__compiler__disasm_skript("la x=8;la y=2;returner x delmed y");
     nl_assert_eq_text(script_norsk_delmed_kompakt, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
+    char * script_brace_group_assignment = selfhost__compiler__disasm_skript("la x={2+3};returner x*4");
+    nl_assert_eq_text(script_brace_group_assignment, "0: PUSH 5\n1: PUSH 4\n2: MUL\n3: PRINT\n4: HALT\n");
     char * script_norsk_dele_med = selfhost__compiler__disasm_skript("la x=8;la y=2;returner x dele med y");
     nl_assert_eq_text(script_norsk_dele_med, "0: PUSH 8\n1: PUSH 2\n2: DIV\n3: PRINT\n4: HALT\n");
     char * script_norsk_dele_med_underscore = selfhost__compiler__disasm_skript("la x=8;la y=2;returner x dele_med y");
