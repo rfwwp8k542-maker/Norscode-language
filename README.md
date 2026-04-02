@@ -349,6 +349,7 @@ python3 -m norcode ci --json
 # Inkluderer source_remote_is_github for enkel host-filtrering
 # Inkluderer source_repo_slug (f.eks. owner/repo) når tilgjengelig
 # Inkluderer source_repo_owner og source_repo_name for enkel grouping
+# Inkluderer source_revision_url når remote og commit er kjent
 # Inkluderer source_is_tagged (om commit har eksakt tag)
 # Inkluderer source_is_main (om branch er main)
 # Inkluderer source_dirty (om worktree har lokale endringer)
