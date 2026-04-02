@@ -324,6 +324,9 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "confirmed") {
         returner "sann"
     }
+    hvis (tok == "pass") {
+        returner "sann"
+    }
     hvis (tok == "enabled") {
         returner "sann"
     }
@@ -361,6 +364,9 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
         returner "usann"
     }
     hvis (tok == "denied") {
+        returner "usann"
+    }
+    hvis (tok == "fail") {
         returner "usann"
     }
     hvis (tok == "disabled") {
