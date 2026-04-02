@@ -2330,6 +2330,7 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
     total_steps = 5 if check_names else 4
     payload = {
         "steps": {"total": total_steps, "name_check_enabled": check_names},
+        "timings_ms": {},
         "snapshot_check": {"ok": False, "updated": None},
         "parity_check": {"ok": False},
         "test_check": {"ok": False, "passed": 0, "failed": 0, "total": 0},
@@ -2347,7 +2348,9 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
 
     if not json_output:
         print(f"[1/{total_steps}] Snapshot check")
+    started = time.perf_counter()
     _fixture_path, updated, _total = update_ir_snapshots(check_only=True)
+    payload["timings_ms"]["snapshot_check"] = int((time.perf_counter() - started) * 1000)
     payload["snapshot_check"]["updated"] = updated
     if updated > 0:
         raise RuntimeError(f"Snapshots er utdaterte ({updated} avvik). Kjør: norcode update-snapshots")
@@ -2357,6 +2360,7 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
 
     if not json_output:
         print(f"[2/{total_steps}] Engine parity check")
+    started = time.perf_counter()
     _, py_ok, py_lines, py_err = ir_disasm_source_captured("tests/ir_sample.nlir", strict=False, engine="python")
     _, sh_ok, sh_lines, sh_err = ir_disasm_source_captured("tests/ir_sample.nlir", strict=False, engine="selfhost")
     if py_ok != sh_ok:
@@ -2368,13 +2372,16 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
     _, sh_s_ok, sh_s_lines, sh_s_err = ir_disasm_source_captured("tests/ir_sample.nlir", strict=True, engine="selfhost")
     if py_s_ok != sh_s_ok or py_s_lines != sh_s_lines or py_s_err != sh_s_err:
         raise RuntimeError("Parity mismatch i strict-modus for tests/ir_sample.nlir")
+    payload["timings_ms"]["parity_check"] = int((time.perf_counter() - started) * 1000)
     payload["parity_check"]["ok"] = True
     if not json_output:
         print("OK")
 
     if not json_output:
         print(f"[3/{total_steps}] Full test")
+    started = time.perf_counter()
     results = run_all_tests(verbose=False, quiet=json_output)
+    payload["timings_ms"]["test_check"] = int((time.perf_counter() - started) * 1000)
     failed = sum(1 for r in results if not r["success"])
     total = len(results)
     passed = total - failed
@@ -2389,7 +2396,9 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
 
     if not json_output:
         print(f"[4/{total_steps}] Workflow action version check")
+    started = time.perf_counter()
     workflow_check = check_workflow_action_versions()
+    payload["timings_ms"]["workflow_action_check"] = int((time.perf_counter() - started) * 1000)
     payload["workflow_action_check"] = workflow_check
     if not workflow_check["ok"]:
         issue = workflow_check["issues"][0]
@@ -2405,7 +2414,9 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
     if check_names:
         if not json_output:
             print(f"[5/{total_steps}] Name migration check")
+        started = time.perf_counter()
         migration = migrate_names(apply_changes=False, cleanup_legacy=True)
+        payload["timings_ms"]["name_migration_check"] = int((time.perf_counter() - started) * 1000)
         payload["name_migration_check"]["needs_migration"] = migration["needs_migration"]
         payload["name_migration_check"]["ok"] = not migration["needs_migration"]
         payload["name_migration_check"]["summary"] = {
