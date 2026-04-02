@@ -466,6 +466,10 @@ python3 -m norcode update-selfhost-parity-fixtures --suite m1
 python3 -m norcode update-selfhost-parity-fixtures --suite m2
 python3 -m norcode update-selfhost-parity-fixtures --suite extended
 python3 -m norcode update-selfhost-parity-fixtures --suite all --check
+
+# Synk M2 deterministisk fra core - M1
+python3 -m norcode sync-selfhost-parity-m2
+python3 -m norcode sync-selfhost-parity-m2 --check
 ```
 
 `selfhost-parity` rapporterer fordeling per suite: antall uttrykk, skript, linje-cases og feil-cases.

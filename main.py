@@ -2907,6 +2907,44 @@ def update_selfhost_parser_fixtures(check_only: bool = False, suite: str = "all"
     }
 
 
+def sync_selfhost_parser_m2_fixture(check_only: bool = False) -> dict:
+    m1_path = SELFHOST_PARSER_M1_FIXTURE.resolve()
+    core_path = SELFHOST_PARSER_EXTENDED_FIXTURE.resolve()
+    m2_path = SELFHOST_PARSER_M2_FIXTURE.resolve()
+
+    m1 = json.loads(m1_path.read_text(encoding="utf-8"))
+    core = json.loads(core_path.read_text(encoding="utf-8"))
+    current_m2 = json.loads(m2_path.read_text(encoding="utf-8")) if m2_path.exists() else {"expressions": [], "scripts": []}
+
+    target_m2: dict[str, list[dict]] = {"expressions": [], "scripts": []}
+    missing_from_core: dict[str, list[str]] = {"expressions": [], "scripts": []}
+
+    for mode in ("expressions", "scripts"):
+        m1_cases = m1.get(mode, [])
+        core_cases = core.get(mode, [])
+        m1_names = {str(item.get("name", "")) for item in m1_cases if "name" in item}
+        core_names = {str(item.get("name", "")) for item in core_cases if "name" in item}
+        target_m2[mode] = [item for item in core_cases if str(item.get("name", "")) not in m1_names]
+        missing_from_core[mode] = sorted(name for name in m1_names if name and name not in core_names)
+
+    updated = 1 if current_m2 != target_m2 else 0
+    if not check_only and updated:
+        m2_path.write_text(json.dumps(target_m2, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+    return {
+        "check_only": check_only,
+        "updated": updated,
+        "fixture": str(m2_path),
+        "m1_fixture": str(m1_path),
+        "core_fixture": str(core_path),
+        "m1_cases": len(m1.get("expressions", [])) + len(m1.get("scripts", [])),
+        "core_cases": len(core.get("expressions", [])) + len(core.get("scripts", [])),
+        "m2_cases": len(target_m2.get("expressions", [])) + len(target_m2.get("scripts", [])),
+        "missing_m1_from_core_count": len(missing_from_core["expressions"]) + len(missing_from_core["scripts"]),
+        "missing_m1_from_core": missing_from_core,
+    }
+
+
 def update_ir_snapshots(check_only: bool = False):
     fixture_path = IR_SNAPSHOT_FIXTURE.resolve()
     fixture = json.loads(fixture_path.read_text(encoding="utf-8"))
@@ -3662,6 +3700,13 @@ def main():
     update_selfhost_parity.add_argument("--check", action="store_true", help="Feil hvis parity-fixtures er utdaterte (skriv ikke)")
     update_selfhost_parity.add_argument("--json", action="store_true", help="Skriv resultat som JSON")
 
+    sync_selfhost_parity_m2 = sub.add_parser(
+        "sync-selfhost-parity-m2",
+        help="Synkroniser M2-fixture som core minus M1",
+    )
+    sync_selfhost_parity_m2.add_argument("--check", action="store_true", help="Feil hvis M2-fixture er ute av synk")
+    sync_selfhost_parity_m2.add_argument("--json", action="store_true", help="Skriv resultat som JSON")
+
     ci = sub.add_parser("ci", help="Kjør lokal CI-sekvens (snapshot, parity, test)")
     ci.add_argument("--json", action="store_true", help="Skriv CI-resultat som JSON")
     ci.add_argument("--check-names", action="store_true", help="Inkluder sjekk for navnemigrering (legacy -> NorCode)")
@@ -4069,6 +4114,24 @@ def main():
                     print("Status: check-only")
                 else:
                     print("Status: skrevet")
+            if args.check and payload["updated"] > 0:
+                sys.exit(1)
+
+        elif args.cmd == "sync-selfhost-parity-m2":
+            payload = sync_selfhost_parser_m2_fixture(check_only=args.check)
+            if args.json:
+                print(json.dumps(payload, ensure_ascii=False, indent=2))
+            else:
+                print(f"M2 fixture: {payload['fixture']}")
+                print(f"M1 cases: {payload['m1_cases']}")
+                print(f"Core cases: {payload['core_cases']}")
+                print(f"M2 cases (beregnet): {payload['m2_cases']}")
+                print(f"Avvik: {payload['updated']}")
+                print(f"M1-mangler i core: {payload['missing_m1_from_core_count']}")
+                if args.check:
+                    print("Status: check-only")
+                else:
+                    print("Status: synkronisert")
             if args.check and payload["updated"] > 0:
                 sys.exit(1)
 
