@@ -2331,6 +2331,7 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
     started_at_utc = dt.datetime.now(dt.UTC).isoformat()
     total_steps = 5 if check_names else 4
     payload = {
+        "schema_version": 1,
         "steps": {"total": total_steps, "name_check_enabled": check_names},
         "started_at_utc": started_at_utc,
         "finished_at_utc": None,
