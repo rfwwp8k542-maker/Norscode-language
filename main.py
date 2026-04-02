@@ -2400,6 +2400,7 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
             "cmd": "norcode ci",
             "json_output": json_output,
             "check_names": check_names,
+            "argv": sys.argv[1:],
         },
         "runtime": {
             "python_version": platform.python_version(),

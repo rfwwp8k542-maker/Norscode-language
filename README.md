@@ -331,6 +331,7 @@ python3 -m norcode ci --json
 # Inkluderer workflow_action_check.file_extensions for skannegrunnlag
 # Inkluderer workflow_action_check.scanned_dir for skannemappe
 # Inkluderer invocation med brukte CI-flagg
+# Inkluderer invocation.argv med faktisk argumentliste
 # Inkluderer source_revision (git commit hash) når tilgjengelig
 # Inkluderer source_revision_short (kort commit hash) når tilgjengelig
 # Inkluderer source_branch (git branch) når tilgjengelig
