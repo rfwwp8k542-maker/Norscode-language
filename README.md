@@ -327,6 +327,9 @@ Lokal kjøring av samme sekvens:
 # Rask CI-løkke (kun M1 parity)
 python3 -m norcode ci --parity-suite m1
 
+# Rask CI-løkke (kun M2 parity)
+python3 -m norcode ci --parity-suite m2
+
 # Full CI-løkke (M1 + utvidet parity)
 python3 -m norcode ci
 
@@ -427,12 +430,12 @@ Eksempel på `timings_ratio` i `ci --json`:
 3. Engine parity check
 4. Selfhost parser parity (M1)
 5. Selfhost parser parity (utvidet)
-6. Parser suite consistency (verifiserer at alle M1-cases finnes identisk i utvidet suite)
+6. Parser suite consistency (verifiserer valgt scope: M1, M2 eller M1+M2 mot utvidet suite)
 7. Full test
 8. Workflow action version check (stopper på deprecated action-versjoner og usikker Node opt-out)
 9. Name migration check (kun med `--check-names`)
 
-Med `--parity-suite m1` hopper `norcode ci` over steget for utvidet parity (steg 5 i full kjøring) for raskere lokal iterasjon.
+Med `--parity-suite m1` eller `--parity-suite m2` hopper `norcode ci` over steget for utvidet parity (steg 5 i full kjøring) for raskere lokal iterasjon.
 
 Kjør parser parity separat uten full CI:
 

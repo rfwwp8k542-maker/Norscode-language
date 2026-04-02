@@ -2958,7 +2958,7 @@ def check_workflow_action_versions(workflows_dir: Path | None = None) -> dict:
 
 
 def run_ci_pipeline(json_output: bool = False, check_names: bool = False, parity_suite: str = "all"):
-    if parity_suite not in {"m1", "all"}:
+    if parity_suite not in {"m1", "m2", "all"}:
         raise RuntimeError(f"Ugyldig parity-suite for CI: {parity_suite}")
     pipeline_started = time.perf_counter()
     started_at_utc = dt.datetime.now(dt.UTC).isoformat()
@@ -2974,13 +2974,13 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False, parity
     source_repo_owner, source_repo_name = split_repo_slug(source_repo_slug)
     source_dirty = get_current_git_dirty_state()
     py_major_minor = f"{sys.version_info.major}.{sys.version_info.minor}"
-    step_order = [
-        "snapshot_check",
-        "parser_fixture_check",
-        "parity_check",
-        "parser_core_m1_check",
-    ]
-    if parity_suite == "all":
+    step_order = ["snapshot_check", "parser_fixture_check", "parity_check"]
+    if parity_suite == "m1":
+        step_order.append("parser_core_m1_check")
+    elif parity_suite == "m2":
+        step_order.append("parser_core_m2_check")
+    else:
+        step_order.append("parser_core_m1_check")
         step_order.append("parser_core_extended_check")
     step_order.extend(["parser_suite_consistency_check", "test_check", "workflow_action_check"])
     if check_names:
@@ -3097,6 +3097,7 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False, parity
         "parser_fixture_check": {"ok": False, "updated": None, "cases": 0, "suite": parity_suite},
         "parity_check": {"ok": False},
         "parser_core_m1_check": {"ok": False, "case_count": 0, "error_cases": 0},
+        "parser_core_m2_check": {"ok": False, "case_count": 0, "error_cases": 0},
         "parser_core_extended_check": {"ok": False, "case_count": 0, "error_cases": 0},
         "parser_suite_consistency_check": {"ok": False, "checked_cases": 0, "mismatch_count": 0},
         "test_check": {"ok": False, "passed": 0, "failed": 0, "total": 0},
@@ -3130,7 +3131,7 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False, parity
     if not json_output:
         print(f"[2/{total_steps}] Selfhost parity fixture check")
     started = time.perf_counter()
-    fixture_suite = "all" if parity_suite == "all" else "m1"
+    fixture_suite = parity_suite if parity_suite in {"m1", "m2"} else "all"
     fixture_check = update_selfhost_parser_fixtures(check_only=True, suite=fixture_suite)
     payload["timings_ms"]["parser_fixture_check"] = int((time.perf_counter() - started) * 1000)
     payload["timings_s"]["parser_fixture_check"] = round(payload["timings_ms"]["parser_fixture_check"] / 1000.0, 3)
@@ -3141,7 +3142,7 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False, parity
     if fixture_check["updated"] > 0:
         raise RuntimeError(
             f"Selfhost parity-fixtures er utdaterte ({fixture_check['updated']} avvik). "
-            "Kjør: python3 -m norcode update-selfhost-parity-fixtures --suite all"
+            f"Kjør: python3 -m norcode update-selfhost-parity-fixtures --suite {fixture_suite}"
         )
     if not json_output:
         print(
@@ -3169,27 +3170,63 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False, parity
     if not json_output:
         print("OK")
 
-    if not json_output:
-        print(f"[4/{total_steps}] Selfhost parser parity (M1)")
-    started = time.perf_counter()
-    parser_core_m1_result = run_selfhost_parser_core_checks(
-        SELFHOST_PARSER_M1_FIXTURE, "Selfhost parser parity (M1)"
-    )
-    payload["timings_ms"]["parser_core_m1_check"] = int((time.perf_counter() - started) * 1000)
-    payload["timings_s"]["parser_core_m1_check"] = round(payload["timings_ms"]["parser_core_m1_check"] / 1000.0, 3)
-    payload["parser_core_m1_check"]["ok"] = parser_core_m1_result["success"]
-    payload["parser_core_m1_check"]["case_count"] = int(parser_core_m1_result.get("case_count", 0) or 0)
-    payload["parser_core_m1_check"]["error_cases"] = int(parser_core_m1_result.get("error_cases", 0) or 0)
-    if not parser_core_m1_result["success"]:
-        raise RuntimeError(
-            "Selfhost parser parity-feil (M1):\n"
-            + (parser_core_m1_result.get("stderr", "").rstrip() or "ukjent feil")
+    if parity_suite in {"m1", "all"}:
+        if not json_output:
+            print(f"[4/{total_steps}] Selfhost parser parity (M1)")
+        started = time.perf_counter()
+        parser_core_m1_result = run_selfhost_parser_core_checks(
+            SELFHOST_PARSER_M1_FIXTURE, "Selfhost parser parity (M1)"
         )
-    if not json_output:
-        print(
-            f"OK ({payload['parser_core_m1_check']['case_count']} cases, "
-            f"{payload['parser_core_m1_check']['error_cases']} feil-cases)"
+        payload["timings_ms"]["parser_core_m1_check"] = int((time.perf_counter() - started) * 1000)
+        payload["timings_s"]["parser_core_m1_check"] = round(
+            payload["timings_ms"]["parser_core_m1_check"] / 1000.0, 3
         )
+        payload["parser_core_m1_check"]["ok"] = parser_core_m1_result["success"]
+        payload["parser_core_m1_check"]["case_count"] = int(parser_core_m1_result.get("case_count", 0) or 0)
+        payload["parser_core_m1_check"]["error_cases"] = int(parser_core_m1_result.get("error_cases", 0) or 0)
+        if not parser_core_m1_result["success"]:
+            raise RuntimeError(
+                "Selfhost parser parity-feil (M1):\n"
+                + (parser_core_m1_result.get("stderr", "").rstrip() or "ukjent feil")
+            )
+        if not json_output:
+            print(
+                f"OK ({payload['parser_core_m1_check']['case_count']} cases, "
+                f"{payload['parser_core_m1_check']['error_cases']} feil-cases)"
+            )
+    else:
+        payload["parser_core_m1_check"]["ok"] = True
+        payload["parser_core_m1_check"]["case_count"] = 0
+        payload["parser_core_m1_check"]["error_cases"] = 0
+
+    if parity_suite == "m2":
+        if not json_output:
+            print(f"[4/{total_steps}] Selfhost parser parity (M2)")
+        started = time.perf_counter()
+        parser_core_m2_result = run_selfhost_parser_core_checks(
+            SELFHOST_PARSER_M2_FIXTURE, "Selfhost parser parity (M2)"
+        )
+        payload["timings_ms"]["parser_core_m2_check"] = int((time.perf_counter() - started) * 1000)
+        payload["timings_s"]["parser_core_m2_check"] = round(
+            payload["timings_ms"]["parser_core_m2_check"] / 1000.0, 3
+        )
+        payload["parser_core_m2_check"]["ok"] = parser_core_m2_result["success"]
+        payload["parser_core_m2_check"]["case_count"] = int(parser_core_m2_result.get("case_count", 0) or 0)
+        payload["parser_core_m2_check"]["error_cases"] = int(parser_core_m2_result.get("error_cases", 0) or 0)
+        if not parser_core_m2_result["success"]:
+            raise RuntimeError(
+                "Selfhost parser parity-feil (M2):\n"
+                + (parser_core_m2_result.get("stderr", "").rstrip() or "ukjent feil")
+            )
+        if not json_output:
+            print(
+                f"OK ({payload['parser_core_m2_check']['case_count']} cases, "
+                f"{payload['parser_core_m2_check']['error_cases']} feil-cases)"
+            )
+    else:
+        payload["parser_core_m2_check"]["ok"] = True
+        payload["parser_core_m2_check"]["case_count"] = 0
+        payload["parser_core_m2_check"]["error_cases"] = 0
 
     if parity_suite == "all":
         if not json_output:
@@ -3228,10 +3265,23 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False, parity
     if not json_output:
         print(f"[{consistency_step}/{total_steps}] Parser suite consistency")
     started = time.perf_counter()
-    consistency = run_selfhost_parser_suite_consistency_check(
-        SELFHOST_PARSER_M1_FIXTURE,
-        SELFHOST_PARSER_EXTENDED_FIXTURE,
-    )
+    if parity_suite == "m1":
+        consistency = run_selfhost_parser_suite_consistency_check(
+            SELFHOST_PARSER_M1_FIXTURE,
+            SELFHOST_PARSER_EXTENDED_FIXTURE,
+        )
+    elif parity_suite == "m2":
+        consistency = run_selfhost_parser_suite_subset_consistency_check(
+            SELFHOST_PARSER_M2_FIXTURE,
+            SELFHOST_PARSER_EXTENDED_FIXTURE,
+            "m2",
+        )
+    else:
+        consistency = run_selfhost_parser_suite_all_consistency_check(
+            SELFHOST_PARSER_M1_FIXTURE,
+            SELFHOST_PARSER_M2_FIXTURE,
+            SELFHOST_PARSER_EXTENDED_FIXTURE,
+        )
     payload["timings_ms"]["parser_suite_consistency_check"] = int((time.perf_counter() - started) * 1000)
     payload["timings_s"]["parser_suite_consistency_check"] = round(
         payload["timings_ms"]["parser_suite_consistency_check"] / 1000.0, 3
@@ -3417,7 +3467,7 @@ def main():
     ci = sub.add_parser("ci", help="Kjør lokal CI-sekvens (snapshot, parity, test)")
     ci.add_argument("--json", action="store_true", help="Skriv CI-resultat som JSON")
     ci.add_argument("--check-names", action="store_true", help="Inkluder sjekk for navnemigrering (legacy -> NorCode)")
-    ci.add_argument("--parity-suite", choices=["m1", "all"], default="all", help="Velg parity-scope i CI")
+    ci.add_argument("--parity-suite", choices=["m1", "m2", "all"], default="all", help="Velg parity-scope i CI")
 
     selfhost_parity = sub.add_parser("selfhost-parity", help="Kjør selfhost parser parity-suiter")
     selfhost_parity.add_argument("--suite", choices=["m1", "m2", "extended", "all"], default="all", help="Velg parity-suite")
