@@ -2611,6 +2611,7 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
             "gid": os.getgid() if hasattr(os, "getgid") else None,
             "pid": os.getpid(),
             "ppid": os.getppid(),
+            "process_group_id": os.getpgrp() if hasattr(os, "getpgrp") else None,
             "home": os.path.expanduser("~"),
             "tmpdir": tempfile.gettempdir(),
             "cwd": str(Path.cwd()),
