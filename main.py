@@ -6,6 +6,7 @@ import json
 import os
 import re
 import shutil
+import shlex
 import subprocess
 import sys
 import tarfile
@@ -2544,6 +2545,8 @@ def run_ci_pipeline(json_output: bool = False, check_names: bool = False):
         "source_clean": (not source_dirty) if source_dirty is not None else None,
         "invocation": {
             "cmd": "norcode ci",
+            "argv0": sys.argv[0] if sys.argv else None,
+            "raw": " ".join(shlex.quote(arg) for arg in sys.argv),
             "json_output": json_output,
             "check_names": check_names,
             "argv": sys.argv[1:],
