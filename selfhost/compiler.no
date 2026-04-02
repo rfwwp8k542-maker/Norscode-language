@@ -363,6 +363,9 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
     hvis (tok == "visible") {
         returner "sann"
     }
+    hvis (tok == "present") {
+        returner "sann"
+    }
     hvis (tok == "enabled") {
         returner "sann"
     }
@@ -439,6 +442,9 @@ funksjon normaliser_norsk_token(tok: tekst) -> tekst {
         returner "usann"
     }
     hvis (tok == "hidden") {
+        returner "usann"
+    }
+    hvis (tok == "absent") {
         returner "usann"
     }
     hvis (tok == "disabled") {
