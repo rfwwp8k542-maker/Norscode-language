@@ -2856,6 +2856,7 @@ def update_selfhost_parser_fixtures(check_only: bool = False, suite: str = "all"
     if sync_m2 and suite in {"m2", "all"}:
         m2_sync_payload = sync_selfhost_parser_m2_fixture(check_only=check_only)
         total_updated += int(m2_sync_payload.get("updated", 0) or 0)
+        total_updated += int(m2_sync_payload.get("missing_m1_from_core_count", 0) or 0)
 
     for fixture_path, label in targets:
         fixture_abs = fixture_path.resolve()
@@ -2938,8 +2939,12 @@ def sync_selfhost_parser_m2_fixture(check_only: bool = False) -> dict:
     if not check_only and updated:
         m2_path.write_text(json.dumps(target_m2, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
+    missing_count = len(missing_from_core["expressions"]) + len(missing_from_core["scripts"])
+    ok = updated == 0 and missing_count == 0
+
     return {
         "check_only": check_only,
+        "ok": ok,
         "updated": updated,
         "fixture": str(m2_path),
         "m1_fixture": str(m1_path),
@@ -2947,7 +2952,7 @@ def sync_selfhost_parser_m2_fixture(check_only: bool = False) -> dict:
         "m1_cases": len(m1.get("expressions", [])) + len(m1.get("scripts", [])),
         "core_cases": len(core.get("expressions", [])) + len(core.get("scripts", [])),
         "m2_cases": len(target_m2.get("expressions", [])) + len(target_m2.get("scripts", [])),
-        "missing_m1_from_core_count": len(missing_from_core["expressions"]) + len(missing_from_core["scripts"]),
+        "missing_m1_from_core_count": missing_count,
         "missing_m1_from_core": missing_from_core,
     }
 
@@ -4174,6 +4179,7 @@ def main():
             if args.json:
                 print(json.dumps(payload, ensure_ascii=False, indent=2))
             else:
+                print(f"OK: {'ja' if payload.get('ok') else 'nei'}")
                 print(f"M2 fixture: {payload['fixture']}")
                 print(f"M1 cases: {payload['m1_cases']}")
                 print(f"Core cases: {payload['core_cases']}")
@@ -4184,7 +4190,7 @@ def main():
                     print("Status: check-only")
                 else:
                     print("Status: synkronisert")
-            if args.check and payload["updated"] > 0:
+            if args.check and not payload.get("ok"):
                 sys.exit(1)
 
         elif args.cmd == "ci":
