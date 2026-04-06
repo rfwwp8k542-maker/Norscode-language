@@ -108,10 +108,14 @@ class SemanticAnalyzer:
 
     def check_stmt(self, stmt, scope, expected_return_type, in_loop):
         if isinstance(stmt, VarDeclareNode):
+            is_empty_list = isinstance(stmt.expr, ListLiteralNode) and not stmt.expr.items
             expr_type = self.check_expr(stmt.expr, scope)
             if stmt.var_type is None:
                 scope[stmt.name] = expr_type
             else:
+                if is_empty_list and stmt.var_type in (TYPE_LIST_INT, TYPE_LIST_TEXT):
+                    scope[stmt.name] = stmt.var_type
+                    return False
                 self.ensure_assignable(stmt.var_type, expr_type, f"variabel '{stmt.name}'")
                 scope[stmt.name] = stmt.var_type
             return False
@@ -119,7 +123,10 @@ class SemanticAnalyzer:
         if isinstance(stmt, VarSetNode):
             if stmt.name not in scope:
                 self.error(f"Variabel '{stmt.name}' er ikke definert")
+            is_empty_list = isinstance(stmt.expr, ListLiteralNode) and not stmt.expr.items
             expr_type = self.check_expr(stmt.expr, scope)
+            if is_empty_list and scope[stmt.name] in (TYPE_LIST_INT, TYPE_LIST_TEXT):
+                return False
             self.ensure_assignable(scope[stmt.name], expr_type, f"variabel '{stmt.name}'")
             return False
 
