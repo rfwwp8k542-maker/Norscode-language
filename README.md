@@ -23,21 +23,30 @@ Hjemmeside: [docs/index.html](docs/index.html)
 
 Velg den måten som passer deg best:
 
-1. Ferdigbygget binary
+1. Automatisk installasjon uten Python
+   - macOS/Linux:
+   ```bash
+   sh scripts/install-norscode.sh
+   ```
+   - Windows:
+   ```powershell
+   powershell -ExecutionPolicy Bypass -File scripts/install-norscode.ps1
+   ```
+2. Ferdigbygget binary
    - Last ned fra siste release på hjemmesiden eller GitHub Releases.
-   - Kjør direkte uten Python:
+   - Kjør direkte:
    ```bash
    ./dist/norscode --help
    ```
-   På Windows:
+   - På Windows:
    ```powershell
    .\dist\norscode.exe --help
    ```
-2. Installer fra kildekode
+3. Installer fra kildekode
    ```bash
    python3 -m pip install -e .
    ```
-3. Bygg selv
+4. Bygg selv
    ```bash
    make binary
    ```

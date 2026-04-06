@@ -439,25 +439,38 @@
 
       <div class="downloads">
         <div class="download">
-          <strong>Linux</strong>
-          <span>Last ned ferdigbygget binary for Linux fra siste release.</span>
-          <a href="https://github.com/rfwwp8k542-maker/Norscode-language/releases/latest/download/norscode-linux" target="_blank" rel="noreferrer">Last ned</a>
+          <strong>Automatisk installasjon</strong>
+          <span>Kjør en enkel installasjonskommando og få Norscode direkte på maskinen din.</span>
+          <a href="#installasjon">Se installasjon</a>
         </div>
         <div class="download">
-          <strong>macOS</strong>
-          <span>Last ned ferdigbygget binary for macOS fra siste release.</span>
-          <a href="https://github.com/rfwwp8k542-maker/Norscode-language/releases/latest/download/norscode-macos" target="_blank" rel="noreferrer">Last ned</a>
+          <strong>Ferdigbygget binary</strong>
+          <span>Last ned siste release for Linux, macOS eller Windows og kjør den direkte.</span>
+          <a href="https://github.com/rfwwp8k542-maker/Norscode-language/releases/latest" target="_blank" rel="noreferrer">Last ned</a>
         </div>
         <div class="download">
-          <strong>Windows</strong>
-          <span>Last ned ferdigbygget `.exe` for Windows fra siste release.</span>
-          <a href="https://github.com/rfwwp8k542-maker/Norscode-language/releases/latest/download/norscode-windows.exe" target="_blank" rel="noreferrer">Last ned</a>
+          <strong>Bygg selv</strong>
+          <span>Vil du lage binary lokalt, kan du bygge den med ett enkelt kommando-oppsett.</span>
+          <a href="#bygg-selv">Se kommandoer</a>
         </div>
       </div>
     </section>
 
+    <section class="panel section" id="installasjon">
+      <h2>Automatisk installasjon</h2>
+      <p>
+        Disse kommandoene laster ned ferdigbygget binary fra siste release og legger den på maskinen din.
+        Du trenger ikke å installere Python for å bruke resultatet.
+      </p>
+      <div class="code"># macOS / Linux
+sh scripts/install-norscode.sh
+
+# Windows
+powershell -ExecutionPolicy Bypass -File scripts/install-norscode.ps1</div>
+    </section>
+
     <section class="panel section">
-      <h2>Bygg selv</h2>
+      <h2 id="bygg-selv">Bygg selv</h2>
       <p>
         Hvis du vil lage din egen binary lokalt, kan du bygge den med PyInstaller via repoets eget script.
       </p>
