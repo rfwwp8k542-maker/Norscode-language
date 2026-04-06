@@ -4,6 +4,8 @@
 
 Et norsk programmeringsspråk som kompilerer til C.
 
+Hjemmeside: [docs/index.html](docs/index.html)
+
 ## ✨ Funksjoner
 
 - Norsk syntaks (funksjon, hvis, ellers, osv.)

@@ -1,0 +1,491 @@
+<!doctype html>
+<html lang="no">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Norscode - norsk programmeringsspråk</title>
+  <meta name="description" content="Norscode er et norsk programmeringsspråk som kompilerer til C, med støtte for standalone binary på Linux, macOS og Windows.">
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #08111f;
+      --bg-soft: rgba(11, 22, 39, 0.88);
+      --panel: rgba(16, 28, 50, 0.9);
+      --panel-border: rgba(148, 163, 184, 0.18);
+      --text: #eef4ff;
+      --muted: #a8b4c7;
+      --accent: #6ee7ff;
+      --accent-strong: #4fbbff;
+      --accent-warm: #8cf7c1;
+      --shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+      --radius: 24px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", "Trebuchet MS", system-ui, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(110, 231, 255, 0.18), transparent 30%),
+        radial-gradient(circle at top right, rgba(140, 247, 193, 0.14), transparent 22%),
+        linear-gradient(180deg, #050a14 0%, #08111f 42%, #0b1528 100%);
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+      background-size: 48px 48px;
+      mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.8), transparent 95%);
+      opacity: 0.5;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .page {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 56px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 36px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .mark {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      color: #051018;
+      background: linear-gradient(135deg, var(--accent), var(--accent-warm));
+      box-shadow: 0 12px 30px rgba(110, 231, 255, 0.3);
+      font-size: 1.15rem;
+    }
+
+    .toplink {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.3fr 0.9fr;
+      gap: 22px;
+      align-items: stretch;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      box-shadow: var(--shadow);
+      border-radius: var(--radius);
+      backdrop-filter: blur(18px);
+    }
+
+    .hero-main {
+      padding: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-main::after {
+      content: "";
+      position: absolute;
+      inset: auto -20% -30% auto;
+      width: 320px;
+      height: 320px;
+      border-radius: 999px;
+      background: radial-gradient(circle, rgba(110, 231, 255, 0.18), transparent 66%);
+      filter: blur(2px);
+      pointer-events: none;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(110, 231, 255, 0.28);
+      color: #c8f4ff;
+      background: rgba(13, 31, 53, 0.7);
+      font-size: 0.85rem;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 18px 0 14px;
+      font-size: clamp(3rem, 7vw, 5.5rem);
+      line-height: 0.95;
+      letter-spacing: -0.05em;
+    }
+
+    .lead {
+      max-width: 64ch;
+      color: var(--muted);
+      font-size: 1.12rem;
+      line-height: 1.7;
+      margin: 0 0 26px;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 18px;
+      border-radius: 14px;
+      font-weight: 700;
+      border: 1px solid transparent;
+      transition: transform 140ms ease, border-color 140ms ease, background 140ms ease;
+    }
+
+    .button:hover {
+      transform: translateY(-1px);
+    }
+
+    .button.primary {
+      color: #051018;
+      background: linear-gradient(135deg, var(--accent), var(--accent-warm));
+    }
+
+    .button.secondary {
+      color: var(--text);
+      border-color: rgba(148, 163, 184, 0.25);
+      background: rgba(9, 20, 38, 0.72);
+    }
+
+    .hero-side {
+      display: grid;
+      gap: 16px;
+    }
+
+    .stat-card {
+      padding: 22px;
+    }
+
+    .stat-title {
+      margin: 0 0 8px;
+      color: var(--muted);
+      font-size: 0.88rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .stat-value {
+      margin: 0;
+      font-size: 1.25rem;
+      font-weight: 750;
+      line-height: 1.5;
+    }
+
+    .stack {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+      margin-top: 22px;
+    }
+
+    .card {
+      padding: 22px;
+    }
+
+    .card h2,
+    .section h2 {
+      margin: 0 0 10px;
+      font-size: 1.25rem;
+      letter-spacing: -0.02em;
+    }
+
+    .card p,
+    .section p,
+    .section li {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    .card p + p {
+      margin-top: 12px;
+    }
+
+    .section {
+      margin-top: 22px;
+      padding: 28px 30px;
+    }
+
+    .downloads {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .download {
+      padding: 18px;
+      border-radius: 18px;
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      background: rgba(9, 18, 32, 0.74);
+    }
+
+    .download strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 1rem;
+    }
+
+    .download span {
+      display: block;
+      margin-bottom: 12px;
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    .download a {
+      color: #08111f;
+      background: linear-gradient(135deg, var(--accent), var(--accent-warm));
+      padding: 10px 14px;
+      border-radius: 12px;
+      display: inline-flex;
+      font-weight: 700;
+    }
+
+    .code {
+      margin-top: 14px;
+      padding: 16px 18px;
+      border-radius: 16px;
+      overflow-x: auto;
+      background: #050a12;
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      color: #d9e6ff;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      font-size: 0.94rem;
+      line-height: 1.6;
+    }
+
+    .list {
+      display: grid;
+      gap: 12px;
+      margin-top: 14px;
+      padding: 0;
+      list-style: none;
+    }
+
+    .list li {
+      padding: 14px 16px;
+      border-radius: 14px;
+      border: 1px solid rgba(148, 163, 184, 0.16);
+      background: rgba(9, 18, 32, 0.62);
+    }
+
+    .list strong {
+      color: var(--text);
+    }
+
+    .footer {
+      margin-top: 26px;
+      padding: 20px 6px 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px 18px;
+      justify-content: space-between;
+    }
+
+    .footer a {
+      color: #d4f6ff;
+    }
+
+    @media (max-width: 920px) {
+      .hero,
+      .stack,
+      .downloads {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-main,
+      .section {
+        padding: 24px;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .page {
+        width: min(100% - 20px, 1120px);
+        padding-top: 12px;
+      }
+
+      .topbar {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      h1 {
+        font-size: clamp(2.4rem, 12vw, 4rem);
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="topbar">
+      <div class="brand">
+        <div class="mark">N</div>
+        <div>
+          <div>Norscode</div>
+          <div style="color: var(--muted); font-size: 0.82rem; font-weight: 600; text-transform: none; letter-spacing: 0;">Norsk språk med C som mål</div>
+        </div>
+      </div>
+      <a class="toplink" href="https://github.com/rfwwp8k542-maker/Norscode-language" target="_blank" rel="noreferrer">GitHub-repo</a>
+    </header>
+
+    <section class="hero">
+      <div class="panel hero-main">
+        <div class="eyebrow">Standalone binary • Linux • macOS • Windows</div>
+        <h1>Et norsk programmeringsspråk som kompilerer til C.</h1>
+        <p class="lead">
+          Norscode er laget for å være lett å lese, lett å teste og lett å bygge videre på.
+          Du kan kjøre det som CLI, bygge en standalone binary, og hente ferdige nedlastinger fra siste release.
+        </p>
+        <div class="actions">
+          <a class="button primary" href="https://github.com/rfwwp8k542-maker/Norscode-language/releases/latest" target="_blank" rel="noreferrer">Last ned siste release</a>
+          <a class="button secondary" href="#nedlastinger">Se nedlastinger</a>
+          <a class="button secondary" href="https://github.com/rfwwp8k542-maker/Norscode-language" target="_blank" rel="noreferrer">Se kildekode</a>
+        </div>
+      </div>
+
+      <div class="hero-side">
+        <div class="panel stat-card">
+          <p class="stat-title">Hva det er</p>
+          <p class="stat-value">Et språk og en compiler-kjede for norsk syntaks, statisk typing og selfhost-komponenter.</p>
+        </div>
+        <div class="panel stat-card">
+          <p class="stat-title">Hvordan det distribueres</p>
+          <p class="stat-value">Standalone binary for alle tre hovedplattformene, publisert som release-vedlegg.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="stack">
+      <article class="panel card">
+        <h2>Språket</h2>
+        <p>
+          Norscode støtter norsk syntaks, statisk typing, lister, pakker og en stadig mer komplett
+          compiler-kjede.
+        </p>
+      </article>
+      <article class="panel card">
+        <h2>Selfhost</h2>
+        <p>
+          Parser, AST-bro og selfhost-løp er holdt i sync, slik at prosjektet kan vokse uten at
+          to implementasjoner sklir fra hverandre.
+        </p>
+      </article>
+      <article class="panel card">
+        <h2>Nedlastninger</h2>
+        <p>
+          Ferdigbygde binærer publiseres for Linux, macOS og Windows, og kildekoden ligger åpent i GitHub-repoet.
+        </p>
+      </article>
+    </section>
+
+    <section class="panel section" id="nedlastinger">
+      <h2>Nedlastinger</h2>
+      <p>
+        Her finner du de vanligste måtene å komme i gang på. Hvis du bare vil prøve Norscode raskt,
+        last ned riktig binary for plattformen din. Hvis du vil bygge selv, bruk kommandolinjene under.
+      </p>
+
+      <div class="downloads">
+        <div class="download">
+          <strong>Linux</strong>
+          <span>Last ned ferdigbygget binary for Linux fra siste release.</span>
+          <a href="https://github.com/rfwwp8k542-maker/Norscode-language/releases/latest/download/norscode-linux" target="_blank" rel="noreferrer">Last ned</a>
+        </div>
+        <div class="download">
+          <strong>macOS</strong>
+          <span>Last ned ferdigbygget binary for macOS fra siste release.</span>
+          <a href="https://github.com/rfwwp8k542-maker/Norscode-language/releases/latest/download/norscode-macos" target="_blank" rel="noreferrer">Last ned</a>
+        </div>
+        <div class="download">
+          <strong>Windows</strong>
+          <span>Last ned ferdigbygget `.exe` for Windows fra siste release.</span>
+          <a href="https://github.com/rfwwp8k542-maker/Norscode-language/releases/latest/download/norscode-windows.exe" target="_blank" rel="noreferrer">Last ned</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel section">
+      <h2>Bygg selv</h2>
+      <p>
+        Hvis du vil lage din egen binary lokalt, kan du bygge den med PyInstaller via repoets eget script.
+      </p>
+      <div class="code">python3 -m pip install -r requirements-dev.txt
+make binary
+./dist/norscode test</div>
+      <p style="margin-top: 12px;">
+        På Windows blir filen <code>dist/norscode.exe</code>.
+      </p>
+    </section>
+
+    <section class="panel section">
+      <h2>Kort status</h2>
+      <ul class="list">
+        <li><strong>Kjerne:</strong> parser, semantic, codegen, interpreter og selfhost-kjede er på plass.</li>
+        <li><strong>Distribusjon:</strong> CLI, standalone binary og GitHub Actions for Linux, macOS og Windows er satt opp.</li>
+        <li><strong>Navn:</strong> Norscode er hovednavnet, mens norsklang bare lever videre som legacy-kompatibilitet.</li>
+      </ul>
+    </section>
+
+    <footer class="footer">
+      <div>© Norscode</div>
+      <div>
+        <a href="https://github.com/rfwwp8k542-maker/Norscode-language/releases/latest" target="_blank" rel="noreferrer">Nedlastninger</a>
+        ·
+        <a href="https://github.com/rfwwp8k542-maker/Norscode-language" target="_blank" rel="noreferrer">GitHub</a>
+      </div>
+    </footer>
+  </main>
+</body>
+</html>
