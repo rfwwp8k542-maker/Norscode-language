@@ -551,9 +551,9 @@ Vi har startet en tidlig selv-hosting bane i `selfhost/`:
 
 #### Neste fokus
 
-- Fortsette å utvide selfhost-parseren kontrollert når nye språkfunksjoner legges til
+- Legge nye språkfunksjoner inn via hele kjeden samtidig: parser, semantic, codegen og selfhost-bro
 - Beholde parity mellom Python- og selfhost-banen når nye konstruksjoner introduseres
-- Holde feilmeldinger og posisjonsinfo konsistente på tvers av motorene
+- Utvide testsettet med én tydelig case per ny språkfeature, så regressjoner blir lette å oppdage
 - Behandle member-uttrykk som en fremtidig utvidelse, ikke som en manglende regression i dagens selfhost-lag
 
 ---
