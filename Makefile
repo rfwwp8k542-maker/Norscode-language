@@ -26,4 +26,4 @@ ci:
 	$(PYTHON) main.py ci --check-names
 
 binary:
-	sh scripts/build-standalone.sh
+	$(PYTHON) scripts/build-standalone.py

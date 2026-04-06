@@ -84,13 +84,16 @@ Publisering er satt opp i GitHub Actions via `.github/workflows/publish.yml`:
 # Installer dev-avhengigheter, inkludert PyInstaller
 python3 -m pip install -r requirements-dev.txt
 
-# Bygg en én-fil-binær i dist/norscode
+# Bygg en én-fil-binær i dist/norscode eller dist/norscode.exe
 make binary
 # eller:
 sh scripts/build-standalone.sh
 
-# Kjør den pakkede binæren
+# Kjør den pakkede binæren på Unix/macOS
 ./dist/norscode test
+
+# På Windows:
+.\dist\norscode.exe test
 ```
 
 ### 1. Kjør program
