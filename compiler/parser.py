@@ -296,9 +296,12 @@ class Parser:
 
     def if_stmt(self):
         self.eat("HVIS")
-        self.eat("LPAREN")
-        cond = self.expr()
-        self.eat("RPAREN")
+        if self.current.typ == "LPAREN":
+            self.eat("LPAREN")
+            cond = self.expr()
+            self.eat("RPAREN")
+        else:
+            cond = self.expr()
         if self.current.typ == "DA":
             self.eat("DA")
         then_block = self.block()
@@ -311,9 +314,14 @@ class Parser:
 
             if self.current.typ == "HVIS":
                 self.eat("HVIS")
-                self.eat("LPAREN")
-                elif_cond = self.expr()
-                self.eat("RPAREN")
+                if self.current.typ == "LPAREN":
+                    self.eat("LPAREN")
+                    elif_cond = self.expr()
+                    self.eat("RPAREN")
+                else:
+                    elif_cond = self.expr()
+                if self.current.typ == "DA":
+                    self.eat("DA")
                 elif_block = self.block()
                 elif_blocks.append((elif_cond, elif_block))
                 continue

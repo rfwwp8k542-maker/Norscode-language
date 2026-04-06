@@ -214,6 +214,24 @@ def _rewrite_continue_for_foreach(statements: list[dict[str, Any]], index_name: 
     return rewritten
 
 
+def _flatten_if_chain(node: dict[str, Any], ctx: BridgeContext) -> tuple[list[dict[str, Any]], dict[str, Any] | None]:
+    elif_blocks: list[dict[str, Any]] = []
+    current = node
+    while isinstance(current, dict) and current.get('node') == 'If':
+        elif_blocks.append({
+            'condition': expr_to_data(current.get('condition', {})),
+            'block': block_to_data(current.get('then', []), ctx),
+        })
+        raw_else = current.get('else')
+        if isinstance(raw_else, list) and len(raw_else) == 1 and raw_else[0].get('node') == 'If':
+            current = raw_else[0]
+            continue
+        if isinstance(raw_else, list):
+            return elif_blocks, block_to_data(raw_else, ctx)
+        return elif_blocks, None
+    return elif_blocks, None
+
+
 def stmt_to_data(node: dict[str, Any], ctx: BridgeContext) -> list[dict[str, Any]]:
     kind = node.get('node')
     if kind == 'Let':
@@ -243,16 +261,8 @@ def stmt_to_data(node: dict[str, Any], ctx: BridgeContext) -> list[dict[str, Any
     if kind == 'IfExprStmt':
         return _lower_ifexpr_to_stmt('ExprStmt', None, node.get('value', {}))
     if kind == 'If':
-        else_block = None
-        elif_blocks = []
         raw_else = node.get('else')
-        if isinstance(raw_else, list) and len(raw_else) == 1 and raw_else[0].get('node') == 'If':
-            nested = raw_else[0]
-            elif_blocks.append({'condition': expr_to_data(nested.get('condition', {})), 'block': block_to_data(nested.get('then', []), ctx)})
-            if nested.get('else'):
-                else_block = block_to_data(nested.get('else', []), ctx)
-        elif isinstance(raw_else, list):
-            else_block = block_to_data(raw_else, ctx)
+        elif_blocks, else_block = _flatten_if_chain(raw_else[0], ctx) if isinstance(raw_else, list) and len(raw_else) == 1 and raw_else[0].get('node') == 'If' else ([], block_to_data(raw_else, ctx) if isinstance(raw_else, list) else None)
         return [{
             'type': 'If',
             'condition': expr_to_data(node.get('condition', {})),
