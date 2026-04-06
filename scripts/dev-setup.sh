@@ -16,7 +16,7 @@ python -m pip install --upgrade pip setuptools wheel
 python -m pip install -e .
 
 echo
-echo "NorCode v2 er klar."
+echo "Norscode er klar."
 echo "Aktiver miljøet med: source $VENV_DIR/bin/activate"
 echo "Test CLI med: norcode --help"
 echo "Kjør tester med: python3 main.py test"
