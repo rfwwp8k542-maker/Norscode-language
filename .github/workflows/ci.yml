@@ -85,7 +85,7 @@ jobs:
         run: .venv/bin/python -m pip install --upgrade pip && .venv/bin/python -m pip install -r requirements-dev.txt
 
       - name: Build standalone binary
-        run: make binary
+        run: .venv/bin/python scripts/build-standalone.py
 
       - name: Verify standalone binary
         run: dist/norscode test
@@ -116,7 +116,7 @@ jobs:
         run: .venv/bin/python -m pip install --upgrade pip && .venv/bin/python -m pip install -r requirements-dev.txt
 
       - name: Build standalone binary
-        run: make binary
+        run: .venv/bin/python scripts/build-standalone.py
 
       - name: Verify standalone binary
         run: dist/norscode test
