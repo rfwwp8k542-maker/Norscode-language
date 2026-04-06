@@ -95,3 +95,34 @@ jobs:
         with:
           name: norscode-standalone-linux
           path: dist/norscode
+
+  standalone-binary-macos:
+    runs-on: macos-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Create virtualenv
+        run: python3 -m venv .venv
+
+      - name: Install dev dependencies
+        run: .venv/bin/python -m pip install --upgrade pip && .venv/bin/python -m pip install -r requirements-dev.txt
+
+      - name: Build standalone binary
+        run: make binary
+
+      - name: Verify standalone binary
+        run: dist/norscode test
+
+      - name: Upload standalone binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: norscode-standalone-macos
+          path: dist/norscode
