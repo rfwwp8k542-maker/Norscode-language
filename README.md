@@ -547,12 +547,14 @@ Vi har startet en tidlig selv-hosting bane i `selfhost/`:
 - `tests/selfhost_parser_m1_cases.json` og `tests/selfhost_parser_m2_cases.json` er i synk med utvidet suite
 - `norcode ci --check-names --require-selfhost-ready` er den relevante CI-gaten for denne delen
 - Workflowene kjører med selfhost-ready-sjekk aktiv
+- Den siste bevisste selfhost-grensen er dokumentert i [docs/SELFHOST_LIMITS.md](/Users/jansteinarsaetre/Documents/VS%20code/norsklang_6i/docs/SELFHOST_LIMITS.md)
 
 #### Neste fokus
 
 - Fortsette å utvide selfhost-parseren kontrollert når nye språkfunksjoner legges til
 - Beholde parity mellom Python- og selfhost-banen når nye konstruksjoner introduseres
 - Holde feilmeldinger og posisjonsinfo konsistente på tvers av motorene
+- Behandle member-uttrykk som en fremtidig utvidelse, ikke som en manglende regression i dagens selfhost-lag
 
 ---
 
