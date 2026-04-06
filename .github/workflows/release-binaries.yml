@@ -32,6 +32,12 @@ jobs:
       - name: Create virtualenv
         run: python3 -m venv .venv
 
+      - name: Install project
+        run: .venv/bin/python -m pip install -e .
+
+      - name: Run NorCode CI checks
+        run: .venv/bin/python -m norcode ci --check-names --require-selfhost-ready
+
       - name: Install dev dependencies
         run: .venv/bin/python -m pip install --upgrade pip && .venv/bin/python -m pip install -r requirements-dev.txt
 
@@ -68,6 +74,12 @@ jobs:
       - name: Create virtualenv
         run: python3 -m venv .venv
 
+      - name: Install project
+        run: .venv/bin/python -m pip install -e .
+
+      - name: Run NorCode CI checks
+        run: .venv/bin/python -m norcode ci --check-names --require-selfhost-ready
+
       - name: Install dev dependencies
         run: .venv/bin/python -m pip install --upgrade pip && .venv/bin/python -m pip install -r requirements-dev.txt
 
@@ -103,6 +115,12 @@ jobs:
 
       - name: Create virtualenv
         run: python -m venv .venv
+
+      - name: Install project
+        run: .\.venv\Scripts\python.exe -m pip install -e .
+
+      - name: Run NorCode CI checks
+        run: .\.venv\Scripts\python.exe -m norcode ci --check-names --require-selfhost-ready
 
       - name: Install dev dependencies
         run: .\.venv\Scripts\python.exe -m pip install --upgrade pip && .\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
