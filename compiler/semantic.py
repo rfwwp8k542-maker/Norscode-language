@@ -109,8 +109,11 @@ class SemanticAnalyzer:
     def check_stmt(self, stmt, scope, expected_return_type, in_loop):
         if isinstance(stmt, VarDeclareNode):
             expr_type = self.check_expr(stmt.expr, scope)
-            self.ensure_assignable(stmt.var_type, expr_type, f"variabel '{stmt.name}'")
-            scope[stmt.name] = stmt.var_type
+            if stmt.var_type is None:
+                scope[stmt.name] = expr_type
+            else:
+                self.ensure_assignable(stmt.var_type, expr_type, f"variabel '{stmt.name}'")
+                scope[stmt.name] = stmt.var_type
             return False
 
         if isinstance(stmt, VarSetNode):
@@ -146,6 +149,14 @@ class SemanticAnalyzer:
             self.check_block(stmt.then_block, dict(scope), expected_return_type, in_loop)
             if stmt.else_block:
                 self.check_block(stmt.else_block, dict(scope), expected_return_type, in_loop)
+            return False
+
+        if isinstance(stmt, IfExprNode):
+            cond_type = self.check_expr(stmt.condition, scope)
+            self.ensure_bool(cond_type, "hvis-betingelse")
+            then_type = self.check_expr(stmt.then_expr, scope)
+            else_type = self.check_expr(stmt.else_expr, scope)
+            self.ensure_assignable(then_type, else_type, "hvis-uttrykk")
             return False
 
         if isinstance(stmt, WhileNode):
@@ -266,6 +277,10 @@ class SemanticAnalyzer:
                 if left != TYPE_INT or right != TYPE_INT:
                     self.error(f"Operator {expr.op.value} krever heltall")
                 return TYPE_INT
+            if expr.op.typ == "PERCENT":
+                if left != TYPE_INT or right != TYPE_INT:
+                    self.error("Operator % krever heltall")
+                return TYPE_INT
             if expr.op.typ in ("GT", "LT", "GTE", "LTE"):
                 if left != TYPE_INT or right != TYPE_INT:
                     self.error("Sammenligning krever heltall")
@@ -278,6 +293,14 @@ class SemanticAnalyzer:
                 if left != TYPE_BOOL or right != TYPE_BOOL:
                     self.error(f"{expr.op.value} krever bool på begge sider")
                 return TYPE_BOOL
+
+        if isinstance(expr, IfExprNode):
+            cond_type = self.check_expr(expr.condition, scope)
+            self.ensure_bool(cond_type, "hvis-betingelse")
+            then_type = self.check_expr(expr.then_expr, scope)
+            else_type = self.check_expr(expr.else_expr, scope)
+            self.ensure_assignable(then_type, else_type, "hvis-uttrykk")
+            return then_type
 
         if isinstance(expr, ModuleCallNode):
             real_module = self.alias_map.get(expr.module_name, expr.module_name)

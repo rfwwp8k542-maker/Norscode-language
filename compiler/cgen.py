@@ -555,12 +555,19 @@ class CGenerator:
 
     def visit_stmt(self, stmt):
         if isinstance(stmt, VarDeclareNode):
-            self.var_types[stmt.name] = stmt.var_type
+            inferred_type = stmt.var_type
+            if inferred_type is None:
+                if isinstance(stmt.expr, ListLiteralNode):
+                    item_types = [self.expr_with_type(item)[1] for item in stmt.expr.items]
+                    inferred_type = TYPE_LIST_TEXT if item_types and item_types[0] == TYPE_TEXT else TYPE_LIST_INT
+                else:
+                    _, inferred_type = self.expr_with_type(stmt.expr)
+            self.var_types[stmt.name] = inferred_type
             if isinstance(stmt.expr, ListLiteralNode):
-                self.emit_list_literal_assignment(stmt.name, stmt.var_type, stmt.expr, declare=True)
+                self.emit_list_literal_assignment(stmt.name, inferred_type, stmt.expr, declare=True)
                 return
             expr_code, _expr_type = self.expr_with_type(stmt.expr)
-            self.emit(f"{self.c_type(stmt.var_type)} {stmt.name} = {expr_code};")
+            self.emit(f"{self.c_type(inferred_type)} {stmt.name} = {expr_code};")
             return
 
         if isinstance(stmt, VarSetNode):
@@ -741,6 +748,8 @@ class CGenerator:
                 return f"({left_code} * {right_code})", TYPE_INT
             if node.op.typ == "DIV":
                 return f"({left_code} / {right_code})", TYPE_INT
+            if node.op.typ == "PERCENT":
+                return f"({left_code} % {right_code})", TYPE_INT
 
             if node.op.typ in ("GT", "LT", "GTE", "LTE"):
                 op_map = {"GT": ">", "LT": "<", "GTE": ">=", "LTE": "<="}
@@ -756,6 +765,14 @@ class CGenerator:
             if node.op.typ in ("OG", "ELLER"):
                 op = "&&" if node.op.typ == "OG" else "||"
                 return f"({left_code} {op} {right_code})", TYPE_BOOL
+
+        if isinstance(node, IfExprNode):
+            cond_code, _ = self.expr_with_type(node.condition)
+            then_code, then_type = self.expr_with_type(node.then_expr)
+            else_code, else_type = self.expr_with_type(node.else_expr)
+            if then_type != else_type:
+                return "0", TYPE_INT
+            return f"(({cond_code}) ? {then_code} : {else_code})", then_type
 
         if isinstance(node, ModuleCallNode):
             args = [self.expr_with_type(arg)[0] for arg in node.args]
