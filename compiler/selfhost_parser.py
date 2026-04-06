@@ -386,6 +386,10 @@ class Parser:
         if not self.match('da'):
             raise self.error("hvis-uttrykk mangler 'da'", start_tok)
         then_expr = self.parse_expression()
+        if self.match('ellers_hvis'):
+            if self.peek() != 'hvis':
+                raise self.error("hvis-uttrykk mangler 'hvis' etter 'ellers_hvis'")
+            return {'node': 'IfExpr', 'condition': condition, 'then': then_expr, 'else': self.parse_if_expression()}
         if not self.match('ellers'):
             raise self.error("hvis-uttrykk mangler 'ellers'")
         else_expr = self.parse_expression()
