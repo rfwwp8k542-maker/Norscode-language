@@ -460,7 +460,6 @@
       <h2>Automatisk installasjon</h2>
       <p>
         Disse kommandoene laster ned ferdigbygget binary fra siste release og legger den på maskinen din.
-        Du trenger ikke å installere Python for å bruke resultatet.
       </p>
       <div class="code"># macOS / Linux
 sh scripts/install-norscode.sh
@@ -472,10 +471,9 @@ powershell -ExecutionPolicy Bypass -File scripts/install-norscode.ps1</div>
     <section class="panel section">
       <h2 id="bygg-selv">Bygg selv</h2>
       <p>
-        Hvis du vil lage din egen binary lokalt, kan du bygge den med PyInstaller via repoets eget script.
+        Hvis du vil lage din egen binary lokalt, kan du bygge den via repoets eget script.
       </p>
-      <div class="code">python3 -m pip install -r requirements-dev.txt
-make binary
+      <div class="code">make binary
 ./dist/norscode test</div>
       <p style="margin-top: 12px;">
         På Windows blir filen <code>dist/norscode.exe</code>.

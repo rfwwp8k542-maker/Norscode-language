@@ -23,7 +23,7 @@ Hjemmeside: [docs/index.html](docs/index.html)
 
 Velg den måten som passer deg best:
 
-1. Automatisk installasjon uten Python
+1. Automatisk installasjon
    - macOS/Linux:
    ```bash
    sh scripts/install-norscode.sh
@@ -53,7 +53,7 @@ Velg den måten som passer deg best:
 
 ### 0. Installer CLI
 
-Hvis du vil kjøre Norscode uten Python ved runtime, bruk den ferdigbygde binæren direkte:
+Bruk den ferdigbygde binæren direkte:
 
 ```bash
 ./dist/norscode --help
@@ -123,7 +123,7 @@ Publisering er satt opp i GitHub Actions via `.github/workflows/publish.yml`:
 ### 0c. Bygg standalone-binary
 
 ```bash
-# Installer dev-avhengigheter, inkludert PyInstaller
+# Installer dev-avhengigheter
 python3 -m pip install -r requirements-dev.txt
 
 # Bygg en én-fil-binær i dist/norscode eller dist/norscode.exe
@@ -612,7 +612,7 @@ Vi har startet en tidlig selv-hosting bane i `selfhost/`:
 #### Neste fokus
 
 - Legge nye språkfunksjoner inn via hele kjeden samtidig: parser, semantic, codegen og selfhost-bro
-- Beholde parity mellom Python- og selfhost-banen når nye konstruksjoner introduseres
+- Beholde parity mellom hoved- og selfhost-banen når nye konstruksjoner introduseres
 - Utvide testsettet med én tydelig case per ny språkfeature, så regressjoner blir lette å oppdage
 - Behandle member-uttrykk som en fremtidig utvidelse, ikke som en manglende regression i dagens selfhost-lag
 
