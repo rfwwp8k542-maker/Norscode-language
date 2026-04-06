@@ -380,6 +380,7 @@ class Parser:
         return self.parse_implies()
 
     def parse_if_expression(self) -> dict:
+        start_tok = self.peek_token()
         self.expect('hvis')
         condition = self.parse_implies()
         if not self.match('da'):
