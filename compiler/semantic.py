@@ -221,7 +221,7 @@ class SemanticAnalyzer:
 
         if isinstance(expr, ListLiteralNode):
             if not expr.items:
-                self.error("Tom liste er ikke støttet ennå")
+                return TYPE_LIST_INT
             item_types = [self.check_expr(item, scope) for item in expr.items]
             first = item_types[0]
             for t in item_types[1:]:
