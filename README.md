@@ -19,6 +19,29 @@ Hjemmeside: [docs/index.html](docs/index.html)
 
 ## 📦 Kom i gang
 
+### Kort installasjon
+
+Velg den måten som passer deg best:
+
+1. Ferdigbygget binary
+   - Last ned fra siste release på hjemmesiden eller GitHub Releases.
+   - Kjør direkte uten Python:
+   ```bash
+   ./dist/norscode --help
+   ```
+   På Windows:
+   ```powershell
+   .\dist\norscode.exe --help
+   ```
+2. Installer fra kildekode
+   ```bash
+   python3 -m pip install -e .
+   ```
+3. Bygg selv
+   ```bash
+   make binary
+   ```
+
 ### 0. Installer CLI
 
 Hvis du vil kjøre Norscode uten Python ved runtime, bruk den ferdigbygde binæren direkte:
