@@ -573,6 +573,8 @@ For daglig bruk er det viktigste at:
 - selfhost-parity er i synk med testene som faktisk ligger i repoet
 - nye språkfunksjoner bør føres gjennom parser, semantic, codegen og selfhost-bro samtidig
 
+For navnebruk og legacy-kompatibilitet, se [docs/LEGACY_POLICY.md](/Users/jansteinarsaetre/Documents/VS%20code/norsklang_6i/docs/LEGACY_POLICY.md).
+
 ## 👨‍💻 Laget av
 
 Jan Steinar Sætre
