@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang='no'>
+<head>
+  <meta charset='utf-8'>
+  <meta name='viewport' content='width=device-width, initial-scale=1'>
+  <meta name='google-adsense-account' content='ca-pub-6367896081847943'>
+  <title>Norscode</title>
+  <meta name='description' content='Norscode er et norsk programmeringsspråk med Studio, støtte, kildekode og web.'>
+  <link rel='stylesheet' href='styles.css'>
+  <link rel='icon' href='logo.svg' type='image/svg+xml'>
+</head>
+<body>
+  <div class='page'>
+    <header class='topbar'>
+      <div class='brand'>
+        <img class='logo' src='logo.svg' alt='Norscode logo'>
+        <span class='brand-copy'>
+          <span class='brand-name'>Norscode</span>
+          <span class='brand-subtitle'>Støtte og guide</span>
+        </span>
+      </div>
+      <a class='toplink' href='index.html'>Til forsiden</a>
+    </header>
+    <nav class='site-nav'>
+      <a href='index.html#last-ned'>Last ned</a>
+      <a href='index.html#kom-i-gang'>Kom i gang</a>
+      <a href='source.html'>Kildekode</a>
+      <a href='support.html'>Støtte</a>
+      <a href='about.html'>Om Norscode</a>
+      <a href='contact.html'>Kontakt</a>
+      <a href='privacy.html'>Personvern</a>
+    </nav>
+
+    <section class='panel section'>
+      <h1>Støtteside og full guide</h1>
+      <p class='lead'>Denne siden er laget som en praktisk opplæring i hvordan du skriver kode i Norscode. Her får du en komplett oversikt over funksjoner, variabler, betingelser, løkker, lister, standardbibliotek, GUI og hvordan du kjører og tester prosjekter.</p>
+      <div class='grid-2'>
+        <article class='card'><h3>Hva du lærer</h3><p>Hvordan du skriver funksjoner, bruker variabler, bygger logikk og setter sammen små og store prosjekter i Norscode.</p></article>
+        <article class='card'><h3>Målgruppe</h3><p>For deg som vil lære språket fra bunnen av, eller som vil ha en tydelig guide til funksjoner, struktur og arbeidsflyt.</p></article>
+        <article class='card'><h3>Verktøy</h3><p>CLI, Studio, standardbibliotek, test-runner, standalone binary og web-startmaler.</p></article>
+        <article class='card'><h3>Resultat</h3><p>Et språk som er enkelt å lese, enkelt å teste og enkelt å bygge videre på.</p></article>
+      </div>
+      <div class='grid-2' style='margin-top: 18px;'>
+        <div class='notice'>
+          <strong>Start her</strong>
+          <span>Les funksjoner og variabler først, gå videre til betingelser og løkker, og bruk deretter lister, GUI og web for å bygge små prosjekter.</span>
+        </div>
+        <div class='table-wrap'>
+          <table class='table'>
+            <thead>
+              <tr><th>Kapittel</th><th>Hva det handler om</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><a href='#funksjoner'>1. Funksjoner</a></td><td>Gjenbrukbar logikk og tydelige blokker.</td></tr>
+              <tr><td><a href='#variabler'>2. Variabler og typer</a></td><td>Data, typer og enkle byggesteiner.</td></tr>
+              <tr><td><a href='#betingelser'>3. Betingelser</a></td><td>Valg med <code>hvis</code> og <code>ellers</code>.</td></tr>
+              <tr><td><a href='#løkker'>4. Løkker</a></td><td>Gjenta med <code>for</code> og <code>mens</code>.</td></tr>
+              <tr><td><a href='#lister'>5. Lister</a></td><td>Samle og bearbeide flere verdier.</td></tr>
+              <tr><td><a href='#gui-web'>6. GUI og web</a></td><td>Lag små apper og statiske sider.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class='grid-3' style='margin-top: 18px;'>
+        <article class='card'><h3>Kjapp vei</h3><p>Hvis du vil bygge noe raskt, start med en funksjon som skriver tekst, legg til en variabel, og bygg så på med en betingelse.</p></article>
+        <article class='card'><h3>Les mønstre</h3><p>Se etter navngiving, små funksjoner og tydelig returverdier. Det er den raskeste måten å lære å lese Norscode på.</p></article>
+        <article class='card'><h3>Prøv selv</h3><p>Kopier ikke bare eksempler. Skriv dem om med egne navn og egne data.</p></article>
+      </div>
+    </section>
+
+    <section class='panel section' id='funksjoner'>
+      <h2>1. Funksjoner</h2>
+      <p>Funksjoner samler oppgaver i egne blokker. Du bruker dem til å bygge klar og gjenbrukbar kode. En funksjon kan ta inn verdier, gjøre arbeid og returnere noe tilbake.</p>
+      <div class='grid-2'>
+        <div>
+          <h3>Eksempel</h3>
+          <pre class='code'><code>funksjon si_hei(navn: tekst) -> tekst {
+    returner &quot;Hei, &quot; + navn + &quot;!&quot;
+}
+
+funksjon start() -> heltall {
+    skriv_ut(si_hei(&quot;Nora&quot;))
+    returner 0
+}</code></pre>
+        </div>
+        <div>
+          <h3>Tips</h3>
+          <p>Gi funksjoner navn som beskriver hva de gjør. Bruk små funksjoner for små oppgaver, og kombiner dem heller enn å skrive alt i én stor blokk.</p>
+          <p>En funksjon bør være lett å lese uten å hoppe rundt i filen. Det gjør vedlikehold mye enklere.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class='panel section' id='variabler'>
+      <h2>2. Variabler og typer</h2>
+      <p>Variabler holder på data. I Norscode bruker vi tydelige typer når det er nyttig, og vi prøver å holde variabelnavn korte, men forståelige.</p>
+      <div class='grid-2'>
+        <div>
+          <h3>Variabler</h3>
+          <pre class='code'><code>la antall: heltall = 3
+la navn: tekst = &quot;Norscode&quot;
+la aktiv: boolsk = sann</code></pre>
+        </div>
+        <div>
+          <h3>Typevalg</h3>
+          <p>Bruk <code>heltall</code> for tall uten desimaler, <code>tekst</code> for tekst, <code>boolsk</code> for sann/usann, og lister når du vil samle flere verdier i én struktur.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class='panel section' id='betingelser'>
+      <h2>3. Betingelser</h2>
+      <p>Bruk <code>hvis</code> når koden skal velge mellom to eller flere veier. Dette er kjernen i logikk, valg og kontrollflyt.</p>
+      <div class='grid-2'>
+        <div>
+          <h3>Eksempel</h3>
+          <pre class='code'><code>hvis antall &gt; 2 {
+    skriv_ut(&quot;Vi har nok eksempler&quot;)
+} ellers {
+    skriv_ut(&quot;Legg til mer innhold&quot;)
+}</code></pre>
+        </div>
+        <div>
+          <h3>Slik tenker du</h3>
+          <p>Start med å spørre: Hva er betingelsen? Hva skjer hvis den er sann? Hva skjer hvis den er usann? Da blir koden mye lettere å lese og teste.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class='panel section' id='løkker'>
+      <h2>4. Løkker</h2>
+      <p>Løkker brukes når du vil gjøre noe flere ganger. Du kan bruke både <code>for</code> og <code>mens</code> avhengig av om du vet hvor mange runder du trenger.</p>
+      <div class='grid-2'>
+        <div>
+          <h3>For og mens</h3>
+          <pre class='code'><code>for tall i tall_liste {
+    skriv_ut(tall)
+}
+
+mens aktiv {
+    skriv_ut(&quot;Kjøring pågår&quot;)
+    aktiv = usann
+}</code></pre>
+        </div>
+        <div>
+          <h3>Praktisk bruk</h3>
+          <p>Bruk <code>for</code> når du vil gå gjennom en liste eller en rekke tall. Bruk <code>mens</code> når du vil fortsette helt til en tilstand endrer seg.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class='panel section' id='lister'>
+      <h2>5. Lister og samlinger</h2>
+      <p>Lister er nyttige når du vil jobbe med mange verdier i en ryddig struktur. De passer godt til navn, tall, oppgaver og resultater.</p>
+      <div class='grid-2'>
+        <div>
+          <h3>Eksempel</h3>
+          <pre class='code'><code>la navn_liste: liste[tekst] = [&quot;Ada&quot;, &quot;Linus&quot;, &quot;Nora&quot;]
+sett_inn(navn_liste, &quot;Sindre&quot;)
+skriv_ut(hent(navn_liste, 0))</code></pre>
+        </div>
+        <div>
+          <h3>Tips</h3>
+          <p>Bruk lister når du skal iterere, filtrere eller vise data. Det gjør koden mer strukturert enn mange enkeltvariabler.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class='panel section' id='tekst'>
+      <h2>6. Tekst og små hjelpefunksjoner</h2>
+      <p>Tekst er en stor del av Norscode-arbeid, både i CLI, Studio og web-generering. Derfor er tekstverktøy viktige i standardbiblioteket.</p>
+      <div class='grid-2'>
+        <div>
+          <h3>En liten hjelpefunksjon</h3>
+          <pre class='code'><code>funksjon gjenta(tekstverdi: tekst, antall: heltall) -> tekst {
+    la resultat: tekst = &quot;&quot;
+    for i i rekke(antall) {
+        resultat = resultat + tekstverdi
+    }
+    returner resultat
+}</code></pre>
+        </div>
+        <div>
+          <h3>Hva du bør huske</h3>
+          <p>La funksjoner gjøre én ting. Hvis de både beregner, skriver til skjerm og endrer filer, blir de vanskeligere å teste og vedlikeholde.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class='panel section' id='gui-web'>
+      <h2>7. Standardbibliotek og GUI</h2>
+      <p>Norscode bruker standardbiblioteket til GUI, web, tekst og verktøy som gjør språket nyttig i praksis. GUI-delen brukes av Studio og andre lokale programmer.</p>
+      <div class='grid-2'>
+        <div>
+          <h3>GUI</h3>
+          <pre class='code'><code>bruk std.gui som gui
+
+funksjon start() -> heltall {
+    la vindu = gui.vindu(&quot;Norscode Demo&quot;)
+    la knapp = gui.knapp(&quot;Kjør&quot;)
+    gui.vis(vindu)
+    returner 0
+}</code></pre>
+        </div>
+        <div>
+          <h3>Web</h3>
+          <pre class='code'><code>bruk std.web som web
+
+funksjon start() -> heltall {
+    skriv_fil(&quot;docs/index.html&quot;, web.bootstrap_html(&quot;Norscode&quot;))
+    returner 0
+}</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section class='panel section' id='arbeidsflyt'>
+      <h2>8. Arbeidsflyt i praksis</h2>
+      <p>En god arbeidsflyt gjør koding lettere. Vi bruker Studio til redigering og navigasjon, CLI til kjøring og testing, og binary når vi skal dele eller kjøre uten å tenke på miljøet rundt.</p>
+      <div class='grid-2'>
+        <div>
+          <h3>Vanlig rekkefølge</h3>
+          <pre class='code'><code>norcode run app.no
+norcode check app.no
+norcode test
+make binary</code></pre>
+        </div>
+        <div>
+          <h3>Bygg en liten app</h3>
+          <pre class='code'><code>funksjon start() -> heltall {
+    la navn: tekst = les_inn(&quot;Ditt navn&quot;)
+    skriv_ut(&quot;Hei, &quot; + navn)
+    returner 0
+}</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section class='panel section'>
+      <h2>9. Hvordan lære raskt</h2>
+      <div class='grid-2'>
+        <div class='notice'><strong>Les kode</strong><span>Les små eksempler først. Ikke start med de største filene når du lærer språket.</span></div>
+        <div class='notice'><strong>Skriv selv</strong><span>Kopier ikke bare eksempler. Skriv dem om med egne navn og egne data.</span></div>
+        <div class='notice'><strong>Test ofte</strong><span>Bruk <code>norcode test</code> og små <code>check</code>-kjøringer for å få raske tilbakemeldinger.</span></div>
+        <div class='notice'><strong>Bygg smått</strong><span>Lag små funksjoner, små lister og små app-steg før du bygger større systemer.</span></div>
+      </div>
+    </section>
+
+    <section class='panel section'>
+      <h2>10. Start med dette</h2>
+      <p>Hvis du er ny, anbefaler vi denne rekkefølgen: funksjoner, variabler, betingelser, løkker, lister, standardbibliotek, og så Studio. Deretter kan du begynne å bygge små verktøy, demoer og GUI-apper.</p>
+      <div class='grid-4'>
+        <article class='card'><h3>Først</h3><p>Lær <code>funksjon</code>, <code>la</code>, <code>hvis</code>, <code>for</code> og <code>mens</code>. Da har du det meste du trenger for å forstå små programmer.</p></article>
+        <article class='card'><h3>Så</h3><p>Prøv en liten CLI-app, og flytt den deretter inn i Studio for bedre navigasjon og refaktorering.</p></article>
+        <article class='card'><h3>Deretter</h3><p>Bruk GUI- og web-standardbiblioteket for å lage noe konkret som faktisk kan vises og brukes.</p></article>
+        <article class='card'><h3>Til slutt</h3><p>Bygg, test og forbedre smått og ofte. Det er slik du lærer både språket og verktøyene best.</p></article>
+      </div>
+    </section>
+
+    <footer class='footer'>
+      <a href='index.html#last-ned'>Last ned</a> · <a href='source.html'>Kildekode</a> · <a href='support.html'>Støtte</a> · <a href='about.html'>Om Norscode</a> · <a href='contact.html'>Kontakt</a> · <a href='privacy.html'>Personvern</a>
+    </footer>
+  </div>
+</body>
+</html>

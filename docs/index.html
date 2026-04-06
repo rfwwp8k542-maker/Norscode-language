@@ -1,502 +1,247 @@
 <!doctype html>
-<html lang="no">
+<html lang='no'>
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Norscode - norsk programmeringsspråk</title>
-  <meta name="description" content="Norscode er et norsk programmeringsspråk som kompilerer til C, med støtte for standalone binary på Linux, macOS og Windows.">
-  <style>
-    :root {
-      color-scheme: dark;
-      --bg: #08111f;
-      --bg-soft: rgba(11, 22, 39, 0.88);
-      --panel: rgba(16, 28, 50, 0.9);
-      --panel-border: rgba(148, 163, 184, 0.18);
-      --text: #eef4ff;
-      --muted: #a8b4c7;
-      --accent: #6ee7ff;
-      --accent-strong: #4fbbff;
-      --accent-warm: #8cf7c1;
-      --shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
-      --radius: 24px;
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    html {
-      scroll-behavior: smooth;
-    }
-
-    body {
-      margin: 0;
-      min-height: 100vh;
-      font-family: "Segoe UI", "Trebuchet MS", system-ui, sans-serif;
-      color: var(--text);
-      background:
-        radial-gradient(circle at top left, rgba(110, 231, 255, 0.18), transparent 30%),
-        radial-gradient(circle at top right, rgba(140, 247, 193, 0.14), transparent 22%),
-        linear-gradient(180deg, #050a14 0%, #08111f 42%, #0b1528 100%);
-    }
-
-    body::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      background-image:
-        linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-      background-size: 48px 48px;
-      mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.8), transparent 95%);
-      opacity: 0.5;
-    }
-
-    a {
-      color: inherit;
-      text-decoration: none;
-    }
-
-    .page {
-      width: min(1120px, calc(100% - 32px));
-      margin: 0 auto;
-      padding: 28px 0 56px;
-      position: relative;
-      z-index: 1;
-    }
-
-    .topbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      margin-bottom: 36px;
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      font-weight: 800;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-    }
-
-    .mark {
-      width: 42px;
-      height: 42px;
-      border-radius: 14px;
-      display: grid;
-      place-items: center;
-      color: #051018;
-      background: linear-gradient(135deg, var(--accent), var(--accent-warm));
-      box-shadow: 0 12px 30px rgba(110, 231, 255, 0.3);
-      font-size: 1.15rem;
-    }
-
-    .toplink {
-      color: var(--muted);
-      font-size: 0.95rem;
-    }
-
-    .hero {
-      display: grid;
-      grid-template-columns: 1.3fr 0.9fr;
-      gap: 22px;
-      align-items: stretch;
-    }
-
-    .panel {
-      background: var(--panel);
-      border: 1px solid var(--panel-border);
-      box-shadow: var(--shadow);
-      border-radius: var(--radius);
-      backdrop-filter: blur(18px);
-    }
-
-    .hero-main {
-      padding: 40px;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .hero-main::after {
-      content: "";
-      position: absolute;
-      inset: auto -20% -30% auto;
-      width: 320px;
-      height: 320px;
-      border-radius: 999px;
-      background: radial-gradient(circle, rgba(110, 231, 255, 0.18), transparent 66%);
-      filter: blur(2px);
-      pointer-events: none;
-    }
-
-    .eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      padding: 8px 14px;
-      border-radius: 999px;
-      border: 1px solid rgba(110, 231, 255, 0.28);
-      color: #c8f4ff;
-      background: rgba(13, 31, 53, 0.7);
-      font-size: 0.85rem;
-      letter-spacing: 0.03em;
-      text-transform: uppercase;
-    }
-
-    h1 {
-      margin: 18px 0 14px;
-      font-size: clamp(3rem, 7vw, 5.5rem);
-      line-height: 0.95;
-      letter-spacing: -0.05em;
-    }
-
-    .lead {
-      max-width: 64ch;
-      color: var(--muted);
-      font-size: 1.12rem;
-      line-height: 1.7;
-      margin: 0 0 26px;
-    }
-
-    .actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-    }
-
-    .button {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      padding: 14px 18px;
-      border-radius: 14px;
-      font-weight: 700;
-      border: 1px solid transparent;
-      transition: transform 140ms ease, border-color 140ms ease, background 140ms ease;
-    }
-
-    .button:hover {
-      transform: translateY(-1px);
-    }
-
-    .button.primary {
-      color: #051018;
-      background: linear-gradient(135deg, var(--accent), var(--accent-warm));
-    }
-
-    .button.secondary {
-      color: var(--text);
-      border-color: rgba(148, 163, 184, 0.25);
-      background: rgba(9, 20, 38, 0.72);
-    }
-
-    .hero-side {
-      display: grid;
-      gap: 16px;
-    }
-
-    .stat-card {
-      padding: 22px;
-    }
-
-    .stat-title {
-      margin: 0 0 8px;
-      color: var(--muted);
-      font-size: 0.88rem;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-    }
-
-    .stat-value {
-      margin: 0;
-      font-size: 1.25rem;
-      font-weight: 750;
-      line-height: 1.5;
-    }
-
-    .stack {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 18px;
-      margin-top: 22px;
-    }
-
-    .card {
-      padding: 22px;
-    }
-
-    .card h2,
-    .section h2 {
-      margin: 0 0 10px;
-      font-size: 1.25rem;
-      letter-spacing: -0.02em;
-    }
-
-    .card p,
-    .section p,
-    .section li {
-      margin: 0;
-      color: var(--muted);
-      line-height: 1.65;
-    }
-
-    .card p + p {
-      margin-top: 12px;
-    }
-
-    .section {
-      margin-top: 22px;
-      padding: 28px 30px;
-    }
-
-    .downloads {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 14px;
-      margin-top: 18px;
-    }
-
-    .download {
-      padding: 18px;
-      border-radius: 18px;
-      border: 1px solid rgba(148, 163, 184, 0.18);
-      background: rgba(9, 18, 32, 0.74);
-    }
-
-    .download strong {
-      display: block;
-      margin-bottom: 6px;
-      font-size: 1rem;
-    }
-
-    .download span {
-      display: block;
-      margin-bottom: 12px;
-      color: var(--muted);
-      font-size: 0.95rem;
-      line-height: 1.5;
-    }
-
-    .download a {
-      color: #08111f;
-      background: linear-gradient(135deg, var(--accent), var(--accent-warm));
-      padding: 10px 14px;
-      border-radius: 12px;
-      display: inline-flex;
-      font-weight: 700;
-    }
-
-    .code {
-      margin-top: 14px;
-      padding: 16px 18px;
-      border-radius: 16px;
-      overflow-x: auto;
-      background: #050a12;
-      border: 1px solid rgba(148, 163, 184, 0.18);
-      color: #d9e6ff;
-      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
-      font-size: 0.94rem;
-      line-height: 1.6;
-    }
-
-    .list {
-      display: grid;
-      gap: 12px;
-      margin-top: 14px;
-      padding: 0;
-      list-style: none;
-    }
-
-    .list li {
-      padding: 14px 16px;
-      border-radius: 14px;
-      border: 1px solid rgba(148, 163, 184, 0.16);
-      background: rgba(9, 18, 32, 0.62);
-    }
-
-    .list strong {
-      color: var(--text);
-    }
-
-    .footer {
-      margin-top: 26px;
-      padding: 20px 6px 0;
-      color: var(--muted);
-      font-size: 0.95rem;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px 18px;
-      justify-content: space-between;
-    }
-
-    .footer a {
-      color: #d4f6ff;
-    }
-
-    @media (max-width: 920px) {
-      .hero,
-      .stack,
-      .downloads {
-        grid-template-columns: 1fr;
-      }
-
-      .hero-main,
-      .section {
-        padding: 24px;
-      }
-    }
-
-    @media (max-width: 640px) {
-      .page {
-        width: min(100% - 20px, 1120px);
-        padding-top: 12px;
-      }
-
-      .topbar {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-
-      h1 {
-        font-size: clamp(2.4rem, 12vw, 4rem);
-      }
-    }
-  </style>
+  <meta charset='utf-8'>
+  <meta name='viewport' content='width=device-width, initial-scale=1'>
+  <meta name='google-adsense-account' content='ca-pub-6367896081847943'>
+  <title>Norscode</title>
+  <meta name='description' content='Norscode er et norsk programmeringsspråk med Studio, støtte, kildekode og web.'>
+  <link rel='stylesheet' href='styles.css'>
+  <link rel='icon' href='logo.svg' type='image/svg+xml'>
 </head>
 <body>
-  <main class="page">
-    <header class="topbar">
-      <div class="brand">
-        <div class="mark">N</div>
-        <div>
-          <div>Norscode</div>
-          <div style="color: var(--muted); font-size: 0.82rem; font-weight: 600; text-transform: none; letter-spacing: 0;">Norsk språk med C som mål</div>
-        </div>
+  <div class='page'>
+    <header class='topbar'>
+      <div class='brand'>
+        <img class='logo' src='logo.svg' alt='Norscode logo'>
+        <span class='brand-copy'>
+          <span class='brand-name'>Norscode</span>
+          <span class='brand-subtitle'>Studio · Web · Kode</span>
+        </span>
       </div>
-      <a class="toplink" href="https://github.com/rfwwp8k542-maker/Norscode-language" target="_blank" rel="noreferrer">GitHub-repo</a>
+      <a class='toplink' href='#studio-om'>Om Studio</a>
     </header>
 
-    <section class="hero">
-      <div class="panel hero-main">
-        <div class="eyebrow">Standalone binary • Linux • macOS • Windows</div>
-        <h1>Et norsk programmeringsspråk som kompilerer til C.</h1>
-        <p class="lead">
-          Norscode er laget for å være lett å lese, lett å teste og lett å bygge videre på.
-          Du kan kjøre det som CLI, bygge en standalone binary, og hente ferdige nedlastinger fra siste release.
-        </p>
-        <div class="actions">
-          <a class="button primary" href="https://github.com/rfwwp8k542-maker/Norscode-language/releases/latest" target="_blank" rel="noreferrer">Last ned siste release</a>
-          <a class="button secondary" href="#nedlastinger">Se nedlastinger</a>
-          <a class="button secondary" href="https://github.com/rfwwp8k542-maker/Norscode-language" target="_blank" rel="noreferrer">Se kildekode</a>
+    <nav class='site-nav'>
+      <a href='#last-ned'>Last ned</a>
+      <a href='#kom-i-gang'>Kom i gang</a>
+      <a href='source.html'>Kildekode</a>
+      <a href='support.html'>Støtte</a>
+      <a href='about.html'>Om Norscode</a>
+      <a href='contact.html'>Kontakt</a>
+      <a href='#personvern'>Personvern</a>
+    </nav>
+
+    <header class='hero'>
+      <section class='panel hero-main'>
+        <div class='eyebrow'>Norsk språk · Studio · Web · Kode</div>
+        <h1>Norscode og Norscode Studio</h1>
+        <p class='lead'>Norscode er et norsk programmeringsspråk som kompilerer til C, har et standardbibliotek for GUI og web, og brukes sammen med Norscode Studio for å skrive, søke, refaktorere, teste og bygge prosjekter. Denne hjemmesiden er selv skrevet og generert i Norscode.</p>
+        <div class='actions'>
+          <a class='button primary' href='#last-ned'>Last ned Norscode</a>
+          <a class='button primary' href='#kom-i-gang'>Kom i gang</a>
+          <a class='button secondary' href='#studio'>Se Studio</a>
+          <a class='button secondary' href='source.html'>Kildekode</a>
+          <a class='button secondary' href='support.html'>Støtte</a>
+          <a class='button secondary' href='about.html'>Om Norscode</a>
+          <a class='button secondary' href='contact.html'>Kontakt</a>
+          <a class='button secondary' href='#personvern'>Personvern</a>
         </div>
+      </section>
+      <aside class='hero-side'>
+        <section class='panel stat'>
+          <h2>Last ned</h2>
+          <p>Installer, bygg og kjør Norscode lokalt. Vi har CLI, standalone binary og en lokal webhost på <code>127.0.0.1:4000</code>.</p>
+        </section>
+        <section class='panel stat'>
+          <h2>Docs</h2>
+          <p>Les støttesiden for funksjoner, variabler, lister, GUI, web og små prosjektmønstre du kan bygge videre på.</p>
+        </section>
+        <section class='panel stat'>
+          <h2>Studio</h2>
+          <p>Bruk Norscode Studio til å redigere, navigere, finne symboler, kjøre tester og holde styr på åpne filer.</p>
+        </section>
+      </aside>
+    </header>
+
+    <section class='panel section' id='last-ned'>
+      <h2>Last ned Norscode</h2>
+      <p>Norscode kan lastes ned og brukes lokalt via ferdigbygde nedlastinger, installasjonsskript eller fra kildekode. Velg den veien som passer best for deg.</p>
+      <div class='grid-3'>
+        <article class='card'><h3>GitHub Releases</h3><p>Last ned siste ferdigbygde versjon fra <a href='https://github.com/rfwwp8k542-maker/Norscode-language/releases/latest'>GitHub Releases</a> når du vil ha en klar pakke.</p></article>
+        <article class='card'><h3>Kildekode</h3><p>Åpne den nye <a href='source.html'>kildesiden</a> for å laste ned hele repoet eller Studio-koden som egne valg.</p></article>
+        <article class='card'><h3>Installer lokalt</h3><p>Bruk <code>sh scripts/install-norscode.sh</code> eller PowerShell-skriptet for å hente og installere Norscode raskt.</p></article>
       </div>
-
-      <div class="hero-side">
-        <div class="panel stat-card">
-          <p class="stat-title">Hva det er</p>
-          <p class="stat-value">Et språk og en compiler-kjede for norsk syntaks, statisk typing og selfhost-komponenter.</p>
+      <div class='grid-2' style='margin-top: 18px;'>
+        <div>
+          <h3>Hurtigvalg</h3>
+          <pre class='code'><code>sh scripts/install-norscode.sh
+./studio
+norscode-studio</code></pre>
         </div>
-        <div class="panel stat-card">
-          <p class="stat-title">Hvordan det distribueres</p>
-          <p class="stat-value">Standalone binary for alle tre hovedplattformene, publisert som release-vedlegg.</p>
-        </div>
-      </div>
-    </section>
-
-    <section class="stack">
-      <article class="panel card">
-        <h2>Språket</h2>
-        <p>
-          Norscode støtter norsk syntaks, statisk typing, lister, pakker og en stadig mer komplett
-          compiler-kjede.
-        </p>
-      </article>
-      <article class="panel card">
-        <h2>Selfhost</h2>
-        <p>
-          Parser, AST-bro og selfhost-løp er holdt i sync, slik at prosjektet kan vokse uten at
-          to implementasjoner sklir fra hverandre.
-        </p>
-      </article>
-      <article class="panel card">
-        <h2>Nedlastninger</h2>
-        <p>
-          Ferdigbygde binærer publiseres for Linux, macOS og Windows, og kildekoden ligger åpent i GitHub-repoet.
-        </p>
-      </article>
-    </section>
-
-    <section class="panel section" id="nedlastinger">
-      <h2>Nedlastinger</h2>
-      <p>
-        Her finner du de vanligste måtene å komme i gang på. Hvis du bare vil prøve Norscode raskt,
-        last ned riktig binary for plattformen din. Hvis du vil bygge selv, bruk kommandolinjene under.
-      </p>
-
-      <div class="downloads">
-        <div class="download">
-          <strong>Automatisk installasjon</strong>
-          <span>Kjør en enkel installasjonskommando og få Norscode direkte på maskinen din.</span>
-          <a href="#installasjon">Se installasjon</a>
-        </div>
-        <div class="download">
-          <strong>Ferdigbygget binary</strong>
-          <span>Last ned siste release for Linux, macOS eller Windows og kjør den direkte.</span>
-          <a href="https://github.com/rfwwp8k542-maker/Norscode-language/releases/latest" target="_blank" rel="noreferrer">Last ned</a>
-        </div>
-        <div class="download">
-          <strong>Bygg selv</strong>
-          <span>Vil du lage binary lokalt, kan du bygge den med ett enkelt kommando-oppsett.</span>
-          <a href="#bygg-selv">Se kommandoer</a>
+        <div>
+          <h3>Bruksområde</h3>
+          <p>Bruk den ferdige binaryen når du bare vil komme i gang, og bruk kildesiden når du vil hente hele repoet eller bare Studio-delen.</p>
         </div>
       </div>
     </section>
 
-    <section class="panel section" id="installasjon">
-      <h2>Automatisk installasjon</h2>
-      <p>
-        Disse kommandoene laster ned ferdigbygget binary fra siste release og legger den på maskinen din.
-      </p>
-      <div class="code"># macOS / Linux
-sh scripts/install-norscode.sh
-
-# Windows
-powershell -ExecutionPolicy Bypass -File scripts/install-norscode.ps1</div>
+    <section class='stack'>
+      <article class='card'><h3>1. Skriv</h3><p>Vi skriver modulene i <code>.no</code>-filer. CLI-navnene er <code>norcode</code>, <code>nor</code>, <code>nc</code>, <code>nl</code> og <code>norsklang</code>, mens Studio bruker <code>norscode-studio</code>, <code>./studio</code> eller <code>./startstudio</code>.</p></article>
+      <article class='card'><h3>2. Kjør</h3><p><code>norcode run</code> kjører programmet. <code>norcode check</code> validerer kildekoden, og <code>norcode test</code> kjører hele testpakken.</p></article>
+      <article class='card'><h3>3. Utforsk</h3><p>Studio gir oss linjenummer, autocomplete, søk/erstatt, <code>Def</code>, <code>Bruk</code>, <code>Rename</code>, terminal, diagnose og historikk.</p></article>
+      <article class='card'><h3>4. Bygg</h3><p><code>make binary</code> lager en standalone binary. Denne siden og web-startmalene ligger i standardbiblioteket og repoet som vanlig kildekode.</p></article>
     </section>
 
-    <section class="panel section">
-      <h2 id="bygg-selv">Bygg selv</h2>
-      <p>
-        Hvis du vil lage din egen binary lokalt, kan du bygge den via repoets eget script.
-      </p>
-      <div class="code">make binary
-./dist/norscode test</div>
-      <p style="margin-top: 12px;">
-        På Windows blir filen <code>dist/norscode.exe</code>.
-      </p>
-    </section>
-
-    <section class="panel section">
-      <h2>Kort status</h2>
-      <ul class="list">
-        <li><strong>Kjerne:</strong> parser, semantic, codegen, interpreter og selfhost-kjede er på plass.</li>
-        <li><strong>Distribusjon:</strong> CLI, standalone binary og GitHub Actions for Linux, macOS og Windows er satt opp.</li>
-        <li><strong>Navn:</strong> Norscode er hovednavnet, mens norsklang bare lever videre som legacy-kompatibilitet.</li>
-      </ul>
-    </section>
-
-    <footer class="footer">
-      <div>© Norscode</div>
-      <div>
-        <a href="https://github.com/rfwwp8k542-maker/Norscode-language/releases/latest" target="_blank" rel="noreferrer">Nedlastninger</a>
-        ·
-        <a href="https://github.com/rfwwp8k542-maker/Norscode-language" target="_blank" rel="noreferrer">GitHub</a>
+    <section class='panel section'>
+      <h2>Siste prosjektoppdateringer</h2>
+      <div class='grid-2'>
+        <article class='card'><h3>Støtteside</h3><p>Vi har nå en full guide for funksjoner, variabler, lister, GUI, web og læringssteg i Norscode.</p></article>
+        <article class='card'><h3>Studio</h3><p>Norscode Studio har fått et tydeligere IDE-oppsett med søk, definisjon, bruk, rename og historikk.</p></article>
+        <article class='card'><h3>Web</h3><p>Hjemmesiden er generert i Norscode og kan serveres statisk som vanlige filer.</p></article>
+        <article class='card'><h3>Kjøring</h3><p>Standard preview er satt til <code>127.0.0.1:4000</code> for lokal utvikling og enkel testing.</p></article>
       </div>
+    </section>
+
+    <section class='panel section'>
+      <h2>Kommende fokusområder</h2>
+      <div class='grid-3'>
+        <div class='notice'><strong>Autocomplete</strong><span>Mer kontekstbaserte forslag og bedre symbolrangering i editoren.</span></div>
+        <div class='notice'><strong>Navigasjon</strong><span>Tryggere <code>Def</code>, <code>Bruk</code> og <code>Rename</code> med tydeligere forhåndsvisning.</span></div>
+        <div class='notice'><strong>Arbeidsflyt</strong><span>Mer komplett terminal og testvisning for daglig utvikling.</span></div>
+      </div>
+    </section>
+
+    <section class='panel section'>
+      <h2>Hvor Norscode passer</h2>
+      <div class='grid-4'>
+        <article class='card'><h3>Små verktøy</h3><p>Lag kommandolinjeverktøy, små konvertere og interne hjelpere.</p></article>
+        <article class='card'><h3>Læresystem</h3><p>Bruk språket til å lære struktur, funksjoner og tydelig kontrollflyt.</p></article>
+        <article class='card'><h3>GUI-apps</h3><p>Bygg enkle lokale vinduer og demos med <code>std.gui</code> og Studio.</p></article>
+        <article class='card'><h3>Web-start</h3><p>Bruk <code>std.web</code> til å lage sider, guider og statisk innhold raskt.</p></article>
+      </div>
+    </section>
+
+    <section class='panel section' id='kom-i-gang'>
+      <h2>Kom i gang</h2>
+      <div class='grid-2'>
+        <div>
+          <h3>Installer</h3>
+          <pre class='code'><code>sh scripts/install-norscode.sh
+# eller på Windows:
+# powershell -ExecutionPolicy Bypass -File scripts/install-norscode.ps1</code></pre>
+          <p>Bruk dette hvis du vil komme raskt i gang uten å bygge selv.</p>
+        </div>
+        <div>
+          <h3>Start Studio</h3>
+          <pre class='code'><code>./studio
+./startstudio
+norscode-studio</code></pre>
+          <p>Studio er det vi anbefaler når du skal skrive og navigere i Norscode-prosjekter.</p>
+        </div>
+      </div>
+      <div class='grid-2' style='margin-top: 18px;'>
+        <div>
+          <h3>Kildekode</h3>
+          <pre class='code'><code>https://github.com/rfwwp8k542-maker/Norscode-language/archive/refs/heads/main.zip</code></pre>
+          <p>På kildesiden finner du også Studio som egen nedlastingsvei.</p>
+        </div>
+        <div>
+          <h3>Ferdig pakke</h3>
+          <p>Hvis du bare vil ha en klar installasjon, bruk GitHub Releases-lenken eller installasjonsskriptet.</p>
+        </div>
+      </div>
+      <div class='grid-2' style='margin-top: 18px;'>
+        <div>
+          <h3>Kjør kode</h3>
+          <pre class='code'><code>norcode run app.no
+norcode check app.no</code></pre>
+        </div>
+        <div>
+          <h3>Test og bygg</h3>
+          <pre class='code'><code>norcode test
+make binary</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section class='panel section' id='bruk'>
+      <h2>Hvordan vi bruker Norscode</h2>
+      <p>Arbeidsflyten vår er enkel: vi skriver i <code>.no</code>, kjører i CLI eller Studio, validerer med tester og bygger til binary når vi skal distribuere. Norscode brukes også til å generere denne hjemmesiden.</p>
+      <div class='grid-2'>
+        <article class='card'><h3>Skriv</h3><p>Vi lager små, lesbare moduler og holder funksjonene korte nok til å forstå på ett blikk.</p></article>
+        <article class='card'><h3>Kjør</h3><p>CLI og Studio brukes sammen for å kjøre, sjekke og følge med på status mens vi utvikler.</p></article>
+        <article class='card'><h3>Utforsk</h3><p>Vi bruker Studio til å hoppe mellom symboler, åpne faner og følge historikk når vi jobber i større filer.</p></article>
+        <article class='card'><h3>Bygg</h3><p>Når vi skal dele noe, bygger vi standalone binary eller statiske sider og bruker det som utgangspunkt for publisering.</p></article>
+      </div>
+    </section>
+
+    <section class='panel section' id='studio'>
+      <h2>Norscode Studio</h2>
+      <p>Studio er et lokalt program skrevet i Norscode for å gjøre utvikling raskere og mer lesbar. Vi bruker det til å holde orden på filer, se symboler, navigere mellom treff og kjøre tester uten å forlate arbeidsflaten.</p>
+      <div class='grid-3'>
+        <article class='card'><h3>Navigasjon</h3><p>Prosjektliste, åpne faner, nylig lukket historikk, <code>Def</code>, <code>Bruk</code> og <code>Hopp</code> gjør det lettere å finne veien.</p></article>
+        <article class='card'><h3>Redigering</h3><p>Linjenummer, aktiv linje, lagret/ulagret-status, autocomplete, søk, erstatt og rename med forhåndsvisning gjør det roligere å jobbe.</p></article>
+        <article class='card'><h3>Kjøring</h3><p>Test-runner, terminal og diagnose holder oss tett på hva som skjer når vi kjører og sjekker prosjekter.</p></article>
+      </div>
+    </section>
+
+    <section class='panel section' id='studio-om'>
+      <h2>Om Norscode Studio</h2>
+      <p>Norscode Studio er arbeidsflaten vår for å skrive, lese og forbedre Norscode. Det er laget for å gjøre navigasjon, feilsøking og refaktorering raskere, samtidig som det holder oversikten ryddig i store prosjekter.</p>
+      <div class='grid-4'>
+        <article class='card'><h3>Åpne filer</h3><p>Prosjektliste, åpne faner og nylig lukket historikk gjør det enkelt å komme tilbake til riktig fil.</p></article>
+        <article class='card'><h3>Symboler</h3><p>Vi bruker <code>Def</code>, <code>Bruk</code> og <code>Rename</code> for å finne definisjoner, se forekomster og endre navn trygt.</p></article>
+        <article class='card'><h3>Lesbarhet</h3><p>Linjenummer, aktiv linje, statuslinje og tydelige paneloverskrifter gjør koden lettere å skanne.</p></article>
+        <article class='card'><h3>Kjøring</h3><p>Test-runner, terminal og diagnose holder oss tett på hva som skjer når vi kjører og sjekker prosjekter.</p></article>
+      </div>
+      <div class='grid-2' style='margin-top: 18px;'>
+        <div>
+          <h3>Start Studio</h3>
+          <pre class='code'><code>./studio
+./startstudio
+norscode-studio</code></pre>
+        </div>
+        <div>
+          <h3>Hva vi anbefaler</h3>
+          <p>Bruk Studio når du vil holde deg i samme arbeidsflate mens du navigerer, søker, tester og bygger. Det er den raskeste veien til å jobbe praktisk med Norscode.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class='panel section' id='sprakkart'>
+      <h2>Det viktigste vi bruker daglig</h2>
+      <div class='table-wrap'>
+        <table class='table'>
+          <thead>
+            <tr><th>Kommando</th><th>Hva den gjør</th><th>Når vi bruker den</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>norcode run app.no</code></td><td>Kjører et program direkte.</td><td>Når vi vil se resultatet eller feilsøke.</td></tr>
+            <tr><td><code>norcode check app.no</code></td><td>Validerer kode uten å fokusere på output.</td><td>Når vi vil sjekke struktur og feil tidlig.</td></tr>
+            <tr><td><code>norcode test</code></td><td>Kjører hele testpakken.</td><td>Når vi vil være sikre på at alt fortsatt er grønt.</td></tr>
+            <tr><td><code>make binary</code></td><td>Lager en standalone binary.</td><td>Når vi skal dele eller kjøre uten Python på målmaskinen.</td></tr>
+            <tr><td><code>./studio</code></td><td>Starter Norscode Studio.</td><td>Når vi skal redigere, navigere eller bruke IDE-flyten.</td></tr>
+            <tr><td><code>norscode-studio app.no</code></td><td>Åpner Studio med en fil direkte.</td><td>Når vi vil hoppe rett til et prosjekt eller en testfil.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class='panel section' id='personvern'>
+      <h2>Personvern og publisering</h2>
+      <p>Hjemmesiden er statisk, bygger originalt innhold i Norscode og bruker en egen personvernside for å holde informasjonen ryddig og lett å forstå.</p>
+      <div class='grid-2'>
+        <div class='notice'><strong>Nettsted</strong><span>Forsiden beskriver Norscode, Studio og hvordan vi bruker språk og verktøy i praksis.</span></div>
+        <div class='notice'><strong>Personvern</strong><span>Den separate personvern-siden samler teksten som forklarer hvordan siden er strukturert og publisert.</span></div>
+        <div class='notice'><strong>Statisk hosting</strong><span>Siden kan serveres som vanlige statiske filer uten å vise deploy-plattformen i brukergrensesnittet.</span></div>
+        <div class='notice'><strong>Originalt innhold</strong><span>Alt innhold er skrevet for Norscode og holder seg til språk, Studio, opplæring og dokumentasjon.</span></div>
+      </div>
+    </section>
+
+    <footer class='footer'>
+      Bygd i Norscode. Kilde for hjemmesiden: <code>website.no</code>. Stil og publisering er gjort klare for statisk hosting. <a href='source.html'>Kildekode</a> · <a href='support.html'>Støtte</a> · <a href='about.html'>Om Norscode</a> · <a href='contact.html'>Kontakt</a> · <a href='privacy.html'>Personvern</a>
     </footer>
-  </main>
+  </div>
 </body>
 </html>

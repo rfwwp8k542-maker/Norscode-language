@@ -6,12 +6,15 @@ Et norsk programmeringsspråk som kompilerer til C.
 
 Hjemmeside: [docs/index.html](docs/index.html)
 
+Hjemmesiden bygges fra [`website.no`](website.no). Se også [`railway.toml`](railway.toml), `Procfile` og [`scripts/serve-site.sh`](scripts/serve-site.sh) for hvordan vi bygger og serverer siden statisk.
+
 ## ✨ Funksjoner
 
 - Norsk syntaks (funksjon, hvis, ellers, osv.)
 - Statisk typing (heltall, tekst, bool, lister)
 - Modul- og pakke-system
 - Egen standardbibliotek (`std`)
+- GUI-standardbibliotek (`std.gui`)
 - Testsystem med `assert`, `assert_eq`, `assert_ne`
 - Kompilerer til C → rask kjøring
 
@@ -137,6 +140,68 @@ sh scripts/build-standalone.sh
 # På Windows:
 .\dist\norscode.exe test
 ```
+
+### 0d. Norscode Studio
+
+Et lite lokalt studio skrevet i Norscode for å redigere og kjøre Norscode:
+
+```bash
+./studio
+```
+
+eller med aliaset:
+
+```bash
+./startstudio
+```
+
+eller, hvis du har installert pakken:
+
+```bash
+norscode-studio
+```
+
+Fra repoet kan du også starte det slik:
+
+```bash
+make studio
+```
+
+`studio.py` er en tynn bootstrap som starter `studio.no` direkte og sender eventuelle oppstartsargumenter videre. Selve app-logikken ligger i Norscode, og Norscode-programmer kan nå lese oppstartsargumenter via `argv()`.
+
+Du kan også åpne en fil ved oppstart:
+
+```bash
+norscode-studio app.no
+```
+
+Studioet har også små web-startpakker for Bootstrap, CSS og Sass, slik at du raskt kan lage en `index.html` sammen med stilfiler fra samme verktøy. Se også [`std/web.no`](std/web.no) for `bootstrap_html(...)`, `css_startmal()`, `sass_startmal()` og `sass_til_css_tekst(...)`. Sass kan nå også kompilers til CSS med `sass_til_css(...)` i runtime.
+
+### Hjemmeside
+
+Hjemmesiden er skrevet i Norscode i [`website.no`](website.no) og bygger `docs/index.html` og `docs/styles.css`.
+
+```bash
+# Bygg hjemmesiden lokalt
+make site
+
+# Preview lokalt på 127.0.0.1:4000
+make serve-site
+
+# Statisk server mot docs/ på 127.0.0.1:4000
+bash scripts/serve-site.sh
+```
+
+Skriptet bruker `127.0.0.1:4000` som standard lokalt, men du kan overstyre `HOST` og `PORT` ved behov.
+
+### Railway
+
+Prosjektet er klargjort for Railway med [`railway.toml`](railway.toml):
+
+- build: `bash scripts/build-site.sh`
+- start: `bash scripts/serve-site.sh`
+
+Railway bruker `PORT`-variabelen sin ved kjøring, og `scripts/serve-site.sh` binder automatisk til `0.0.0.0` når `PORT` er satt. Lokalt beholder skriptet `127.0.0.1:4000` som standard preview.
 
 ### 1. Kjør program
 
@@ -556,6 +621,32 @@ funksjon start() -> heltall {
 }
 ```
 
+GUI-eksempel:
+
+```no
+bruk std.gui som gui
+
+funksjon start() -> heltall {
+    la vindu_id: heltall = gui.vindu("Norscode Demo")
+    la tekst_id: heltall = gui.tekstfelt(vindu_id, "Hei")
+    gui.sett_tekst(tekst_id, "Oppdatert")
+    gui.vis(vindu_id)
+    returner 0
+}
+```
+
+For å kjøre en GUI-demo med lokal vindus-backend:
+
+```bash
+norcode run --engine python examples/gui_demo.no
+```
+
+Hvis du vil ha ekte vinduer når Tk er tilgjengelig:
+
+```bash
+norcode run --engine python --gui-backend tk examples/gui_demo.no
+```
+
 ---
 
 ## 🧪 Testing
@@ -577,6 +668,12 @@ norcode/
 ├── main.py
 ├── compiler/
 ├── std/
+│   ├── gui.no
+│   ├── io.no
+│   ├── liste.no
+│   ├── math.no
+│   ├── tekst.no
+│   └── web.no
 ├── tests/
 ├── app.no
 └── norcode.toml
@@ -589,7 +686,7 @@ norcode/
 Prosjektet er funksjonelt i god stand per 2026-04-06.
 
 - `norcode test` er grønt
-- `29/29` tester består
+- `28/28` tester består
 - IR snapshot-parity er grønn
 - selfhost-banen dekker nå de nye syntaksene som brukes i testsettet
 
