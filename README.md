@@ -78,6 +78,21 @@ Publisering er satt opp i GitHub Actions via `.github/workflows/publish.yml`:
 - Push tag `vX.Y.Z` for å trigge build + publisering til PyPI
 - Workflowen bruker Trusted Publisher (`id-token`) for opplasting
 
+### 0c. Bygg standalone-binary
+
+```bash
+# Installer dev-avhengigheter, inkludert PyInstaller
+python3 -m pip install -r requirements-dev.txt
+
+# Bygg en én-fil-binær i dist/norscode
+make binary
+# eller:
+sh scripts/build-standalone.sh
+
+# Kjør den pakkede binæren
+./dist/norscode test
+```
+
 ### 1. Kjør program
 
 ```bash
