@@ -21,6 +21,14 @@ Hjemmeside: [docs/index.html](docs/index.html)
 
 ### 0. Installer CLI
 
+Hvis du vil kjøre Norscode uten Python ved runtime, bruk den ferdigbygde binæren direkte:
+
+```bash
+./dist/norscode --help
+```
+
+Du kan også legge `dist/` i `PATH` eller kopiere binæren dit du vanligvis har CLI-verktøyene dine.
+
 ```bash
 python3 -m pip install -e .
 # Hvis miljøet er offline/strengt:
