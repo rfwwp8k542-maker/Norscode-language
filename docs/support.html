@@ -214,8 +214,47 @@ funksjon start() -> heltall {
       </div>
     </section>
 
+    <section class='panel section' id='admin-kode'>
+      <h2>8. Admin og tilgang i kode</h2>
+      <p>For nettsider og verktøy som trenger innlogging, roller eller et adminområde, bruker du vanlig web- eller appkode rundt Norscode-kjernen. Denne delen av guiden forklarer hvordan du tenker om innlogging, roller, CMS, brukeradministrasjon og rettighetsstyring når du bygger et slikt system.</p>
+      <div class='grid-2'>
+        <article class='card'><h3>Innlogging</h3><p>Lag en tydelig innloggingsflyt, oppbevar en sesjon eller token trygt, og skill mellom offentlig og beskyttet innhold.</p></article>
+        <article class='card'><h3>Roller</h3><p>Bruk roller som <code>admin</code>, <code>editor</code> og <code>bruker</code> for å styre hva folk kan se og gjøre.</p></article>
+        <article class='card'><h3>Admin-dashboard</h3><p>Bygg en egen adminflate for sider, innhold, brukere og status. Den kan være en webside eller et GUI-vindu.</p></article>
+        <article class='card'><h3>CMS</h3><p>Håndter innhold som data, ikke som hardkodede sider. Da kan du liste, redigere og publisere fra en egen administrasjonsflyt.</p></article>
+      </div>
+      <div class='grid-2' style='margin-top: 18px;'>
+        <div>
+          <h3>Brukeradministrasjon</h3>
+          <p>Vis brukere, legg til redaktører, slå av tilgang og vis hvem som er aktiv. Hold brukerdata og innhold adskilt.</p>
+        </div>
+        <div>
+          <h3>Rettighetsstyring</h3>
+          <p>Gi skrive-, lese- og adminrettigheter på en tydelig måte. Sjekk rettigheter før du lar noen endre innhold eller tilgang.</p>
+        </div>
+      </div>
+      <div class='grid-2' style='margin-top: 18px;'>
+        <div>
+          <h3>En enkel modell</h3>
+          <pre class='code'><code>funksjon kan_redigere(rolle: tekst) -> boolsk {
+    hvis rolle == &quot;admin&quot; {
+        returner sann
+    } ellers hvis rolle == &quot;editor&quot; {
+        returner sann
+    } ellers {
+        returner usann
+    }
+}</code></pre>
+        </div>
+        <div>
+          <h3>Praktisk råd</h3>
+          <p>Start enkelt: først innlogging, så roller, så et adminpanel. Når det fungerer, kan du bygge et CMS-lag oppå det og utvide med flere rettigheter.</p>
+        </div>
+      </div>
+    </section>
+
     <section class='panel section' id='arbeidsflyt'>
-      <h2>8. Arbeidsflyt i praksis</h2>
+      <h2>9. Arbeidsflyt i praksis</h2>
       <p>En god arbeidsflyt gjør koding lettere. Vi bruker Studio til redigering og navigasjon, CLI til kjøring og testing, og binary når vi skal dele eller kjøre uten å tenke på miljøet rundt.</p>
       <div class='grid-2'>
         <div>
@@ -237,7 +276,7 @@ make binary</code></pre>
     </section>
 
     <section class='panel section'>
-      <h2>9. Hvordan lære raskt</h2>
+      <h2>10. Hvordan lære raskt</h2>
       <div class='grid-2'>
         <div class='notice'><strong>Les kode</strong><span>Les små eksempler først. Ikke start med de største filene når du lærer språket.</span></div>
         <div class='notice'><strong>Skriv selv</strong><span>Kopier ikke bare eksempler. Skriv dem om med egne navn og egne data.</span></div>
@@ -247,7 +286,7 @@ make binary</code></pre>
     </section>
 
     <section class='panel section'>
-      <h2>10. Start med dette</h2>
+      <h2>11. Start med dette</h2>
       <p>Hvis du er ny, anbefaler vi denne rekkefølgen: funksjoner, variabler, betingelser, løkker, lister, standardbibliotek, og så Studio. Deretter kan du begynne å bygge små verktøy, demoer og GUI-apper.</p>
       <div class='grid-4'>
         <article class='card'><h3>Først</h3><p>Lær <code>funksjon</code>, <code>la</code>, <code>hvis</code>, <code>for</code> og <code>mens</code>. Da har du det meste du trenger for å forstå små programmer.</p></article>
