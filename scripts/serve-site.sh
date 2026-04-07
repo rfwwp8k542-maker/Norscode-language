@@ -10,4 +10,16 @@ if [[ -z "$HOST" ]]; then
   fi
 fi
 PORT="${PORT:-4000}"
-exec python3 -m http.server --bind "$HOST" "$PORT" -d docs
+cd docs
+PYTHON_BIN="${PYTHON_BIN:-}"
+if [[ -z "$PYTHON_BIN" ]]; then
+  if command -v python3 >/dev/null 2>&1; then
+    PYTHON_BIN=python3
+  elif command -v python >/dev/null 2>&1; then
+    PYTHON_BIN=python
+  else
+    echo "No Python interpreter found on PATH" >&2
+    exit 127
+  fi
+fi
+exec "$PYTHON_BIN" -m http.server --bind "$HOST" "$PORT"
