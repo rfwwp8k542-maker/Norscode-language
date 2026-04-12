@@ -1,0 +1,176 @@
+# Studio v2 diagnostics foundation.
+
+bruk studio_v2.studio_state som workspace
+bruk studio_v2.symbol som symbol
+
+funksjon studio_v2_diagnostics_tom() -> liste_tekst {
+    returner []
+}
+
+funksjon studio_v2_diagnostics_tekst_oppføring(slag: tekst, fil: tekst, linje: heltall, melding: tekst) -> tekst {
+    returner slag + "\t" + fil + "\t" + tekst_fra_heltall(linje) + "\t" + melding
+}
+
+funksjon studio_v2_diagnostics_tell_tegn(tekstverdi: tekst, tegn: tekst) -> heltall {
+    la antall: heltall = 0
+    la indeks: heltall = 0
+    mens (indeks < tekst_lengde(tekstverdi)) {
+        hvis tekst_slice(tekstverdi, indeks, indeks + 1) == tegn da {
+            antall = antall + 1
+        }
+        indeks = indeks + 1
+    }
+    returner antall
+}
+
+funksjon studio_v2_diagnostics_syntaks_fra_innhold(sti: tekst, innhold: tekst) -> liste_tekst {
+    la resultater: liste_tekst = []
+    la linjer: liste_tekst = del_linjer(innhold)
+    la parentes: heltall = 0
+    la klammer: heltall = 0
+    la hakeparentes: heltall = 0
+    la linje_indeks: heltall = 0
+    mens (linje_indeks < lengde(linjer)) {
+        la linje: tekst = linjer[linje_indeks]
+        la tegn_indeks: heltall = 0
+        mens (tegn_indeks < tekst_lengde(linje)) {
+            la tegn: tekst = tekst_slice(linje, tegn_indeks, tegn_indeks + 1)
+            hvis tegn == "(" da {
+                parentes = parentes + 1
+            } ellers hvis tegn == ")" da {
+                parentes = parentes - 1
+                hvis parentes < 0 da {
+                    legg_til(resultater, studio_v2_diagnostics_tekst_oppføring("syntax_error", sti, linje_indeks + 1, "for mange avsluttende parenteser"))
+                    parentes = 0
+                }
+            } ellers hvis tegn == "{" da {
+                klammer = klammer + 1
+            } ellers hvis tegn == "}" da {
+                klammer = klammer - 1
+                hvis klammer < 0 da {
+                    legg_til(resultater, studio_v2_diagnostics_tekst_oppføring("syntax_error", sti, linje_indeks + 1, "for mange avsluttende klammer"))
+                    klammer = 0
+                }
+            } ellers hvis tegn == "[" da {
+                hakeparentes = hakeparentes + 1
+            } ellers hvis tegn == "]" da {
+                hakeparentes = hakeparentes - 1
+                hvis hakeparentes < 0 da {
+                    legg_til(resultater, studio_v2_diagnostics_tekst_oppføring("syntax_error", sti, linje_indeks + 1, "for mange avsluttende hakeparenteser"))
+                    hakeparentes = 0
+                }
+            }
+            tegn_indeks = tegn_indeks + 1
+        }
+        hvis tekst_starter_med(tekst_trim(linje), "funksjon ") og ikke tekst_inneholder(linje, "->") da {
+            legg_til(resultater, studio_v2_diagnostics_tekst_oppføring("syntax_error", sti, linje_indeks + 1, "mangler returtype med ->"))
+        }
+        linje_indeks = linje_indeks + 1
+    }
+    hvis parentes > 0 da {
+        legg_til(resultater, studio_v2_diagnostics_tekst_oppføring("syntax_error", sti, lengde(linjer), "mangler avsluttende parentes"))
+    }
+    hvis klammer > 0 da {
+        legg_til(resultater, studio_v2_diagnostics_tekst_oppføring("syntax_error", sti, lengde(linjer), "mangler avsluttende klamme"))
+    }
+    hvis hakeparentes > 0 da {
+        legg_til(resultater, studio_v2_diagnostics_tekst_oppføring("syntax_error", sti, lengde(linjer), "mangler avsluttende hakeparentes"))
+    }
+    returner resultater
+}
+
+funksjon studio_v2_diagnostics_syntaks_fra_fil(rot: tekst, sti_relativ: tekst) -> liste_tekst {
+    la kandidater: liste_tekst = [rot + "/" + sti_relativ, sti_relativ, "../" + sti_relativ, "../../" + sti_relativ]
+    la indeks: heltall = 0
+    mens (indeks < lengde(kandidater)) {
+        hvis fil_eksisterer(kandidater[indeks]) da {
+            returner studio_v2_diagnostics_syntaks_fra_innhold(sti_relativ, les_fil(kandidater[indeks]))
+        }
+        indeks = indeks + 1
+    }
+    returner []
+}
+
+funksjon studio_v2_diagnostics_syntaks_fra_workspace(rot: tekst) -> liste_tekst {
+    la resultater: liste_tekst = []
+    la filer: liste_tekst = workspace.studio_v2_state_workspace_filer(rot)
+    la fil_indeks: heltall = 0
+    mens (fil_indeks < lengde(filer)) {
+        la sti: tekst = filer[fil_indeks]
+        hvis tekst_slutter_med(sti, ".no") da {
+            la fil_resultater: liste_tekst = studio_v2_diagnostics_syntaks_fra_fil(rot, sti)
+            la i: heltall = 0
+            mens (i < lengde(fil_resultater)) {
+                legg_til(resultater, fil_resultater[i])
+                i = i + 1
+            }
+        }
+        fil_indeks = fil_indeks + 1
+    }
+    returner resultater
+}
+
+funksjon studio_v2_diagnostics_fra_workspace(rot: tekst) -> liste_tekst {
+    la resultater: liste_tekst = []
+    la filer: liste_tekst = workspace.studio_v2_state_workspace_filer(rot)
+    la symbol_indeks: liste_tekst = symbol.studio_v2_symbol_indeks_fra_filer(filer)
+    la syntaks: liste_tekst = studio_v2_diagnostics_syntaks_fra_workspace(rot)
+    la aktiv_fil: tekst = workspace.studio_v2_state_aktiv_fil(rot)
+    legg_til(resultater, "workspace\tNorscode Studio v2\t" + rot)
+    legg_til(resultater, "aktivitetsfil\t" + aktiv_fil)
+    legg_til(resultater, "åpne_filer\t" + tekst_fra_heltall(lengde(workspace.studio_v2_state_apne_filer(rot, aktiv_fil))))
+    legg_til(resultater, "workspace_filer\t" + tekst_fra_heltall(lengde(filer)))
+    legg_til(resultater, "syntax_errors\t" + tekst_fra_heltall(lengde(syntaks)))
+    legg_til(resultater, "symbol_definisjoner\t" + tekst_fra_heltall(symbol.studio_v2_symbol_indeks_antall_definisjoner(symbol_indeks)))
+    legg_til(resultater, "symbol_bruk\t" + tekst_fra_heltall(symbol.studio_v2_symbol_indeks_antall_bruk(symbol_indeks)))
+    legg_til(resultater, "symboler\t" + tekst_fra_heltall(lengde(symbol_indeks)))
+    la syntaks_indeks: heltall = 0
+    mens (syntaks_indeks < lengde(syntaks) og syntaks_indeks < 3) {
+        legg_til(resultater, syntaks[syntaks_indeks])
+        syntaks_indeks = syntaks_indeks + 1
+    }
+    legg_til(resultater, "status\tklar")
+    returner resultater
+}
+
+funksjon studio_v2_diagnostics_fra_workspace_med_filer(rot: tekst, filer: liste_tekst, symbol_antall: heltall) -> liste_tekst {
+    la resultater: liste_tekst = []
+    la symbol_indeks: liste_tekst = symbol.studio_v2_symbol_indeks_fra_filer(filer)
+    la syntaks: liste_tekst = studio_v2_diagnostics_syntaks_fra_workspace(rot)
+    la aktiv_fil: tekst = workspace.studio_v2_state_aktiv_fil(rot)
+    legg_til(resultater, "workspace\tNorscode Studio v2\t" + rot)
+    legg_til(resultater, "aktivitetsfil\t" + aktiv_fil)
+    legg_til(resultater, "åpne_filer\t" + tekst_fra_heltall(lengde(workspace.studio_v2_state_apne_filer(rot, aktiv_fil))))
+    legg_til(resultater, "workspace_filer\t" + tekst_fra_heltall(lengde(filer)))
+    legg_til(resultater, "syntax_errors\t" + tekst_fra_heltall(lengde(syntaks)))
+    legg_til(resultater, "symbol_definisjoner\t" + tekst_fra_heltall(symbol.studio_v2_symbol_indeks_antall_definisjoner(symbol_indeks)))
+    legg_til(resultater, "symbol_bruk\t" + tekst_fra_heltall(symbol.studio_v2_symbol_indeks_antall_bruk(symbol_indeks)))
+    legg_til(resultater, "symboler\t" + tekst_fra_heltall(symbol_antall))
+    la syntaks_indeks: heltall = 0
+    mens (syntaks_indeks < lengde(syntaks) og syntaks_indeks < 3) {
+        legg_til(resultater, syntaks[syntaks_indeks])
+        syntaks_indeks = syntaks_indeks + 1
+    }
+    legg_til(resultater, "status\tklar")
+    returner resultater
+}
+
+funksjon studio_v2_diagnostics_status(rot: tekst) -> tekst {
+    returner "klar"
+}
+
+funksjon studio_v2_diagnostics_oppdater(rot: tekst) -> liste_tekst {
+    la resultater: liste_tekst = studio_v2_diagnostics_fra_workspace(rot)
+    legg_til(resultater, "oppdatering\tinkrementell")
+    returner resultater
+}
+
+funksjon studio_v2_diagnostics_oppdater_med_filer(rot: tekst, filer: liste_tekst, symbol_antall: heltall) -> liste_tekst {
+    la resultater: liste_tekst = studio_v2_diagnostics_fra_workspace_med_filer(rot, filer, symbol_antall)
+    legg_til(resultater, "oppdatering\tinkrementell")
+    returner resultater
+}
+
+funksjon studio_v2_diagnostics_oppdater_status(rot: tekst) -> tekst {
+    returner "oppdatert"
+}

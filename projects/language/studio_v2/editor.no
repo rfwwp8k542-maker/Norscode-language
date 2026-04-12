@@ -1,0 +1,452 @@
+# Studio v2 editor foundation.
+
+bruk studio_v2.symbol som symbol
+
+funksjon studio_v2_editor_tom() -> tekst {
+    returner ""
+}
+
+funksjon studio_v2_editor_layout() -> tekst {
+    returner "tool-window-stripe | project | editor | inspector | status-bar"
+}
+
+funksjon studio_v2_editor_tabs_tom() -> liste_tekst {
+    returner []
+}
+
+funksjon studio_v2_editor_tabs_fra_apne_filer(apne_filer: liste_tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la indeks: heltall = 0
+    mens (indeks < lengde(apne_filer)) {
+        la kandidat: tekst = apne_filer[indeks]
+        la funnet: bool = usann
+        la j: heltall = 0
+        mens (j < lengde(resultat) og ikke funnet) {
+            hvis resultat[j] == kandidat da {
+                funnet = sann
+            }
+            j = j + 1
+        }
+        hvis kandidat != "" og ikke funnet og lengde(resultat) < 8 da {
+            legg_til(resultat, kandidat)
+        }
+        indeks = indeks + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_editor_tab_status(tabs: liste_tekst) -> tekst {
+    hvis lengde(tabs) == 0 da {
+        returner "tom"
+    }
+    hvis lengde(tabs) == 1 da {
+        returner "enkel"
+    }
+    returner "delt"
+}
+
+funksjon studio_v2_editor_split_status(tabs: liste_tekst) -> tekst {
+    returner studio_v2_editor_tab_status(tabs)
+}
+
+funksjon studio_v2_editor_split_visning(tabs: liste_tekst) -> liste_tekst {
+    hvis lengde(tabs) >= 2 da {
+        returner [tabs[0], tabs[1]]
+    }
+    hvis lengde(tabs) == 1 da {
+        returner [tabs[0]]
+    }
+    returner []
+}
+
+funksjon studio_v2_editor_tab_indeks(tabs: liste_tekst, aktiv_fil: tekst) -> heltall {
+    la indeks: heltall = 0
+    mens (indeks < lengde(tabs)) {
+        hvis tabs[indeks] == aktiv_fil da {
+            returner indeks
+        }
+        indeks = indeks + 1
+    }
+    returner -1
+}
+
+funksjon studio_v2_editor_tab_nåværende(tabs: liste_tekst, aktiv_fil: tekst) -> tekst {
+    hvis studio_v2_editor_tab_indeks(tabs, aktiv_fil) >= 0 da {
+        returner aktiv_fil
+    }
+    hvis lengde(tabs) > 0 da {
+        returner tabs[0]
+    }
+    returner ""
+}
+
+funksjon studio_v2_editor_tab_neste(tabs: liste_tekst, aktiv_fil: tekst) -> tekst {
+    hvis lengde(tabs) == 0 da {
+        returner ""
+    }
+    la aktiv_indeks: heltall = studio_v2_editor_tab_indeks(tabs, aktiv_fil)
+    hvis aktiv_indeks < 0 da {
+        returner tabs[0]
+    }
+    la neste_indeks: heltall = aktiv_indeks + 1
+    hvis neste_indeks >= lengde(tabs) da {
+        neste_indeks = 0
+    }
+    returner tabs[neste_indeks]
+}
+
+funksjon studio_v2_editor_tab_forrige(tabs: liste_tekst, aktiv_fil: tekst) -> tekst {
+    hvis lengde(tabs) == 0 da {
+        returner ""
+    }
+    la aktiv_indeks: heltall = studio_v2_editor_tab_indeks(tabs, aktiv_fil)
+    hvis aktiv_indeks < 0 da {
+        returner tabs[0]
+    }
+    la forrige_indeks: heltall = aktiv_indeks - 1
+    hvis forrige_indeks < 0 da {
+        forrige_indeks = lengde(tabs) - 1
+    }
+    returner tabs[forrige_indeks]
+}
+
+funksjon studio_v2_editor_tab_velg(tabs: liste_tekst, valg_indeks: heltall) -> tekst {
+    hvis lengde(tabs) == 0 da {
+        returner ""
+    }
+    hvis valg_indeks < 0 eller valg_indeks >= lengde(tabs) da {
+        returner tabs[0]
+    }
+    returner tabs[valg_indeks]
+}
+
+funksjon studio_v2_editor_tab_bytt(tabs: liste_tekst, aktiv_fil: tekst, retning: tekst) -> tekst {
+    hvis retning == "forrige" da {
+        returner studio_v2_editor_tab_forrige(tabs, aktiv_fil)
+    }
+    hvis retning == "neste" da {
+        returner studio_v2_editor_tab_neste(tabs, aktiv_fil)
+    }
+    returner studio_v2_editor_tab_nåværende(tabs, aktiv_fil)
+}
+
+funksjon studio_v2_editor_split_fokus_valgt(tabs: liste_tekst, aktiv_fil: tekst, fokus: tekst) -> tekst {
+    hvis lengde(tabs) == 0 da {
+        returner ""
+    }
+    hvis lengde(tabs) == 1 da {
+        returner tabs[0]
+    }
+    hvis fokus == "høyre" eller fokus == "hoyre" da {
+        returner studio_v2_editor_tab_neste(tabs, aktiv_fil)
+    }
+    hvis fokus == "venstre" da {
+        returner studio_v2_editor_tab_nåværende(tabs, aktiv_fil)
+    }
+    returner studio_v2_editor_split_visning(tabs)[0]
+}
+
+funksjon studio_v2_editor_split_fokus_status(tabs: liste_tekst, aktiv_fil: tekst) -> tekst {
+    hvis lengde(tabs) == 0 da {
+        returner "tom"
+    }
+    hvis lengde(tabs) == 1 da {
+        returner "enkel"
+    }
+    hvis studio_v2_editor_split_fokus_valgt(tabs, aktiv_fil, "høyre") != "" da {
+        returner "delt"
+    }
+    returner "tom"
+}
+
+funksjon studio_v2_editor_split_fokus_neste(tabs: liste_tekst, aktiv_fil: tekst) -> tekst {
+    returner studio_v2_editor_split_fokus_valgt(tabs, aktiv_fil, "høyre")
+}
+
+funksjon studio_v2_editor_split_fokus_forrige(tabs: liste_tekst, aktiv_fil: tekst) -> tekst {
+    returner studio_v2_editor_split_fokus_valgt(tabs, aktiv_fil, "venstre")
+}
+
+funksjon studio_v2_editor_kjerne() -> liste_tekst {
+    returner ["linjenummer", "sok", "lagre", "oppdater", "aktiv_fil"]
+}
+
+funksjon studio_v2_editor_buffer_tom() -> liste_tekst {
+    returner []
+}
+
+funksjon studio_v2_editor_buffer_fra_tekst(tekstverdi: tekst) -> liste_tekst {
+    returner del_linjer(tekstverdi)
+}
+
+funksjon studio_v2_editor_buffer_til_tekst(buffer: liste_tekst) -> tekst {
+    la resultat: tekst = ""
+    la indeks: heltall = 0
+    mens (indeks < lengde(buffer)) {
+        resultat = resultat + buffer[indeks]
+        hvis indeks + 1 < lengde(buffer) da {
+            resultat = resultat + "\n"
+        }
+        indeks = indeks + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_editor_buffer_antall_linje(buffer: liste_tekst) -> heltall {
+    returner lengde(buffer)
+}
+
+funksjon studio_v2_editor_åpne(tekstverdi: tekst) -> liste_tekst {
+    returner del_linjer(tekstverdi)
+}
+
+funksjon studio_v2_editor_lagre(buffer: liste_tekst) -> tekst {
+    returner studio_v2_editor_buffer_til_tekst(buffer)
+}
+
+funksjon studio_v2_editor_oppdater(buffer: liste_tekst, tekstverdi: tekst) -> liste_tekst {
+    returner del_linjer(tekstverdi)
+}
+
+funksjon studio_v2_editor_last_om(buffer: liste_tekst, tekstverdi: tekst) -> liste_tekst {
+    returner del_linjer(tekstverdi)
+}
+
+funksjon studio_v2_cursor_tom() -> liste_tekst {
+    returner ["1", "1", "1", "1"]
+}
+
+funksjon studio_v2_cursor_med_posisjon(linje: heltall, kolonne: heltall) -> liste_tekst {
+    la verdi: tekst = tekst_fra_heltall(linje)
+    la kolonne_tekst: tekst = tekst_fra_heltall(kolonne)
+    returner [verdi, kolonne_tekst, verdi, kolonne_tekst]
+}
+
+funksjon studio_v2_cursor_flytt(cursor: liste_tekst, linje: heltall, kolonne: heltall) -> liste_tekst {
+    la verdi: tekst = tekst_fra_heltall(linje)
+    la kolonne_tekst: tekst = tekst_fra_heltall(kolonne)
+    hvis lengde(cursor) < 4 da {
+        returner [verdi, kolonne_tekst, verdi, kolonne_tekst]
+    }
+    returner [verdi, kolonne_tekst, cursor[2], cursor[3]]
+}
+
+funksjon studio_v2_cursor_linje(cursor: liste_tekst) -> tekst {
+    hvis lengde(cursor) > 0 da {
+        returner cursor[0]
+    }
+    returner "1"
+}
+
+funksjon studio_v2_cursor_kolonne(cursor: liste_tekst) -> tekst {
+    hvis lengde(cursor) > 1 da {
+        returner cursor[1]
+    }
+    returner "1"
+}
+
+funksjon studio_v2_cursor_utvalg_start_linje(cursor: liste_tekst) -> tekst {
+    hvis lengde(cursor) > 2 da {
+        returner cursor[2]
+    }
+    returner studio_v2_cursor_linje(cursor)
+}
+
+funksjon studio_v2_cursor_utvalg_start_kolonne(cursor: liste_tekst) -> tekst {
+    hvis lengde(cursor) > 3 da {
+        returner cursor[3]
+    }
+    returner studio_v2_cursor_kolonne(cursor)
+}
+
+funksjon studio_v2_editor_linjeoversikt(buffer: liste_tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la indeks: heltall = 0
+    mens (indeks < lengde(buffer)) {
+        legg_til(resultat, tekst_fra_heltall(indeks + 1) + ": " + buffer[indeks])
+        indeks = indeks + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_editor_aktiv_linje(buffer: liste_tekst, linje_nummer: heltall) -> tekst {
+    hvis linje_nummer < 1 eller linje_nummer > lengde(buffer) da {
+        returner "* " + tekst_fra_heltall(linje_nummer) + ": ?"
+    }
+    returner "* " + tekst_fra_heltall(linje_nummer) + ": " + buffer[linje_nummer - 1]
+}
+
+funksjon studio_v2_editor_goto_linje(buffer: liste_tekst, linje_nummer: heltall) -> liste_tekst {
+    hvis lengde(buffer) == 0 da {
+        returner []
+    }
+    hvis linje_nummer < 1 da {
+        linje_nummer = 1
+    }
+    hvis linje_nummer > lengde(buffer) da {
+        linje_nummer = lengde(buffer)
+    }
+    la start: heltall = linje_nummer - 1
+    hvis start < 1 da {
+        start = 1
+    }
+    hvis start + 2 > lengde(buffer) da {
+        start = lengde(buffer) - 2
+    }
+    hvis start < 1 da {
+        start = 1
+    }
+    returner studio_v2_editor_visningslinjer(buffer, start, 3)
+}
+
+funksjon studio_v2_editor_goto_linje_fra_tekst(buffer: liste_tekst, linje_tekst: tekst) -> liste_tekst {
+    hvis linje_tekst == "" da {
+        returner studio_v2_editor_goto_linje(buffer, 1)
+    }
+    returner studio_v2_editor_goto_linje(buffer, heltall_fra_tekst(linje_tekst))
+}
+
+funksjon studio_v2_editor_visningslinjer(buffer: liste_tekst, start_linje: heltall, antall: heltall) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la indeks: heltall = start_linje - 1
+    la stopp: heltall = start_linje - 1 + antall
+    hvis indeks < 0 da {
+        indeks = 0
+    }
+    hvis stopp > lengde(buffer) da {
+        stopp = lengde(buffer)
+    }
+    mens (indeks < stopp) {
+        legg_til(resultat, tekst_fra_heltall(indeks + 1) + ": " + buffer[indeks])
+        indeks = indeks + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_editor_goto_symbol(rot: tekst, navn: tekst) -> tekst {
+    returner symbol.studio_v2_symbol_goto_def(rot, navn)
+}
+
+funksjon studio_v2_editor_referanser(rot: tekst, navn: tekst) -> liste_tekst {
+    returner symbol.studio_v2_symbol_find_references(rot, navn)
+}
+
+funksjon studio_v2_editor_referanse_valg(rot: tekst, navn: tekst, valg_indeks: heltall) -> tekst {
+    la referanser: liste_tekst = studio_v2_editor_referanser(rot, navn)
+    hvis lengde(referanser) == 0 da {
+        returner ""
+    }
+    hvis valg_indeks < 0 eller valg_indeks >= lengde(referanser) da {
+        returner referanser[0]
+    }
+    returner referanser[valg_indeks]
+}
+
+funksjon studio_v2_editor_rename_preview(rot: tekst, gammelt: tekst, nytt: tekst) -> liste_tekst {
+    returner symbol.studio_v2_symbol_rename_preview(rot, gammelt, nytt)
+}
+
+funksjon studio_v2_editor_completion(rot: tekst, prefix: tekst) -> liste_tekst {
+    returner symbol.studio_v2_symbol_completion_fra_workspace(rot, prefix, 12)
+}
+
+funksjon studio_v2_editor_completion_valg(rot: tekst, prefix: tekst, valg_indeks: heltall) -> tekst {
+    la forslag: liste_tekst = studio_v2_editor_completion(rot, prefix)
+    hvis lengde(forslag) == 0 da {
+        returner ""
+    }
+    hvis valg_indeks < 0 eller valg_indeks >= lengde(forslag) da {
+        returner forslag[0]
+    }
+    returner forslag[valg_indeks]
+}
+
+funksjon studio_v2_editor_sok(buffer: liste_tekst, needle: tekst) -> heltall {
+    la treff: heltall = 0
+    la indeks: heltall = 0
+    mens (indeks < lengde(buffer)) {
+        hvis tekst_inneholder(buffer[indeks], needle) da {
+            treff = treff + 1
+        }
+        indeks = indeks + 1
+    }
+    returner treff
+}
+
+funksjon studio_v2_editor_sok_status(buffer: liste_tekst, needle: tekst) -> tekst {
+    hvis studio_v2_editor_sok(buffer, needle) > 0 da {
+        returner "funnet"
+    }
+    returner "ikke funnet"
+}
+
+funksjon studio_v2_editor_telle_forekomster(tekstverdi: tekst, needle: tekst) -> heltall {
+    hvis needle == "" da {
+        returner 0
+    }
+    la resultat: heltall = 0
+    la indeks: heltall = 0
+    la tekst_lengde_verdi: heltall = tekst_lengde(tekstverdi)
+    la needle_lengde: heltall = tekst_lengde(needle)
+    hvis needle_lengde <= 0 da {
+        returner 0
+    }
+    mens (indeks + needle_lengde <= tekst_lengde_verdi) {
+        hvis tekst_slice(tekstverdi, indeks, indeks + needle_lengde) == needle da {
+            resultat = resultat + 1
+            indeks = indeks + needle_lengde
+        } ellers {
+            indeks = indeks + 1
+        }
+    }
+    returner resultat
+}
+
+funksjon studio_v2_editor_erstatt_tekst(tekstverdi: tekst, gammelt: tekst, nytt: tekst) -> tekst {
+    hvis gammelt == "" da {
+        returner tekstverdi
+    }
+    returner tekst_erstatt(tekstverdi, gammelt, nytt)
+}
+
+funksjon studio_v2_editor_erstatt_buffer(buffer: liste_tekst, gammelt: tekst, nytt: tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la indeks: heltall = 0
+    mens (indeks < lengde(buffer)) {
+        legg_til(resultat, studio_v2_editor_erstatt_tekst(buffer[indeks], gammelt, nytt))
+        indeks = indeks + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_editor_erstatt_tekst_fra_buffer(buffer: liste_tekst, gammelt: tekst, nytt: tekst) -> tekst {
+    returner studio_v2_editor_buffer_til_tekst(studio_v2_editor_erstatt_buffer(buffer, gammelt, nytt))
+}
+
+funksjon studio_v2_editor_erstatt_status(buffer: liste_tekst, gammelt: tekst) -> tekst {
+    hvis studio_v2_editor_sok(buffer, gammelt) > 0 da {
+        returner "klar"
+    }
+    returner "tom"
+}
+
+funksjon studio_v2_editor_erstatt_treff(buffer: liste_tekst, gammelt: tekst) -> heltall {
+    la treff: heltall = 0
+    la indeks: heltall = 0
+    mens (indeks < lengde(buffer)) {
+        treff = treff + studio_v2_editor_telle_forekomster(buffer[indeks], gammelt)
+        indeks = indeks + 1
+    }
+    returner treff
+}
+
+funksjon studio_v2_editor_forste_treff(buffer: liste_tekst, needle: tekst) -> heltall {
+    la indeks: heltall = 0
+    mens (indeks < lengde(buffer)) {
+        hvis tekst_inneholder(buffer[indeks], needle) da {
+            returner indeks + 1
+        }
+        indeks = indeks + 1
+    }
+    returner 0
+}
