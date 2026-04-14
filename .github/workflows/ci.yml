@@ -35,6 +35,10 @@ jobs:
       - name: Install project
         run: python3 -m pip install -e .
 
+      - name: Build native runtime
+        run: cargo build
+        working-directory: projects/language/runtime
+
       - name: Run Norscode CI checks
         run: python3 -m norscode ci --check-names --require-selfhost-ready
 
@@ -66,6 +70,10 @@ jobs:
 
       - name: Install project
         run: python3 -m pip install -e .
+
+      - name: Build native runtime
+        run: cargo build
+        working-directory: projects/language/runtime
 
       - name: Run Norscode CI checks
         run: python3 -m norscode ci --check-names --require-selfhost-ready
