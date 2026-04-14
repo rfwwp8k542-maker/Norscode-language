@@ -88,6 +88,7 @@ jobs:
         run: python3 -m twine check dist/*
 
   standalone-binary:
+    if: ${{ github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -119,6 +120,7 @@ jobs:
           path: dist/norscode
 
   standalone-binary-macos:
+    if: ${{ github.event_name == 'workflow_dispatch' }}
     runs-on: macos-latest
     timeout-minutes: 20
     steps:
@@ -150,6 +152,7 @@ jobs:
           path: dist/norscode
 
   standalone-binary-windows:
+    if: ${{ github.event_name == 'workflow_dispatch' }}
     runs-on: windows-latest
     timeout-minutes: 20
     steps:
