@@ -138,6 +138,7 @@ Merk:
 - enkel `add` med direkte `path`/`git+...`/`url+...` input bruker nå native bro som standard, med `--legacy-python` som eksplisitt fallback.
 - `registry-sync`, `registry-sign` og `registry-mirror` er prosjektkommandoer for registry/cache/distribusjon.
 - `ci`, `debug`, `migrate-names` og `release` er også prosjektkommandoer i samme toppnivåflate.
+- standalone/distribusjon er neste eksplisitte migrasjonsmål; gamle standalone-jobber i CI er midlertidig gated mens build-sporet flyttes fra eldre `projects/infra` til riktig `projects/language`-grunnlag.
 - `bytecode-build` er en lavnivå utviklerkommando for eksplisitt bytecode-artifakt.
 - `run` kan fortsatt beholde generert bytecode ved behov via `--keep-bytecode`.
 - Legacy C/`clang`-stien er nå fjernet fra `run`, `build` og `test`.

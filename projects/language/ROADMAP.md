@@ -135,43 +135,42 @@ M2. First native project commands
 - `add` kan gjøre mer enn preview og smal skrivevei
 - `registry-sign` går fra preview til første faktisk nyttige write-/digest-kontrakt
 
-### Next focused deliverable: `registry-sign`
+### Next focused deliverable: `standalone` / distribution
 Mål:
-- gjøre `registry-sign` til neste lille kommando som går fra preview til faktisk nyttig native prosjektkommando
+- flytte standalone-distribusjon bort fra gammelt `projects/infra`-spor
+- gjøre binærbygging konsistent med `projects/language`-pakken som nå brukes i CI
+- åpne standalone-jobbene igjen når de bygger og verifiserer riktig produkt
 
 Definition of done:
-- native `registry-sign` kan lese lokal registry-fil
-- native `registry-sign` kan beregne stabil digest
-- native `registry-sign` har første smale write-steg
-- toppnivå-CLI-en kan bruke native `registry-sign` uten uklarhet i output eller fallback
+- én dokumentert build-vei lager `dist/norscode` fra riktig språk-workspace
+- Linux-jobben kan bygge og verifisere binæren uten å bruke gammel repo-rot-logikk
+- macOS-jobben kan gjøre det samme
+- standalone-jobbene kan slås på igjen i vanlig CI uten å gi falske røde bygg
 
 Planned sequence:
-1. fullføre digest-preview og output-kontrakt
-2. legge inn første smale write-steg
-3. dokumentere forskjellen mellom native og legacy `registry-sign`
-4. vurdere første standardovergang hvis kontrakten er stabil
+1. definere riktig byggeier: `projects/language` vs gammelt `projects/infra`
+2. lage ny eller oppdatert standalone-build-kommando for det riktige sporet
+3. verifisere at `dist/norscode test` peker på samme språk/workspace som vanlig CI
+4. åpne Linux-jobben igjen
+5. åpne macOS- og Windows-jobbene igjen
 
 Status nå:
-- digest-preview er på plass
-- første smale write-steg er på plass som lokal sidecar `registry.toml.sha256`
-- `--write-config` er fortsatt legacy-spor
+- vanlig CI er grønn mot `projects/language`
+- gamle standalone-jobber er gated til `workflow_dispatch`
+- standalone-sporet bygger fortsatt et eldre infra-lag og må migreres
 
 ## Immediate next 14 days
-- gjøre `registry-sign` til neste tydelige delmål:
+- migrere standalone/distribusjon til riktig språkspor:
+  - definere ny build-vei for `dist/norscode`
+  - stoppe avhengighet på gammelt `projects/infra`-oppsett
+  - åpne standalone Linux igjen først
+- holde `registry-sign` i bevegelse etterpå:
   - fullføre digest-kontrakt
-  - første smale native write-steg
   - senere `--write-config`
-- holde `registry-mirror` i gang som neste preview-spor, slik at hele registry-kjeden finnes i native form
-- gi `registry-mirror` første smale native write-steg på default output-sti
-- gjøre `add` mer komplett:
-  - løfte flere vanlige tilfeller ut av legacy-sporet
-- utvide `update` native-støtte:
-  - flere flagg og færre legacy-avvik
-- utvide `registry-sync` native-støtte:
-  - mer enn lokal init / enkel default-flyt
-- starte `registry-mirror` som native preview
-- definere første native inngang for `ci`
-- holde README og CLI-hjelp synkron med faktisk status
+- gjøre `registry-mirror` mer komplett etter default-write-sporet
+- gjøre `add` mer komplett med færre legacy-avvik
+- utvide `update` native-støtte videre fra enkel standardflyt
+- holde README, roadmap og workflower synkron med faktisk bygge- og distribusjonsstatus
 
 ## Technical direction
 
