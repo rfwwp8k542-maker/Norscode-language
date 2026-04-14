@@ -1,0 +1,21 @@
+funksjon start() -> heltall {
+    assert_eq(tekst_lengde("æøå"), 3)
+    assert(tekst_er_ordtegn("Å"))
+    assert_eq(tekst_slice("Hei æøå", 4, 7), "æøå")
+    assert_eq(tekst_slice("", 0, 0), "")
+    assert_eq(tekst_trim("   "), "")
+    assert_eq(tekst_erstatt("æøå", "ø", "o"), "æoå")
+    assert_eq(tekst_omvendt("æøå"), "åøæ")
+    assert_eq(lengde(del_på("a,b,c", ",")), 3)
+    assert_eq(del_på("a,b,c", ",")[0], "a")
+    assert_eq(del_på("a,b,c", ",")[2], "c")
+    assert_eq(lengde(del_på("abc", "")), 1)
+    assert_eq(del_på("abc", "")[0], "abc")
+    assert_eq(lengde(del_ord("hei  æøå")), 2)
+    la tokens = tokeniser_enkel("navn_1 # kommentar\nx-2")
+    assert_eq(lengde(tokens), 2)
+    assert_eq(tokens[0], "navn_1")
+    assert_eq(tokens[1], "x-2")
+    assert(tekst_inneholder("Håkon", "åk"))
+    returner 0
+}

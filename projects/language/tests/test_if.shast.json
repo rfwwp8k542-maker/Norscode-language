@@ -1,0 +1,94 @@
+{
+  "format": "norscode-ast-v1",
+  "alias_map": {},
+  "imports": [],
+  "functions": [
+    {
+      "name": "start",
+      "module_name": "__main__",
+      "return_type": "heltall",
+      "params": [],
+      "body": {
+        "type": "Block",
+        "statements": [
+          {
+            "type": "VarDeclare",
+            "name": "x",
+            "var_type": "heltall",
+            "expr": {
+              "type": "Number",
+              "value": 7
+            }
+          },
+          {
+            "type": "If",
+            "condition": {
+              "type": "BinOp",
+              "op": "GT",
+              "left": {
+                "type": "VarAccess",
+                "name": "x"
+              },
+              "right": {
+                "type": "Number",
+                "value": 5
+              }
+            },
+            "then_block": {
+              "type": "Block",
+              "statements": [
+                {
+                  "type": "ExprStmt",
+                  "expr": {
+                    "type": "Call",
+                    "name": "assert_eq",
+                    "args": [
+                      {
+                        "type": "Number",
+                        "value": 1
+                      },
+                      {
+                        "type": "Number",
+                        "value": 1
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            "elif_blocks": [],
+            "else_block": {
+              "type": "Block",
+              "statements": [
+                {
+                  "type": "ExprStmt",
+                  "expr": {
+                    "type": "Call",
+                    "name": "assert_eq",
+                    "args": [
+                      {
+                        "type": "Number",
+                        "value": 1
+                      },
+                      {
+                        "type": "Number",
+                        "value": 0
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "type": "Return",
+            "expr": {
+              "type": "Number",
+              "value": 0
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

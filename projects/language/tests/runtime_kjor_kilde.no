@@ -1,0 +1,7 @@
+funksjon start() -> heltall {
+    la kilde: tekst = "funksjon start() -> heltall { skriv(\"Hei fra Studio\") returner 0 }"
+    assert_eq(kjor_kilde(kilde), "Hei fra Studio\n")
+    la ugyldig: tekst = "funksjon start() -> heltall { returner"
+    assert(tekst_starter_med(kjor_kilde(ugyldig), "Feil:"))
+    returner 0
+}

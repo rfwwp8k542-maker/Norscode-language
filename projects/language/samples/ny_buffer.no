@@ -1,0 +1,6 @@
+bruk std.gui som gui
+
+funksjon start() -> heltall {
+    skriv("Hei fra Norscode Studio")
+    returner 0
+}

@@ -1,0 +1,1774 @@
+bruk std.gui som gui
+bruk std.web som web
+bruk std.tekst som txt
+
+funksjon studio_rot(widget_id: heltall) -> heltall {
+    la n: heltall = widget_id
+    mens (gui.foresatt(n) != 0) {
+        n = gui.foresatt(n)
+    }
+    hvis gui.barn(n, 0) != 0 da {
+        returner gui.barn(n, 0)
+    }
+    returner n
+}
+
+funksjon studio_stifelt(widget_id: heltall) -> heltall {
+    la rot_id: heltall = studio_rot(widget_id)
+    la work_row: heltall = gui.barn(rot_id, 3)
+    la work_panel: heltall = gui.barn(work_row, 1)
+    la toolbar: heltall = gui.barn(work_panel, 2)
+    returner gui.barn(toolbar, 1)
+}
+
+funksjon studio_sokfelt(widget_id: heltall) -> heltall {
+    la rot_id: heltall = studio_rot(widget_id)
+    la work_row: heltall = gui.barn(rot_id, 3)
+    la work_panel: heltall = gui.barn(work_row, 1)
+    la toolbar: heltall = gui.barn(work_panel, 2)
+    returner gui.barn(toolbar, 14)
+}
+
+funksjon studio_erstattfelt(widget_id: heltall) -> heltall {
+    la rot_id: heltall = studio_rot(widget_id)
+    la work_row: heltall = gui.barn(rot_id, 3)
+    la work_panel: heltall = gui.barn(work_row, 1)
+    la toolbar: heltall = gui.barn(work_panel, 2)
+    returner gui.barn(toolbar, 17)
+}
+
+funksjon studio_nyttnavnfelt(widget_id: heltall) -> heltall {
+    la rot_id: heltall = studio_rot(widget_id)
+    la work_row: heltall = gui.barn(rot_id, 3)
+    la work_panel: heltall = gui.barn(work_row, 1)
+    la toolbar: heltall = gui.barn(work_panel, 2)
+    returner gui.barn(toolbar, 20)
+}
+
+funksjon studio_kommandofelt(widget_id: heltall) -> heltall {
+    la rot_id: heltall = studio_rot(widget_id)
+    la work_row: heltall = gui.barn(rot_id, 3)
+    la work_panel: heltall = gui.barn(work_row, 1)
+    la toolbar: heltall = gui.barn(work_panel, 2)
+    returner gui.barn(toolbar, 24)
+}
+
+funksjon studio_linjefelt(widget_id: heltall) -> heltall {
+    la rot_id: heltall = studio_rot(widget_id)
+    la work_row: heltall = gui.barn(rot_id, 3)
+    la work_panel: heltall = gui.barn(work_row, 1)
+    la toolbar: heltall = gui.barn(work_panel, 2)
+    returner gui.barn(toolbar, 9)
+}
+
+funksjon studio_kilderad(widget_id: heltall) -> heltall {
+    la rot_id: heltall = studio_rot(widget_id)
+    la work_row: heltall = gui.barn(rot_id, 3)
+    la work_panel: heltall = gui.barn(work_row, 1)
+    la source_panel: heltall = gui.barn(work_panel, 3)
+    returner gui.barn(source_panel, 2)
+}
+
+funksjon studio_linjeoverskrift(widget_id: heltall) -> heltall {
+    la rot_id: heltall = studio_rot(widget_id)
+    la work_row: heltall = gui.barn(rot_id, 3)
+    la work_panel: heltall = gui.barn(work_row, 1)
+    la source_panel: heltall = gui.barn(work_panel, 3)
+    returner gui.barn(source_panel, 0)
+}
+
+funksjon studio_linjevisning(widget_id: heltall) -> heltall {
+    la rot_id: heltall = studio_rot(widget_id)
+    la work_row: heltall = gui.barn(rot_id, 3)
+    la work_panel: heltall = gui.barn(work_row, 1)
+    la source_panel: heltall = gui.barn(work_panel, 3)
+    la source_row: heltall = gui.barn(source_panel, 2)
+    returner gui.barn(source_row, 0)
+}
+
+funksjon studio_kilde(widget_id: heltall) -> heltall {
+    la rot_id: heltall = studio_rot(widget_id)
+    la work_row: heltall = gui.barn(rot_id, 3)
+    la work_panel: heltall = gui.barn(work_row, 1)
+    la source_panel: heltall = gui.barn(work_panel, 3)
+    la source_row: heltall = gui.barn(source_panel, 2)
+    returner gui.barn(source_row, 1)
+}
+
+funksjon studio_utdata(widget_id: heltall) -> heltall {
+    la rot_id: heltall = studio_rot(widget_id)
+    la work_row: heltall = gui.barn(rot_id, 3)
+    la work_panel: heltall = gui.barn(work_row, 1)
+    la output_panel: heltall = gui.barn(work_panel, 4)
+    returner gui.barn(output_panel, 1)
+}
+
+funksjon studio_terminal(widget_id: heltall) -> heltall {
+    la rot_id: heltall = studio_rot(widget_id)
+    la work_row: heltall = gui.barn(rot_id, 3)
+    la work_panel: heltall = gui.barn(work_row, 1)
+    la terminal_panel: heltall = gui.barn(work_panel, 6)
+    returner gui.barn(terminal_panel, 1)
+}
+
+funksjon studio_autocomplete_panel(widget_id: heltall) -> heltall {
+    la rot_id: heltall = studio_rot(widget_id)
+    la work_row: heltall = gui.barn(rot_id, 3)
+    la work_panel: heltall = gui.barn(work_row, 1)
+    la source_panel: heltall = gui.barn(work_panel, 3)
+    returner gui.barn(source_panel, 3)
+}
+
+funksjon studio_autocomplete_tittel(widget_id: heltall) -> heltall {
+    la panel_id: heltall = studio_autocomplete_panel(widget_id)
+    returner gui.barn(panel_id, 0)
+}
+
+funksjon studio_autocomplete_liste(widget_id: heltall) -> heltall {
+    la panel_id: heltall = studio_autocomplete_panel(widget_id)
+    returner gui.barn(panel_id, 1)
+}
+
+funksjon studio_autocomplete_handling(widget_id: heltall) -> heltall {
+    la panel_id: heltall = studio_autocomplete_panel(widget_id)
+    returner gui.barn(panel_id, 2)
+}
+
+funksjon studio_diagnose(widget_id: heltall) -> heltall {
+    la rot_id: heltall = studio_rot(widget_id)
+    la work_row: heltall = gui.barn(rot_id, 3)
+    la work_panel: heltall = gui.barn(work_row, 1)
+    la diagnose_panel: heltall = gui.barn(work_panel, 5)
+    returner gui.barn(diagnose_panel, 1)
+}
+
+funksjon studio_status(widget_id: heltall) -> heltall {
+    la rot_id: heltall = studio_rot(widget_id)
+    returner gui.barn(rot_id, 4)
+}
+
+funksjon studio_oversikt(widget_id: heltall) -> heltall {
+    la rot_id: heltall = studio_rot(widget_id)
+    returner gui.barn(rot_id, 2)
+}
+
+funksjon studio_tips(widget_id: heltall) -> heltall {
+    la rot_id: heltall = studio_rot(widget_id)
+    la status_panel: heltall = gui.barn(rot_id, 4)
+    returner gui.barn(status_panel, 1)
+}
+
+funksjon studio_editorstatus(widget_id: heltall) -> heltall {
+    la rot_id: heltall = studio_rot(widget_id)
+    la work_row: heltall = gui.barn(rot_id, 3)
+    la work_panel: heltall = gui.barn(work_row, 1)
+    la source_panel: heltall = gui.barn(work_panel, 3)
+    returner gui.barn(source_panel, 1)
+}
+
+funksjon studio_cursorinfo(widget_id: heltall) -> tekst {
+    la posisjon: liste_tekst = gui.editor_cursor(studio_kilde(widget_id))
+    hvis lengde(posisjon) < 2 da {
+        returner "Linje: ? | Kolonne: ? | Symbol: ?"
+    }
+    la symbol: tekst = studio_autocomplete_prefix(widget_id)
+    hvis symbol == "" da {
+        symbol = "ingen"
+    }
+    returner "Linje: " + posisjon[0] + " | Kolonne: " + posisjon[1] + " | Symbol: " + symbol
+}
+
+funksjon studio_kildeinfo(widget_id: heltall) -> tekst {
+    la kilde: tekst = gui.hent_tekst(studio_kilde(widget_id))
+    la linjer: heltall = lengde(del_linjer(kilde))
+    la ord: heltall = lengde(del_ord(kilde))
+    la tokener: heltall = lengde(tokeniser_enkel(kilde))
+    returner "Linjer: " + tekst_fra_heltall(linjer) + " | Ord: " + tekst_fra_heltall(ord) + " | Tokener: " + tekst_fra_heltall(tokener)
+}
+
+funksjon studio_lagringsstatus(widget_id: heltall) -> tekst {
+    la sti: tekst = gui.hent_tekst(studio_stifelt(widget_id))
+    hvis sti == "" da {
+        returner "Ulagret"
+    }
+    hvis fil_eksisterer(sti) da {
+        hvis les_fil(sti) == gui.hent_tekst(studio_kilde(widget_id)) da {
+            returner "Lagret"
+        }
+    }
+    returner "Ulagret"
+}
+
+funksjon studio_er_feil(tekstverdi: tekst) -> bool {
+    returner tekst_starter_med(tekstverdi, "Feil:")
+}
+
+funksjon oppdater_diagnose(widget_id: heltall, melding: tekst) -> heltall {
+    gui.sett_tekst(studio_diagnose(widget_id), "Diagnose |\n" + melding)
+    returner widget_id
+}
+
+funksjon oppdater_terminal(widget_id: heltall, melding: tekst) -> heltall {
+    la terminal_id: heltall = studio_terminal(widget_id)
+    la eksisterende: tekst = gui.hent_tekst(terminal_id)
+    hvis eksisterende == "" da {
+        gui.sett_tekst(terminal_id, "Terminal |\n" + melding)
+    } ellers {
+        hvis tekst_slutter_med(eksisterende, "\n") da {
+            gui.sett_tekst(terminal_id, eksisterende + melding)
+        } ellers {
+            gui.sett_tekst(terminal_id, eksisterende + "\n" + melding)
+        }
+    }
+    returner widget_id
+}
+
+funksjon sok_i_kilde(widget_id: heltall) -> heltall {
+    la sok: tekst = gui.hent_tekst(studio_sokfelt(widget_id))
+    la resultat: tekst = studio_sok_i_kilde(widget_id, sok)
+    hvis tekst_starter_med(resultat, "Fant ingen treff") da {
+        oppdater_statuslinje(widget_id, "Søk gav ingen treff")
+    } ellers {
+        oppdater_statuslinje(widget_id, "Søk ferdig")
+    }
+    oppdater_diagnose(widget_id, resultat)
+    returner widget_id
+}
+
+funksjon erstatt_i_kilde(widget_id: heltall) -> heltall {
+    la sok: tekst = gui.hent_tekst(studio_sokfelt(widget_id))
+    la erstatt_med: tekst = gui.hent_tekst(studio_erstattfelt(widget_id))
+    hvis sok == "" da {
+        oppdater_statuslinje(widget_id, "Skriv noe å erstatte først")
+        oppdater_diagnose(widget_id, "Skriv et søkeord i søkefeltet før du erstatter.")
+        returner widget_id
+    }
+    la kilde: tekst = gui.hent_tekst(studio_kilde(widget_id))
+    la ny_kilde: tekst = tekst_erstatt(kilde, sok, erstatt_med)
+    hvis ny_kilde == kilde da {
+        oppdater_statuslinje(widget_id, "Ingen treff å erstatte")
+        oppdater_diagnose(widget_id, "Fant ingen treff for:\n" + sok)
+        returner widget_id
+    }
+    gui.sett_tekst(studio_kilde(widget_id), ny_kilde)
+    oppdater_kildeoversikt(widget_id)
+    oppdater_statuslinje(widget_id, "Erstattet tekst")
+    oppdater_diagnose(widget_id, "Erstattet \"" + sok + "\" med \"" + erstatt_med + "\".")
+    gui.sett_tekst(studio_tips(widget_id), "Husk å lagre hvis dette var en endring du vil beholde")
+    returner widget_id
+}
+
+funksjon studio_sok_i_kilde(widget_id: heltall, sok: tekst) -> tekst {
+    hvis sok == "" da {
+        returner "Skriv noe å søke etter."
+    }
+    la linjer: liste_tekst = del_linjer(gui.hent_tekst(studio_kilde(widget_id)))
+    la antall: heltall = lengde(linjer)
+    la funn: tekst = ""
+    la indeks: heltall = 0
+    la treffer: heltall = 0
+    mens (indeks < antall) {
+        la linje: tekst = linjer[indeks]
+        hvis tekst_inneholder(linje, sok) da {
+            treffer = treffer + 1
+            hvis funn == "" da {
+                funn = tekst_fra_heltall(indeks + 1) + ": " + linje
+            } ellers {
+                funn = funn + "\n" + tekst_fra_heltall(indeks + 1) + ": " + linje
+            }
+        }
+        indeks = indeks + 1
+    }
+    hvis treffer == 0 da {
+        returner "Fant ingen treff for: " + sok
+    }
+    returner "Fant " + tekst_fra_heltall(treffer) + " treff for: " + sok + "\n" + funn
+}
+
+funksjon studio_linjetekst(widget_id: heltall) -> tekst {
+    la linjer: liste_tekst = del_linjer(gui.hent_tekst(studio_kilde(widget_id)))
+    la antall: heltall = lengde(linjer)
+    la tekstverdi: tekst = ""
+    la indeks: heltall = 0
+    mens (indeks < antall) {
+        hvis indeks == 0 da {
+            tekstverdi = tekst_fra_heltall(indeks + 1)
+        } ellers {
+            tekstverdi = tekstverdi + "\n" + tekst_fra_heltall(indeks + 1)
+        }
+        indeks = indeks + 1
+    }
+    returner tekstverdi
+}
+
+funksjon oppdater_linjer(widget_id: heltall) -> heltall {
+    gui.sett_tekst(studio_linjevisning(widget_id), studio_linjetekst(widget_id))
+    returner widget_id
+}
+
+funksjon oppdater_kildeoversikt(widget_id: heltall) -> heltall {
+    la sti: tekst = gui.hent_tekst(studio_stifelt(widget_id))
+    la basis: tekst = "Ny buffer"
+    hvis sti != "" da {
+        basis = sti
+    }
+    gui.sett_tekst(studio_oversikt(widget_id), "Aktiv fil | " + basis + " | " + studio_lagringsstatus(widget_id) + " | " + studio_kildeinfo(widget_id))
+    gui.sett_tekst(studio_editorstatus(widget_id), "Aktiv fil | " + basis + " | " + studio_cursorinfo(widget_id) + " | " + studio_lagringsstatus(widget_id))
+    oppdater_linjer(widget_id)
+    oppdater_autocomplete(widget_id)
+    returner widget_id
+}
+
+funksjon studio_autocomplete_kilder() -> liste_tekst {
+    returner [
+        "bruk", "funksjon", "start", "returner", "hvis", "ellers", "da", "mens", "for", "i",
+        "bryt", "fortsett", "la", "sann", "usann", "og", "eller", "ikke",
+        "tekst_fra_heltall", "tekst_fra_bool", "heltall_fra_tekst", "tekst_trim", "tekst_slice", "tekst_lengde",
+        "tekst_slutter_med", "tekst_starter_med", "tekst_inneholder", "tekst_erstatt", "del_linjer",
+        "del_ord", "tokeniser_enkel", "tokeniser_uttrykk", "les_fil", "skriv_fil",
+        "fil_eksisterer", "les_miljo", "argv", "kjør_kommando", "liste_filer", "liste_filer_tre",
+        "kjor_kilde", "assert", "assert_eq", "assert_ne",
+        "gui_vindu", "gui_panel", "gui_rad", "gui_tekst", "gui_tekstboks", "gui_editor",
+        "gui_editor_hopp_til", "gui_editor_cursor", "gui_editor_erstatt_fra_til", "gui_liste",
+        "gui_liste_legg_til", "gui_liste_tom", "gui_liste_antall", "gui_liste_hent",
+        "gui_liste_fjern", "gui_liste_valgt", "gui_liste_velg", "gui_på_klikk", "gui_på_endring",
+        "gui_trykk", "gui_foresatt", "gui_barn", "gui_knapp", "gui_etikett", "gui_tekstfelt",
+        "gui_sett_tekst", "gui_hent_tekst", "gui_vis", "gui_lukk",
+        "bootstrap_html", "css_startmal", "sass_startmal", "sass_til_css_tekst", "css_trim"
+    ]
+}
+
+funksjon studio_autocomplete_legg_til_unik(kilder: liste_tekst, kandidat: tekst) -> liste_tekst {
+    hvis kandidat == "" da {
+        returner kilder
+    }
+    la indeks: heltall = 0
+    mens (indeks < lengde(kilder)) {
+        hvis kilder[indeks] == kandidat da {
+            returner kilder
+        }
+        indeks = indeks + 1
+    }
+    legg_til(kilder, kandidat)
+    returner kilder
+}
+
+funksjon studio_autocomplete_filnavn(widget_id: heltall) -> liste_tekst {
+    la forslag: liste_tekst = []
+    la apne_liste: heltall = studio_apne_filer(widget_id)
+    la indeks: heltall = 0
+    mens (indeks < gui.liste_antall(apne_liste)) {
+        la sti: tekst = gui.liste_hent(apne_liste, indeks)
+        hvis sti != "" og ikke tekst_slutter_med(sti, "/") da {
+            studio_autocomplete_legg_til_unik(forslag, sti)
+        }
+        indeks = indeks + 1
+    }
+    la root: tekst = les_miljo("NORSCODE_STUDIO_ROOT")
+    hvis root == "" da {
+        root = "."
+    }
+    la filer: liste_tekst = liste_filer_tre(root)
+    indeks = 0
+    mens (indeks < lengde(filer)) {
+        la filnavn: tekst = tekst_trim(filer[indeks])
+        hvis filnavn != "" og ikke tekst_slutter_med(filnavn, "/") da {
+            studio_autocomplete_legg_til_unik(forslag, filnavn)
+        }
+        indeks = indeks + 1
+    }
+    returner forslag
+}
+
+funksjon studio_autocomplete_symboler(widget_id: heltall) -> liste_tekst {
+    la forslag: liste_tekst = []
+    la kilde: tekst = gui.hent_tekst(studio_kilde(widget_id))
+    la ord: liste_tekst = tokeniser_enkel(kilde)
+    la indeks: heltall = 0
+    mens (indeks < lengde(ord)) {
+        la kandidat: tekst = ord[indeks]
+        hvis kandidat != "" og txt.tekst_er_ordtegn(tekst_slice(kandidat, 0, 1)) da {
+            hvis kandidat != "bruk" og kandidat != "funksjon" og kandidat != "start" og kandidat != "returner" og kandidat != "hvis" og kandidat != "ellers" og kandidat != "da" og kandidat != "mens" og kandidat != "for" og kandidat != "i" og kandidat != "bryt" og kandidat != "fortsett" og kandidat != "la" og kandidat != "sann" og kandidat != "usann" og kandidat != "og" og kandidat != "eller" og kandidat != "ikke" da {
+                studio_autocomplete_legg_til_unik(forslag, kandidat)
+            }
+        }
+        indeks = indeks + 1
+    }
+    returner forslag
+}
+
+funksjon studio_autocomplete_prefix(widget_id: heltall) -> tekst {
+    la posisjon: liste_tekst = gui.editor_cursor(studio_kilde(widget_id))
+    hvis lengde(posisjon) < 2 da {
+        returner ""
+    }
+    la linje_nummer: heltall = heltall_fra_tekst(posisjon[0])
+    la kolonne: heltall = heltall_fra_tekst(posisjon[1])
+    la linjer: liste_tekst = del_linjer(gui.hent_tekst(studio_kilde(widget_id)))
+    hvis linje_nummer < 1 eller linje_nummer > lengde(linjer) da {
+        returner ""
+    }
+    la linje: tekst = linjer[linje_nummer - 1]
+    hvis kolonne < 1 da {
+        kolonne = 1
+    }
+    hvis kolonne > tekst_lengde(linje) + 1 da {
+        kolonne = tekst_lengde(linje) + 1
+    }
+    la prefix: tekst = tekst_slice(linje, 0, kolonne - 1)
+    la ord: liste_tekst = tokeniser_enkel(prefix)
+    hvis lengde(ord) == 0 da {
+        returner ""
+    }
+    returner ord[lengde(ord) - 1]
+}
+
+funksjon oppdater_autocomplete(widget_id: heltall) -> heltall {
+    la liste_id: heltall = studio_autocomplete_liste(widget_id)
+    la tittel_id: heltall = studio_autocomplete_tittel(widget_id)
+    la prefix: tekst = studio_autocomplete_prefix(widget_id)
+    la kilder: liste_tekst = studio_autocomplete_kilder()
+    la filer: liste_tekst = studio_autocomplete_filnavn(widget_id)
+    la symboler: liste_tekst = studio_autocomplete_symboler(widget_id)
+    la resultat: liste_tekst = []
+    gui.liste_tom(liste_id)
+    la antall: heltall = 0
+    hvis prefix == "" da {
+        la indeks_symboler: heltall = 0
+        mens (indeks_symboler < lengde(symboler) og antall < 12) {
+            la kandidat_symbol: tekst = symboler[indeks_symboler]
+            studio_autocomplete_legg_til_unik(resultat, kandidat_symbol)
+            antall = antall + 1
+            indeks_symboler = indeks_symboler + 1
+        }
+        la indeks_kilder: heltall = 0
+        mens (indeks_kilder < lengde(kilder) og antall < 12) {
+            la kandidat: tekst = kilder[indeks_kilder]
+            studio_autocomplete_legg_til_unik(resultat, kandidat)
+            antall = antall + 1
+            indeks_kilder = indeks_kilder + 1
+        }
+        la indeks_filer: heltall = 0
+        mens (indeks_filer < lengde(filer) og antall < 12) {
+            la kandidat_fil: tekst = filer[indeks_filer]
+            studio_autocomplete_legg_til_unik(resultat, kandidat_fil)
+            antall = antall + 1
+            indeks_filer = indeks_filer + 1
+        }
+    } ellers {
+        la indeks_symboler: heltall = 0
+        mens (indeks_symboler < lengde(symboler)) {
+            la kandidat_symbol: tekst = symboler[indeks_symboler]
+            hvis kandidat_symbol == prefix da {
+                studio_autocomplete_legg_til_unik(resultat, kandidat_symbol)
+            }
+            indeks_symboler = indeks_symboler + 1
+        }
+        la indeks: heltall = 0
+        mens (indeks < lengde(kilder)) {
+            la kandidat: tekst = kilder[indeks]
+            hvis kandidat == prefix da {
+                studio_autocomplete_legg_til_unik(resultat, kandidat)
+            }
+            indeks = indeks + 1
+        }
+        indeks = 0
+        mens (indeks < lengde(filer)) {
+            la kandidat_fil: tekst = filer[indeks]
+            hvis kandidat_fil == prefix da {
+                studio_autocomplete_legg_til_unik(resultat, kandidat_fil)
+            }
+            indeks = indeks + 1
+        }
+        indeks = 0
+        mens (indeks < lengde(kilder)) {
+            la kandidat: tekst = kilder[indeks]
+            hvis kandidat != prefix og tekst_starter_med(kandidat, prefix) da {
+                studio_autocomplete_legg_til_unik(resultat, kandidat)
+            }
+            indeks = indeks + 1
+        }
+        indeks = 0
+        mens (indeks < lengde(filer)) {
+            la kandidat_fil: tekst = filer[indeks]
+            hvis kandidat_fil != prefix og tekst_starter_med(kandidat_fil, prefix) da {
+                studio_autocomplete_legg_til_unik(resultat, kandidat_fil)
+            }
+            indeks = indeks + 1
+        }
+        indeks = 0
+        mens (indeks < lengde(symboler)) {
+            la kandidat_symbol: tekst = symboler[indeks]
+            hvis kandidat_symbol != prefix og tekst_starter_med(kandidat_symbol, prefix) da {
+                studio_autocomplete_legg_til_unik(resultat, kandidat_symbol)
+            }
+            indeks = indeks + 1
+        }
+    }
+    la resultat_indeks: heltall = 0
+    mens (resultat_indeks < lengde(resultat)) {
+        hvis antall < 12 eller prefix != "" da {
+            gui.liste_legg_til(liste_id, resultat[resultat_indeks])
+            antall = antall + 1
+        }
+        resultat_indeks = resultat_indeks + 1
+    }
+    hvis antall > 0 da {
+        gui.liste_velg(liste_id, 0)
+    }
+    gui.sett_tekst(tittel_id, "Autocomplete | " + tekst_fra_heltall(antall))
+    hvis antall == 0 da {
+        oppdater_statuslinje(widget_id, "Autocomplete | ingen forslag")
+        oppdater_diagnose(widget_id, "Autocomplete:\nIngen forslag funnet.")
+        gui.sett_tekst(studio_tips(widget_id), "Autocomplete | skriv mer for å få forslag")
+    } ellers {
+        oppdater_statuslinje(widget_id, "Autocomplete | " + tekst_fra_heltall(antall) + " forslag")
+        oppdater_diagnose(widget_id, "Autocomplete forhåndsvisning:\nForslag: " + gui.liste_hent(liste_id, 0) + "\nTreff: " + tekst_fra_heltall(antall))
+        oppdater_autocomplete_valgt(widget_id)
+    }
+    returner widget_id
+}
+
+funksjon oppdater_autocomplete_valgt(widget_id: heltall) -> heltall {
+    la liste_id: heltall = studio_autocomplete_liste(widget_id)
+    la forslag: tekst = gui.liste_valgt(liste_id)
+    hvis forslag == "" da {
+        hvis gui.liste_antall(liste_id) == 0 da {
+            gui.sett_tekst(studio_tips(widget_id), "Autocomplete | skriv mer for å få forslag")
+            oppdater_diagnose(widget_id, "Autocomplete:\nSkriv mer for å få forslag.")
+        }
+        returner widget_id
+    }
+    gui.sett_tekst(studio_tips(widget_id), "Autocomplete | valgt: " + forslag + " | Tab/Enter setter inn")
+    oppdater_diagnose(widget_id, "Autocomplete forhåndsvisning:\nValgt forslag: " + forslag)
+    returner widget_id
+}
+
+funksjon studio_finn_definisjon_sted(widget_id: heltall, symbol: tekst) -> tekst {
+    hvis symbol == "" da {
+        returner ""
+    }
+    la filer: liste_tekst = studio_autocomplete_filnavn(widget_id)
+    la fil_indeks: heltall = 0
+    mens (fil_indeks < lengde(filer)) {
+        la sti: tekst = filer[fil_indeks]
+        hvis sti != "" og ikke tekst_slutter_med(sti, "/") og fil_eksisterer(sti) da {
+            la linjer: liste_tekst = del_linjer(les_fil(sti))
+            la linje_indeks: heltall = 0
+            mens (linje_indeks < lengde(linjer)) {
+                la tokens: liste_tekst = tokeniser_enkel(linjer[linje_indeks])
+                la token_indeks: heltall = 0
+                mens (token_indeks < lengde(tokens)) {
+                    hvis tokens[token_indeks] == symbol da {
+                        returner sti + "\n" + tekst_fra_heltall(linje_indeks + 1)
+                    }
+                    token_indeks = token_indeks + 1
+                }
+                linje_indeks = linje_indeks + 1
+            }
+        }
+        fil_indeks = fil_indeks + 1
+    }
+    returner ""
+}
+
+funksjon finn_definisjon(widget_id: heltall) -> heltall {
+    la symbol: tekst = studio_autocomplete_prefix(widget_id)
+    hvis symbol == "" da {
+        oppdater_statuslinje(widget_id, "Skriv et symbol først")
+        oppdater_diagnose(widget_id, "Plasser cursoren på et symbol du vil hoppe til definisjonen for.")
+        returner widget_id
+    }
+    la sted: tekst = studio_finn_definisjon_sted(widget_id, symbol)
+    hvis sted == "" da {
+        oppdater_statuslinje(widget_id, "Fant ingen definisjon")
+        oppdater_diagnose(widget_id, "Fant ingen definisjon for:\n" + symbol)
+        returner widget_id
+    }
+    la deler: liste_tekst = del_linjer(sted)
+    hvis lengde(deler) < 2 da {
+        oppdater_statuslinje(widget_id, "Fant ingen definisjon")
+        oppdater_diagnose(widget_id, "Fant ikke nok informasjon til å hoppe til definisjonen for:\n" + symbol)
+        returner widget_id
+    }
+    la sti: tekst = deler[0]
+    la linje_nummer: heltall = heltall_fra_tekst(deler[1])
+    gui.sett_tekst(studio_stifelt(widget_id), sti)
+    apne_fil(widget_id)
+    gui.editor_hopp_til(studio_kilde(widget_id), linje_nummer)
+    oppdater_statuslinje(widget_id, "Definisjon funnet")
+    oppdater_diagnose(widget_id, "Definisjon forhåndsvisning:\nSymbol: " + symbol + "\nFil: " + sti + "\nLinje: " + tekst_fra_heltall(linje_nummer))
+    oppdater_terminal(widget_id, "Definisjon | forhåndsvisning for " + symbol + " -> " + sti + ":" + tekst_fra_heltall(linje_nummer))
+    gui.sett_tekst(studio_tips(widget_id), "Bruk Def for å hoppe til symboler i prosjektet")
+    returner widget_id
+}
+
+funksjon studio_finn_bruk(widget_id: heltall, symbol: tekst) -> tekst {
+    hvis symbol == "" da {
+        returner ""
+    }
+    la filer: liste_tekst = studio_autocomplete_filnavn(widget_id)
+    la treff: tekst = ""
+    la fil_indeks: heltall = 0
+    mens (fil_indeks < lengde(filer)) {
+        la sti: tekst = filer[fil_indeks]
+        hvis sti != "" og ikke tekst_slutter_med(sti, "/") og fil_eksisterer(sti) da {
+            la linjer: liste_tekst = del_linjer(les_fil(sti))
+            la linje_indeks: heltall = 0
+            mens (linje_indeks < lengde(linjer)) {
+                la tokens: liste_tekst = tokeniser_enkel(linjer[linje_indeks])
+                la token_indeks: heltall = 0
+                mens (token_indeks < lengde(tokens)) {
+                    hvis tokens[token_indeks] == symbol da {
+                        treff = treff + sti + "\n" + tekst_fra_heltall(linje_indeks + 1) + "\n"
+                    }
+                    token_indeks = token_indeks + 1
+                }
+                linje_indeks = linje_indeks + 1
+            }
+        }
+        fil_indeks = fil_indeks + 1
+    }
+    returner treff
+}
+
+funksjon studio_sammenstill_ord(ord: liste_tekst) -> tekst {
+    la resultat: tekst = ""
+    la indeks: heltall = 0
+    mens (indeks < lengde(ord)) {
+        hvis indeks == 0 da {
+            resultat = ord[indeks]
+        } ellers {
+            resultat = resultat + " " + ord[indeks]
+        }
+        indeks = indeks + 1
+    }
+    returner resultat
+}
+
+funksjon studio_finn_bruk_treffliste(widget_id: heltall, symbol: tekst) -> liste_tekst {
+    la treff: liste_tekst = []
+    hvis symbol == "" da {
+        returner treff
+    }
+    la filer: liste_tekst = studio_autocomplete_filnavn(widget_id)
+    la fil_indeks: heltall = 0
+    mens (fil_indeks < lengde(filer)) {
+        la sti: tekst = filer[fil_indeks]
+        hvis sti != "" og ikke tekst_slutter_med(sti, "/") og fil_eksisterer(sti) da {
+            la linjer: liste_tekst = del_linjer(les_fil(sti))
+            la linje_indeks: heltall = 0
+            mens (linje_indeks < lengde(linjer)) {
+                la tokens: liste_tekst = tokeniser_enkel(linjer[linje_indeks])
+                la token_indeks: heltall = 0
+                mens (token_indeks < lengde(tokens)) {
+                    hvis tokens[token_indeks] == symbol da {
+                        legg_til(treff, sti + " " + tekst_fra_heltall(linje_indeks + 1))
+                    }
+                    token_indeks = token_indeks + 1
+                }
+                linje_indeks = linje_indeks + 1
+            }
+        }
+        fil_indeks = fil_indeks + 1
+    }
+    returner treff
+}
+
+funksjon studio_bruktreff_panel(widget_id: heltall) -> heltall {
+    la rot_id: heltall = studio_rot(widget_id)
+    la work_row: heltall = gui.barn(rot_id, 3)
+    la work_panel: heltall = gui.barn(work_row, 1)
+    la terminal_panel: heltall = gui.barn(work_panel, 6)
+    returner gui.barn(work_panel, 7)
+}
+
+funksjon studio_bruktreff_tittel(widget_id: heltall) -> heltall {
+    la panel_id: heltall = studio_bruktreff_panel(widget_id)
+    returner gui.barn(panel_id, 0)
+}
+
+funksjon studio_bruktreff_liste(widget_id: heltall) -> heltall {
+    la panel_id: heltall = studio_bruktreff_panel(widget_id)
+    returner gui.barn(panel_id, 1)
+}
+
+funksjon studio_bruktreff_handling(widget_id: heltall) -> heltall {
+    la panel_id: heltall = studio_bruktreff_panel(widget_id)
+    returner gui.barn(panel_id, 2)
+}
+
+funksjon oppdater_bruktreff_tittel(widget_id: heltall) -> heltall {
+    la liste_id: heltall = studio_bruktreff_liste(widget_id)
+    la tittel_id: heltall = studio_bruktreff_tittel(widget_id)
+    gui.sett_tekst(tittel_id, "Bruk treff (" + tekst_fra_heltall(gui.liste_antall(liste_id)) + ")")
+    returner widget_id
+}
+
+funksjon åpne_valgt_bruktreff(widget_id: heltall) -> heltall {
+    la liste_id: heltall = studio_bruktreff_liste(widget_id)
+    la valgt: tekst = gui.liste_valgt(liste_id)
+    hvis valgt == "" da {
+        hvis gui.liste_antall(liste_id) == 0 da {
+            oppdater_statuslinje(widget_id, "Ingen brukstreff")
+            oppdater_diagnose(widget_id, "Det finnes ingen brukstreff å åpne.")
+        } ellers {
+            oppdater_statuslinje(widget_id, "Velg et brukstreff først")
+            oppdater_diagnose(widget_id, "Velg et brukstreff i lista før du åpner det.")
+        }
+        returner widget_id
+    }
+    la tokens: liste_tekst = del_ord(valgt)
+    hvis lengde(tokens) < 2 da {
+        oppdater_statuslinje(widget_id, "Fant ikke brukstreffet")
+        oppdater_diagnose(widget_id, "Kunne ikke tolke treffet:\n" + valgt)
+        returner widget_id
+    }
+    la linje_tekst: tekst = pop_siste(tokens)
+    la linje_nummer: heltall = heltall_fra_tekst(linje_tekst)
+    la sti: tekst = studio_sammenstill_ord(tokens)
+    hvis sti == "" eller linje_nummer < 1 da {
+        oppdater_statuslinje(widget_id, "Fant ikke brukstreffet")
+        oppdater_diagnose(widget_id, "Kunne ikke åpne treffet:\n" + valgt)
+        returner widget_id
+    }
+    gui.sett_tekst(studio_stifelt(widget_id), sti)
+    apne_fil(widget_id)
+    gui.editor_hopp_til(studio_kilde(widget_id), linje_nummer)
+    oppdater_statuslinje(widget_id, "Åpnet brukstreff")
+    oppdater_diagnose(widget_id, "Åpnet brukstreff i:\n" + sti + "\nLinje: " + tekst_fra_heltall(linje_nummer))
+    gui.sett_tekst(studio_tips(widget_id), "Bruk treffene til å navigere mellom symbolbruk")
+    returner widget_id
+}
+
+funksjon tøm_bruktreff(widget_id: heltall) -> heltall {
+    la liste_id: heltall = studio_bruktreff_liste(widget_id)
+    gui.liste_tom(liste_id)
+    oppdater_bruktreff_tittel(widget_id)
+    oppdater_statuslinje(widget_id, "Tømte brukstreff")
+    oppdater_diagnose(widget_id, "Brukstreffene er tømt.")
+    returner widget_id
+}
+
+funksjon finn_bruk(widget_id: heltall) -> heltall {
+    la symbol: tekst = studio_autocomplete_prefix(widget_id)
+    hvis symbol == "" da {
+        oppdater_statuslinje(widget_id, "Skriv et symbol først")
+        oppdater_diagnose(widget_id, "Plasser cursoren på et symbol du vil finne alle bruk av.")
+        returner widget_id
+    }
+    la treff_liste: liste_tekst = studio_finn_bruk_treffliste(widget_id, symbol)
+    la treff: tekst = studio_finn_bruk(widget_id, symbol)
+    la liste_id: heltall = studio_bruktreff_liste(widget_id)
+    gui.liste_tom(liste_id)
+    la indeks: heltall = 0
+    mens (indeks < lengde(treff_liste)) {
+        gui.liste_legg_til(liste_id, treff_liste[indeks])
+        indeks = indeks + 1
+    }
+    oppdater_bruktreff_tittel(widget_id)
+    hvis lengde(treff_liste) > 0 da {
+        gui.liste_velg(liste_id, 0)
+    }
+    hvis treff == "" da {
+        oppdater_statuslinje(widget_id, "Ingen bruk funnet")
+        oppdater_diagnose(widget_id, "Fant ingen bruk av symbolet:\n" + symbol)
+        tøm_bruktreff(widget_id)
+        returner widget_id
+    }
+    oppdater_statuslinje(widget_id, "Bruk funnet")
+    oppdater_diagnose(widget_id, "Bruk forhåndsvisning:\nSymbol: " + symbol + "\nTreff: " + tekst_fra_heltall(lengde(treff_liste)) + "\n" + treff)
+    oppdater_terminal(widget_id, "Bruk | forhåndsvisning for " + symbol + " (" + tekst_fra_heltall(lengde(treff_liste)) + " treff)")
+    gui.sett_tekst(studio_tips(widget_id), "Bruk Bruk for å se hvor symboler brukes")
+    returner widget_id
+}
+
+funksjon studio_omnavn_prosjekt(widget_id: heltall, gammelt: tekst, nytt: tekst) -> heltall {
+    hvis gammelt == "" eller nytt == "" da {
+        returner 0
+    }
+    la filer: liste_tekst = studio_autocomplete_filnavn(widget_id)
+    la aktiv_sti: tekst = gui.hent_tekst(studio_stifelt(widget_id))
+    la aktiv_kilde: tekst = gui.hent_tekst(studio_kilde(widget_id))
+    la endret_antall: heltall = 0
+    hvis aktiv_kilde != "" da {
+        la ny_aktiv_kilde: tekst = txt.erstatt_ord_i_tekst(aktiv_kilde, gammelt, nytt)
+        hvis ny_aktiv_kilde != aktiv_kilde da {
+            gui.sett_tekst(studio_kilde(widget_id), ny_aktiv_kilde)
+            hvis aktiv_sti != "" da {
+                skriv_fil(aktiv_sti, ny_aktiv_kilde)
+            }
+            endret_antall = endret_antall + 1
+        }
+    }
+    la fil_indeks: heltall = 0
+    mens (fil_indeks < lengde(filer)) {
+        la sti: tekst = filer[fil_indeks]
+        hvis sti != "" og ikke tekst_slutter_med(sti, "/") og fil_eksisterer(sti) og sti != aktiv_sti da {
+            la kilde: tekst = les_fil(sti)
+            la ny_kilde: tekst = txt.erstatt_ord_i_tekst(kilde, gammelt, nytt)
+            hvis ny_kilde != kilde da {
+                skriv_fil(sti, ny_kilde)
+                endret_antall = endret_antall + 1
+            }
+        }
+        fil_indeks = fil_indeks + 1
+    }
+    hvis aktiv_sti != "" da {
+        oppdater_kildeoversikt(widget_id)
+    }
+    oppdater_faner(widget_id)
+    returner endret_antall
+}
+
+funksjon studio_omnavn_forhandsvisning(widget_id: heltall, gammelt: tekst, nytt: tekst) -> liste_tekst {
+    la filer: liste_tekst = studio_autocomplete_filnavn(widget_id)
+    la aktiv_sti: tekst = gui.hent_tekst(studio_stifelt(widget_id))
+    la aktiv_kilde: tekst = gui.hent_tekst(studio_kilde(widget_id))
+    la treff: liste_tekst = []
+    hvis gammelt == "" eller nytt == "" da {
+        returner treff
+    }
+    hvis aktiv_kilde != "" og tekst_inneholder(aktiv_kilde, gammelt) da {
+        la ny_aktiv_kilde: tekst = txt.erstatt_ord_i_tekst(aktiv_kilde, gammelt, nytt)
+        hvis ny_aktiv_kilde != aktiv_kilde da {
+            hvis aktiv_sti != "" da {
+                legg_til(treff, aktiv_sti)
+            } ellers {
+                legg_til(treff, "Aktiv buffer")
+            }
+        }
+    }
+    la fil_indeks: heltall = 0
+    mens (fil_indeks < lengde(filer)) {
+        la sti: tekst = filer[fil_indeks]
+        hvis sti != "" og ikke tekst_slutter_med(sti, "/") og fil_eksisterer(sti) og sti != aktiv_sti da {
+            la kilde: tekst = les_fil(sti)
+            la ny_kilde: tekst = txt.erstatt_ord_i_tekst(kilde, gammelt, nytt)
+            hvis ny_kilde != kilde da {
+                legg_til(treff, sti)
+            }
+        }
+        fil_indeks = fil_indeks + 1
+    }
+    returner treff
+}
+
+funksjon gi_navn(widget_id: heltall) -> heltall {
+    la gammelt: tekst = studio_autocomplete_prefix(widget_id)
+    la nytt: tekst = gui.hent_tekst(studio_nyttnavnfelt(widget_id))
+    hvis gammelt == "" da {
+        oppdater_statuslinje(widget_id, "Skriv et symbol først")
+        oppdater_diagnose(widget_id, "Plasser cursoren på symbolet du vil gi nytt navn.")
+        returner widget_id
+    }
+    hvis nytt == "" da {
+        oppdater_statuslinje(widget_id, "Skriv nytt navn først")
+        oppdater_diagnose(widget_id, "Skriv inn det nye navnet i navnefeltet før du omdøper.")
+        returner widget_id
+    }
+    la forhåndsvisning: liste_tekst = studio_omnavn_forhandsvisning(widget_id, gammelt, nytt)
+    hvis lengde(forhåndsvisning) == 0 da {
+        oppdater_statuslinje(widget_id, "Fant ingen steder å gi nytt navn")
+        oppdater_diagnose(widget_id, "Ingen eksakte treff funnet for:\n" + gammelt)
+        oppdater_terminal(widget_id, "Navn | ingen treff for " + gammelt)
+        returner widget_id
+    }
+    oppdater_statuslinje(widget_id, "Forhåndsviser nytt navn")
+    oppdater_diagnose(widget_id, "Forhåndsvisning:\n" + gammelt + " → " + nytt + "\nFil(er): " + tekst_fra_heltall(lengde(forhåndsvisning)))
+    oppdater_terminal(widget_id, "Navn | forhåndsvisning for " + gammelt + " → " + nytt)
+    la endret_antall: heltall = studio_omnavn_prosjekt(widget_id, gammelt, nytt)
+    hvis endret_antall == 0 da {
+        oppdater_statuslinje(widget_id, "Fant ingen steder å gi nytt navn")
+        oppdater_diagnose(widget_id, "Ingen eksakte treff funnet for:\n" + gammelt)
+        returner widget_id
+    }
+    oppdater_statuslinje(widget_id, "Ga nytt navn til " + gammelt + " → " + nytt)
+    oppdater_diagnose(widget_id, "Ga nytt navn i " + tekst_fra_heltall(endret_antall) + " fil(er):\n" + gammelt + " → " + nytt)
+    oppdater_terminal(widget_id, "Navn | ferdig i " + tekst_fra_heltall(endret_antall) + " fil(er)")
+    gui.sett_tekst(studio_tips(widget_id), "Rename viser nå forhåndsvisning før endring")
+    returner widget_id
+}
+
+funksjon bruk_autocomplete_forslag(widget_id: heltall) -> heltall {
+    la liste_id: heltall = studio_autocomplete_liste(widget_id)
+    la forslag: tekst = gui.liste_valgt(liste_id)
+    hvis forslag == "" da {
+        hvis gui.liste_antall(liste_id) == 0 da {
+            oppdater_statuslinje(widget_id, "Ingen autocomplete-forslag")
+            oppdater_diagnose(widget_id, "Autocomplete fant ingen forslag.")
+            returner 0
+        }
+        forslag = gui.liste_hent(liste_id, 0)
+        gui.liste_velg(liste_id, 0)
+    }
+    la posisjon: liste_tekst = gui.editor_cursor(studio_kilde(widget_id))
+    hvis lengde(posisjon) < 2 da {
+        oppdater_statuslinje(widget_id, "Fant ikke cursor i editoren")
+        oppdater_diagnose(widget_id, "Autocomplete kunne ikke lese cursor-posisjonen.")
+        returner 0
+    }
+    la linje_nummer: heltall = heltall_fra_tekst(posisjon[0])
+    la kolonne: heltall = heltall_fra_tekst(posisjon[1])
+    la linjer: liste_tekst = del_linjer(gui.hent_tekst(studio_kilde(widget_id)))
+    hvis linje_nummer < 1 eller linje_nummer > lengde(linjer) da {
+        oppdater_statuslinje(widget_id, "Fant ikke aktiv linje")
+        oppdater_diagnose(widget_id, "Autocomplete fant ikke den aktive linjen.")
+        returner 0
+    }
+    la linje: tekst = linjer[linje_nummer - 1]
+    hvis kolonne < 1 da {
+        kolonne = 1
+    }
+    hvis kolonne > tekst_lengde(linje) + 1 da {
+        kolonne = tekst_lengde(linje) + 1
+    }
+    la prefix: tekst = tekst_slice(linje, 0, kolonne - 1)
+    la ord: liste_tekst = tokeniser_enkel(prefix)
+    la start_kolonne: heltall = kolonne
+    hvis lengde(ord) > 0 da {
+        la siste: tekst = ord[lengde(ord) - 1]
+        start_kolonne = kolonne - tekst_lengde(siste)
+    }
+    gui.editor_erstatt_fra_til(studio_kilde(widget_id), linje_nummer, start_kolonne, linje_nummer, kolonne - 1, forslag)
+    oppdater_kildeoversikt(widget_id)
+    oppdater_statuslinje(widget_id, "Autocomplete satte inn " + forslag)
+    oppdater_diagnose(widget_id, "Autocomplete satte inn:\n" + forslag)
+    gui.sett_tekst(studio_tips(widget_id), "Bruk autocomplete-lista for å fylle inn ord raskt")
+    returner 1
+}
+
+funksjon oppdater_statuslinje(widget_id: heltall, melding: tekst) -> heltall {
+    gui.sett_tekst(studio_status(widget_id), "Status | " + studio_lagringsstatus(widget_id) + " | " + melding)
+    returner widget_id
+}
+
+funksjon hopp_til_linje(widget_id: heltall) -> heltall {
+    la linje_tekst: tekst = gui.hent_tekst(studio_linjefelt(widget_id))
+    la linje_nummer: heltall = heltall_fra_tekst(linje_tekst)
+    hvis linje_nummer < 1 da {
+        oppdater_statuslinje(widget_id, "Skriv et linjenummer først")
+        oppdater_diagnose(widget_id, "Skriv et linjenummer i feltet før du hopper.")
+        returner widget_id
+    }
+    gui.editor_hopp_til(studio_kilde(widget_id), linje_nummer)
+    oppdater_statuslinje(widget_id, "Hoppet til linje " + tekst_fra_heltall(linje_nummer))
+    oppdater_diagnose(widget_id, "Markøren er nå på linje " + tekst_fra_heltall(linje_nummer) + ".")
+    returner widget_id
+}
+
+funksjon studio_rens_feilmelding(tekstverdi: tekst) -> tekst {
+    la resultat: tekst = tekst_erstatt(tekstverdi, ",", " ")
+    resultat = tekst_erstatt(resultat, "(", " ")
+    resultat = tekst_erstatt(resultat, ")", " ")
+    resultat = tekst_erstatt(resultat, ":", " ")
+    returner resultat
+}
+
+funksjon studio_linje_i_feil(tekstverdi: tekst) -> heltall {
+    la ord: liste_tekst = del_ord(studio_rens_feilmelding(tekstverdi))
+    la antall: heltall = lengde(ord)
+    la indeks: heltall = 0
+    mens (indeks < antall) {
+        hvis ord[indeks] == "linje" da {
+            hvis indeks + 1 < antall da {
+                returner heltall_fra_tekst(ord[indeks + 1])
+            }
+        }
+        indeks = indeks + 1
+    }
+    returner 0
+}
+
+funksjon hopp_til_feil(widget_id: heltall, resultat: tekst) -> heltall {
+    la linje_nummer: heltall = studio_linje_i_feil(resultat)
+    hvis linje_nummer > 0 da {
+        gui.editor_hopp_til(studio_kilde(widget_id), linje_nummer)
+        oppdater_statuslinje(widget_id, "Hoppet til feillinje " + tekst_fra_heltall(linje_nummer))
+        oppdater_diagnose(widget_id, "Feilen peker til linje " + tekst_fra_heltall(linje_nummer) + ".")
+    }
+    returner widget_id
+}
+
+funksjon studio_prosjektliste(widget_id: heltall) -> heltall {
+    la rot_id: heltall = studio_rot(widget_id)
+    la hoved_row: heltall = gui.barn(rot_id, 3)
+    la sidebar: heltall = gui.barn(hoved_row, 0)
+    la prosjekt_panel: heltall = gui.barn(sidebar, 1)
+    returner gui.barn(prosjekt_panel, 1)
+}
+
+funksjon studio_prosjekttittel(widget_id: heltall) -> heltall {
+    la rot_id: heltall = studio_rot(widget_id)
+    la hoved_row: heltall = gui.barn(rot_id, 3)
+    la sidebar: heltall = gui.barn(hoved_row, 0)
+    la prosjekt_panel: heltall = gui.barn(sidebar, 1)
+    returner gui.barn(prosjekt_panel, 0)
+}
+
+funksjon studio_apne_filer(widget_id: heltall) -> heltall {
+    la rot_id: heltall = studio_rot(widget_id)
+    la hoved_row: heltall = gui.barn(rot_id, 3)
+    la sidebar: heltall = gui.barn(hoved_row, 0)
+    la apne_panel: heltall = gui.barn(sidebar, 2)
+    returner gui.barn(apne_panel, 1)
+}
+
+funksjon studio_apnetittel(widget_id: heltall) -> heltall {
+    la rot_id: heltall = studio_rot(widget_id)
+    la hoved_row: heltall = gui.barn(rot_id, 3)
+    la sidebar: heltall = gui.barn(hoved_row, 0)
+    la apne_panel: heltall = gui.barn(sidebar, 2)
+    returner gui.barn(apne_panel, 0)
+}
+
+funksjon studio_finn_åpen_fil(widget_id: heltall, sti: tekst) -> heltall {
+    la liste_id: heltall = studio_apne_filer(widget_id)
+    returner studio_finn_i_liste(liste_id, sti)
+}
+
+funksjon studio_finn_i_liste(liste_id: heltall, sti: tekst) -> heltall {
+    la antall: heltall = gui.liste_antall(liste_id)
+    la indeks: heltall = 0
+    mens (indeks < antall) {
+        hvis gui.liste_hent(liste_id, indeks) == sti da {
+            returner indeks
+        }
+        indeks = indeks + 1
+    }
+    returner -1
+}
+
+funksjon studio_lukket_filer(widget_id: heltall) -> heltall {
+    la rot_id: heltall = studio_rot(widget_id)
+    la hoved_row: heltall = gui.barn(rot_id, 3)
+    la sidebar: heltall = gui.barn(hoved_row, 0)
+    la lukket_panel: heltall = gui.barn(sidebar, 4)
+    returner gui.barn(lukket_panel, 1)
+}
+
+funksjon studio_lukettittel(widget_id: heltall) -> heltall {
+    la rot_id: heltall = studio_rot(widget_id)
+    la hoved_row: heltall = gui.barn(rot_id, 3)
+    la sidebar: heltall = gui.barn(hoved_row, 0)
+    la lukket_panel: heltall = gui.barn(sidebar, 4)
+    returner gui.barn(lukket_panel, 0)
+}
+
+funksjon oppdater_lukketittel(widget_id: heltall) -> heltall {
+    la liste_id: heltall = studio_lukket_filer(widget_id)
+    la tittel_id: heltall = studio_lukettittel(widget_id)
+    gui.sett_tekst(tittel_id, "Nylig lukket (" + tekst_fra_heltall(gui.liste_antall(liste_id)) + ")")
+    returner widget_id
+}
+
+funksjon studio_legg_til_lukket_fane(widget_id: heltall, sti: tekst) -> heltall {
+    hvis sti == "" da {
+        returner widget_id
+    }
+    la liste_id: heltall = studio_lukket_filer(widget_id)
+    la eksisterende: heltall = studio_finn_i_liste(liste_id, sti)
+    hvis eksisterende != -1 da {
+        gui.liste_fjern(liste_id, eksisterende)
+    }
+    mens (gui.liste_antall(liste_id) >= 5) {
+        gui.liste_fjern(liste_id, 0)
+    }
+    gui.liste_legg_til(liste_id, sti)
+    gui.liste_velg(liste_id, gui.liste_antall(liste_id) - 1)
+    oppdater_lukketittel(widget_id)
+    returner widget_id
+}
+
+funksjon apne_valgt_åpen_fil(widget_id: heltall) -> heltall {
+    la valgt: tekst = gui.liste_valgt(studio_apne_filer(widget_id))
+    hvis valgt == "" da {
+        oppdater_statuslinje(widget_id, "Velg en åpnet fil først")
+        oppdater_diagnose(widget_id, "Velg en åpnet fil i fanelisten før du åpner den på nytt.")
+        returner widget_id
+    }
+    gui.sett_tekst(studio_stifelt(widget_id), valgt)
+    returner apne_fil(widget_id)
+}
+
+funksjon apne_valgt_lukket_fil(widget_id: heltall) -> heltall {
+    la liste_id: heltall = studio_lukket_filer(widget_id)
+    la valgt: tekst = gui.liste_valgt(liste_id)
+    hvis valgt == "" da {
+        oppdater_statuslinje(widget_id, "Velg en nylig lukket fil først")
+        oppdater_diagnose(widget_id, "Velg en nylig lukket fil før du åpner den igjen.")
+        returner widget_id
+    }
+    la indeks: heltall = studio_finn_i_liste(liste_id, valgt)
+    hvis indeks != -1 da {
+        gui.liste_fjern(liste_id, indeks)
+    }
+    oppdater_lukketittel(widget_id)
+    gui.sett_tekst(studio_stifelt(widget_id), valgt)
+    oppdater_statuslinje(widget_id, "Åpner nylig lukket: " + valgt)
+    oppdater_diagnose(widget_id, "Åpner nylig lukket fil:\n" + valgt)
+    returner apne_fil(widget_id)
+}
+
+funksjon lukk_valgt_åpen_fil(widget_id: heltall) -> heltall {
+    la liste_id: heltall = studio_apne_filer(widget_id)
+    la valgt: tekst = gui.liste_valgt(liste_id)
+    hvis valgt == "" da {
+        oppdater_statuslinje(widget_id, "Velg en åpnet fil først")
+        oppdater_diagnose(widget_id, "Velg en åpnet fil før du prøver å lukke den.")
+        returner widget_id
+    }
+    la antall: heltall = gui.liste_antall(liste_id)
+    la indeks: heltall = 0
+    mens (indeks < antall) {
+        hvis gui.liste_hent(liste_id, indeks) == valgt da {
+            gui.liste_fjern(liste_id, indeks)
+            studio_legg_til_lukket_fane(widget_id, valgt)
+            oppdater_statuslinje(widget_id, "Lukket " + valgt)
+            oppdater_diagnose(widget_id, "Lukket åpen fil:\n" + valgt)
+            hvis gui.liste_antall(liste_id) > 0 da {
+                hvis indeks > 0 da {
+                    gui.liste_velg(liste_id, indeks - 1)
+                } ellers {
+                    gui.liste_velg(liste_id, 0)
+                }
+            }
+            oppdater_faner(widget_id)
+            returner widget_id
+        }
+        indeks = indeks + 1
+    }
+    oppdater_statuslinje(widget_id, "Fant ikke åpnet fil: " + valgt)
+    oppdater_diagnose(widget_id, "Fant ikke åpen fane:\n" + valgt)
+    returner widget_id
+}
+
+funksjon lukk_andre_åpne_filer(widget_id: heltall) -> heltall {
+    la liste_id: heltall = studio_apne_filer(widget_id)
+    la valgt: tekst = gui.liste_valgt(liste_id)
+    hvis valgt == "" da {
+        oppdater_statuslinje(widget_id, "Velg en åpnet fil først")
+        oppdater_diagnose(widget_id, "Velg en åpnet fil før du lukker andre faner.")
+        returner widget_id
+    }
+    la indeks: heltall = gui.liste_antall(liste_id) - 1
+    mens (indeks >= 0) {
+        hvis gui.liste_hent(liste_id, indeks) != valgt da {
+            studio_legg_til_lukket_fane(widget_id, gui.liste_hent(liste_id, indeks))
+            gui.liste_fjern(liste_id, indeks)
+        }
+        indeks = indeks - 1
+    }
+    gui.liste_velg(liste_id, 0)
+    oppdater_statuslinje(widget_id, "Beholdt bare " + valgt)
+    oppdater_diagnose(widget_id, "Beholdt bare denne fanen:\n" + valgt)
+    oppdater_faner(widget_id)
+    returner widget_id
+}
+
+funksjon lukk_alle_åpne_filer(widget_id: heltall) -> heltall {
+    la liste_id: heltall = studio_apne_filer(widget_id)
+    la antall: heltall = gui.liste_antall(liste_id)
+    la indeks: heltall = 0
+    mens (indeks < antall) {
+        studio_legg_til_lukket_fane(widget_id, gui.liste_hent(liste_id, indeks))
+        indeks = indeks + 1
+    }
+    gui.liste_tom(liste_id)
+    gui.sett_tekst(studio_stifelt(widget_id), "")
+    gui.sett_tekst(studio_oversikt(widget_id), "Ingen aktive faner")
+    oppdater_statuslinje(widget_id, "Lukket alle faner")
+    oppdater_diagnose(widget_id, "Alle åpne faner er lukket.")
+    oppdater_faner(widget_id)
+    returner widget_id
+}
+
+funksjon tøm_lukket_historikk(widget_id: heltall) -> heltall {
+    la liste_id: heltall = studio_lukket_filer(widget_id)
+    gui.liste_tom(liste_id)
+    oppdater_lukketittel(widget_id)
+    oppdater_statuslinje(widget_id, "Tømte nylig lukket")
+    oppdater_diagnose(widget_id, "Historikken over nylig lukkede faner er tømt.")
+    returner widget_id
+}
+
+funksjon ny_fil(widget_id: heltall) -> heltall {
+    gui.sett_tekst(studio_stifelt(widget_id), "")
+    gui.sett_tekst(studio_kilde(widget_id), "bruk std.gui som gui\n\nfunksjon start() -> heltall {\n    returner 0\n}\n")
+    gui.sett_tekst(studio_utdata(widget_id), "")
+    oppdater_kildeoversikt(widget_id)
+    oppdater_statuslinje(widget_id, "Ny buffer klar")
+    oppdater_diagnose(widget_id, "Ny buffer opprettet.\nDu kan begynne å skrive med én gang.")
+    gui.sett_tekst(studio_tips(widget_id), "Skriv ferdig og bruk Lagre for å gi filen et navn")
+    oppdater_faner(widget_id)
+    returner widget_id
+}
+
+funksjon lagre_som_ny_fil(widget_id: heltall) -> heltall {
+    la navn: tekst = gui.hent_tekst(studio_stifelt(widget_id))
+    hvis navn == "" da {
+        navn = "ny_buffer.no"
+    }
+    hvis tekst_slutter_med(navn, ".no") da {
+    } ellers {
+        navn = navn + ".no"
+    }
+    la nummer: heltall = 1
+    mens (fil_eksisterer(navn)) {
+        navn = "ny_buffer_" + tekst_fra_heltall(nummer) + ".no"
+        nummer = nummer + 1
+    }
+    la apne_liste: heltall = studio_apne_filer(widget_id)
+    la eksisterende: heltall = studio_finn_åpen_fil(widget_id, navn)
+    hvis eksisterende == -1 da {
+        gui.liste_legg_til(apne_liste, navn)
+        eksisterende = gui.liste_antall(apne_liste) - 1
+    }
+    gui.liste_velg(apne_liste, eksisterende)
+    gui.sett_tekst(studio_stifelt(widget_id), navn)
+    oppdater_kildeoversikt(widget_id)
+    oppdater_statuslinje(widget_id, "Lagrer som " + navn)
+    la resultat: heltall = lagre_fil(widget_id)
+    oppdater_kildeoversikt(widget_id)
+    oppdater_statuslinje(widget_id, "Lagret som " + navn)
+    oppdater_diagnose(widget_id, "Lagret ny fil:\n" + navn)
+    oppdater_faner(widget_id)
+    returner resultat
+}
+
+funksjon studio_opprett_fil(widget_id: heltall, sti: tekst, innhold: tekst) -> heltall {
+    gui.sett_tekst(studio_stifelt(widget_id), sti)
+    gui.sett_tekst(studio_kilde(widget_id), innhold)
+    lagre_fil(widget_id)
+    returner apne_fil(widget_id)
+}
+
+funksjon opprett_bootstrap_startside(widget_id: heltall) -> heltall {
+    la html_innhold: tekst = web.bootstrap_html("Norscode Web", "Hei fra Norscode", "Bootstrap er klar.", "Knapp")
+    studio_opprett_fil(widget_id, "styles.css", web.css_startmal())
+    studio_opprett_fil(widget_id, "index.html", html_innhold)
+    oppdater_prosjektliste(widget_id)
+    oppdater_statuslinje(widget_id, "Opprettet Bootstrap-startside")
+    oppdater_diagnose(widget_id, "Bootstrap-startside opprettet med index.html og styles.css.\nDu kan åpne index.html og starte der.")
+    gui.sett_tekst(studio_tips(widget_id), "Bootstrap starter med index.html og styles.css")
+    returner widget_id
+}
+
+funksjon opprett_css_startside(widget_id: heltall) -> heltall {
+    studio_opprett_fil(widget_id, "styles.css", web.css_startmal())
+    studio_opprett_fil(widget_id, "index.html", web.bootstrap_html("Norscode CSS", "Hei fra Norscode", "CSS-startside er klar.", "Knapp"))
+    oppdater_prosjektliste(widget_id)
+    oppdater_statuslinje(widget_id, "Opprettet CSS-startside")
+    oppdater_diagnose(widget_id, "CSS-startside opprettet med index.html og styles.css.\nDu kan redigere styles.css for å styre utseendet.")
+    gui.sett_tekst(studio_tips(widget_id), "CSS starter med index.html og styles.css")
+    returner widget_id
+}
+
+funksjon opprett_sass_startside(widget_id: heltall) -> heltall {
+    la scss_innhold: tekst = web.sass_startmal()
+    la css_innhold: tekst = web.sass_til_css_tekst(scss_innhold)
+    la html_innhold: tekst = web.bootstrap_html("Norscode Sass", "Hei fra Norscode", "Sass-startside er klar.", "Knapp")
+    studio_opprett_fil(widget_id, "styles.scss", scss_innhold)
+    studio_opprett_fil(widget_id, "styles.css", css_innhold)
+    studio_opprett_fil(widget_id, "index.html", html_innhold)
+    oppdater_prosjektliste(widget_id)
+    oppdater_statuslinje(widget_id, "Opprettet Sass-startside")
+    oppdater_diagnose(widget_id, "Sass-startside opprettet med index.html, styles.css og styles.scss.\nRediger styles.scss for kilden og styles.css for den kompilerte varianten.")
+    gui.sett_tekst(studio_tips(widget_id), "Sass starter med styles.scss, styles.css og index.html")
+    returner widget_id
+}
+
+funksjon fyll_prosjektliste(widget_id: heltall) -> heltall {
+    la liste_id: heltall = studio_prosjektliste(widget_id)
+    la tittel_id: heltall = studio_prosjekttittel(widget_id)
+    la root: tekst = les_miljo("NORSCODE_STUDIO_ROOT")
+    hvis root == "" da {
+        root = "."
+    }
+    gui.liste_tom(liste_id)
+    la filer: liste_tekst = liste_filer_tre(root)
+    for fil i filer {
+        gui.liste_legg_til(liste_id, fil)
+    }
+    gui.sett_tekst(tittel_id, "Prosjekt (" + tekst_fra_heltall(lengde(filer)) + ")")
+    hvis lengde(filer) > 0 da {
+        gui.liste_velg(liste_id, 0)
+    }
+    oppdater_diagnose(widget_id, "Prosjektlisten er oppdatert.\nAntall oppføringer: " + tekst_fra_heltall(lengde(filer)))
+    returner liste_id
+}
+
+funksjon studio_faner(widget_id: heltall) -> heltall {
+    la rot_id: heltall = studio_rot(widget_id)
+    la work_row: heltall = gui.barn(rot_id, 3)
+    la work_panel: heltall = gui.barn(work_row, 1)
+    returner gui.barn(work_panel, 1)
+}
+
+funksjon oppdater_faner(widget_id: heltall) -> heltall {
+    la faner_id: heltall = studio_faner(widget_id)
+    la apne_liste: heltall = studio_apne_filer(widget_id)
+    la tittel_id: heltall = studio_apnetittel(widget_id)
+    la status: tekst = studio_lagringsstatus(widget_id)
+    la antall: heltall = gui.liste_antall(apne_liste)
+    gui.sett_tekst(tittel_id, "Åpne faner (" + tekst_fra_heltall(antall) + ")")
+    hvis antall == 0 da {
+        hvis gui.hent_tekst(studio_oversikt(widget_id)) == "Aktiv fane: Ny buffer | Ulagret | Ord: 0 | Tokener: 0" da {
+            gui.sett_tekst(faner_id, "Faner | [* Ny buffer ! *]")
+            returner widget_id
+        }
+        gui.sett_tekst(faner_id, "Faner | ingen åpne filer")
+        returner widget_id
+    }
+    la fanetekst: tekst = "Faner |"
+    la aktiv: tekst = gui.hent_tekst(studio_stifelt(widget_id))
+    la indeks: heltall = 0
+    mens (indeks < antall) {
+        la filnavn: tekst = gui.liste_hent(apne_liste, indeks)
+        hvis filnavn == aktiv da {
+            hvis status == "Ulagret" da {
+                fanetekst = fanetekst + " [* " + filnavn + " ! *]"
+            } ellers {
+                fanetekst = fanetekst + " [* " + filnavn + " *]"
+            }
+        } ellers {
+            hvis filnavn == "" da {
+                fanetekst = fanetekst + " [ Ny buffer ! ]"
+            } ellers {
+                fanetekst = fanetekst + " [ " + filnavn + " ]"
+            }
+        }
+        indeks = indeks + 1
+    }
+    gui.sett_tekst(faner_id, fanetekst)
+    returner widget_id
+}
+
+funksjon aktiver_fane(widget_id: heltall) -> heltall {
+    la valgt: tekst = gui.liste_valgt(studio_apne_filer(widget_id))
+    hvis valgt == "" da {
+        returner widget_id
+    }
+    hvis tekst_slutter_med(valgt, "/") da {
+        oppdater_statuslinje(widget_id, "Velg en fil, ikke en mappe")
+        returner widget_id
+    }
+    gui.sett_tekst(studio_stifelt(widget_id), valgt)
+    returner apne_fil(widget_id)
+}
+
+funksjon oppdater_prosjektliste(widget_id: heltall) -> heltall {
+    fyll_prosjektliste(widget_id)
+    oppdater_faner(widget_id)
+    oppdater_statuslinje(widget_id, "Prosjektlisten er oppdatert")
+    returner widget_id
+}
+
+funksjon apne_valgt_fil(widget_id: heltall) -> heltall {
+    la valgt: tekst = gui.liste_valgt(studio_prosjektliste(widget_id))
+    hvis valgt == "" da {
+        oppdater_statuslinje(widget_id, "Velg en fil i prosjektlisten først")
+        oppdater_diagnose(widget_id, "Velg en fil i prosjektlisten før du åpner den.")
+        returner widget_id
+    }
+    hvis tekst_slutter_med(valgt, "/") da {
+        oppdater_statuslinje(widget_id, "Velg en fil, ikke en mappe")
+        oppdater_diagnose(widget_id, "Mapper kan ikke åpnes som filer:\n" + valgt)
+        returner widget_id
+    }
+    gui.sett_tekst(studio_stifelt(widget_id), valgt)
+    returner apne_fil(widget_id)
+}
+
+funksjon apne_studio_fil(widget_id: heltall) -> heltall {
+    gui.sett_tekst(studio_stifelt(widget_id), "studio.no")
+    returner apne_fil(widget_id)
+}
+
+funksjon apne_todo_fil(widget_id: heltall) -> heltall {
+    gui.sett_tekst(studio_stifelt(widget_id), "examples/todo_app.no")
+    returner apne_fil(widget_id)
+}
+
+funksjon apne_gui_demo_fil(widget_id: heltall) -> heltall {
+    gui.sett_tekst(studio_stifelt(widget_id), "examples/gui_demo.no")
+    returner apne_fil(widget_id)
+}
+
+funksjon apne_test_gui_fil(widget_id: heltall) -> heltall {
+    gui.sett_tekst(studio_stifelt(widget_id), "tests/test_gui.no")
+    returner apne_fil(widget_id)
+}
+
+funksjon apne_fil(widget_id: heltall) -> heltall {
+    la sti: tekst = gui.hent_tekst(studio_stifelt(widget_id))
+    hvis sti == "" da {
+        oppdater_statuslinje(widget_id, "Skriv en filsti først")
+        oppdater_diagnose(widget_id, "Skriv en filsti før du åpner.")
+        returner widget_id
+    }
+    hvis fil_eksisterer(sti) da {
+        gui.sett_tekst(studio_kilde(widget_id), les_fil(sti))
+        gui.sett_tekst(studio_utdata(widget_id), "")
+        oppdater_statuslinje(widget_id, "Åpnet " + sti)
+        oppdater_diagnose(widget_id, "Åpnet fil:\n" + sti + "\n\n" + studio_kildeinfo(widget_id))
+        oppdater_kildeoversikt(widget_id)
+        la apne_liste: heltall = studio_apne_filer(widget_id)
+        la eksisterende: heltall = studio_finn_åpen_fil(widget_id, sti)
+        hvis eksisterende == -1 da {
+            gui.liste_legg_til(apne_liste, sti)
+            eksisterende = gui.liste_antall(apne_liste) - 1
+        }
+        gui.liste_velg(apne_liste, eksisterende)
+        oppdater_faner(widget_id)
+    } ellers {
+        oppdater_statuslinje(widget_id, "Fant ikke filen: " + sti)
+        oppdater_diagnose(widget_id, "Fant ikke filen på disk:\n" + sti)
+    }
+    returner widget_id
+}
+
+funksjon lagre_fil(widget_id: heltall) -> heltall {
+    la sti: tekst = gui.hent_tekst(studio_stifelt(widget_id))
+    hvis sti == "" da {
+        oppdater_statuslinje(widget_id, "Skriv en filsti først")
+        oppdater_diagnose(widget_id, "Skriv en filsti før du lagrer.")
+        returner widget_id
+    }
+    skriv_fil(sti, gui.hent_tekst(studio_kilde(widget_id)))
+    oppdater_statuslinje(widget_id, "Lagret " + sti)
+    oppdater_diagnose(widget_id, "Lagret fil:\n" + sti + "\n\n" + studio_kildeinfo(widget_id))
+    oppdater_kildeoversikt(widget_id)
+    returner widget_id
+}
+
+funksjon kjor_fil(widget_id: heltall) -> heltall {
+    la resultat: tekst = kjor_kilde(gui.hent_tekst(studio_kilde(widget_id)))
+    gui.sett_tekst(studio_utdata(widget_id), "Output |\nModus: Kjøring\n\n" + resultat)
+    oppdater_terminal(widget_id, "Modus: Kjøring\n" + resultat)
+    hvis studio_er_feil(resultat) da {
+        oppdater_statuslinje(widget_id, "Kjøring | feilet")
+        oppdater_diagnose(widget_id, "Kjøring feilet:\nModus: Kjøring\n\n" + resultat)
+        hopp_til_feil(widget_id, resultat)
+        gui.sett_tekst(studio_tips(widget_id), "Se output for feilen før du prøver igjen")
+    } ellers {
+        oppdater_statuslinje(widget_id, "Kjøring | ferdig")
+        oppdater_diagnose(widget_id, "Kjøring ferdig:\nModus: Kjøring\n\n" + resultat)
+        gui.sett_tekst(studio_tips(widget_id), "Tip: Sjekk for å validere før du kjører")
+    }
+    returner widget_id
+}
+
+funksjon sjekk_fil(widget_id: heltall) -> heltall {
+    la resultat: tekst = kjor_kilde(gui.hent_tekst(studio_kilde(widget_id)))
+    gui.sett_tekst(studio_utdata(widget_id), "Output |\nModus: Sjekk\n\n" + resultat)
+    oppdater_terminal(widget_id, "Modus: Sjekk\n" + resultat)
+    hvis studio_er_feil(resultat) da {
+        oppdater_statuslinje(widget_id, "Sjekk | feilet")
+        oppdater_diagnose(widget_id, "Sjekk feilet:\nModus: Sjekk\n\n" + resultat)
+        hopp_til_feil(widget_id, resultat)
+        gui.sett_tekst(studio_tips(widget_id), "Rett feilen før du kjører videre")
+    } ellers {
+        oppdater_statuslinje(widget_id, "Sjekk | ferdig")
+        oppdater_diagnose(widget_id, "Sjekk ferdig:\nModus: Sjekk\n\nIngen feil funnet.")
+        gui.sett_tekst(studio_tips(widget_id), "Alt ser bra ut")
+    }
+    returner widget_id
+}
+
+funksjon kjør_tester(widget_id: heltall) -> heltall {
+    la kommando: liste_tekst = []
+    legg_til(kommando, "python3")
+    legg_til(kommando, "-m")
+    legg_til(kommando, "norscode")
+    legg_til(kommando, "test")
+    la kode: heltall = kjør_kommando(kommando)
+    hvis kode == 0 da {
+        oppdater_statuslinje(widget_id, "Tester bestått")
+        oppdater_diagnose(widget_id, "Hele testpakken ble kjørt og besto.")
+        gui.sett_tekst(studio_tips(widget_id), "Test-runneren er grønn")
+        oppdater_terminal(widget_id, "Test: bestått")
+    } ellers {
+        oppdater_statuslinje(widget_id, "Tester feilet")
+        oppdater_diagnose(widget_id, "Testpakken feilet med kode " + tekst_fra_heltall(kode))
+        gui.sett_tekst(studio_tips(widget_id), "Sjekk testutdata i terminalen")
+        oppdater_terminal(widget_id, "Test: feilet med kode " + tekst_fra_heltall(kode))
+    }
+    returner kode
+}
+
+funksjon kjør_kommando_fra_felt(widget_id: heltall) -> heltall {
+    la tekstkommando: tekst = gui.hent_tekst(studio_kommandofelt(widget_id))
+    hvis tekstkommando == "" da {
+        oppdater_statuslinje(widget_id, "Skriv en kommando først")
+        oppdater_diagnose(widget_id, "Skriv inn en kommando som skal kjøres.")
+        returner 0
+    }
+    la kommando: liste_tekst = del_ord(tekstkommando)
+    la kode: heltall = kjør_kommando(kommando)
+    hvis kode == 0 da {
+        oppdater_statuslinje(widget_id, "Kommando | kjørte")
+        oppdater_diagnose(widget_id, "Kjørte kommando:\n" + tekstkommando + "\n\nExitkode: 0")
+        gui.sett_tekst(studio_tips(widget_id), "Kjørte kommandoen fra Studio")
+    } ellers {
+        oppdater_statuslinje(widget_id, "Kommando | feilet")
+        oppdater_diagnose(widget_id, "Kjørte kommando:\n" + tekstkommando + "\n\nExitkode: " + tekst_fra_heltall(kode))
+        gui.sett_tekst(studio_tips(widget_id), "Se exitkoden og prøv igjen")
+    }
+    oppdater_terminal(widget_id, "Modus: Kommando\n" + tekstkommando + "\nExitkode: " + tekst_fra_heltall(kode))
+    la historikk_liste: heltall = studio_kommandohistorikk(widget_id)
+    hvis tekstkommando != "" da {
+        hvis gui.liste_antall(historikk_liste) >= 8 da {
+            gui.liste_fjern(historikk_liste, 0)
+        }
+        gui.liste_legg_til(historikk_liste, tekstkommando)
+        gui.liste_velg(historikk_liste, gui.liste_antall(historikk_liste) - 1)
+        oppdater_kommandohistorikk_tittel(widget_id)
+    }
+    returner kode
+}
+
+funksjon studio_kommandohistorikk(widget_id: heltall) -> heltall {
+    la rot_id: heltall = studio_rot(widget_id)
+    la hoved_row: heltall = gui.barn(rot_id, 3)
+    la sidebar: heltall = gui.barn(hoved_row, 0)
+    la kommando_panel: heltall = gui.barn(sidebar, 5)
+    returner gui.barn(kommando_panel, 1)
+}
+
+funksjon studio_kommandohistorikk_tittel(widget_id: heltall) -> heltall {
+    la rot_id: heltall = studio_rot(widget_id)
+    la hoved_row: heltall = gui.barn(rot_id, 3)
+    la sidebar: heltall = gui.barn(hoved_row, 0)
+    la kommando_panel: heltall = gui.barn(sidebar, 5)
+    returner gui.barn(kommando_panel, 0)
+}
+
+funksjon oppdater_kommandohistorikk_tittel(widget_id: heltall) -> heltall {
+    la liste_id: heltall = studio_kommandohistorikk(widget_id)
+    la tittel_id: heltall = studio_kommandohistorikk_tittel(widget_id)
+    gui.sett_tekst(tittel_id, "Kommandohistorikk (" + tekst_fra_heltall(gui.liste_antall(liste_id)) + ")")
+    returner widget_id
+}
+
+funksjon bruk_valgt_kommando(widget_id: heltall) -> heltall {
+    la liste_id: heltall = studio_kommandohistorikk(widget_id)
+    la valgt: tekst = gui.liste_valgt(liste_id)
+    hvis valgt == "" da {
+        hvis gui.liste_antall(liste_id) == 0 da {
+            oppdater_statuslinje(widget_id, "Ingen kommandoer i historikken")
+            oppdater_diagnose(widget_id, "Kommandohistorikken er tom.")
+        } ellers {
+            oppdater_statuslinje(widget_id, "Velg en kommando i historikken først")
+            oppdater_diagnose(widget_id, "Velg en kommando i historikken før du bruker den.")
+        }
+        returner widget_id
+    }
+    gui.sett_tekst(studio_kommandofelt(widget_id), valgt)
+    oppdater_statuslinje(widget_id, "La inn kommando fra historikk")
+    oppdater_diagnose(widget_id, "Kommandoen er satt inn i kommandofeltet:\n" + valgt)
+    returner widget_id
+}
+
+funksjon tøm_kommandohistorikk(widget_id: heltall) -> heltall {
+    la liste_id: heltall = studio_kommandohistorikk(widget_id)
+    gui.liste_tom(liste_id)
+    oppdater_kommandohistorikk_tittel(widget_id)
+    oppdater_statuslinje(widget_id, "Tømte kommandohistorikken")
+    oppdater_diagnose(widget_id, "Kommandohistorikken er tømt.")
+    returner widget_id
+}
+
+funksjon start() -> heltall {
+    la vindu_id: heltall = gui.vindu("Norscode Studio")
+    la hoved_panel: heltall = gui.panel(vindu_id)
+    la tittel_id: heltall = gui.etikett(hoved_panel, "Norscode Studio")
+    la undertittel_id: heltall = gui.tekst(hoved_panel, "Skriv, åpne, kjør og sjekk Norscode i ett vindu")
+    la oversikt_id: heltall = gui.etikett(hoved_panel, "Klar til bruk")
+    la work_row: heltall = gui.rad(hoved_panel)
+    la sidebar: heltall = gui.panel(work_row)
+    la prosjekt_tittel: heltall = gui.etikett(sidebar, "Prosjekt | filer")
+    la prosjekt_panel: heltall = gui.panel(sidebar)
+    la prosjekt_liste_tittel: heltall = gui.etikett(prosjekt_panel, "Filer")
+    la prosjekt_liste_id: heltall = gui.liste(prosjekt_panel)
+    la prosjekt_handling_panel: heltall = gui.panel(prosjekt_panel)
+    la apne_valgt_knapp: heltall = gui.knapp(prosjekt_handling_panel, "Åpne valgt")
+    la oppdater_knapp: heltall = gui.knapp(prosjekt_handling_panel, "Oppdater")
+    la apne_panel: heltall = gui.panel(sidebar)
+    la apne_tittel: heltall = gui.etikett(apne_panel, "Åpne faner | åpne filer")
+    la apne_liste_id: heltall = gui.liste(apne_panel)
+    la apne_handling_panel: heltall = gui.panel(apne_panel)
+    la apne_valgt_fil_knapp: heltall = gui.knapp(apne_handling_panel, "Åpne valgt")
+    la lukk_valgt_fil_knapp: heltall = gui.knapp(apne_handling_panel, "Lukk valgt")
+    la lukk_andre_fil_knapp: heltall = gui.knapp(apne_handling_panel, "Lukk andre")
+    la lukk_alle_fil_knapp: heltall = gui.knapp(apne_handling_panel, "Lukk alle")
+    la snarveier_panel: heltall = gui.panel(sidebar)
+    la snarveier_tittel: heltall = gui.etikett(snarveier_panel, "Verktøy | snarveier")
+    la studio_knapp: heltall = gui.knapp(snarveier_panel, "Åpne studio.no")
+    la todo_knapp: heltall = gui.knapp(snarveier_panel, "Åpne todo_app.no")
+    la demo_knapp: heltall = gui.knapp(snarveier_panel, "Åpne gui_demo.no")
+    la test_knapp: heltall = gui.knapp(snarveier_panel, "Åpne test_gui.no")
+    la lukket_panel: heltall = gui.panel(sidebar)
+    la lukket_tittel: heltall = gui.etikett(lukket_panel, "Nylig lukket | historikk")
+    la lukket_liste_id: heltall = gui.liste(lukket_panel)
+    la lukket_handling_panel: heltall = gui.panel(lukket_panel)
+    la apne_lukket_knapp: heltall = gui.knapp(lukket_handling_panel, "Gjenåpne valgt")
+    la tøm_lukket_knapp: heltall = gui.knapp(lukket_handling_panel, "Tøm historikk")
+    la web_panel: heltall = gui.panel(sidebar)
+    la web_tittel: heltall = gui.etikett(web_panel, "Web | startmaler")
+    la bootstrap_knapp: heltall = gui.knapp(web_panel, "Bootstrap")
+    la css_knapp: heltall = gui.knapp(web_panel, "CSS")
+    la sass_knapp: heltall = gui.knapp(web_panel, "Sass")
+    la kommando_panel: heltall = gui.panel(sidebar)
+    la kommandohistorikk_tittel: heltall = gui.etikett(kommando_panel, "Kommandohistorikk | kommandoer")
+    la kommandohistorikk_liste: heltall = gui.liste(kommando_panel)
+    la kommandohistorikk_handling: heltall = gui.rad(kommando_panel)
+    la kommandohistorikk_bruk_knapp: heltall = gui.knapp(kommandohistorikk_handling, "Bruk valgt")
+    la kommandohistorikk_tøm_knapp: heltall = gui.knapp(kommandohistorikk_handling, "Tøm")
+    la work_panel: heltall = gui.panel(work_row)
+    la arbeidsflate_tittel: heltall = gui.etikett(work_panel, "Arbeidsflate | hovedområde")
+    la faner_id: heltall = gui.knapp(work_panel, "Faner | ingen åpne filer")
+    la toolbar: heltall = gui.rad(work_panel)
+    la sti_etikett: heltall = gui.etikett(toolbar, "Filsti")
+    la sti_felt: heltall = gui.tekstfelt(toolbar, "")
+    la ny_knapp: heltall = gui.knapp(toolbar, "Ny")
+    la apne_knapp: heltall = gui.knapp(toolbar, "Åpne")
+    la lagre_knapp: heltall = gui.knapp(toolbar, "Lagre")
+    la lagre_som_knapp: heltall = gui.knapp(toolbar, "Lagre som")
+    la kjor_knapp: heltall = gui.knapp(toolbar, "Kjør")
+    la sjekk_knapp: heltall = gui.knapp(toolbar, "Sjekk")
+    la linje_etikett: heltall = gui.etikett(toolbar, "Linje")
+    la linje_felt: heltall = gui.tekstfelt(toolbar, "")
+    la linje_knapp: heltall = gui.knapp(toolbar, "Hopp")
+    la def_knapp: heltall = gui.knapp(toolbar, "Def")
+    la bruk_knapp: heltall = gui.knapp(toolbar, "Bruk")
+    la sok_etikett: heltall = gui.etikett(toolbar, "Søk")
+    la sok_felt: heltall = gui.tekstfelt(toolbar, "")
+    la sok_knapp: heltall = gui.knapp(toolbar, "Finn")
+    la erstatt_etikett: heltall = gui.etikett(toolbar, "Erstatt")
+    la erstatt_felt: heltall = gui.tekstfelt(toolbar, "")
+    la erstatt_knapp: heltall = gui.knapp(toolbar, "Bytt")
+    la nyttnavn_etikett: heltall = gui.etikett(toolbar, "Nytt navn")
+    la nyttnavn_felt: heltall = gui.tekstfelt(toolbar, "")
+    la nyttnavn_knapp: heltall = gui.knapp(toolbar, "Navn")
+    la tester_knapp: heltall = gui.knapp(toolbar, "Test")
+    la kommando_etikett: heltall = gui.etikett(toolbar, "Kommando")
+    la kommando_felt: heltall = gui.tekstfelt(toolbar, "python3 -m norscode test")
+    la kommando_knapp: heltall = gui.knapp(toolbar, "Kjør")
+    la kilde_panel: heltall = gui.panel(work_panel)
+    la kilde_tittel: heltall = gui.etikett(kilde_panel, "Kildekode | aktiv fil")
+    la editor_status: heltall = gui.tekst(kilde_panel, "Fil: Ny buffer | Linje: 1 | Kolonne: 1 | Symbol: ingen | Ulagret")
+    la kilde_rad: heltall = gui.rad(kilde_panel)
+    la linje_id: heltall = gui.tekst(kilde_rad, "1")
+    la kilde_id: heltall = gui.editor(
+        kilde_rad,
+        "bruk std.gui som gui\n\nfunksjon start() -> heltall {\n    skriv(\"Hei fra Norscode Studio\")\n    returner 0\n}\n"
+    )
+    la autocomplete_panel: heltall = gui.panel(kilde_panel)
+    la autocomplete_tittel: heltall = gui.etikett(autocomplete_panel, "Autocomplete | forslag")
+    la autocomplete_liste_id: heltall = gui.liste(autocomplete_panel)
+    la autocomplete_handling: heltall = gui.rad(autocomplete_panel)
+    la autocomplete_sett_inn_knapp: heltall = gui.knapp(autocomplete_handling, "Sett inn valgt")
+    la autocomplete_oppdater_knapp: heltall = gui.knapp(autocomplete_handling, "Oppdater")
+    la utdata_panel: heltall = gui.panel(work_panel)
+    la utdata_tittel: heltall = gui.etikett(utdata_panel, "Output | kjøring og sjekk")
+    la utdata_id: heltall = gui.editor(utdata_panel, "")
+    la diagnose_panel: heltall = gui.panel(work_panel)
+    la diagnose_tittel: heltall = gui.etikett(diagnose_panel, "Diagnose | detaljer")
+    la diagnose_id: heltall = gui.editor(diagnose_panel, "Klar for feilsøking")
+    la terminal_panel: heltall = gui.panel(work_panel)
+    la terminal_tittel: heltall = gui.etikett(terminal_panel, "Terminal | historikk")
+    la terminal_id: heltall = gui.editor(terminal_panel, "Terminal klar")
+    la bruktreff_panel: heltall = gui.panel(work_panel)
+    la bruktreff_tittel: heltall = gui.etikett(bruktreff_panel, "Bruk treff | 0")
+    la bruktreff_liste: heltall = gui.liste(bruktreff_panel)
+    la bruktreff_handling: heltall = gui.rad(bruktreff_panel)
+    la bruktreff_åpne_knapp: heltall = gui.knapp(bruktreff_handling, "Åpne valgt")
+    la bruktreff_tøm_knapp: heltall = gui.knapp(bruktreff_handling, "Tøm")
+    la status_panel: heltall = gui.rad(hoved_panel)
+    la status_id: heltall = gui.tekst(status_panel, "Klar")
+    la tips_id: heltall = gui.tekst(status_panel, "Snarvei: Åpne, Lagre, Kjør, Sjekk")
+
+    gui.på_klikk(apne_knapp, "apne_fil")
+    gui.på_klikk(ny_knapp, "ny_fil")
+    gui.på_klikk(lagre_knapp, "lagre_fil")
+    gui.på_klikk(lagre_som_knapp, "lagre_som_ny_fil")
+    gui.på_klikk(kjor_knapp, "kjor_fil")
+    gui.på_klikk(sjekk_knapp, "sjekk_fil")
+    gui.på_klikk(linje_knapp, "hopp_til_linje")
+    gui.på_klikk(def_knapp, "finn_definisjon")
+    gui.på_klikk(bruk_knapp, "finn_bruk")
+    gui.på_klikk(nyttnavn_knapp, "gi_navn")
+    gui.på_klikk(tester_knapp, "kjør_tester")
+    gui.på_klikk(kommando_knapp, "kjør_kommando_fra_felt")
+    gui.på_klikk(sok_knapp, "sok_i_kilde")
+    gui.på_klikk(erstatt_knapp, "erstatt_i_kilde")
+    gui.på_klikk(autocomplete_sett_inn_knapp, "bruk_autocomplete_forslag")
+    gui.på_klikk(autocomplete_oppdater_knapp, "oppdater_autocomplete")
+    gui.på_endring(autocomplete_liste_id, "oppdater_autocomplete_valgt")
+    gui.på_tast(kilde_id, "Tab", "bruk_autocomplete_forslag")
+    gui.på_tast(kilde_id, "Enter", "bruk_autocomplete_forslag")
+    gui.på_tast(kilde_id, "Ctrl+Space", "oppdater_autocomplete")
+    gui.på_tast(kilde_id, "Left", "oppdater_kildeoversikt")
+    gui.på_tast(kilde_id, "Right", "oppdater_kildeoversikt")
+    gui.på_tast(kilde_id, "Up", "oppdater_kildeoversikt")
+    gui.på_tast(kilde_id, "Down", "oppdater_kildeoversikt")
+    gui.på_tast(kilde_id, "Home", "oppdater_kildeoversikt")
+    gui.på_tast(kilde_id, "End", "oppdater_kildeoversikt")
+    gui.på_klikk(studio_knapp, "apne_studio_fil")
+    gui.på_klikk(todo_knapp, "apne_todo_fil")
+    gui.på_klikk(demo_knapp, "apne_gui_demo_fil")
+    gui.på_klikk(test_knapp, "apne_test_gui_fil")
+    gui.på_klikk(apne_lukket_knapp, "apne_valgt_lukket_fil")
+    gui.på_klikk(tøm_lukket_knapp, "tøm_lukket_historikk")
+    gui.på_klikk(bootstrap_knapp, "opprett_bootstrap_startside")
+    gui.på_klikk(css_knapp, "opprett_css_startside")
+    gui.på_klikk(sass_knapp, "opprett_sass_startside")
+    gui.på_klikk(kommandohistorikk_bruk_knapp, "bruk_valgt_kommando")
+    gui.på_klikk(kommandohistorikk_tøm_knapp, "tøm_kommandohistorikk")
+    gui.på_klikk(bruktreff_åpne_knapp, "åpne_valgt_bruktreff")
+    gui.på_klikk(bruktreff_tøm_knapp, "tøm_bruktreff")
+    gui.på_klikk(apne_valgt_knapp, "apne_valgt_fil")
+    gui.på_klikk(apne_valgt_fil_knapp, "apne_valgt_åpen_fil")
+    gui.på_klikk(lukk_valgt_fil_knapp, "lukk_valgt_åpen_fil")
+    gui.på_klikk(lukk_andre_fil_knapp, "lukk_andre_åpne_filer")
+    gui.på_klikk(lukk_alle_fil_knapp, "lukk_alle_åpne_filer")
+    gui.på_klikk(oppdater_knapp, "oppdater_prosjektliste")
+    gui.på_endring(prosjekt_liste_id, "apne_valgt_fil")
+    gui.på_endring(apne_liste_id, "apne_valgt_åpen_fil")
+    gui.på_endring(lukket_liste_id, "apne_valgt_lukket_fil")
+    gui.på_endring(sok_felt, "sok_i_kilde")
+    gui.på_endring(erstatt_felt, "erstatt_i_kilde")
+    gui.på_endring(sti_felt, "oppdater_kildeoversikt")
+    gui.på_endring(kilde_id, "oppdater_kildeoversikt")
+    gui.på_endring(kilde_id, "oppdater_autocomplete")
+    gui.på_endring(kommandohistorikk_liste, "bruk_valgt_kommando")
+    gui.på_endring(bruktreff_liste, "åpne_valgt_bruktreff")
+    gui.på_klikk(faner_id, "aktiver_fane")
+
+    la oppstartsargumenter: liste_tekst = argv()
+    la oppstartsfil: tekst = ""
+    hvis lengde(oppstartsargumenter) > 0 da {
+        oppstartsfil = oppstartsargumenter[0]
+    } ellers {
+        oppstartsfil = les_miljo("NORSCODE_STUDIO_OPEN")
+    }
+    hvis oppstartsfil != "" da {
+        gui.sett_tekst(sti_felt, oppstartsfil)
+        apne_fil(apne_knapp)
+    }
+
+    fyll_prosjektliste(vindu_id)
+    oppdater_faner(vindu_id)
+    oppdater_autocomplete(vindu_id)
+    oppdater_kildeoversikt(vindu_id)
+    oppdater_lukketittel(vindu_id)
+    oppdater_kommandohistorikk_tittel(vindu_id)
+    oppdater_bruktreff_tittel(vindu_id)
+    oppdater_terminal(vindu_id, "Terminal klar")
+    oppdater_diagnose(vindu_id, "Klar for feilsøking.\nÅpne, lagre eller kjør en fil for å se detaljer her.")
+    gui.sett_tekst(oversikt_id, "Start med en filsti eller arbeid i en midlertidig buffer")
+    gui.sett_tekst(tips_id, "Sjekk er tryggest når du vil verifisere før kjøring")
+    gui.vis(vindu_id)
+    returner 0
+}

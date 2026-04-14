@@ -1,0 +1,9 @@
+funksjon start() -> heltall {
+    assert_eq(sann og sann, sann)
+    assert_eq(sann og usann, usann)
+    assert_eq(usann eller sann, sann)
+    assert_eq(usann eller usann, usann)
+    assert_eq(ikke usann, sann)
+    assert_eq(ikke (sann og usann), sann)
+    returner 0
+}

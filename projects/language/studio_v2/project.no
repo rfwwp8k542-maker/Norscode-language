@@ -1,0 +1,16 @@
+# Studio v2 project foundation.
+
+funksjon studio_v2_prosjektnavn() -> tekst {
+    returner "Norscode Studio v2"
+}
+
+funksjon studio_v2_prosjektrot(args: liste_tekst) -> tekst {
+    hvis lengde(args) > 0 da {
+        returner args[0]
+    }
+    returner "."
+}
+
+funksjon studio_v2_prosjektstatus() -> tekst {
+    returner "tom"
+}

@@ -1,0 +1,88 @@
+{
+  "format": "norscode-bytecode-v1",
+  "entry": "__main__.start",
+  "imports": [],
+  "functions": {
+    "__main__.start": {
+      "name": "start",
+      "module": "__main__",
+      "params": [],
+      "code": [
+        [
+          "PUSH_CONST",
+          7
+        ],
+        [
+          "STORE_NAME",
+          "x"
+        ],
+        [
+          "LOAD_NAME",
+          "x"
+        ],
+        [
+          "PUSH_CONST",
+          5
+        ],
+        [
+          "COMPARE_GT"
+        ],
+        [
+          "JUMP_IF_FALSE",
+          "ifelse_2"
+        ],
+        [
+          "PUSH_CONST",
+          1
+        ],
+        [
+          "PUSH_CONST",
+          1
+        ],
+        [
+          "CALL",
+          "builtin.assert_eq",
+          2
+        ],
+        [
+          "POP"
+        ],
+        [
+          "JUMP",
+          "ifend_1"
+        ],
+        [
+          "LABEL",
+          "ifelse_2"
+        ],
+        [
+          "PUSH_CONST",
+          1
+        ],
+        [
+          "PUSH_CONST",
+          0
+        ],
+        [
+          "CALL",
+          "builtin.assert_eq",
+          2
+        ],
+        [
+          "POP"
+        ],
+        [
+          "LABEL",
+          "ifend_1"
+        ],
+        [
+          "PUSH_CONST",
+          0
+        ],
+        [
+          "RETURN"
+        ]
+      ]
+    }
+  }
+}

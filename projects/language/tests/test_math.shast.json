@@ -1,0 +1,311 @@
+{
+  "format": "norscode-ast-v1",
+  "alias_map": {
+    "math": "std.math"
+  },
+  "imports": [
+    {
+      "module_name": "std.math",
+      "alias": null
+    }
+  ],
+  "functions": [
+    {
+      "name": "start",
+      "module_name": "__main__",
+      "return_type": "heltall",
+      "params": [],
+      "body": {
+        "type": "Block",
+        "statements": [
+          {
+            "type": "ExprStmt",
+            "expr": {
+              "type": "Call",
+              "name": "assert_eq",
+              "args": [
+                {
+                  "type": "BinOp",
+                  "op": "PLUS",
+                  "left": {
+                    "type": "Number",
+                    "value": 2
+                  },
+                  "right": {
+                    "type": "Number",
+                    "value": 3
+                  }
+                },
+                {
+                  "type": "Number",
+                  "value": 5
+                }
+              ]
+            }
+          },
+          {
+            "type": "ExprStmt",
+            "expr": {
+              "type": "Call",
+              "name": "assert_eq",
+              "args": [
+                {
+                  "type": "BinOp",
+                  "op": "MINUS",
+                  "left": {
+                    "type": "Number",
+                    "value": 10
+                  },
+                  "right": {
+                    "type": "Number",
+                    "value": 4
+                  }
+                },
+                {
+                  "type": "Number",
+                  "value": 6
+                }
+              ]
+            }
+          },
+          {
+            "type": "ExprStmt",
+            "expr": {
+              "type": "Call",
+              "name": "assert_eq",
+              "args": [
+                {
+                  "type": "BinOp",
+                  "op": "MUL",
+                  "left": {
+                    "type": "Number",
+                    "value": 3
+                  },
+                  "right": {
+                    "type": "Number",
+                    "value": 4
+                  }
+                },
+                {
+                  "type": "Number",
+                  "value": 12
+                }
+              ]
+            }
+          },
+          {
+            "type": "ExprStmt",
+            "expr": {
+              "type": "Call",
+              "name": "assert_eq",
+              "args": [
+                {
+                  "type": "BinOp",
+                  "op": "DIV",
+                  "left": {
+                    "type": "Number",
+                    "value": 8
+                  },
+                  "right": {
+                    "type": "Number",
+                    "value": 2
+                  }
+                },
+                {
+                  "type": "Number",
+                  "value": 4
+                }
+              ]
+            }
+          },
+          {
+            "type": "VarDeclare",
+            "name": "s",
+            "var_type": "heltall",
+            "expr": {
+              "type": "ModuleCall",
+              "module_name": "math",
+              "func_name": "pluss",
+              "args": [
+                {
+                  "type": "Number",
+                  "value": 10
+                },
+                {
+                  "type": "Number",
+                  "value": 20
+                }
+              ]
+            }
+          },
+          {
+            "type": "ExprStmt",
+            "expr": {
+              "type": "Call",
+              "name": "assert_eq",
+              "args": [
+                {
+                  "type": "VarAccess",
+                  "name": "s"
+                },
+                {
+                  "type": "Number",
+                  "value": 30
+                }
+              ]
+            }
+          },
+          {
+            "type": "VarDeclare",
+            "name": "m",
+            "var_type": "heltall",
+            "expr": {
+              "type": "ModuleCall",
+              "module_name": "math",
+              "func_name": "minus",
+              "args": [
+                {
+                  "type": "Number",
+                  "value": 50
+                },
+                {
+                  "type": "Number",
+                  "value": 8
+                }
+              ]
+            }
+          },
+          {
+            "type": "ExprStmt",
+            "expr": {
+              "type": "Call",
+              "name": "assert_eq",
+              "args": [
+                {
+                  "type": "VarAccess",
+                  "name": "m"
+                },
+                {
+                  "type": "Number",
+                  "value": 42
+                }
+              ]
+            }
+          },
+          {
+            "type": "ExprStmt",
+            "expr": {
+              "type": "Call",
+              "name": "assert",
+              "args": [
+                {
+                  "type": "BinOp",
+                  "op": "GT",
+                  "left": {
+                    "type": "Number",
+                    "value": 5
+                  },
+                  "right": {
+                    "type": "Number",
+                    "value": 3
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "type": "ExprStmt",
+            "expr": {
+              "type": "Call",
+              "name": "assert",
+              "args": [
+                {
+                  "type": "BinOp",
+                  "op": "LT",
+                  "left": {
+                    "type": "Number",
+                    "value": 3
+                  },
+                  "right": {
+                    "type": "Number",
+                    "value": 5
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "type": "ExprStmt",
+            "expr": {
+              "type": "Call",
+              "name": "assert_eq",
+              "args": [
+                {
+                  "type": "BinOp",
+                  "op": "GTE",
+                  "left": {
+                    "type": "Number",
+                    "value": 5
+                  },
+                  "right": {
+                    "type": "Number",
+                    "value": 5
+                  }
+                },
+                {
+                  "type": "Bool",
+                  "value": true
+                }
+              ]
+            }
+          },
+          {
+            "type": "ExprStmt",
+            "expr": {
+              "type": "Call",
+              "name": "assert_eq",
+              "args": [
+                {
+                  "type": "BinOp",
+                  "op": "LTE",
+                  "left": {
+                    "type": "Number",
+                    "value": 4
+                  },
+                  "right": {
+                    "type": "Number",
+                    "value": 5
+                  }
+                },
+                {
+                  "type": "Bool",
+                  "value": true
+                }
+              ]
+            }
+          },
+          {
+            "type": "ExprStmt",
+            "expr": {
+              "type": "Call",
+              "name": "skriv",
+              "args": [
+                {
+                  "type": "String",
+                  "value": "test_math OK"
+                }
+              ]
+            }
+          },
+          {
+            "type": "Return",
+            "expr": {
+              "type": "Number",
+              "value": 0
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

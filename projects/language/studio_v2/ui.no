@@ -1,0 +1,87 @@
+# Studio v2 UI foundation.
+
+funksjon studio_v2_ui_shell() -> tekst {
+    returner "studio shell"
+}
+
+funksjon studio_v2_ui_layout() -> liste_tekst {
+    returner ["file-tree", "editor", "side-panel", "status-bar"]
+}
+
+funksjon studio_v2_ui_status() -> tekst {
+    returner "klar"
+}
+
+funksjon studio_v2_ui_tema_lys() -> tekst {
+    returner "lys"
+}
+
+funksjon studio_v2_ui_tema_mork() -> tekst {
+    returner "mørk"
+}
+
+funksjon studio_v2_ui_tema_standard() -> tekst {
+    returner studio_v2_ui_tema_mork()
+}
+
+funksjon studio_v2_ui_tema_status(tema: tekst) -> tekst {
+    hvis tema == studio_v2_ui_tema_lys() da {
+        returner "aktivt"
+    }
+    hvis tema == studio_v2_ui_tema_mork() da {
+        returner "aktivt"
+    }
+    returner "ukjent"
+}
+
+funksjon studio_v2_ui_tema_palett() -> liste_tekst {
+    returner [studio_v2_ui_tema_lys(), studio_v2_ui_tema_mork()]
+}
+
+funksjon studio_v2_ui_tema_fra_navn(navn: tekst) -> tekst {
+    hvis navn == "lys" da {
+        returner studio_v2_ui_tema_lys()
+    }
+    hvis navn == "mørk" eller navn == "mork" da {
+        returner studio_v2_ui_tema_mork()
+    }
+    returner studio_v2_ui_tema_standard()
+}
+
+funksjon studio_v2_ui_snarveier() -> liste_tekst {
+    returner ["Ctrl+O\tåpne", "Ctrl+S\tlagre", "Ctrl+Enter\tkjør", "Ctrl+Shift+C\tcheck", "Ctrl+P\tpalett"]
+}
+
+funksjon studio_v2_ui_snarvei_forste() -> tekst {
+    returner "Ctrl+O\tåpne"
+}
+
+funksjon studio_v2_ui_snarveier_status() -> tekst {
+    returner "klar"
+}
+
+funksjon studio_v2_ui_session_tom() -> liste_tekst {
+    returner []
+}
+
+funksjon studio_v2_ui_session_fra_workspace(rot: tekst, aktiv_fil: tekst) -> liste_tekst {
+    returner [
+        "rot\t" + rot,
+        "aktiv_fil\t" + aktiv_fil,
+        "tema\t" + studio_v2_ui_tema_standard()
+    ]
+}
+
+funksjon studio_v2_ui_session_restore(session: liste_tekst) -> tekst {
+    hvis lengde(session) > 0 da {
+        returner "restaurert"
+    }
+    returner "tom"
+}
+
+funksjon studio_v2_ui_session_status(session: liste_tekst) -> tekst {
+    hvis lengde(session) > 0 da {
+        returner "klar"
+    }
+    returner "tom"
+}

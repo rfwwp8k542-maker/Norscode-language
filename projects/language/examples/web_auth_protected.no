@@ -1,0 +1,46 @@
+bruk std.web som web
+
+funksjon auth_beskyttet_rapport(auth_header: tekst) -> tekst {
+    la token: tekst = web.security_bearer_token_fra_header(auth_header)
+    hvis token == "" da {
+        returner web.http_respons_tekst(401, web.http_content_type_json(), "{\"detail\":\"mangler token\"}")
+    }
+    hvis token != "demo-token" da {
+        returner web.http_respons_tekst(403, web.http_content_type_json(), "{\"detail\":\"ugyldig token\"}")
+    }
+    returner web.http_json_respons("{\"message\":\"tilgang gitt\",\"role\":\"admin\"}")
+}
+
+funksjon auth_session() -> liste_tekst {
+    la sessioner: liste_tekst = web.security_session_tom()
+    web.security_session_sett(sessioner, "bruker", "Ada")
+    web.security_session_sett(sessioner, "rolle", "admin")
+    returner sessioner
+}
+
+funksjon auth_openapi() -> tekst {
+    la api: liste_tekst = web.openapi_tom()
+    web.openapi_info_registrer(api, "title", "Protected API")
+    web.openapi_info_registrer(api, "version", "1.0.0")
+    web.openapi_rute_registrer(api, "GET", "/private", "Protected route", "Krever bearer-token", "auth", "PrivateResponse")
+    returner web.openapi_json(api)
+}
+
+test "auth protected example" {
+    la uten_token: tekst = auth_beskyttet_rapport("")
+    assert(tekst_inneholder(uten_token, "HTTP/1.1 401 Unauthorized"))
+    la feil_token: tekst = auth_beskyttet_rapport("Bearer feil")
+    assert(tekst_inneholder(feil_token, "HTTP/1.1 403 Forbidden"))
+    la ok_token: tekst = auth_beskyttet_rapport("Bearer demo-token")
+    assert(tekst_inneholder(ok_token, "\"message\":\"tilgang gitt\""))
+    assert_eq(web.security_auth_header_bearer("demo-token"), "Bearer demo-token")
+    la sessioner: liste_tekst = auth_session()
+    assert_eq(web.security_session_hent(sessioner, "bruker"), "Ada")
+    assert(tekst_inneholder(auth_openapi(), "\"/private\""))
+    assert(tekst_inneholder(web.security_cors_csrf_guide(), "CSRF"))
+}
+
+funksjon start() -> heltall {
+    skriv("Auth-eksempelet er klart")
+    returner 0
+}

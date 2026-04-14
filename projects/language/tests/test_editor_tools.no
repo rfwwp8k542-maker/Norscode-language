@@ -1,0 +1,27 @@
+bruk std.gui som gui
+
+funksjon tast_handler(widget_id: heltall) -> heltall {
+    returner 1
+}
+
+test "editor verktøy" {
+    la vindu_id: heltall = gui.vindu("Editor test")
+    la panel_id: heltall = gui.panel(vindu_id)
+    la editor_id: heltall = gui.editor(panel_id, "hei verden")
+
+    la cursor: liste_tekst = gui.editor_cursor(editor_id)
+    assert_eq(lengde(cursor), 2)
+    assert_eq(cursor[0], "1")
+
+    assert_eq(gui.editor_erstatt_fra_til(editor_id, 1, 5, 1, 10, "Norscode"), editor_id)
+    assert_eq(gui.hent_tekst(editor_id), "hei Norscode")
+
+    gui.på_tast(editor_id, "Tab", "tast_handler")
+    assert_eq(gui.trykk_tast(editor_id, "Tab"), 1)
+    gui.på_tast(editor_id, "Ctrl+Space", "tast_handler")
+    assert_eq(gui.trykk_tast(editor_id, "Ctrl+Space"), 1)
+}
+
+funksjon start() -> heltall {
+    returner 0
+}

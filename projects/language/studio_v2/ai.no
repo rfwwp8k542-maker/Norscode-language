@@ -1,0 +1,335 @@
+# Studio v2 AI foundation.
+
+funksjon studio_v2_ai_modus_disabled() -> tekst {
+    returner "disabled"
+}
+
+funksjon studio_v2_ai_modus_lokal() -> tekst {
+    returner "local"
+}
+
+funksjon studio_v2_ai_modus_remote() -> tekst {
+    returner "remote"
+}
+
+funksjon studio_v2_ai_modus() -> tekst {
+    returner studio_v2_ai_modus_disabled()
+}
+
+funksjon studio_v2_ai_provider_tom() -> liste_tekst {
+    returner [
+        "navn\t",
+        "modus\t" + studio_v2_ai_modus_disabled(),
+        "aktiv\tnei"
+    ]
+}
+
+funksjon studio_v2_ai_provider_fra_modus(navn: tekst, modus: tekst) -> liste_tekst {
+    la aktiv: tekst = "nei"
+    hvis modus != studio_v2_ai_modus_disabled() da {
+        aktiv = "ja"
+    }
+    returner [
+        "navn\t" + navn,
+        "modus\t" + modus,
+        "aktiv\t" + aktiv
+    ]
+}
+
+funksjon studio_v2_ai_provider_navn(provider: liste_tekst) -> tekst {
+    la i: heltall = 0
+    mens (i < lengde(provider)) {
+        hvis tekst_starter_med(provider[i], "navn\t") da {
+            returner tekst_slice(provider[i], 5, tekst_lengde(provider[i]))
+        }
+        i = i + 1
+    }
+    returner ""
+}
+
+funksjon studio_v2_ai_provider_modus(provider: liste_tekst) -> tekst {
+    la i: heltall = 0
+    mens (i < lengde(provider)) {
+        hvis tekst_starter_med(provider[i], "modus\t") da {
+            returner tekst_slice(provider[i], 6, tekst_lengde(provider[i]))
+        }
+        i = i + 1
+    }
+    returner studio_v2_ai_modus_disabled()
+}
+
+funksjon studio_v2_ai_provider_kan_bruke(provider: liste_tekst) -> bool {
+    returner studio_v2_ai_provider_modus(provider) != studio_v2_ai_modus_disabled()
+}
+
+funksjon studio_v2_ai_provider_status(provider: liste_tekst) -> tekst {
+    hvis studio_v2_ai_provider_kan_bruke(provider) da {
+        returner "klar"
+    }
+    returner "disabled"
+}
+
+funksjon studio_v2_ai_kontrakt() -> liste_tekst {
+    returner ["explain", "summarize", "refactor", "test", "patch-preview"]
+}
+
+funksjon studio_v2_ai_kan_bruke() -> bool {
+    returner usann
+}
+
+funksjon studio_v2_ai_handlinger() -> liste_tekst {
+    returner ["forklar-kode", "sammendrag-fil", "refaktorering", "testgenerering", "patch-previsjon"]
+}
+
+funksjon studio_v2_ai_handlinger_forste() -> tekst {
+    returner "forklar-kode"
+}
+
+funksjon studio_v2_ai_handlinger_status() -> tekst {
+    returner "preview-first"
+}
+
+funksjon studio_v2_ai_tekst_konteksttekst(kontekst: liste_tekst) -> tekst {
+    la resultat: tekst = ""
+    la indeks: heltall = 0
+    mens (indeks < lengde(kontekst)) {
+        resultat = resultat + kontekst[indeks]
+        hvis indeks + 1 < lengde(kontekst) da {
+            resultat = resultat + "\n"
+        }
+        indeks = indeks + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_ai_tekst_forklar_kode(kontekst: liste_tekst) -> tekst {
+    returner "Forklar koden:\n" + studio_v2_ai_tekst_konteksttekst(kontekst)
+}
+
+funksjon studio_v2_ai_tekst_sammendrag_fil(kontekst: liste_tekst) -> tekst {
+    returner "Oppsummer filen:\n" + studio_v2_ai_tekst_konteksttekst(kontekst)
+}
+
+funksjon studio_v2_ai_tekst_refaktorering(kontekst: liste_tekst) -> tekst {
+    returner "Foreslå refaktorering:\n" + studio_v2_ai_tekst_konteksttekst(kontekst)
+}
+
+funksjon studio_v2_ai_tekst_testgenerering(kontekst: liste_tekst) -> tekst {
+    returner "Generer tester:\n" + studio_v2_ai_tekst_konteksttekst(kontekst)
+}
+
+funksjon studio_v2_ai_tekst_patch_previsjon(kontekst: liste_tekst) -> tekst {
+    returner "Forhåndsvis patch:\n" + studio_v2_ai_tekst_konteksttekst(kontekst)
+}
+
+funksjon studio_v2_ai_handling_forklar_kode(kontekst: liste_tekst) -> tekst {
+    returner studio_v2_ai_tekst_forklar_kode(kontekst)
+}
+
+funksjon studio_v2_ai_handling_sammendrag_fil(kontekst: liste_tekst) -> tekst {
+    returner studio_v2_ai_tekst_sammendrag_fil(kontekst)
+}
+
+funksjon studio_v2_ai_handling_refaktorering(kontekst: liste_tekst) -> tekst {
+    returner studio_v2_ai_tekst_refaktorering(kontekst)
+}
+
+funksjon studio_v2_ai_handling_testgenerering(kontekst: liste_tekst) -> tekst {
+    returner studio_v2_ai_tekst_testgenerering(kontekst)
+}
+
+funksjon studio_v2_ai_handling_patch_previsjon(kontekst: liste_tekst) -> tekst {
+    returner studio_v2_ai_tekst_patch_previsjon(kontekst)
+}
+
+funksjon studio_v2_ai_patch_previsjon_tom() -> liste_tekst {
+    returner []
+}
+
+funksjon studio_v2_ai_patch_previsjon_fra_kontekst(kontekst: liste_tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    legg_til(resultat, "forslag\t1\t" + studio_v2_ai_tekst_patch_previsjon(kontekst))
+    legg_til(resultat, "handling\taccept-reject")
+    legg_til(resultat, "status\tpreview")
+    returner resultat
+}
+
+funksjon studio_v2_ai_patch_previsjon_status(preview: liste_tekst) -> tekst {
+    hvis lengde(preview) > 0 da {
+        returner "preview"
+    }
+    returner "tom"
+}
+
+funksjon studio_v2_ai_patch_previsjon_forste(preview: liste_tekst) -> tekst {
+    hvis lengde(preview) > 0 da {
+        returner preview[0]
+    }
+    returner ""
+}
+
+funksjon studio_v2_ai_patch_godkjenn(preview: liste_tekst) -> tekst {
+    hvis lengde(preview) > 0 da {
+        returner "godkjent"
+    }
+    returner "ingenting å godkjenne"
+}
+
+funksjon studio_v2_ai_patch_avvis(preview: liste_tekst) -> tekst {
+    hvis lengde(preview) > 0 da {
+        returner "avvist"
+    }
+    returner "ingenting å avvise"
+}
+
+funksjon studio_v2_ai_opt_in_tom() -> liste_tekst {
+    returner [
+        "workspace\t",
+        "tillat_sending\tnei",
+        "offline_only\tja",
+        "rediger_kontekst\tja"
+    ]
+}
+
+funksjon studio_v2_ai_opt_in_lag(workspace_navn: tekst, tillat_sending: bool, offline_only: bool, rediger_kontekst: bool) -> liste_tekst {
+    la sendetekst: tekst = "nei"
+    la offline_tekst: tekst = "nei"
+    la rediger_tekst: tekst = "nei"
+    hvis tillat_sending da {
+        sendetekst = "ja"
+    }
+    hvis offline_only da {
+        offline_tekst = "ja"
+    }
+    hvis rediger_kontekst da {
+        rediger_tekst = "ja"
+    }
+    returner [
+        "workspace\t" + workspace_navn,
+        "tillat_sending\t" + sendetekst,
+        "offline_only\t" + offline_tekst,
+        "rediger_kontekst\t" + rediger_tekst
+    ]
+}
+
+funksjon studio_v2_ai_opt_in_workspace(opt_in: liste_tekst) -> tekst {
+    la i: heltall = 0
+    mens (i < lengde(opt_in)) {
+        hvis tekst_starter_med(opt_in[i], "workspace\t") da {
+            returner tekst_slice(opt_in[i], 10, tekst_lengde(opt_in[i]))
+        }
+        i = i + 1
+    }
+    returner ""
+}
+
+funksjon studio_v2_ai_opt_in_tillat_sending(opt_in: liste_tekst) -> bool {
+    la i: heltall = 0
+    mens (i < lengde(opt_in)) {
+        hvis tekst_starter_med(opt_in[i], "tillat_sending\t") da {
+            returner tekst_slice(opt_in[i], 15, tekst_lengde(opt_in[i])) == "ja"
+        }
+        i = i + 1
+    }
+    returner usann
+}
+
+funksjon studio_v2_ai_opt_in_offline_only(opt_in: liste_tekst) -> bool {
+    la i: heltall = 0
+    mens (i < lengde(opt_in)) {
+        hvis tekst_starter_med(opt_in[i], "offline_only\t") da {
+            returner tekst_slice(opt_in[i], 13, tekst_lengde(opt_in[i])) == "ja"
+        }
+        i = i + 1
+    }
+    returner sann
+}
+
+funksjon studio_v2_ai_opt_in_rediger_kontekst(opt_in: liste_tekst) -> bool {
+    la i: heltall = 0
+    mens (i < lengde(opt_in)) {
+        hvis tekst_starter_med(opt_in[i], "rediger_kontekst\t") da {
+            returner tekst_slice(opt_in[i], 17, tekst_lengde(opt_in[i])) == "ja"
+        }
+        i = i + 1
+    }
+    returner sann
+}
+
+funksjon studio_v2_ai_opt_in_status(opt_in: liste_tekst) -> tekst {
+    hvis studio_v2_ai_opt_in_offline_only(opt_in) da {
+        returner "offline-only"
+    }
+    hvis studio_v2_ai_opt_in_tillat_sending(opt_in) da {
+        returner "opt-in"
+    }
+    returner "disabled"
+}
+
+funksjon studio_v2_ai_personvern_policy() -> liste_tekst {
+    returner [
+        "opt-in\tpåkrevd for ekstern sending",
+        "offline-only\tstøttes",
+        "redaction\taktiv for sensitive ord",
+        "preview\talltid før sending"
+    ]
+}
+
+funksjon studio_v2_ai_personvern_status() -> tekst {
+    returner "klar"
+}
+
+funksjon studio_v2_ai_personvern_kan_sende(opt_in: liste_tekst) -> bool {
+    returner studio_v2_ai_opt_in_tillat_sending(opt_in) og ikke studio_v2_ai_opt_in_offline_only(opt_in)
+}
+
+funksjon studio_v2_ai_kontekst_rediger_tekst(tekstverdi: tekst) -> tekst {
+    la resultat: tekst = tekstverdi
+    resultat = tekst_erstatt(resultat, "passord", "[redacted]")
+    resultat = tekst_erstatt(resultat, "token", "[redacted]")
+    resultat = tekst_erstatt(resultat, "secret", "[redacted]")
+    resultat = tekst_erstatt(resultat, "hemmelig", "[redacted]")
+    returner resultat
+}
+
+funksjon studio_v2_ai_kontekst_rediger(kontekst: liste_tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la i: heltall = 0
+    mens (i < lengde(kontekst)) {
+        legg_til(resultat, studio_v2_ai_kontekst_rediger_tekst(kontekst[i]))
+        i = i + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_ai_kontekst_trim(kontekst: liste_tekst, maks: heltall) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la i: heltall = 0
+    la grense: heltall = maks
+    hvis grense < 0 da {
+        grense = 0
+    }
+    mens (i < lengde(kontekst) og lengde(resultat) < grense) {
+        legg_til(resultat, kontekst[i])
+        i = i + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_ai_kontekst_sikker(opt_in: liste_tekst, kontekst: liste_tekst) -> liste_tekst {
+    la resultat: liste_tekst = studio_v2_ai_kontekst_rediger(kontekst)
+    hvis studio_v2_ai_opt_in_offline_only(opt_in) eller ikke studio_v2_ai_opt_in_tillat_sending(opt_in) da {
+        returner studio_v2_ai_kontekst_trim(resultat, 6)
+    }
+    returner resultat
+}
+
+funksjon studio_v2_ai_kontekst_sikker_status(opt_in: liste_tekst) -> tekst {
+    hvis studio_v2_ai_opt_in_offline_only(opt_in) da {
+        returner "offline-only"
+    }
+    hvis studio_v2_ai_opt_in_tillat_sending(opt_in) da {
+        returner "redacted"
+    }
+    returner "disabled"
+}

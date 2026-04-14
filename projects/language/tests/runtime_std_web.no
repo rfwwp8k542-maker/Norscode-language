@@ -1,0 +1,177 @@
+bruk std.web som web
+
+funksjon start() -> heltall {
+    la html: tekst = web.bootstrap_html("Norscode", "Hei", "Ingress", "Start")
+    assert(tekst_inneholder(html, "cdn.jsdelivr.net/npm/bootstrap"))
+    assert(tekst_inneholder(html, "<title>Norscode</title>"))
+
+    la css: tekst = web.css_startmal()
+    assert(tekst_inneholder(css, "font-family: system-ui, sans-serif"))
+    assert_eq(web.css_trim("  hei  "), "hei")
+    assert_eq(web.css_trim("\n  hei  \n"), "hei")
+
+    la sass: tekst = web.sass_startmal()
+    la kompilert: tekst = web.sass_til_css_tekst(sass)
+    assert(tekst_inneholder(kompilert, "body { margin: 0;"))
+    assert(tekst_inneholder(kompilert, ".card button { background: #60a5fa; }"))
+
+    la liten_sass: tekst = "$farge: #123456;\n.card {\n    color: $farge;\n    .title {\n        font-weight: 700;\n    }\n}\n"
+    la liten_css: tekst = web.sass_til_css_tekst(liten_sass)
+    assert(tekst_inneholder(liten_css, ".card { color: #123456; }"))
+    assert(tekst_inneholder(liten_css, ".card .title { font-weight: 700; }"))
+
+    la whitespace_sass: tekst = "   $farge: #abcdef;\n\n   .panel {\n       background: $farge;\n   }\n"
+    la whitespace_css: tekst = web.sass_til_css_tekst(whitespace_sass)
+    assert(tekst_inneholder(whitespace_css, ".panel { background: #abcdef; }"))
+
+    assert_eq(web.http_status_tekst(204), "No Content")
+    assert_eq(web.http_status_tekst(422), "Unprocessable Content")
+    assert_eq(web.http_statuslinje(500), "HTTP/1.1 500 Internal Server Error")
+    assert_eq(web.http_header_tekst("X-Test", "1"), "X-Test: 1")
+
+    la respons: tekst = web.http_respons_tekst(200, web.http_content_type_text(), "Hei")
+    assert(tekst_inneholder(respons, "HTTP/1.1 200 OK"))
+    assert(tekst_inneholder(respons, "Content-Type: text/plain; charset=utf-8"))
+    assert(tekst_inneholder(respons, "Content-Length: 3"))
+
+    la forespørsel: tekst = web.http_request_tekst(
+        "GET",
+        "/health",
+        "127.0.0.1:8080",
+        web.http_content_type_text(),
+        ""
+    )
+    assert(tekst_inneholder(forespørsel, "GET /health HTTP/1.1"))
+    assert(tekst_inneholder(forespørsel, "Host: 127.0.0.1:8080"))
+    assert(tekst_inneholder(forespørsel, "Content-Length: 0"))
+
+    la ruter: liste_tekst = web.router_tom()
+    assert_eq(web.router_registrer(ruter, "GET", "/hello", "hello_handler"), 1)
+    assert_eq(web.router_registrer(ruter, "GET", "/users/{id}", "user_handler"), 2)
+    assert_eq(web.router_match_rute(ruter, "GET", "/hello"), "hello_handler")
+    assert_eq(web.router_match_rute(ruter, "GET", "/users/42"), "user_handler")
+    assert_eq(web.router_match_rute(ruter, "POST", "/hello"), "")
+    assert(web.router_path_match("/users/{id}", "/users/42"))
+    assert_eq(web.router_path_param("/users/{id}", "/users/42", "id"), "42")
+    assert_eq(web.router_query_param("?page=2&sort=name", "page"), "2")
+    assert_eq(web.router_query_param("page=2&sort=name", "sort"), "name")
+    assert_eq(web.router_join_path("/api", "users/42"), "/api/users/42")
+    assert_eq(web.router_join_path("/api/", "/users/42"), "/api/users/42")
+
+    assert_eq(web.http_query_felt_tekst("?navn=Ada&side=2", "navn"), "Ada")
+    assert_eq(web.http_query_felt_heltall("?navn=Ada&side=2", "side"), 2)
+    assert_eq(web.http_query_felt_bool("?active=true&archived=false", "active"), sann)
+
+    assert_eq(web.http_path_felt_tekst("/users/{id}", "/users/42", "id"), "42")
+    assert_eq(web.http_path_felt_heltall("/users/{id}", "/users/42", "id"), 42)
+    assert_eq(web.http_path_felt_bool("/flags/{active}", "/flags/sann", "active"), sann)
+
+    assert_eq(web.http_body_json_felt_tekst("{\"navn\":\"Ada\"}", "navn"), "Ada")
+    assert_eq(web.http_body_json_felt_heltall("{\"alder\":33}", "alder"), 33)
+    assert_eq(web.http_body_json_felt_bool("{\"active\":true}", "active"), sann)
+
+    la validering: tekst = web.http_typed_input_feil_respons("body", "navn", "tekst", "12")
+    assert(tekst_inneholder(validering, "HTTP/1.1 422 Unprocessable Content"))
+    assert(tekst_inneholder(validering, "\"source\":\"body\""))
+    assert(tekst_inneholder(validering, "\"field\":\"navn\""))
+    assert(tekst_inneholder(validering, "\"expected\":\"tekst\""))
+
+    la bruker_schema: liste_tekst = web.schema_tom()
+    assert_eq(web.schema_felt_tekst(bruker_schema, "navn", sann, "", "Ada", "", ""), 1)
+    assert_eq(web.schema_felt_heltall(bruker_schema, "alder", usann, "18", "33", "", ""), 2)
+    assert_eq(web.schema_felt_bool(bruker_schema, "aktiv", usann, "sann", "sann", "", ""), 3)
+    assert_eq(web.schema_felt_objekt(bruker_schema, "profil", sann, "", "{}", "ProfilSchema"), 4)
+    assert_eq(web.schema_felt_liste(bruker_schema, "roller", "tekst", usann, "", "[\"admin\"]", "admin|editor", "RollerSchema"), 5)
+    assert_eq(web.schema_felt_tekst(bruker_schema, "rolle", usann, "editor", "editor", "admin|editor", ""), 6)
+    assert_eq(web.schema_felt_antall(bruker_schema), 6)
+    assert_eq(web.schema_felt_navn(bruker_schema, 0), "navn")
+    assert_eq(web.schema_felt_type(bruker_schema, 1), "heltall")
+    assert(web.schema_felt_påkrevd(bruker_schema, 0))
+    assert_eq(web.schema_felt_standard(bruker_schema, 1), "18")
+    assert_eq(web.schema_felt_eksempel(bruker_schema, 0), "Ada")
+    assert_eq(web.schema_felt_verdier(bruker_schema, 5), "admin|editor")
+    assert_eq(web.schema_felt_barn_schema(bruker_schema, 3), "ProfilSchema")
+    assert_eq(web.schema_sammendrag(bruker_schema), "schema(6 felt)")
+    assert(tekst_inneholder(web.schema_beskrivelse(bruker_schema), "profil: objekt"))
+    assert(tekst_inneholder(web.schema_beskrivelse(bruker_schema), "roller: liste_tekst"))
+    assert_eq(web.schema_valider_felt(bruker_schema, "navn", "Ada"), "")
+    assert_eq(web.schema_valider_felt(bruker_schema, "rolle", "admin"), "")
+    assert(tekst_inneholder(web.schema_valider_felt(bruker_schema, "alder", "abc"), "heltall"))
+    assert(tekst_inneholder(web.schema_valider_felt(bruker_schema, "rolle", "eier"), "\"expected\":\"en av: admin|editor\""))
+    assert(tekst_inneholder(web.schema_valider_felt(bruker_schema, "profil", ""), "\"field\":\"profil\""))
+    assert(tekst_inneholder(web.schema_valider_felt(bruker_schema, "profil", ""), "\"expected\":\"objekt\""))
+    assert(tekst_inneholder(web.schema_valider_felt(bruker_schema, "ukjent", "verdi"), "\"field\":\"ukjent\""))
+
+    la tjenester: liste_tekst = web.di_tom()
+    assert_eq(web.di_registrer_tjeneste(tjenester, "config", "prod"), 1)
+    assert_eq(web.di_registrer_tjeneste(tjenester, "db", "postgres"), 2)
+
+    la overstyringer: liste_tekst = web.di_kontekst_tom()
+    assert_eq(web.di_kontekst_sett(overstyringer, "db", "sqlite"), 1)
+    assert_eq(web.di_resolver(tjenester, overstyringer, "db", "fallback"), "sqlite")
+    assert_eq(web.di_resolver(tjenester, overstyringer, "config", "fallback"), "prod")
+    assert_eq(web.di_resolver(tjenester, overstyringer, "mangler", "fallback"), "fallback")
+
+    la hooks: liste_tekst = web.di_hooks_tom()
+    assert_eq(web.di_hook_registrer(hooks, "startup", "warm_cache"), 1)
+    assert_eq(web.di_hook_registrer(hooks, "shutdown", "flush_cache"), 2)
+    assert_eq(lengde(hooks), 2)
+
+    la middleware: liste_tekst = web.middleware_tom()
+    assert_eq(web.middleware_registrer(middleware, "before", "auth", "jwt"), 1)
+    assert_eq(web.middleware_registrer(middleware, "after", "metrics", "timing"), 2)
+    assert_eq(web.middleware_registrer(middleware, "exception", "errors", "json"), 3)
+    assert_eq(web.middleware_registrer(middleware, "cors", "cors", "https://example.com"), 4)
+    assert_eq(lengde(middleware), 4)
+    assert(tekst_inneholder(web.http_cors_respons_tekst(204, web.http_content_type_text(), "", "https://example.com", "GET, POST", "Authorization"), "Access-Control-Allow-Origin: https://example.com"))
+
+    la openapi: liste_tekst = web.openapi_tom()
+    assert_eq(web.openapi_info_registrer(openapi, "title", "Norscode API"), 1)
+    assert_eq(web.openapi_info_registrer(openapi, "version", "1.0.0"), 2)
+    assert_eq(web.openapi_info_registrer(openapi, "description", "Web API for Norscode"), 3)
+    assert_eq(web.openapi_schema_registrer(openapi, "Pet", "object", "Milo"), 4)
+    assert_eq(web.openapi_rute_registrer(openapi, "GET", "/pets", "List pets", "Lister alle dyr", "pets", "Pet"), 5)
+    la openapi_json: tekst = web.openapi_json(openapi)
+    assert(tekst_inneholder(openapi_json, "\"openapi\":\"3.0.3\""))
+    assert(tekst_inneholder(openapi_json, "\"title\":\"Norscode API\""))
+    assert(tekst_inneholder(openapi_json, "\"/pets\""))
+    assert(tekst_inneholder(openapi_json, "\"tags\":[\"pets\"]"))
+    assert(tekst_inneholder(openapi_json, "\"response_schema\":\"Pet\""))
+    la openapi_docs: tekst = web.openapi_docs_html("Norscode API", "/openapi.json")
+    assert(tekst_inneholder(openapi_docs, "/openapi.json"))
+    assert(tekst_inneholder(openapi_docs, "Norscode API"))
+    la openapi_json_respons: tekst = web.openapi_json_respons(openapi)
+    assert(tekst_inneholder(openapi_json_respons, "HTTP/1.1 200 OK"))
+    assert(tekst_inneholder(openapi_json_respons, "Content-Type: application/json; charset=utf-8"))
+    la openapi_docs_respons: tekst = web.openapi_docs_respons("Norscode API", "/openapi.json")
+    assert(tekst_inneholder(openapi_docs_respons, "HTTP/1.1 200 OK"))
+    assert(tekst_inneholder(openapi_docs_respons, "Content-Type: text/html; charset=utf-8"))
+
+    la testklient: liste_tekst = web.testklient_tom()
+    assert_eq(web.testklient_fixture_registrer(testklient, "GET", "/pets/{id}", 200, web.http_content_type_json(), "{\"id\":42}"), 1)
+    assert_eq(web.testklient_auth_overstyring_sett(testklient, "Authorization", "Bearer runtime-token"), 2)
+    assert_eq(web.testklient_auth_overstyring_hent(testklient, "Authorization"), "Bearer runtime-token")
+    la test_respons: tekst = web.testklient_send(testklient, "GET", "/pets/42")
+    assert_eq(web.testklient_respons_statuskode(test_respons), 200)
+    assert_eq(web.testklient_respons_header(test_respons, "Content-Type"), web.http_content_type_json())
+    assert_eq(web.testklient_respons_body(test_respons), "{\"id\":42}")
+    la snapshot: tekst = web.testklient_rute_snapshot_json(testklient)
+    assert(tekst_inneholder(snapshot, "\"/pets/{id}\""))
+    assert(tekst_inneholder(snapshot, "\"status\":200"))
+
+    assert_eq(web.security_auth_header_bearer("runtime-token"), "Bearer runtime-token")
+    assert_eq(web.security_bearer_token_fra_header("Bearer runtime-token"), "runtime-token")
+    assert_eq(web.security_bearer_token_fra_header("Basic runtime-token"), "")
+
+    la sessioner: liste_tekst = web.security_session_tom()
+    assert_eq(web.security_session_sett(sessioner, "bruker", "Runtime"), 1)
+    assert_eq(web.security_session_hent(sessioner, "bruker"), "Runtime")
+
+    la rate_limits: liste_tekst = web.security_rate_limit_tom()
+    assert_eq(web.security_rate_limit_registrer(rate_limits, "api", 3, 60), 1)
+    assert(web.security_rate_limit_tillatt(rate_limits, "api", 2))
+    assert(ikke web.security_rate_limit_tillatt(rate_limits, "api", 3))
+    assert(tekst_inneholder(web.security_cors_csrf_guide(), "CORS"))
+    assert(tekst_inneholder(web.security_cors_csrf_guide(), "CSRF"))
+    returner 0
+}

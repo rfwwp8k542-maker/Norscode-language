@@ -1,0 +1,286 @@
+# Studio v2 workspace foundation.
+
+funksjon studio_v2_state_tittel() -> tekst {
+    returner "Norscode Studio v2"
+}
+
+funksjon studio_v2_state_session_fil(rot: tekst) -> tekst {
+    returner rot + "/.norscode/studio_v2.session"
+}
+
+funksjon studio_v2_state_session_tom() -> liste_tekst {
+    returner []
+}
+
+funksjon studio_v2_state_session_les(rot: tekst) -> liste_tekst {
+    la sti: tekst = studio_v2_state_session_fil(rot)
+    hvis ikke fil_eksisterer(sti) da {
+        returner studio_v2_state_session_tom()
+    }
+    returner del_linjer(les_fil(sti))
+}
+
+funksjon studio_v2_state_session_verdi(session: liste_tekst, nøkkel: tekst) -> tekst {
+    la indeks: heltall = 0
+    mens (indeks < lengde(session)) {
+        la deler: liste_tekst = tekst_del_på(session[indeks], "\t")
+        hvis lengde(deler) >= 2 og deler[0] == nøkkel da {
+            returner deler[1]
+        }
+        indeks = indeks + 1
+    }
+    returner ""
+}
+
+funksjon studio_v2_state_session_recent_prosjekter(session: liste_tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la indeks: heltall = 0
+    mens (indeks < lengde(session)) {
+        la deler: liste_tekst = tekst_del_på(session[indeks], "\t")
+        hvis lengde(deler) >= 2 og deler[0] == "recent_project" da {
+            legg_til(resultat, deler[1])
+        }
+        indeks = indeks + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_state_session_apne_filer(session: liste_tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la indeks: heltall = 0
+    mens (indeks < lengde(session)) {
+        la deler: liste_tekst = tekst_del_på(session[indeks], "\t")
+        hvis lengde(deler) >= 2 og deler[0] == "open_file" da {
+            legg_til(resultat, deler[1])
+        }
+        indeks = indeks + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_state_session_recent_prosjekter_oppdatert(rot: tekst, session: liste_tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la eksisterende: liste_tekst = studio_v2_state_session_recent_prosjekter(session)
+    legg_til(resultat, rot)
+    la i: heltall = 0
+    mens (i < lengde(eksisterende)) {
+        la kandidat: tekst = eksisterende[i]
+        la funnet: bool = usann
+        la j: heltall = 0
+        mens (j < lengde(resultat) og ikke funnet) {
+            hvis resultat[j] == kandidat da {
+                funnet = sann
+            }
+            j = j + 1
+        }
+        hvis kandidat != "" og ikke funnet og lengde(resultat) < 5 da {
+            legg_til(resultat, kandidat)
+        }
+        i = i + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_state_session_apne_filer_oppdatert(aktiv_fil: tekst, session: liste_tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la eksisterende: liste_tekst = studio_v2_state_session_apne_filer(session)
+    hvis aktiv_fil != "" da {
+        legg_til(resultat, aktiv_fil)
+    }
+    la i: heltall = 0
+    mens (i < lengde(eksisterende)) {
+        la kandidat: tekst = eksisterende[i]
+        la funnet: bool = usann
+        la j: heltall = 0
+        mens (j < lengde(resultat) og ikke funnet) {
+            hvis resultat[j] == kandidat da {
+                funnet = sann
+            }
+            j = j + 1
+        }
+        hvis kandidat != "" og ikke funnet og lengde(resultat) < 5 da {
+            legg_til(resultat, kandidat)
+        }
+        i = i + 1
+    }
+    la har_state: bool = usann
+    la har_editor: bool = usann
+    la j: heltall = 0
+    mens (j < lengde(resultat)) {
+        hvis resultat[j] == "studio_v2/studio_state.no" da {
+            har_state = sann
+        }
+        hvis resultat[j] == "studio_v2/editor.no" da {
+            har_editor = sann
+        }
+        j = j + 1
+    }
+    hvis ikke har_state og lengde(resultat) < 5 da {
+        legg_til(resultat, "studio_v2/studio_state.no")
+    }
+    hvis ikke har_editor og lengde(resultat) < 5 da {
+        legg_til(resultat, "studio_v2/editor.no")
+    }
+    returner resultat
+}
+
+funksjon studio_v2_state_session_linjene_til_tekst(linjer: liste_tekst) -> tekst {
+    la resultat: tekst = ""
+    la indeks: heltall = 0
+    mens (indeks < lengde(linjer)) {
+        resultat = resultat + linjer[indeks]
+        hvis indeks + 1 < lengde(linjer) da {
+            resultat = resultat + "\n"
+        }
+        indeks = indeks + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_state_session_tekst(rot: tekst, aktiv_fil: tekst, recent_prosjekter: liste_tekst, apne_filer: liste_tekst) -> tekst {
+    la linjer: liste_tekst = []
+    legg_til(linjer, "workspace\t" + rot)
+    legg_til(linjer, "aktiv_fil\t" + aktiv_fil)
+    legg_til(linjer, "recent_count\t" + tekst_fra_heltall(lengde(recent_prosjekter)))
+    legg_til(linjer, "open_count\t" + tekst_fra_heltall(lengde(apne_filer)))
+    la indeks: heltall = 0
+    mens (indeks < lengde(recent_prosjekter)) {
+        legg_til(linjer, "recent_project\t" + recent_prosjekter[indeks])
+        indeks = indeks + 1
+    }
+    indeks = 0
+    mens (indeks < lengde(apne_filer)) {
+        legg_til(linjer, "open_file\t" + apne_filer[indeks])
+        indeks = indeks + 1
+    }
+    returner studio_v2_state_session_linjene_til_tekst(linjer)
+}
+
+funksjon studio_v2_state_session_lagre(rot: tekst, aktiv_fil: tekst) -> heltall {
+    la eksisterende: liste_tekst = studio_v2_state_session_les(rot)
+    la recent_prosjekter: liste_tekst = studio_v2_state_session_recent_prosjekter_oppdatert(rot, eksisterende)
+    la apne_filer: liste_tekst = studio_v2_state_session_apne_filer_oppdatert(aktiv_fil, eksisterende)
+    la innhold: tekst = studio_v2_state_session_tekst(rot, aktiv_fil, recent_prosjekter, apne_filer)
+    returner skriv_fil(studio_v2_state_session_fil(rot), innhold)
+}
+
+funksjon studio_v2_state_session_workspace(session: liste_tekst) -> tekst {
+    returner studio_v2_state_session_verdi(session, "workspace")
+}
+
+funksjon studio_v2_state_session_aktiv_fil(session: liste_tekst) -> tekst {
+    returner studio_v2_state_session_verdi(session, "aktiv_fil")
+}
+
+funksjon studio_v2_state_session_recent_for_workspace(rot: tekst) -> liste_tekst {
+    la session: liste_tekst = studio_v2_state_session_les(rot)
+    returner studio_v2_state_session_recent_prosjekter_oppdatert(rot, session)
+}
+
+funksjon studio_v2_state_session_status(rot: tekst) -> tekst {
+    hvis lengde(studio_v2_state_session_les(rot)) > 0 da {
+        returner "klar"
+    }
+    returner "tom"
+}
+
+funksjon studio_v2_state_rot(args: liste_tekst) -> tekst {
+    hvis lengde(args) > 0 da {
+        returner args[0]
+    }
+    la session: liste_tekst = studio_v2_state_session_les(".")
+    la workspace_rot: tekst = studio_v2_state_session_workspace(session)
+    hvis workspace_rot != "" da {
+        returner workspace_rot
+    }
+    returner "."
+}
+
+funksjon studio_v2_state_filsti(rot: tekst, sti_relativ: tekst) -> tekst {
+    returner rot + "/" + sti_relativ
+}
+
+funksjon studio_v2_state_fil_innhold(rot: tekst, sti_relativ: tekst) -> tekst {
+    la kandidater: liste_tekst = [
+        studio_v2_state_filsti(rot, sti_relativ),
+        sti_relativ,
+        "../" + sti_relativ,
+        "../../" + sti_relativ
+    ]
+    la indeks: heltall = 0
+    mens (indeks < lengde(kandidater)) {
+        hvis fil_eksisterer(kandidater[indeks]) da {
+            returner les_fil(kandidater[indeks])
+        }
+        indeks = indeks + 1
+    }
+    returner ""
+}
+
+funksjon studio_v2_state_aktiv_fil(rot: tekst) -> tekst {
+    la session: liste_tekst = studio_v2_state_session_les(rot)
+    la aktiv_fil: tekst = studio_v2_state_session_aktiv_fil(session)
+    hvis aktiv_fil != "" og fil_eksisterer(studio_v2_state_filsti(rot, aktiv_fil)) da {
+        returner aktiv_fil
+    }
+    la åpne_filer: liste_tekst = studio_v2_state_session_apne_filer(session)
+    la indeks: heltall = 0
+    mens (indeks < lengde(åpne_filer)) {
+        la kandidat: tekst = åpne_filer[indeks]
+        hvis kandidat != "" og fil_eksisterer(studio_v2_state_filsti(rot, kandidat)) da {
+            returner kandidat
+        }
+        indeks = indeks + 1
+    }
+    returner "studio_v2/main.no"
+}
+
+funksjon studio_v2_state_apne_filer(rot: tekst, aktiv_fil: tekst) -> liste_tekst {
+    la session: liste_tekst = studio_v2_state_session_les(rot)
+    la resultat: liste_tekst = studio_v2_state_session_apne_filer_oppdatert(aktiv_fil, session)
+    hvis lengde(resultat) == 0 da {
+        legg_til(resultat, aktiv_fil)
+        legg_til(resultat, "studio_v2/studio_state.no")
+        legg_til(resultat, "studio_v2/editor.no")
+    }
+    returner resultat
+}
+
+funksjon studio_v2_state_workspace_filer(rot: tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la kataloger: liste_tekst = ["studio_v2", "std", "examples"]
+    la katalog_indeks: heltall = 0
+    mens (katalog_indeks < lengde(kataloger)) {
+        la kandidater: liste_tekst = [rot + "/" + kataloger[katalog_indeks], kataloger[katalog_indeks], "../" + kataloger[katalog_indeks], "../../" + kataloger[katalog_indeks]]
+        la kandidat_indeks: heltall = 0
+        mens (kandidat_indeks < lengde(kandidater)) {
+            la filer: liste_tekst = liste_filer_tre(kandidater[kandidat_indeks])
+            hvis lengde(filer) > 0 da {
+                la fil_indeks: heltall = 0
+                mens (fil_indeks < lengde(filer)) {
+                    legg_til(resultat, filer[fil_indeks])
+                    fil_indeks = fil_indeks + 1
+                }
+                bryt
+            }
+            kandidat_indeks = kandidat_indeks + 1
+        }
+        la fil_indeks: heltall = 0
+        katalog_indeks = katalog_indeks + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_state_workspace_filer_status(filer: liste_tekst) -> tekst {
+    hvis lengde(filer) > 20 da {
+        returner "hurtig-delvis"
+    }
+    hvis lengde(filer) > 0 da {
+        returner "hurtig"
+    }
+    returner "tom"
+}
+
+funksjon studio_v2_state_status() -> tekst {
+    returner "foundation"
+}

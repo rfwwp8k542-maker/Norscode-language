@@ -1,0 +1,9 @@
+funksjon start() -> heltall {
+    la manglende_fil: tekst = "build/runtime_missing/nope.no"
+    la manglende_mappe: tekst = "build/runtime_missing/nope_dir"
+
+    assert_ne(fil_eksisterer(manglende_fil), sann)
+    assert_eq(lengde(liste_filer(manglende_mappe)), 0)
+    assert_eq(lengde(liste_filer_tre(manglende_mappe)), 0)
+    returner 0
+}

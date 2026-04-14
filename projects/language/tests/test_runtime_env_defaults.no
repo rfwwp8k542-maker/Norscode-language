@@ -1,0 +1,6 @@
+funksjon start() -> heltall {
+    la tilfeldig_miljo: tekst = les_miljo("NORSCODE_ENV_SHOULD_NOT_EXIST")
+    assert_eq(tilfeldig_miljo, "")
+    assert_eq(tekst_lengde(tilfeldig_miljo), 0)
+    returner 0
+}

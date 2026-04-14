@@ -1,0 +1,637 @@
+{
+  "format": "norscode-ast-v1",
+  "alias_map": {
+    "math": "std.math"
+  },
+  "imports": [],
+  "functions": [
+    {
+      "name": "pluss",
+      "module_name": "std.math",
+      "return_type": "heltall",
+      "params": [
+        {
+          "name": "a",
+          "type_name": "heltall"
+        },
+        {
+          "name": "b",
+          "type_name": "heltall"
+        }
+      ],
+      "body": {
+        "type": "Block",
+        "statements": [
+          {
+            "type": "Return",
+            "expr": {
+              "type": "BinOp",
+              "op": "PLUS",
+              "left": {
+                "type": "VarAccess",
+                "name": "a"
+              },
+              "right": {
+                "type": "VarAccess",
+                "name": "b"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "minus",
+      "module_name": "std.math",
+      "return_type": "heltall",
+      "params": [
+        {
+          "name": "a",
+          "type_name": "heltall"
+        },
+        {
+          "name": "b",
+          "type_name": "heltall"
+        }
+      ],
+      "body": {
+        "type": "Block",
+        "statements": [
+          {
+            "type": "Return",
+            "expr": {
+              "type": "BinOp",
+              "op": "MINUS",
+              "left": {
+                "type": "VarAccess",
+                "name": "a"
+              },
+              "right": {
+                "type": "VarAccess",
+                "name": "b"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "gange",
+      "module_name": "std.math",
+      "return_type": "heltall",
+      "params": [
+        {
+          "name": "a",
+          "type_name": "heltall"
+        },
+        {
+          "name": "b",
+          "type_name": "heltall"
+        }
+      ],
+      "body": {
+        "type": "Block",
+        "statements": [
+          {
+            "type": "Return",
+            "expr": {
+              "type": "BinOp",
+              "op": "MUL",
+              "left": {
+                "type": "VarAccess",
+                "name": "a"
+              },
+              "right": {
+                "type": "VarAccess",
+                "name": "b"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "del",
+      "module_name": "std.math",
+      "return_type": "heltall",
+      "params": [
+        {
+          "name": "a",
+          "type_name": "heltall"
+        },
+        {
+          "name": "b",
+          "type_name": "heltall"
+        }
+      ],
+      "body": {
+        "type": "Block",
+        "statements": [
+          {
+            "type": "If",
+            "condition": {
+              "type": "BinOp",
+              "op": "EQ",
+              "left": {
+                "type": "VarAccess",
+                "name": "b"
+              },
+              "right": {
+                "type": "Number",
+                "value": 0
+              }
+            },
+            "then_block": {
+              "type": "Block",
+              "statements": [
+                {
+                  "type": "Return",
+                  "expr": {
+                    "type": "Number",
+                    "value": 0
+                  }
+                }
+              ]
+            },
+            "elif_blocks": [],
+            "else_block": null
+          },
+          {
+            "type": "Return",
+            "expr": {
+              "type": "BinOp",
+              "op": "DIV",
+              "left": {
+                "type": "VarAccess",
+                "name": "a"
+              },
+              "right": {
+                "type": "VarAccess",
+                "name": "b"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "maks",
+      "module_name": "std.math",
+      "return_type": "heltall",
+      "params": [
+        {
+          "name": "a",
+          "type_name": "heltall"
+        },
+        {
+          "name": "b",
+          "type_name": "heltall"
+        }
+      ],
+      "body": {
+        "type": "Block",
+        "statements": [
+          {
+            "type": "If",
+            "condition": {
+              "type": "BinOp",
+              "op": "GT",
+              "left": {
+                "type": "VarAccess",
+                "name": "a"
+              },
+              "right": {
+                "type": "VarAccess",
+                "name": "b"
+              }
+            },
+            "then_block": {
+              "type": "Block",
+              "statements": [
+                {
+                  "type": "Return",
+                  "expr": {
+                    "type": "VarAccess",
+                    "name": "a"
+                  }
+                }
+              ]
+            },
+            "elif_blocks": [],
+            "else_block": null
+          },
+          {
+            "type": "Return",
+            "expr": {
+              "type": "VarAccess",
+              "name": "b"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "min",
+      "module_name": "std.math",
+      "return_type": "heltall",
+      "params": [
+        {
+          "name": "a",
+          "type_name": "heltall"
+        },
+        {
+          "name": "b",
+          "type_name": "heltall"
+        }
+      ],
+      "body": {
+        "type": "Block",
+        "statements": [
+          {
+            "type": "If",
+            "condition": {
+              "type": "BinOp",
+              "op": "LT",
+              "left": {
+                "type": "VarAccess",
+                "name": "a"
+              },
+              "right": {
+                "type": "VarAccess",
+                "name": "b"
+              }
+            },
+            "then_block": {
+              "type": "Block",
+              "statements": [
+                {
+                  "type": "Return",
+                  "expr": {
+                    "type": "VarAccess",
+                    "name": "a"
+                  }
+                }
+              ]
+            },
+            "elif_blocks": [],
+            "else_block": null
+          },
+          {
+            "type": "Return",
+            "expr": {
+              "type": "VarAccess",
+              "name": "b"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "absolutt",
+      "module_name": "std.math",
+      "return_type": "heltall",
+      "params": [
+        {
+          "name": "x",
+          "type_name": "heltall"
+        }
+      ],
+      "body": {
+        "type": "Block",
+        "statements": [
+          {
+            "type": "If",
+            "condition": {
+              "type": "BinOp",
+              "op": "LT",
+              "left": {
+                "type": "VarAccess",
+                "name": "x"
+              },
+              "right": {
+                "type": "Number",
+                "value": 0
+              }
+            },
+            "then_block": {
+              "type": "Block",
+              "statements": [
+                {
+                  "type": "Return",
+                  "expr": {
+                    "type": "UnaryOp",
+                    "op": "MINUS",
+                    "node": {
+                      "type": "VarAccess",
+                      "name": "x"
+                    }
+                  }
+                }
+              ]
+            },
+            "elif_blocks": [],
+            "else_block": null
+          },
+          {
+            "type": "Return",
+            "expr": {
+              "type": "VarAccess",
+              "name": "x"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "start",
+      "module_name": "__main__",
+      "return_type": "heltall",
+      "params": [],
+      "body": {
+        "type": "Block",
+        "statements": [
+          {
+            "type": "ExprStmt",
+            "expr": {
+              "type": "Call",
+              "name": "assert_eq",
+              "args": [
+                {
+                  "type": "BinOp",
+                  "op": "PLUS",
+                  "left": {
+                    "type": "Number",
+                    "value": 2
+                  },
+                  "right": {
+                    "type": "Number",
+                    "value": 3
+                  }
+                },
+                {
+                  "type": "Number",
+                  "value": 5
+                }
+              ]
+            }
+          },
+          {
+            "type": "ExprStmt",
+            "expr": {
+              "type": "Call",
+              "name": "assert_eq",
+              "args": [
+                {
+                  "type": "BinOp",
+                  "op": "MINUS",
+                  "left": {
+                    "type": "Number",
+                    "value": 10
+                  },
+                  "right": {
+                    "type": "Number",
+                    "value": 4
+                  }
+                },
+                {
+                  "type": "Number",
+                  "value": 6
+                }
+              ]
+            }
+          },
+          {
+            "type": "ExprStmt",
+            "expr": {
+              "type": "Call",
+              "name": "assert_eq",
+              "args": [
+                {
+                  "type": "BinOp",
+                  "op": "MUL",
+                  "left": {
+                    "type": "Number",
+                    "value": 3
+                  },
+                  "right": {
+                    "type": "Number",
+                    "value": 4
+                  }
+                },
+                {
+                  "type": "Number",
+                  "value": 12
+                }
+              ]
+            }
+          },
+          {
+            "type": "ExprStmt",
+            "expr": {
+              "type": "Call",
+              "name": "assert_eq",
+              "args": [
+                {
+                  "type": "BinOp",
+                  "op": "DIV",
+                  "left": {
+                    "type": "Number",
+                    "value": 8
+                  },
+                  "right": {
+                    "type": "Number",
+                    "value": 2
+                  }
+                },
+                {
+                  "type": "Number",
+                  "value": 4
+                }
+              ]
+            }
+          },
+          {
+            "type": "VarDeclare",
+            "name": "s",
+            "var_type": "heltall",
+            "expr": {
+              "type": "ModuleCall",
+              "module_name": "math",
+              "func_name": "pluss",
+              "args": [
+                {
+                  "type": "Number",
+                  "value": 10
+                },
+                {
+                  "type": "Number",
+                  "value": 20
+                }
+              ]
+            }
+          },
+          {
+            "type": "ExprStmt",
+            "expr": {
+              "type": "Call",
+              "name": "assert_eq",
+              "args": [
+                {
+                  "type": "VarAccess",
+                  "name": "s"
+                },
+                {
+                  "type": "Number",
+                  "value": 30
+                }
+              ]
+            }
+          },
+          {
+            "type": "VarDeclare",
+            "name": "m",
+            "var_type": "heltall",
+            "expr": {
+              "type": "ModuleCall",
+              "module_name": "math",
+              "func_name": "minus",
+              "args": [
+                {
+                  "type": "Number",
+                  "value": 50
+                },
+                {
+                  "type": "Number",
+                  "value": 8
+                }
+              ]
+            }
+          },
+          {
+            "type": "ExprStmt",
+            "expr": {
+              "type": "Call",
+              "name": "assert_eq",
+              "args": [
+                {
+                  "type": "VarAccess",
+                  "name": "m"
+                },
+                {
+                  "type": "Number",
+                  "value": 42
+                }
+              ]
+            }
+          },
+          {
+            "type": "ExprStmt",
+            "expr": {
+              "type": "Call",
+              "name": "assert",
+              "args": [
+                {
+                  "type": "BinOp",
+                  "op": "GT",
+                  "left": {
+                    "type": "Number",
+                    "value": 5
+                  },
+                  "right": {
+                    "type": "Number",
+                    "value": 3
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "type": "ExprStmt",
+            "expr": {
+              "type": "Call",
+              "name": "assert",
+              "args": [
+                {
+                  "type": "BinOp",
+                  "op": "LT",
+                  "left": {
+                    "type": "Number",
+                    "value": 3
+                  },
+                  "right": {
+                    "type": "Number",
+                    "value": 5
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "type": "ExprStmt",
+            "expr": {
+              "type": "Call",
+              "name": "assert_eq",
+              "args": [
+                {
+                  "type": "BinOp",
+                  "op": "GTE",
+                  "left": {
+                    "type": "Number",
+                    "value": 5
+                  },
+                  "right": {
+                    "type": "Number",
+                    "value": 5
+                  }
+                },
+                {
+                  "type": "Bool",
+                  "value": true
+                }
+              ]
+            }
+          },
+          {
+            "type": "ExprStmt",
+            "expr": {
+              "type": "Call",
+              "name": "assert_eq",
+              "args": [
+                {
+                  "type": "BinOp",
+                  "op": "LTE",
+                  "left": {
+                    "type": "Number",
+                    "value": 4
+                  },
+                  "right": {
+                    "type": "Number",
+                    "value": 5
+                  }
+                },
+                {
+                  "type": "Bool",
+                  "value": true
+                }
+              ]
+            }
+          },
+          {
+            "type": "Print",
+            "expr": {
+              "type": "String",
+              "value": "test_math OK"
+            }
+          },
+          {
+            "type": "Return",
+            "expr": {
+              "type": "Number",
+              "value": 0
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

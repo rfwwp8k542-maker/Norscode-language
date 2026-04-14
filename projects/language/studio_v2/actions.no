@@ -1,0 +1,33 @@
+# Studio v2 command surface.
+
+funksjon studio_v2_actions_tom() -> liste_tekst {
+    returner []
+}
+
+funksjon studio_v2_actions_palett() -> liste_tekst {
+    returner ["run", "check", "test", "runtime-ci"]
+}
+
+funksjon studio_v2_actions_status(rot: tekst) -> tekst {
+    returner "klar"
+}
+
+funksjon studio_v2_actions_kommando_run(rot: tekst, fil: tekst) -> liste_tekst {
+    returner ["norscode", "run", fil]
+}
+
+funksjon studio_v2_actions_kommando_check(rot: tekst, fil: tekst) -> liste_tekst {
+    returner ["norscode", "check", fil]
+}
+
+funksjon studio_v2_actions_kommando_test(rot: tekst) -> liste_tekst {
+    returner ["norscode", "test"]
+}
+
+funksjon studio_v2_actions_kommando_runtime_ci(rot: tekst) -> liste_tekst {
+    returner ["norscode", "runtime-ci", "--json"]
+}
+
+funksjon studio_v2_actions_kjor(kommando: liste_tekst) -> heltall {
+    returner kjør_kommando(kommando)
+}

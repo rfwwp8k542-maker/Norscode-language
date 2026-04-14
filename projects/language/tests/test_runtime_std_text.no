@@ -1,0 +1,30 @@
+bruk std.tekst som t
+
+funksjon start() -> heltall {
+    assert_eq(t.hilsen("Nora"), "Hei Nora")
+    assert_eq(t.rop("hei"), "hei!")
+    assert_eq(t.omgitt_av_klammer("x"), "[x]")
+    assert_eq(t.ja_nei(sann), "ja")
+    assert_eq(t.tall_til_tekst(42), "42")
+    assert_eq(t.bool_til_tekst(usann), "usann")
+    assert_eq(t.tekst_til_små("Hei Norscode"), "hei norscode")
+    assert_eq(t.tekst_til_store("Hei Norscode"), "HEI NORSCODE")
+    assert_eq(t.tekst_til_tittel("hei norscode"), "Hei Norscode")
+    assert_eq(t.omvendt_tekst("Hei Norscode"), "edocsroN ieH")
+    assert(t.starter_med_tekst("Hei Norscode", "Hei"))
+    assert(t.inneholder_tekst("Hei Norscode", "Nors"))
+    assert(t.slutter_med_tekst("Hei Norscode", "code"))
+    assert_eq(t.trim_tekst("  hei  "), "hei")
+    assert_eq(t.erstatt_tekst("start startx start", "start", "sett"), "sett settx sett")
+    assert_eq(lengde(t.del_på("a,b,c", ",")), 3)
+    assert_eq(t.del_på("a,b,c", ",")[0], "a")
+    assert_eq(t.del_på("a,b,c", ",")[1], "b")
+    assert_eq(t.del_på("a,b,c", ",")[2], "c")
+    assert_eq(lengde(t.del_på("abc", "")), 1)
+    assert_eq(t.del_på("abc", "")[0], "abc")
+    assert_eq(t.slice("Hei verden", 4, 10), "verden")
+    assert_eq(t.lengde_tekst("hei"), 3)
+    assert(t.tekst_er_ordtegn("Å"))
+    assert_ne(t.tekst_er_ordtegn("-"), sann)
+    returner 0
+}

@@ -1,0 +1,40 @@
+bruk std.web som web
+
+funksjon tjeneste_status() -> tekst {
+    returner web.http_json_respons("{\"service\":\"lager\",\"ok\":true,\"versjon\":\"1.0.0\"}")
+}
+
+funksjon tjeneste_ekko(body: tekst) -> tekst {
+    la navn: tekst = web.http_body_json_felt_tekst(body, "navn")
+    la antall: heltall = web.http_body_json_felt_heltall(body, "antall")
+    la aktiv: bool = web.http_body_json_felt_bool(body, "aktiv")
+    la aktiv_tekst: tekst = "false"
+    hvis aktiv da {
+        aktiv_tekst = "true"
+    }
+    returner web.http_json_respons("{\"navn\":\"" + navn + "\",\"antall\":" + tekst_fra_heltall(antall) + ",\"aktiv\":" + aktiv_tekst + "}")
+}
+
+funksjon tjeneste_openapi() -> tekst {
+    la api: liste_tekst = web.openapi_tom()
+    web.openapi_info_registrer(api, "title", "JSON Service")
+    web.openapi_info_registrer(api, "version", "1.0.0")
+    web.openapi_rute_registrer(api, "GET", "/status", "Status", "Returnerer tjenestestatus", "service", "StatusResponse")
+    web.openapi_rute_registrer(api, "POST", "/echo", "Echo body", "Speiler JSON-body tilbake", "service", "EchoResponse")
+    returner web.openapi_json(api)
+}
+
+test "json service example" {
+    la status: tekst = tjeneste_status()
+    assert(tekst_inneholder(status, "\"service\":\"lager\""))
+    la ekko: tekst = tjeneste_ekko("{\"navn\":\"Ada\",\"antall\":3,\"aktiv\":true}")
+    assert(tekst_inneholder(ekko, "\"navn\":\"Ada\""))
+    assert(tekst_inneholder(ekko, "\"antall\":3"))
+    assert(tekst_inneholder(ekko, "\"aktiv\":true"))
+    assert(tekst_inneholder(tjeneste_openapi(), "\"/echo\""))
+}
+
+funksjon start() -> heltall {
+    skriv("JSON-tjenesteeksempelet er klart")
+    returner 0
+}

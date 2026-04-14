@@ -1,0 +1,53 @@
+bruk std.gui som gui
+bruk std.tekst som t
+
+funksjon knapp_trykket(widget_id: heltall) -> heltall {
+    gui.sett_tekst(widget_id, "Trykket")
+    skriv("Knapp trykket")
+    returner widget_id
+}
+
+funksjon tekst_endret(widget_id: heltall) -> heltall {
+    skriv(gui.hent_tekst(widget_id))
+    returner widget_id
+}
+
+funksjon start() -> heltall {
+    la vindu_id: heltall = gui.vindu("Norscode Studio")
+    la panel_id: heltall = gui.panel(vindu_id)
+    la overskrift_id: heltall = gui.tekst(panel_id, "Norscode Studio")
+    la undertittel_id: heltall = gui.tekst(panel_id, "Et lite lokalt GUI-eksempel")
+    la input_id: heltall = gui.tekstboks(panel_id, "Skriv noe her")
+    la status_id: heltall = gui.tekst(panel_id, "Klar til bruk")
+    la knapp_id: heltall = gui.knapp(panel_id, "Oppdater")
+    la liste_id: heltall = gui.liste(panel_id)
+
+    gui.sett_tekst(overskrift_id, t.rop("Norscode Studio"))
+    gui.sett_tekst(undertittel_id, "Et lite lokalt GUI-eksempel skrevet i Norscode")
+    gui.sett_tekst(status_id, t.hilsen("Klar til bruk"))
+    gui.liste_legg_til(liste_id, "Første punkt")
+    gui.liste_legg_til(liste_id, "Andre punkt")
+    gui.på_klikk(knapp_id, "knapp_trykket")
+    gui.på_endring(input_id, "tekst_endret")
+    gui.trykk(knapp_id)
+
+    skriv("GUI-demo klar")
+    skriv(tekst_fra_heltall(vindu_id))
+    skriv(tekst_fra_heltall(panel_id))
+    skriv(tekst_fra_heltall(overskrift_id))
+    skriv(tekst_fra_heltall(undertittel_id))
+    skriv(tekst_fra_heltall(input_id))
+    skriv(tekst_fra_heltall(status_id))
+    skriv(tekst_fra_heltall(knapp_id))
+    skriv(tekst_fra_heltall(liste_id))
+    skriv(gui.hent_tekst(input_id))
+
+    gui.sett_tekst(input_id, "Oppdatert tekst")
+    gui.sett_tekst(status_id, "Innhold oppdatert")
+    gui.liste_tom(liste_id)
+    skriv(gui.hent_tekst(input_id))
+    skriv(gui.hent_tekst(status_id))
+    gui.vis(vindu_id)
+
+    returner 0
+}

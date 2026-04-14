@@ -1,0 +1,190 @@
+bruk std.gui som gui
+bruk studio_v2.studio_state som workspace
+bruk studio_v2.project som project
+bruk studio_v2.editor som editor
+bruk studio_v2.actions som actions
+bruk studio_v2.diagnostics som diagnostics
+bruk studio_v2.ui som ui
+
+funksjon studio_v2_gui_liste_fyll(widget_id: heltall, elementer: liste_tekst) -> heltall {
+    la indeks: heltall = 0
+    mens (indeks < lengde(elementer)) {
+        gui.liste_legg_til(widget_id, elementer[indeks])
+        indeks = indeks + 1
+    }
+    returner widget_id
+}
+
+funksjon studio_v2_gui_logg_fil(widget_id: heltall) -> heltall {
+    skriv("Fil valgt: " + gui.liste_valgt(widget_id))
+    returner widget_id
+}
+
+funksjon studio_v2_gui_logg_kommando(widget_id: heltall) -> heltall {
+    skriv("Kommando valgt: " + gui.liste_valgt(widget_id))
+    returner widget_id
+}
+
+funksjon studio_v2_gui_logg_diagnostikk(widget_id: heltall) -> heltall {
+    skriv("Diagnostikk valgt: " + gui.liste_valgt(widget_id))
+    returner widget_id
+}
+
+funksjon studio_v2_gui_logg_ai(widget_id: heltall) -> heltall {
+    skriv("AI valgt: " + gui.liste_valgt(widget_id))
+    returner widget_id
+}
+
+funksjon studio_v2_gui_logg_sok(widget_id: heltall) -> heltall {
+    skriv("Søk: " + gui.hent_tekst(widget_id))
+    returner widget_id
+}
+
+funksjon start() -> heltall {
+    la args: liste_tekst = argv()
+    la rot: tekst = workspace.studio_v2_state_rot(args)
+    la workspace_filer: liste_tekst = workspace.studio_v2_state_workspace_filer(rot)
+    la aktiv_fil: tekst = workspace.studio_v2_state_aktiv_fil(rot)
+    la aktiv_innhold: tekst = workspace.studio_v2_state_fil_innhold(rot, aktiv_fil)
+    la recent_projects: liste_tekst = workspace.studio_v2_state_session_recent_for_workspace(rot)
+    workspace.studio_v2_state_session_lagre(rot, aktiv_fil)
+    la session_status: tekst = workspace.studio_v2_state_session_status(rot)
+    la apne_filer: liste_tekst = workspace.studio_v2_state_apne_filer(rot, aktiv_fil)
+    la tabs: liste_tekst = editor.studio_v2_editor_tabs_fra_apne_filer(apne_filer)
+    la split_visning: liste_tekst = editor.studio_v2_editor_split_visning(tabs)
+    la buffer: liste_tekst = editor.studio_v2_editor_åpne(aktiv_innhold)
+    la cursor: liste_tekst = editor.studio_v2_cursor_med_posisjon(1, 1)
+    skriv(ui.studio_v2_ui_shell())
+    skriv("Prosjekt: " + project.studio_v2_prosjektnavn())
+    skriv("Prosjektrot: " + rot)
+    skriv("Aktiv fil: " + aktiv_fil)
+    skriv("Åpne filer: " + tekst_fra_heltall(lengde(apne_filer)))
+    hvis lengde(apne_filer) > 0 da {
+        skriv("Siste åpne fil: " + apne_filer[0])
+    }
+    skriv("Tabs: " + tekst_fra_heltall(lengde(tabs)))
+    skriv("Tabs status: " + editor.studio_v2_editor_tab_status(tabs))
+    skriv("Split status: " + editor.studio_v2_editor_split_status(tabs))
+    hvis lengde(split_visning) > 0 da {
+        skriv("Split første: " + split_visning[0])
+    }
+    skriv("Workspace filer: " + tekst_fra_heltall(lengde(workspace_filer)))
+    skriv("Workspace loading: " + workspace.studio_v2_state_workspace_filer_status(workspace_filer))
+    skriv("Prosjektsesjon: " + session_status)
+    skriv("Nylige prosjekter: " + tekst_fra_heltall(lengde(recent_projects)))
+    hvis lengde(recent_projects) > 0 da {
+        skriv("Siste prosjekt: " + recent_projects[0])
+    }
+    skriv("Editor: " + editor.studio_v2_editor_layout())
+    skriv("Bufferlinjer: " + tekst_fra_heltall(editor.studio_v2_editor_buffer_antall_linje(buffer)))
+    skriv("Linjeoversikt: " + tekst_fra_heltall(lengde(editor.studio_v2_editor_linjeoversikt(buffer))))
+    skriv("Cursor: " + editor.studio_v2_cursor_linje(cursor) + ":" + editor.studio_v2_cursor_kolonne(cursor))
+    skriv("Søk: " + tekst_fra_heltall(editor.studio_v2_editor_sok(buffer, "returner")))
+    skriv("Søk status: " + editor.studio_v2_editor_sok_status(buffer, "returner"))
+    skriv("Erstatt treff: " + tekst_fra_heltall(editor.studio_v2_editor_erstatt_treff(buffer, "returner")))
+    skriv("Erstatt status: " + editor.studio_v2_editor_erstatt_status(buffer, "returner"))
+    skriv("Erstatt preview: " + editor.studio_v2_editor_erstatt_tekst_fra_buffer(buffer, "returner", "returner"))
+    la kommandopalett: liste_tekst = actions.studio_v2_actions_palett()
+    skriv("Kommandoer: " + tekst_fra_heltall(lengde(kommandopalett)))
+    skriv("Kommando status: " + actions.studio_v2_actions_status(rot))
+    la ui_tema: tekst = "mørk"
+    la ui_snarveier: liste_tekst = ["Ctrl+O\tåpne", "Ctrl+S\tlagre", "Ctrl+Enter\tkjør", "Ctrl+Shift+C\tcheck", "Ctrl+P\tpalett"]
+    la ui_session: liste_tekst = ["rot\t" + rot, "aktiv_fil\t" + aktiv_fil, "tema\t" + ui_tema, "recent_projects\t" + tekst_fra_heltall(lengde(recent_projects))]
+    la diagnose: liste_tekst = [
+        "workspace\tNorscode Studio v2\t" + rot,
+        "aktivitetsfil\t" + aktiv_fil,
+        "åpne_filer\t" + tekst_fra_heltall(lengde(apne_filer)),
+        "workspace_filer\t" + tekst_fra_heltall(lengde(workspace_filer)),
+        "recent_projects\t" + tekst_fra_heltall(lengde(recent_projects)),
+        "symboler\tklar",
+        "status\tklar",
+        "oppdatering\tinkrementell"
+    ]
+    la ai_handlinger: liste_tekst = ["forklar-kode", "sammendrag-fil", "refaktorering", "testgenerering", "patch-previsjon"]
+    la ai_patch_preview: liste_tekst = ["forslag\t1\tForhåndsvis patch:", "handling\taccept-reject", "status\tpreview"]
+    skriv("AI-modus: disabled")
+    skriv("AI-provider: disabled")
+    skriv("AI-kontekst: " + tekst_fra_heltall(lengde(diagnose)))
+    skriv("AI-handlinger: " + tekst_fra_heltall(lengde(ai_handlinger)))
+    skriv("AI-handling første: forklar-kode")
+    skriv("AI-handlinger status: preview-first")
+    skriv("AI-opt-in: offline-only")
+    skriv("AI-personvern: klar")
+    skriv("AI-kontekst sikker: " + tekst_fra_heltall(lengde(diagnose)))
+    skriv("AI-kontekst sikker status: offline-only")
+    skriv("AI-patch preview: " + tekst_fra_heltall(lengde(ai_patch_preview)))
+    skriv("AI-patch første: " + ai_patch_preview[0])
+    skriv("AI-patch status: preview")
+    skriv("AI-patch godkjenn: godkjent")
+    skriv("AI-patch avvis: avvist")
+    skriv("AI-prompt: Oppsummer filen: " + aktiv_fil)
+    skriv("UI-tema: " + ui_tema)
+    skriv("UI-tema status: aktivt")
+    skriv("UI-snarveier: " + tekst_fra_heltall(lengde(ui_snarveier)))
+    skriv("UI-snarvei første: " + ui_snarveier[0])
+    skriv("UI-snarveier status: klar")
+    skriv("UI-session: " + ui.studio_v2_ui_session_status(ui_session))
+    skriv("UI-session restore: " + ui.studio_v2_ui_session_restore(ui_session))
+    skriv("Diagnostikk oppdater: " + tekst_fra_heltall(lengde(diagnose)))
+    skriv("Diagnostikk oppdater status: " + diagnostics.studio_v2_diagnostics_oppdater_status(rot))
+    skriv("Status: klar")
+
+    la vindu_id: heltall = gui.vindu("Norscode Studio v2")
+    la rot_panel: heltall = gui.panel(vindu_id)
+    la header: heltall = gui.rad(rot_panel)
+    gui.tekst(header, "Norscode Studio v2")
+    gui.tekst(header, "Prosjekt: " + project.studio_v2_prosjektnavn())
+    gui.tekst(header, "Workspace: " + rot)
+    gui.tekst(header, "Loading: " + workspace.studio_v2_state_workspace_filer_status(workspace_filer))
+    gui.tekst(header, "Session: " + session_status)
+    gui.tekst(header, "Tabs: " + tekst_fra_heltall(lengde(tabs)))
+    la kommandolinje: heltall = gui.rad(rot_panel)
+    gui.knapp(kommandolinje, "Run")
+    gui.knapp(kommandolinje, "Check")
+    gui.knapp(kommandolinje, "Test")
+    gui.knapp(kommandolinje, "Runtime CI")
+    la søk_panel: heltall = gui.panel(rot_panel)
+    gui.tekst(søk_panel, "Søk og hurtignavigasjon")
+    la søk_felt: heltall = gui.tekstfelt(søk_panel, "Søk i workspace eller symboler")
+    gui.på_endring(søk_felt, "studio_v2_gui_logg_sok")
+    la hoved: heltall = gui.rad(rot_panel)
+    la venstre: heltall = gui.panel(hoved)
+    gui.tekst(venstre, "Filer")
+    gui.tekst(venstre, "Workspace filer: " + tekst_fra_heltall(lengde(workspace_filer)))
+    la filer_liste: heltall = gui.liste(venstre)
+    studio_v2_gui_liste_fyll(filer_liste, workspace_filer)
+    gui.på_endring(filer_liste, "studio_v2_gui_logg_fil")
+    la midten: heltall = gui.panel(hoved)
+    gui.tekst(midten, "Editor")
+    gui.tekst(midten, "Aktiv fil: " + aktiv_fil)
+    gui.tekst(midten, "Tabs: " + tekst_fra_heltall(lengde(tabs)) + " · Split: " + editor.studio_v2_editor_split_status(tabs))
+    gui.tekst(midten, "Bufferlinjer: " + tekst_fra_heltall(editor.studio_v2_editor_buffer_antall_linje(buffer)))
+    gui.tekst(midten, "Søk/erstatt: " + editor.studio_v2_editor_sok_status(buffer, "returner") + " / " + editor.studio_v2_editor_erstatt_status(buffer, "returner"))
+    la editor_widget: heltall = gui.editor(midten, aktiv_innhold)
+    gui.tekst(midten, "Cursor: " + editor.studio_v2_cursor_linje(cursor) + ":" + editor.studio_v2_cursor_kolonne(cursor))
+    la høyre: heltall = gui.panel(hoved)
+    gui.tekst(høyre, "Kommandoer")
+    la kommandopalett_liste: heltall = gui.liste(høyre)
+    studio_v2_gui_liste_fyll(kommandopalett_liste, kommandopalett)
+    gui.på_endring(kommandopalett_liste, "studio_v2_gui_logg_kommando")
+    gui.tekst(høyre, "Diagnostikk")
+    la diagnose_liste: heltall = gui.liste(høyre)
+    studio_v2_gui_liste_fyll(diagnose_liste, diagnose)
+    gui.på_endring(diagnose_liste, "studio_v2_gui_logg_diagnostikk")
+    gui.tekst(høyre, "Nylige prosjekter")
+    la nylige_prosjekter_liste: heltall = gui.liste(høyre)
+    studio_v2_gui_liste_fyll(nylige_prosjekter_liste, recent_projects)
+    gui.tekst(høyre, "AI handlinger")
+    la ai_liste: heltall = gui.liste(høyre)
+    studio_v2_gui_liste_fyll(ai_liste, ai_handlinger)
+    gui.på_endring(ai_liste, "studio_v2_gui_logg_ai")
+    gui.tekst(høyre, "AI patch preview")
+    la ai_patch_liste: heltall = gui.liste(høyre)
+    studio_v2_gui_liste_fyll(ai_patch_liste, ai_patch_preview)
+    la bunn: heltall = gui.panel(rot_panel)
+    gui.tekst(bunn, "Status: " + ui.studio_v2_ui_status())
+    gui.tekst(bunn, "Tema: " + ui_tema + " · Session: " + ui.studio_v2_ui_session_status(ui_session) + " · Prosjekter: " + tekst_fra_heltall(lengde(recent_projects)))
+    gui.tekst(bunn, "Kommandoer: " + tekst_fra_heltall(lengde(kommandopalett)) + " · Diagnose: " + tekst_fra_heltall(lengde(diagnose)))
+    gui.vis(vindu_id)
+    returner 0
+}

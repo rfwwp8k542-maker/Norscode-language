@@ -1,0 +1,141 @@
+{
+  "format": "norscode-bytecode-v1",
+  "entry": "__main__.start",
+  "imports": [
+    {
+      "module": "std.math",
+      "alias": "math"
+    }
+  ],
+  "functions": {
+    "__main__.start": {
+      "name": "start",
+      "module": "__main__",
+      "params": [],
+      "code": [
+        [
+          "PUSH_CONST",
+          2
+        ],
+        [
+          "STORE_NAME",
+          "x"
+        ],
+        [
+          "LOAD_NAME",
+          "x"
+        ],
+        [
+          "PUSH_CONST",
+          2
+        ],
+        [
+          "COMPARE_EQ"
+        ],
+        [
+          "JUMP_IF_FALSE",
+          "ifelse_2"
+        ],
+        [
+          "PUSH_CONST",
+          3
+        ],
+        [
+          "PUSH_CONST",
+          4
+        ],
+        [
+          "CALL",
+          "std.math.pluss",
+          2
+        ],
+        [
+          "STORE_NAME",
+          "y"
+        ],
+        [
+          "JUMP",
+          "ifend_1"
+        ],
+        [
+          "LABEL",
+          "ifelse_2"
+        ],
+        [
+          "PUSH_CONST",
+          9
+        ],
+        [
+          "PUSH_CONST",
+          1
+        ],
+        [
+          "CALL",
+          "std.math.minus",
+          2
+        ],
+        [
+          "STORE_NAME",
+          "y"
+        ],
+        [
+          "LABEL",
+          "ifend_1"
+        ],
+        [
+          "PUSH_CONST",
+          1
+        ],
+        [
+          "LOAD_NAME",
+          "y"
+        ],
+        [
+          "PUSH_CONST",
+          6
+        ],
+        [
+          "COMPARE_GT"
+        ],
+        [
+          "JUMP_IF_FALSE",
+          "ifexpr_else_3"
+        ],
+        [
+          "PUSH_CONST",
+          10
+        ],
+        [
+          "JUMP",
+          "ifexpr_end_4"
+        ],
+        [
+          "LABEL",
+          "ifexpr_else_3"
+        ],
+        [
+          "PUSH_CONST",
+          20
+        ],
+        [
+          "LABEL",
+          "ifexpr_end_4"
+        ],
+        [
+          "BINARY_ADD"
+        ],
+        [
+          "STORE_NAME",
+          "z"
+        ],
+        [
+          "LOAD_NAME",
+          "z"
+        ],
+        [
+          "RETURN"
+        ]
+      ]
+    }
+  }
+}

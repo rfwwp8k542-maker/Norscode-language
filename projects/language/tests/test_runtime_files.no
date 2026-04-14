@@ -1,0 +1,13 @@
+funksjon start() -> heltall {
+    la rot: tekst = "build/runtime_files_probe"
+    la filsti: tekst = rot + "/hello.no"
+    la kilde: tekst = "funksjon start() -> heltall { returner 0 }"
+
+    assert_eq(skriv_fil(filsti, kilde), 1)
+    assert(fil_eksisterer(filsti))
+    assert_eq(les_fil(filsti), kilde)
+    assert(lengde(liste_filer(rot)) > 0)
+    assert(lengde(liste_filer_tre("build")) > 1)
+
+    returner 0
+}

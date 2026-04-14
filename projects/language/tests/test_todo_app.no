@@ -1,0 +1,40 @@
+bruk std.gui som gui
+funksjon legg_til_punkt(knapp_id: heltall) -> heltall {
+    la panel_id: heltall = gui.foresatt(knapp_id)
+    la input_id: heltall = gui.barn(panel_id, 1)
+    la liste_id: heltall = gui.barn(panel_id, 3)
+    la status_id: heltall = gui.barn(panel_id, 4)
+    la tekstverdi: tekst = gui.hent_tekst(input_id)
+
+    hvis tekstverdi != "" da {
+        gui.liste_legg_til(liste_id, tekstverdi)
+        gui.sett_tekst(input_id, "")
+        gui.sett_tekst(status_id, "Punkt lagt til")
+    } ellers {
+        gui.sett_tekst(status_id, "Skriv noe først")
+    }
+
+    returner knapp_id
+}
+
+funksjon start() -> heltall {
+    la vindu_id: heltall = gui.vindu("Norscode Todo")
+    la panel_id: heltall = gui.panel(vindu_id)
+    la _tittel_id: heltall = gui.tekst(panel_id, "Norscode Todo")
+    la input_id: heltall = gui.tekstboks(panel_id, "")
+    la knapp_id: heltall = gui.knapp(panel_id, "Legg til")
+    la _liste_id: heltall = gui.liste(panel_id)
+    la status_id: heltall = gui.tekst(panel_id, "Klar")
+
+    gui.på_klikk(knapp_id, "legg_til_punkt")
+    gui.trykk(knapp_id)
+    assert_eq(gui.hent_tekst(status_id), "Skriv noe først")
+
+    gui.sett_tekst(input_id, "Kjøp melk")
+    gui.trykk(knapp_id)
+    assert_eq(gui.hent_tekst(input_id), "")
+    assert_eq(gui.hent_tekst(status_id), "Punkt lagt til")
+
+    gui.vis(vindu_id)
+    returner 0
+}

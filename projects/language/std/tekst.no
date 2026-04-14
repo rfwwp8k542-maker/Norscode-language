@@ -1,0 +1,125 @@
+# Tekst standardbibliotek
+
+funksjon hilsen(navn: tekst) -> tekst {
+    returner "Hei " + navn
+}
+
+funksjon rop(melding: tekst) -> tekst {
+    returner melding + "!"
+}
+
+funksjon omgitt_av_klammer(tekstverdi: tekst) -> tekst {
+    returner "[" + tekstverdi + "]"
+}
+
+funksjon ja_nei(verdi: bool) -> tekst {
+    hvis (verdi) {
+        returner "ja"
+    }
+    returner "nei"
+}
+
+funksjon tall_til_tekst(x: heltall) -> tekst {
+    returner tekst_fra_heltall(x)
+}
+
+funksjon bool_til_tekst(x: bool) -> tekst {
+    returner tekst_fra_bool(x)
+}
+
+funksjon tekst_til_små(tekstverdi: tekst) -> tekst {
+    returner tekst_til_små(tekstverdi)
+}
+
+funksjon tekst_til_store(tekstverdi: tekst) -> tekst {
+    returner tekst_til_store(tekstverdi)
+}
+
+funksjon tekst_til_tittel(tekstverdi: tekst) -> tekst {
+    returner tekst_til_tittel(tekstverdi)
+}
+
+funksjon omvendt_tekst(tekstverdi: tekst) -> tekst {
+    returner tekst_omvendt(tekstverdi)
+}
+
+funksjon trim_tekst(tekstverdi: tekst) -> tekst {
+    returner tekst_trim(tekstverdi)
+}
+
+funksjon erstatt_tekst(kilde: tekst, gammelt: tekst, nytt: tekst) -> tekst {
+    returner tekst_erstatt(kilde, gammelt, nytt)
+}
+
+funksjon slutter_med_tekst(tekstverdi: tekst, suffix: tekst) -> bool {
+    returner tekst_slutter_med(tekstverdi, suffix)
+}
+
+funksjon starter_med_tekst(tekstverdi: tekst, prefix: tekst) -> bool {
+    returner tekst_starter_med(tekstverdi, prefix)
+}
+
+funksjon inneholder_tekst(tekstverdi: tekst, needle: tekst) -> bool {
+    returner tekst_inneholder(tekstverdi, needle)
+}
+
+funksjon del_på(tekstverdi: tekst, skilletegn: tekst) -> liste_tekst {
+    returner tekst_del_på(tekstverdi, skilletegn)
+}
+
+funksjon slice(tekstverdi: tekst, start: heltall, slutt: heltall) -> tekst {
+    returner tekst_slice(tekstverdi, start, slutt)
+}
+
+funksjon lengde_tekst(tekstverdi: tekst) -> heltall {
+    returner tekst_lengde(tekstverdi)
+}
+
+funksjon tekst_er_ordtegn(tegn: tekst) -> bool {
+    hvis tegn == "" da {
+        returner usann
+    }
+    hvis tegn == "_" eller tegn == "a" eller tegn == "b" eller tegn == "c" eller tegn == "d" eller tegn == "e" eller tegn == "f" eller tegn == "g" eller tegn == "h" eller tegn == "i" eller tegn == "j" eller tegn == "k" eller tegn == "l" eller tegn == "m" eller tegn == "n" eller tegn == "o" eller tegn == "p" eller tegn == "q" eller tegn == "r" eller tegn == "s" eller tegn == "t" eller tegn == "u" eller tegn == "v" eller tegn == "w" eller tegn == "x" eller tegn == "y" eller tegn == "z" eller tegn == "A" eller tegn == "B" eller tegn == "C" eller tegn == "D" eller tegn == "E" eller tegn == "F" eller tegn == "G" eller tegn == "H" eller tegn == "I" eller tegn == "J" eller tegn == "K" eller tegn == "L" eller tegn == "M" eller tegn == "N" eller tegn == "O" eller tegn == "P" eller tegn == "Q" eller tegn == "R" eller tegn == "S" eller tegn == "T" eller tegn == "U" eller tegn == "V" eller tegn == "W" eller tegn == "X" eller tegn == "Y" eller tegn == "Z" eller tegn == "0" eller tegn == "1" eller tegn == "2" eller tegn == "3" eller tegn == "4" eller tegn == "5" eller tegn == "6" eller tegn == "7" eller tegn == "8" eller tegn == "9" eller tegn == "æ" eller tegn == "ø" eller tegn == "å" eller tegn == "Æ" eller tegn == "Ø" eller tegn == "Å" da {
+        returner sann
+    }
+    returner usann
+}
+
+funksjon erstatt_ord_i_tekst(kilde: tekst, gammelt: tekst, nytt: tekst) -> tekst {
+    hvis gammelt == "" da {
+        returner kilde
+    }
+    la resultat: tekst = ""
+    la indeks: heltall = 0
+    la kilde_lengde: heltall = tekst_lengde(kilde)
+    la gammelt_lengde: heltall = tekst_lengde(gammelt)
+    mens (indeks < kilde_lengde) {
+        la resten: tekst = tekst_slice(kilde, indeks, kilde_lengde)
+        hvis tekst_starter_med(resten, gammelt) da {
+            la forrige: tekst = ""
+            la neste: tekst = ""
+            hvis indeks > 0 da {
+                forrige = tekst_slice(kilde, indeks - 1, indeks)
+            }
+            hvis indeks + gammelt_lengde < kilde_lengde da {
+                neste = tekst_slice(kilde, indeks + gammelt_lengde, indeks + gammelt_lengde + 1)
+            }
+            hvis indeks == 0 eller ikke tekst_er_ordtegn(forrige) da {
+                hvis indeks + gammelt_lengde == kilde_lengde eller ikke tekst_er_ordtegn(neste) da {
+                    resultat = resultat + nytt
+                    indeks = indeks + gammelt_lengde
+                } ellers {
+                    resultat = resultat + tekst_slice(kilde, indeks, indeks + 1)
+                    indeks = indeks + 1
+                }
+            } ellers {
+                resultat = resultat + tekst_slice(kilde, indeks, indeks + 1)
+                indeks = indeks + 1
+            }
+        } ellers {
+            resultat = resultat + tekst_slice(kilde, indeks, indeks + 1)
+            indeks = indeks + 1
+        }
+    }
+    returner resultat
+}

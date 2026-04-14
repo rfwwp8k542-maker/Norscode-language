@@ -1,0 +1,6 @@
+funksjon start() -> heltall {
+    assert(sann)
+    assert_ne(1, 2)
+    assert_eq(tekst_fra_bool(sann), "sann")
+    returner 0
+}

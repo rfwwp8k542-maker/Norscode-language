@@ -1,0 +1,12 @@
+test "argv og tekst virker sammen" {
+    la args: liste_tekst = argv()
+    assert_eq(lengde(args), 2)
+    assert_eq(args[0], "alpha")
+    assert_eq(args[1], "beta")
+    assert_eq(tekst_trim("  hei  "), "hei")
+    assert_eq(tekst_lengde(args[0]), 5)
+}
+
+funksjon start() -> heltall {
+    returner 0
+}

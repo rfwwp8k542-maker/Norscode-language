@@ -1,0 +1,10 @@
+test "argv blir sendt videre" {
+    la args: liste_tekst = argv()
+    assert_eq(lengde(args), 2)
+    assert_eq(args[0], "alpha")
+    assert_eq(args[1], "beta")
+}
+
+funksjon start() -> heltall {
+    returner 0
+}
