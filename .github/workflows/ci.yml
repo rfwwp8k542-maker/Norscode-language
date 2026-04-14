@@ -62,9 +62,13 @@ jobs:
         with:
           python-version: "3.12"
           cache: "pip"
+          cache-dependency-path: projects/language/pyproject.toml
 
-      - name: Run NorCode CI checks
-        run: python3 -m norcode ci --check-names --require-selfhost-ready
+      - name: Install project
+        run: python3 -m pip install -e .
+
+      - name: Run Norscode CI checks
+        run: python3 -m norscode ci --check-names --require-selfhost-ready
 
       - name: Install packaging tools
         run: python3 -m pip install --upgrade build twine
