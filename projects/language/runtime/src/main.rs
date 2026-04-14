@@ -314,7 +314,7 @@ fn main() -> Result<(), RuntimeError> {
                 println!("status={}", result.status);
                 println!("registry_path={}", result.registry_path);
                 println!("registry_exists={}", result.registry_exists);
-                if let Some(registry_sha256) = result.registry_sha256 {
+                if let Some(registry_sha256) = result.registry_sha256.as_ref() {
                     println!("registry_sha256={}", registry_sha256);
                 }
                 println!("digest_path={}", result.digest_path);
@@ -446,7 +446,7 @@ fn main() -> Result<(), RuntimeError> {
                 println!("needs_migration={}", !found.is_empty());
                 println!("legacy_file_count={}", found.len());
                 println!("primary_present_count={}", primary_present);
-                for path in found {
+                for path in &found {
                     println!("legacy_file={}", path);
                 }
                 println!("mode=name-migration-check");

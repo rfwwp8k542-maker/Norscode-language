@@ -552,7 +552,8 @@ fn classify_dependency_kind(specifier: &str) -> LockDependencyKind {
     } else if specifier.starts_with("url+") {
         LockDependencyKind::Url
     } else {
-    LockDependencyKind::Path
+        LockDependencyKind::Path
+    }
 }
 
 fn resolve_dependency(specifier: &str, project_root: &LockProjectRoot) -> LockDependencyResolved {
