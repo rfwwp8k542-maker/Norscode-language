@@ -158,6 +158,7 @@ Status nå:
 - vanlig CI er grønn mot `projects/language`
 - gamle standalone-jobber er gated til `workflow_dispatch`
 - standalone-sporet bygger fortsatt et eldre infra-lag og må migreres
+- første lokale build-wrapper finnes nå i `projects/language/scripts/build-standalone.py` og `build-standalone.sh`
 
 ## Immediate next 14 days
 - migrere standalone/distribusjon til riktig språkspor:

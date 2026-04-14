@@ -43,12 +43,14 @@ norscode build samples/app.no
 Bygg- og debug-kode for binæren:
 
 ```bash
+python3 scripts/build-standalone.py
+sh scripts/build-standalone.sh
 ./dist/norscode --help
 ```
 
 Merk:
-- `dist/norscode` forventes å være tilgjengelig i denne handoff-snapshoten.
-- Referansen til `scripts/build-standalone.sh` er ikke tilgjengelig i denne workspace-kopien.
+- `dist/norscode` kan nå bygges direkte fra `projects/language`.
+- standalone-sporet er fortsatt under migrasjon, men build-wrapperen finnes nå i denne workspace-kopien.
 
 Legacy (installeringsmodus via Python):
 
@@ -139,6 +141,7 @@ Merk:
 - `registry-sync`, `registry-sign` og `registry-mirror` er prosjektkommandoer for registry/cache/distribusjon.
 - `ci`, `debug`, `migrate-names` og `release` er også prosjektkommandoer i samme toppnivåflate.
 - standalone/distribusjon er neste eksplisitte migrasjonsmål; gamle standalone-jobber i CI er midlertidig gated mens build-sporet flyttes fra eldre `projects/infra` til riktig `projects/language`-grunnlag.
+- `scripts/build-standalone.py` og `scripts/build-standalone.sh` er første lokale byggesteg i det nye standalone-sporet for `projects/language`.
 - `bytecode-build` er en lavnivå utviklerkommando for eksplisitt bytecode-artifakt.
 - `run` kan fortsatt beholde generert bytecode ved behov via `--keep-bytecode`.
 - Legacy C/`clang`-stien er nå fjernet fra `run`, `build` og `test`.
