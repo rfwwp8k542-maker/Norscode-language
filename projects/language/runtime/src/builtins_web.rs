@@ -68,6 +68,134 @@ pub(crate) fn handle_web_builtin<I: Io>(
             start_web_server(vm, routes, host, port)?;
             Ok(Some(Value::Int(0)))
         }
+        "http_content_type_json" => Ok(Some(Value::Text(http_content_type_json()))),
+        "http_respons_tekst" => {
+            let code = args.get(0).and_then(int_value).unwrap_or(500);
+            let content_type = args.get(1).map(format_value).unwrap_or_else(http_content_type_json);
+            let body = args.get(2).map(format_value).unwrap_or_default();
+            Ok(Some(Value::Text(http_response_text_with_body(
+                code,
+                &content_type,
+                &body,
+            ))))
+        }
+        "http_json_respons" => {
+            let body = args.first().map(format_value).unwrap_or_default();
+            Ok(Some(Value::Text(http_json_response(body))))
+        }
+        "http_typed_input_feil_respons" => {
+            let location = args.first().map(format_value).unwrap_or_default();
+            let field = args.get(1).map(format_value).unwrap_or_default();
+            let feil = args.get(2).map(format_value).unwrap_or_default();
+            let input = args.get(3).map(format_value).unwrap_or_default();
+            Ok(Some(Value::Text(http_typed_input_error_response(
+                &location,
+                &field,
+                &feil,
+                &input,
+            ))))
+        }
+        "openapi_tom" => Ok(Some(Value::List(std::rc::Rc::new(std::cell::RefCell::new(Vec::new()))))),
+        "openapi_info_registrer" => {
+            let Some(Value::List(api)) = args.first() else {
+                return Err(RuntimeError::InvalidOperand("openapi_info_registrer forventer en liste".to_string()));
+            };
+            let key = args.get(1).map(format_value).unwrap_or_default();
+            let value = args.get(2).map(format_value).unwrap_or_default();
+            let mut items = api.borrow_mut();
+            items.push(Value::Text(format!("info\t{key}\t{value}")));
+            Ok(Some(Value::Int(items.len() as i64)))
+        }
+        "openapi_rute_registrer" => {
+            let Some(Value::List(api)) = args.first() else {
+                return Err(RuntimeError::InvalidOperand("openapi_rute_registrer forventer en liste".to_string()));
+            };
+            let method = args.get(1).map(format_value).unwrap_or_default();
+            let path = args.get(2).map(format_value).unwrap_or_default();
+            let summary = args.get(3).map(format_value).unwrap_or_default();
+            let description = args.get(4).map(format_value).unwrap_or_default();
+            let tag = args.get(5).map(format_value).unwrap_or_default();
+            let response_schema = args.get(6).map(format_value).unwrap_or_default();
+            let mut items = api.borrow_mut();
+            items.push(Value::Text(format!(
+                "route\t{method}\t{path}\t{summary}\t{description}\t{tag}\t{response_schema}"
+            )));
+            Ok(Some(Value::Int(items.len() as i64)))
+        }
+        "openapi_json" => {
+            let Some(Value::List(api)) = args.first() else {
+                return Err(RuntimeError::InvalidOperand("openapi_json forventer en liste".to_string()));
+            };
+            Ok(Some(Value::Text(openapi_to_json(&api.borrow()))))
+        }
+        "schema_tom" => Ok(Some(Value::List(std::rc::Rc::new(std::cell::RefCell::new(Vec::new()))))),
+        "schema_felt_tekst" => {
+            let Some(Value::List(schema)) = args.first() else {
+                return Err(RuntimeError::InvalidOperand("schema_felt_tekst forventer en liste".to_string()));
+            };
+            let name = args.get(1).map(format_value).unwrap_or_default();
+            let required = args.get(2).map(format_value).unwrap_or_default();
+            let default_value = args.get(3).map(format_value).unwrap_or_default();
+            let example = args.get(4).map(format_value).unwrap_or_default();
+            let description = args.get(5).map(format_value).unwrap_or_default();
+            let constraints = args.get(6).map(format_value).unwrap_or_default();
+            schema
+                .borrow_mut()
+                .push(Value::Text(format!("felt\ttxt\t{name}\t{required}\t{default_value}\t{example}\t{description}\t{constraints}")));
+            Ok(Some(Value::Null))
+        }
+        "schema_felt_bool" => {
+            let Some(Value::List(schema)) = args.first() else {
+                return Err(RuntimeError::InvalidOperand("schema_felt_bool forventer en liste".to_string()));
+            };
+            let name = args.get(1).map(format_value).unwrap_or_default();
+            let required = args.get(2).map(format_value).unwrap_or_default();
+            let default_value = args.get(3).map(format_value).unwrap_or_default();
+            let example = args.get(4).map(format_value).unwrap_or_default();
+            let description = args.get(5).map(format_value).unwrap_or_default();
+            let constraints = args.get(6).map(format_value).unwrap_or_default();
+            schema
+                .borrow_mut()
+                .push(Value::Text(format!("felt\tbool\t{name}\t{required}\t{default_value}\t{example}\t{description}\t{constraints}")));
+            Ok(Some(Value::Null))
+        }
+        "schema_valider_felt" => {
+            let Some(Value::List(schema)) = args.first() else {
+                return Err(RuntimeError::InvalidOperand("schema_valider_felt forventer en liste".to_string()));
+            };
+            let field = args.get(1).map(format_value).unwrap_or_default();
+            let value = args.get(2).map(format_value).unwrap_or_default();
+            Ok(Some(Value::Text(validate_schema_field(&schema.borrow(), &field, &value))))
+        }
+        "security_bearer_token_fra_header" => {
+            let header = args.first().map(format_value).unwrap_or_default();
+            Ok(Some(Value::Text(parse_bearer_token(&header))))
+        }
+        "security_auth_header_bearer" => {
+            let token = args.first().map(format_value).unwrap_or_default();
+            Ok(Some(Value::Text(format!("Bearer {token}"))))
+        }
+        "security_session_tom" => Ok(Some(Value::List(std::rc::Rc::new(std::cell::RefCell::new(Vec::new()))))),
+        "security_session_sett" => {
+            let Some(Value::List(session)) = args.first() else {
+                return Err(RuntimeError::InvalidOperand("security_session_sett forventer en liste".to_string()));
+            };
+            let key = args.get(1).map(format_value).unwrap_or_default();
+            let value = args.get(2).map(format_value).unwrap_or_default();
+            let mut session = session.borrow_mut();
+            set_session_value(&mut session, &key, &value);
+            Ok(Some(Value::Null))
+        }
+        "security_session_hent" => {
+            let Some(Value::List(session)) = args.first() else {
+                return Err(RuntimeError::InvalidOperand("security_session_hent forventer en liste".to_string()));
+            };
+            let key = args.get(1).map(format_value).unwrap_or_default();
+            Ok(Some(Value::Text(get_session_value(&session.borrow(), &key))))
+        }
+        "security_cors_csrf_guide" => {
+            Ok(Some(Value::Text("Bruk CSRF-token ved state-endringer, valider Origin og sett sikre cookies.".to_string())))
+        }
         _ => Ok(None),
     }
 }
@@ -261,6 +389,171 @@ fn split_segments(value: &str) -> Vec<&str> {
 
 fn is_path_param(segment: &str) -> bool {
     segment.starts_with('{') && segment.ends_with('}')
+}
+
+fn int_value(value: &Value) -> Option<i64> {
+    match value {
+        Value::Int(number) => Some(*number),
+        Value::Text(text) => text.parse::<i64>().ok(),
+        _ => None,
+    }
+}
+
+fn http_status_text(code: u16) -> &'static str {
+    match code {
+        200 => "OK",
+        201 => "Created",
+        204 => "No Content",
+        400 => "Bad Request",
+        401 => "Unauthorized",
+        403 => "Forbidden",
+        404 => "Not Found",
+        405 => "Method Not Allowed",
+        500 => "Internal Server Error",
+        _ => "Error",
+    }
+}
+
+fn http_content_type_json() -> String {
+    "application/json; charset=utf-8".to_string()
+}
+
+fn http_response_text_with_body(code: i64, content_type: &str, body: &str) -> String {
+    let code = code as u16;
+    format!(
+        "HTTP/1.1 {code} {}\r\nContent-Type: {}\r\nContent-Length: {}\r\n\r\n{}",
+        http_status_text(code),
+        content_type,
+        body.len(),
+        body
+    )
+}
+
+fn http_json_response(body: String) -> String {
+    http_response_text_with_body(200, &http_content_type_json(), &body)
+}
+
+fn http_typed_input_error_response(location: &str, field: &str, error: &str, input: &str) -> String {
+    let body = format!(
+        "{{\"loc\":\"{}\",\"field\":\"{}\",\"error\":\"{}\",\"input\":\"{}\"}}",
+        json_escape(location),
+        json_escape(field),
+        json_escape(error),
+        json_escape(input)
+    );
+    http_response_text_with_body(400, &http_content_type_json(), &body)
+}
+
+fn openapi_to_json(api: &[Value]) -> String {
+    let mut title = "".to_string();
+    let mut version = "".to_string();
+    let mut description = "".to_string();
+    let mut routes = Vec::new();
+    for item in api {
+        if let Value::Text(entry) = item {
+            let parts: Vec<&str> = entry.split('\t').collect();
+            if parts.is_empty() {
+                continue;
+            }
+            match parts[0] {
+                "info" if parts.len() >= 3 => match parts[1] {
+                    "title" => title = parts[2].to_string(),
+                    "version" => version = parts[2].to_string(),
+                    "description" => description = parts[2].to_string(),
+                    _ => {}
+                },
+                "route" if parts.len() >= 7 => {
+                    routes.push(format!(
+                        "{{\"method\":\"{}\",\"path\":\"{}\",\"summary\":\"{}\",\"description\":\"{}\",\"tag\":\"{}\",\"response_schema\":\"{}\"}}",
+                        json_escape(parts[1]),
+                        json_escape(parts[2]),
+                        json_escape(parts[3]),
+                        json_escape(parts[4]),
+                        json_escape(parts[5]),
+                        json_escape(parts[6])
+                    ));
+                }
+                _ => {}
+            }
+        }
+    }
+    let title_value = json_escape(&title);
+    let version_value = json_escape(&version);
+    let description_value = json_escape(&description);
+    let mut body = String::new();
+    body.push_str("{\"openapi\":\"3.0.0\",");
+    body.push_str(&format!(
+        "\"info\":{{\"title\":\"{}\",\"version\":\"{}\"",
+        title_value, version_value
+    ));
+    if !description.is_empty() {
+        body.push_str(&format!(",\"description\":\"{}\"", description_value));
+    }
+    body.push_str("},\"routes\":[");
+    body.push_str(&routes.join(","));
+    body.push_str("]}");
+    body
+}
+
+fn validate_schema_field(schema: &[Value], field_name: &str, value: &str) -> String {
+    for item in schema {
+        if let Value::Text(entry) = item {
+            let parts: Vec<&str> = entry.split('\t').collect();
+            if parts.len() >= 4 && parts[0] == "felt" && parts[2] == field_name {
+                let required = parts[3].trim();
+                let is_required = required == "sann" || required == "true";
+                if is_required && value.trim().is_empty() {
+                    return format!(
+                        "{{\"field\":\"{}\",\"error\":\"feltet må fylles ut\"}}",
+                        json_escape(field_name)
+                    );
+                }
+            }
+        }
+    }
+    "".to_string()
+}
+
+fn parse_bearer_token(header: &str) -> String {
+    header
+        .split_once(':')
+        .map(|(_, value)| value.trim())
+        .or_else(|| Some(header).filter(|value| !value.is_empty()))
+        .and_then(|value| value.strip_prefix("Bearer ").or_else(|| value.strip_prefix("bearer ")))
+        .map(|token| token.trim().to_string())
+        .filter(|value| !value.is_empty())
+        .unwrap_or_default()
+}
+
+fn set_session_value(session: &mut Vec<Value>, key: &str, value: &str) {
+    for item in session.iter_mut() {
+        if let Value::Text(entry) = item {
+            if let Some((existing_key, _)) = entry.split_once('|') {
+                if existing_key == key {
+                    *item = Value::Text(format!("{key}|{value}"));
+                    return;
+                }
+            }
+        }
+    }
+    session.push(Value::Text(format!("{key}|{value}")));
+}
+
+fn get_session_value(session: &[Value], key: &str) -> String {
+    for item in session {
+        if let Value::Text(entry) = item {
+            if let Some((existing_key, value)) = entry.split_once('|') {
+                if existing_key == key {
+                    return value.to_string();
+                }
+            }
+        }
+    }
+    String::new()
+}
+
+fn json_escape(value: &str) -> String {
+    value.replace('\\', "\\\\").replace('\"', "\\\"")
 }
 
 fn write_plain_response(

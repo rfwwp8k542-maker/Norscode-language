@@ -1653,7 +1653,7 @@ funksjon start() -> heltall {
     la nyttnavn_knapp: heltall = gui.knapp(toolbar, "Navn")
     la tester_knapp: heltall = gui.knapp(toolbar, "Test")
     la kommando_etikett: heltall = gui.etikett(toolbar, "Kommando")
-    la kommando_felt: heltall = gui.tekstfelt(toolbar, "python3 -m norscode test")
+    la kommando_felt: heltall = gui.tekstfelt(toolbar, "norscode test")
     la kommando_knapp: heltall = gui.knapp(toolbar, "Kjør")
     la kilde_panel: heltall = gui.panel(work_panel)
     la kilde_tittel: heltall = gui.etikett(kilde_panel, "Kildekode | aktiv fil")

@@ -187,7 +187,7 @@ class _HeadlessGuiBackend:
     def list_selected_text(self, object_id: int) -> str:
         obj = self._get(object_id)
         if obj.get("kind") != "list":
-            raise RuntimeError(f"GUI-elementet {object_id} er ikke en liste")
+            return ""
         items = obj.setdefault("items", [])
         index = int(obj.get("selected_index", -1))
         if 0 <= index < len(items):
@@ -1057,7 +1057,7 @@ class _TkGuiBackend(_HeadlessGuiBackend):
     def list_selected_text(self, object_id: int) -> str:
         obj = self._get(object_id)
         if obj.get("kind") != "list":
-            raise RuntimeError(f"GUI-elementet {object_id} er ikke en liste")
+            return ""
         items = obj.setdefault("items", [])
         index = int(obj.get("selected_index", -1))
         if 0 <= index < len(items):
@@ -1641,8 +1641,13 @@ class Interpreter:
             command = [str(item) for item in (values[0] if values else [])]
             if not command:
                 return 1
-            completed = subprocess.run(command, check=False)
-            return int(completed.returncode)
+            try:
+                completed = subprocess.run(command, check=False)
+                return int(completed.returncode)
+            except FileNotFoundError:
+                return 127
+            except OSError:
+                return 1
 
         if name == "liste_filer":
             from pathlib import Path
@@ -1839,7 +1844,10 @@ class Interpreter:
             return self.gui_backend.list_remove(int(values[0]), int(values[1]) if len(values) > 1 else 0)
 
         if name == "gui_liste_valgt":
-            return self.gui_backend.list_selected_text(int(values[0]))
+            try:
+                return self.gui_backend.list_selected_text(int(values[0]))
+            except Exception:
+                return ""
 
         if name == "gui_liste_velg":
             return self.gui_backend.list_select(int(values[0]), int(values[1]) if len(values) > 1 else 0)

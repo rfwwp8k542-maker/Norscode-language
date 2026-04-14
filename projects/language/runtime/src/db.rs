@@ -1,4 +1,5 @@
 use crate::error::RuntimeError;
+use crate::builtins_text::format_value;
 use crate::value::Value;
 use postgres::types::{ToSql, Type};
 use postgres::{Client, NoTls, Row};

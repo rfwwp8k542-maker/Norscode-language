@@ -1,0 +1,20 @@
+[project]
+name = "norscode_language"
+version = "0.1.0"
+entry = "samples/app.no"
+
+[paths]
+source = "."
+stdlib = "std"
+build = "build"
+
+[registry]
+sources = ["packages/remote_registry_example.json"]
+
+[dependencies]
+butikk = "./packages/butikk"
+
+[security]
+trusted_git_hosts = ["github.com", "*.github.com"]
+trusted_url_hosts = ["example.com"]
+trusted_registry_sha256 = "ee3bb9e7d739f7b5657c837f85713c2bb7a6cc33fe9e93f1c5e7867a4031545d"

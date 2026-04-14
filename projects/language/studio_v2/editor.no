@@ -131,16 +131,20 @@ funksjon studio_v2_editor_tab_bytt(tabs: liste_tekst, aktiv_fil: tekst, retning:
 }
 
 funksjon studio_v2_editor_split_fokus_valgt(tabs: liste_tekst, aktiv_fil: tekst, fokus: tekst) -> tekst {
+    la normalisert_fokus: tekst = fokus
+    hvis fokus != "høyre" og fokus != "hoyre" og fokus != "venstre" da {
+        normalisert_fokus = "høyre"
+    }
     hvis lengde(tabs) == 0 da {
         returner ""
     }
     hvis lengde(tabs) == 1 da {
         returner tabs[0]
     }
-    hvis fokus == "høyre" eller fokus == "hoyre" da {
+    hvis normalisert_fokus == "høyre" eller normalisert_fokus == "hoyre" da {
         returner studio_v2_editor_tab_neste(tabs, aktiv_fil)
     }
-    hvis fokus == "venstre" da {
+    hvis normalisert_fokus == "venstre" da {
         returner studio_v2_editor_tab_nåværende(tabs, aktiv_fil)
     }
     returner studio_v2_editor_split_visning(tabs)[0]
@@ -192,6 +196,45 @@ funksjon studio_v2_editor_buffer_til_tekst(buffer: liste_tekst) -> tekst {
     returner resultat
 }
 
+funksjon studio_v2_editor_format_innrykk(nivå: heltall) -> tekst {
+    la resultat: tekst = ""
+    la indeks: heltall = 0
+    mens (indeks < nivå) {
+        resultat = resultat + "    "
+        indeks = indeks + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_editor_formater_buffer(buffer: liste_tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la innrykk: heltall = 0
+    la indeks: heltall = 0
+    mens (indeks < lengde(buffer)) {
+        la ren: tekst = tekst_trim(buffer[indeks])
+        hvis ren == "" da {
+            legg_til(resultat, "")
+        } ellers {
+            hvis tekst_starter_med(ren, "}") da {
+                innrykk = innrykk - 1
+            }
+            hvis innrykk < 0 da {
+                innrykk = 0
+            }
+            legg_til(resultat, studio_v2_editor_format_innrykk(innrykk) + ren)
+            hvis tekst_slutter_med(ren, "{") da {
+                innrykk = innrykk + 1
+            }
+        }
+        indeks = indeks + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_editor_formater_tekst(tekstverdi: tekst) -> tekst {
+    returner studio_v2_editor_buffer_til_tekst(studio_v2_editor_formater_buffer(del_linjer(tekstverdi)))
+}
+
 funksjon studio_v2_editor_buffer_antall_linje(buffer: liste_tekst) -> heltall {
     returner lengde(buffer)
 }
@@ -201,7 +244,7 @@ funksjon studio_v2_editor_åpne(tekstverdi: tekst) -> liste_tekst {
 }
 
 funksjon studio_v2_editor_lagre(buffer: liste_tekst) -> tekst {
-    returner studio_v2_editor_buffer_til_tekst(buffer)
+    returner studio_v2_editor_buffer_til_tekst(studio_v2_editor_formater_buffer(buffer))
 }
 
 funksjon studio_v2_editor_oppdater(buffer: liste_tekst, tekstverdi: tekst) -> liste_tekst {
@@ -267,6 +310,215 @@ funksjon studio_v2_editor_linjeoversikt(buffer: liste_tekst) -> liste_tekst {
         indeks = indeks + 1
     }
     returner resultat
+}
+
+funksjon studio_v2_editor_breakpoint_tom() -> liste_tekst {
+    returner []
+}
+
+funksjon studio_v2_editor_breakpoint_finn(breakpoints: liste_tekst, linje_nummer: heltall) -> bool {
+    la søk: tekst = tekst_fra_heltall(linje_nummer)
+    la indeks: heltall = 0
+    mens (indeks < lengde(breakpoints)) {
+        hvis breakpoints[indeks] == søk da {
+            returner sann
+        }
+        indeks = indeks + 1
+    }
+    returner usann
+}
+
+funksjon studio_v2_editor_breakpoint_toggle(breakpoints: liste_tekst, linje_nummer: heltall) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la søk: tekst = tekst_fra_heltall(linje_nummer)
+    la funnet: bool = usann
+    la indeks: heltall = 0
+    mens (indeks < lengde(breakpoints)) {
+        hvis breakpoints[indeks] == søk da {
+            funnet = sann
+        } ellers {
+            legg_til(resultat, breakpoints[indeks])
+        }
+        indeks = indeks + 1
+    }
+    hvis ikke funnet og linje_nummer > 0 da {
+        legg_til(resultat, søk)
+    }
+    returner resultat
+}
+
+funksjon studio_v2_editor_breakpoint_linje(buffer: liste_tekst, breakpoints: liste_tekst, linje_nummer: heltall) -> tekst {
+    la markør: tekst = "· "
+    hvis studio_v2_editor_breakpoint_finn(breakpoints, linje_nummer) da {
+        markør = "● "
+    }
+    hvis linje_nummer < 1 eller linje_nummer > lengde(buffer) da {
+        returner markør + tekst_fra_heltall(linje_nummer) + ": ?"
+    }
+    returner markør + tekst_fra_heltall(linje_nummer) + ": " + buffer[linje_nummer - 1]
+}
+
+funksjon studio_v2_editor_breakpoint_oversikt(buffer: liste_tekst, breakpoints: liste_tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la indeks: heltall = 0
+    mens (indeks < lengde(buffer)) {
+        legg_til(resultat, studio_v2_editor_breakpoint_linje(buffer, breakpoints, indeks + 1))
+        indeks = indeks + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_editor_debug_funksjonslinje(buffer: liste_tekst, linje_nummer: heltall) -> heltall {
+    hvis linje_nummer < 1 eller lengde(buffer) == 0 da {
+        returner 0
+    }
+    la indeks: heltall = linje_nummer - 1
+    hvis indeks >= lengde(buffer) da {
+        indeks = lengde(buffer) - 1
+    }
+    mens (indeks >= 0) {
+        la ren: tekst = tekst_trim(symbol.studio_v2_symbol_rens_linje_for_søk(buffer[indeks]))
+        hvis tekst_starter_med(ren, "funksjon ") da {
+            returner indeks + 1
+        }
+        indeks = indeks - 1
+    }
+    returner 0
+}
+
+funksjon studio_v2_editor_debug_funksjonsnavn(buffer: liste_tekst, linje_nummer: heltall) -> tekst {
+    la funksjonslinje: heltall = studio_v2_editor_debug_funksjonslinje(buffer, linje_nummer)
+    hvis funksjonslinje < 1 eller funksjonslinje > lengde(buffer) da {
+        returner ""
+    }
+    returner symbol.studio_v2_symbol_finn_funksjonsnavn(tekst_trim(symbol.studio_v2_symbol_rens_linje_for_søk(buffer[funksjonslinje - 1])))
+}
+
+funksjon studio_v2_editor_debug_kallstack(buffer: liste_tekst, linje_nummer: heltall) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la funksjonsnavn: tekst = studio_v2_editor_debug_funksjonsnavn(buffer, linje_nummer)
+    la funksjonslinje: heltall = studio_v2_editor_debug_funksjonslinje(buffer, linje_nummer)
+    hvis funksjonsnavn != "" da {
+        legg_til(resultat, "Frame 1: " + funksjonsnavn + " · linje " + tekst_fra_heltall(funksjonslinje))
+    }
+    hvis lengde(resultat) == 0 da {
+        legg_til(resultat, "Frame 1: <ingen funksjon>")
+    }
+    returner resultat
+}
+
+funksjon studio_v2_editor_debug_lokale(buffer: liste_tekst, linje_nummer: heltall) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la funksjonslinje: heltall = studio_v2_editor_debug_funksjonslinje(buffer, linje_nummer)
+    hvis funksjonslinje < 1 da {
+        returner resultat
+    }
+    la header: tekst = tekst_trim(symbol.studio_v2_symbol_rens_linje_for_søk(buffer[funksjonslinje - 1]))
+    la parametere: tekst = symbol.studio_v2_symbol_finn_funksjonsparametere(header)
+    hvis parametere != "" da {
+        la deler: liste_tekst = tekst_del_på(parametere, ",")
+        la indeks: heltall = 0
+        mens (indeks < lengde(deler)) {
+            la kandidat: tekst = tekst_trim(deler[indeks])
+            hvis kandidat != "" da {
+                legg_til(resultat, "param " + kandidat)
+            }
+            indeks = indeks + 1
+        }
+    }
+    la i: heltall = funksjonslinje
+    mens (i < linje_nummer og i <= lengde(buffer)) {
+        la ren: tekst = tekst_trim(symbol.studio_v2_symbol_rens_linje_for_søk(buffer[i - 1]))
+        hvis tekst_starter_med(ren, "la ") da {
+            la navn: tekst = symbol.studio_v2_symbol_finn_lokalnavn(ren)
+            hvis navn != "" da {
+                resultat = symbol.studio_v2_symbol_completion_unique_add(resultat, "lokal " + navn)
+            }
+        }
+        i = i + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_editor_debug_neste_linje(buffer: liste_tekst, linje_nummer: heltall) -> heltall {
+    hvis lengde(buffer) == 0 da {
+        returner 0
+    }
+    hvis linje_nummer < 1 da {
+        returner 1
+    }
+    hvis linje_nummer >= lengde(buffer) da {
+        returner lengde(buffer)
+    }
+    returner linje_nummer + 1
+}
+
+funksjon studio_v2_editor_debug_neste_ikke_tomme_linje(buffer: liste_tekst, linje_nummer: heltall) -> heltall {
+    hvis lengde(buffer) == 0 da {
+        returner 0
+    }
+    la indeks: heltall = linje_nummer
+    hvis indeks < 1 da {
+        indeks = 1
+    }
+    mens (indeks < lengde(buffer)) {
+        indeks = indeks + 1
+        hvis tekst_trim(buffer[indeks - 1]) != "" da {
+            returner indeks
+        }
+    }
+    returner lengde(buffer)
+}
+
+funksjon studio_v2_editor_debug_forrige_funksjonslinje(buffer: liste_tekst, linje_nummer: heltall) -> heltall {
+    la funksjonslinje: heltall = studio_v2_editor_debug_funksjonslinje(buffer, linje_nummer)
+    hvis funksjonslinje > 0 da {
+        returner funksjonslinje
+    }
+    hvis linje_nummer < 1 da {
+        returner 1
+    }
+    hvis linje_nummer > lengde(buffer) da {
+        returner lengde(buffer)
+    }
+    returner linje_nummer
+}
+
+funksjon studio_v2_editor_debug_første_breakpoint_etter(buffer: liste_tekst, breakpoints: liste_tekst, linje_nummer: heltall) -> heltall {
+    la resultat: heltall = 0
+    la beste: heltall = lengde(buffer)
+    la indeks: heltall = 0
+    mens (indeks < lengde(breakpoints)) {
+        la kandidat: heltall = heltall_fra_tekst(breakpoints[indeks])
+        hvis kandidat > linje_nummer og kandidat < beste da {
+            beste = kandidat
+            resultat = kandidat
+        }
+        indeks = indeks + 1
+    }
+    hvis resultat > 0 da {
+        returner resultat
+    }
+    hvis lengde(buffer) > 0 da {
+        returner lengde(buffer)
+    }
+    returner 0
+}
+
+funksjon studio_v2_editor_debug_step_over(buffer: liste_tekst, linje_nummer: heltall) -> heltall {
+    returner studio_v2_editor_debug_neste_linje(buffer, linje_nummer)
+}
+
+funksjon studio_v2_editor_debug_step_into(buffer: liste_tekst, linje_nummer: heltall) -> heltall {
+    returner studio_v2_editor_debug_neste_ikke_tomme_linje(buffer, linje_nummer)
+}
+
+funksjon studio_v2_editor_debug_step_out(buffer: liste_tekst, linje_nummer: heltall) -> heltall {
+    returner studio_v2_editor_debug_forrige_funksjonslinje(buffer, linje_nummer)
+}
+
+funksjon studio_v2_editor_debug_resume(buffer: liste_tekst, breakpoints: liste_tekst, linje_nummer: heltall) -> heltall {
+    returner studio_v2_editor_debug_første_breakpoint_etter(buffer, breakpoints, linje_nummer)
 }
 
 funksjon studio_v2_editor_aktiv_linje(buffer: liste_tekst, linje_nummer: heltall) -> tekst {
@@ -359,6 +611,420 @@ funksjon studio_v2_editor_completion_valg(rot: tekst, prefix: tekst, valg_indeks
         returner forslag[0]
     }
     returner forslag[valg_indeks]
+}
+
+funksjon studio_v2_editor_completion_prefix_fra_linje(linje: tekst, kolonne: heltall) -> tekst {
+    returner studio_v2_editor_symbol_fra_linje(linje, kolonne)
+}
+
+funksjon studio_v2_editor_completion_fra_linjetekst(rot: tekst, linjetekst: tekst, kolonne: heltall) -> liste_tekst {
+    la prefix: tekst = studio_v2_editor_completion_prefix_fra_linje(linjetekst, kolonne)
+    returner studio_v2_editor_completion(rot, prefix)
+}
+
+funksjon studio_v2_editor_completion_valg_fra_linjetekst(rot: tekst, linjetekst: tekst, kolonne: heltall, valg_indeks: heltall) -> tekst {
+    la forslag: liste_tekst = studio_v2_editor_completion_fra_linjetekst(rot, linjetekst, kolonne)
+    hvis lengde(forslag) == 0 da {
+        returner ""
+    }
+    hvis valg_indeks < 0 eller valg_indeks >= lengde(forslag) da {
+        returner forslag[0]
+    }
+    returner forslag[valg_indeks]
+}
+
+funksjon studio_v2_editor_completion_fra_buffer(rot: tekst, buffer: liste_tekst, linje_nummer: heltall, kolonne: heltall) -> liste_tekst {
+    hvis linje_nummer < 1 eller linje_nummer > lengde(buffer) da {
+        returner []
+    }
+    returner studio_v2_editor_completion_fra_linjetekst(rot, buffer[linje_nummer - 1], kolonne)
+}
+
+funksjon studio_v2_editor_completion_valg_fra_buffer(rot: tekst, buffer: liste_tekst, linje_nummer: heltall, kolonne: heltall, valg_indeks: heltall) -> tekst {
+    la forslag: liste_tekst = studio_v2_editor_completion_fra_buffer(rot, buffer, linje_nummer, kolonne)
+    hvis lengde(forslag) == 0 da {
+        returner ""
+    }
+    hvis valg_indeks < 0 eller valg_indeks >= lengde(forslag) da {
+        returner forslag[0]
+    }
+    returner forslag[valg_indeks]
+}
+
+funksjon studio_v2_editor_hover(rot: tekst, navn: tekst) -> tekst {
+    returner symbol.studio_v2_symbol_hover_fra_workspace(rot, navn)
+}
+
+funksjon studio_v2_editor_signature_help(rot: tekst, navn: tekst) -> tekst {
+    returner symbol.studio_v2_symbol_signature_help_fra_workspace(rot, navn)
+}
+
+funksjon studio_v2_editor_aktiv_parameter_fra_linje(linje: tekst, kolonne: heltall) -> heltall {
+    hvis linje == "" eller kolonne < 1 da {
+        returner 0
+    }
+    la grense: heltall = kolonne - 1
+    hvis grense > tekst_lengde(linje) da {
+        grense = tekst_lengde(linje)
+    }
+    la prefix: tekst = tekst_slice(linje, 0, grense)
+    la renset: tekst = symbol.studio_v2_symbol_rens_linje_for_søk(prefix)
+    la dyp: heltall = 0
+    la aktiv: heltall = 0
+    la funnet_åpning: bool = usann
+    la indeks: heltall = 0
+    mens (indeks < tekst_lengde(renset)) {
+        la tegn: tekst = tekst_slice(renset, indeks, indeks + 1)
+        hvis tegn == "(" da {
+            dyp = dyp + 1
+            hvis dyp == 1 da {
+                funnet_åpning = sann
+                aktiv = 1
+            }
+        } ellers hvis tegn == ")" da {
+            hvis dyp > 0 da {
+                dyp = dyp - 1
+            }
+        } ellers hvis tegn == "," og dyp == 1 da {
+            aktiv = aktiv + 1
+        }
+        indeks = indeks + 1
+    }
+    hvis ikke funnet_åpning da {
+        returner 0
+    }
+    hvis tekst_starter_med(tekst_trim(linje), "funksjon ") da {
+        returner 0
+    }
+    returner aktiv
+}
+
+funksjon studio_v2_editor_signature_navn_fra_linje(linje: tekst, kolonne: heltall) -> tekst {
+    hvis linje == "" eller kolonne < 1 da {
+        returner ""
+    }
+    la ren_linje: tekst = symbol.studio_v2_symbol_rens_linje_for_søk(tekst_slice(linje, 0, kolonne - 1))
+    hvis tekst_starter_med(tekst_trim(ren_linje), "funksjon ") da {
+        returner symbol.studio_v2_symbol_finn_funksjonsnavn(ren_linje)
+    }
+    la dyp: heltall = 0
+    la indeks: heltall = tekst_lengde(ren_linje) - 1
+    mens (indeks >= 0) {
+        la tegn: tekst = tekst_slice(ren_linje, indeks, indeks + 1)
+        hvis tegn == ")" da {
+            dyp = dyp + 1
+        } ellers hvis tegn == "(" da {
+            hvis dyp == 0 da {
+                la slutt: heltall = indeks
+                mens (slutt > 0 og tekst_slice(ren_linje, slutt - 1, slutt) == " ") {
+                    slutt = slutt - 1
+                }
+                la start: heltall = slutt
+                mens (start > 0 og ikke studio_v2_editor_er_symbol_delimiter(tekst_slice(ren_linje, start - 1, start))) {
+                    start = start - 1
+                }
+                la kandidat: tekst = tekst_trim(tekst_slice(ren_linje, start, slutt))
+                hvis studio_v2_editor_er_reservert_symbolnavn(kandidat) da {
+                    returner ""
+                }
+                returner kandidat
+            }
+            dyp = dyp - 1
+        }
+        indeks = indeks - 1
+    }
+    returner ""
+}
+
+funksjon studio_v2_editor_hurtiginfo(rot: tekst, navn: tekst) -> tekst {
+    returner symbol.studio_v2_symbol_hurtiginfo_fra_workspace(rot, navn)
+}
+
+funksjon studio_v2_editor_hurtiginfo_fra_linjetekst(rot: tekst, linjetekst: tekst, kolonne: heltall) -> tekst {
+    la navn: tekst = studio_v2_editor_symbol_fra_linje_med_funksjon(linjetekst, kolonne)
+    hvis navn == "" da {
+        returner ""
+    }
+    returner studio_v2_editor_hurtiginfo(rot, navn)
+}
+
+funksjon studio_v2_editor_hurtiginfo_fra_buffer(rot: tekst, buffer: liste_tekst, linje_nummer: heltall, kolonne: heltall) -> tekst {
+    hvis linje_nummer < 1 eller linje_nummer > lengde(buffer) da {
+        returner ""
+    }
+    returner studio_v2_editor_hurtiginfo_fra_linjetekst(rot, buffer[linje_nummer - 1], kolonne)
+}
+
+funksjon studio_v2_editor_hurtiginfo_fra_aktiv_linje(rot: tekst, buffer: liste_tekst, linje_nummer: heltall) -> tekst {
+    hvis linje_nummer < 1 eller linje_nummer > lengde(buffer) da {
+        returner ""
+    }
+    la navn: tekst = studio_v2_editor_symbol_fra_aktiv_linje(buffer[linje_nummer - 1])
+    hvis navn == "" da {
+        returner ""
+    }
+    returner studio_v2_editor_hurtiginfo(rot, navn)
+}
+
+funksjon studio_v2_editor_er_symbol_delimiter(tegn: tekst) -> bool {
+    hvis tegn == " " eller tegn == "\t" eller tegn == "(" eller tegn == ")" da {
+        returner sann
+    }
+    hvis tegn == "{" eller tegn == "}" eller tegn == "[" eller tegn == "]" da {
+        returner sann
+    }
+    hvis tegn == "," eller tegn == ":" eller tegn == ";" eller tegn == "." da {
+        returner sann
+    }
+    hvis tegn == "+" eller tegn == "-" eller tegn == "*" eller tegn == "/" da {
+        returner sann
+    }
+    hvis tegn == "=" eller tegn == "!" eller tegn == "<" eller tegn == ">" da {
+        returner sann
+    }
+    hvis tegn == "&" eller tegn == "|" eller tegn == "^" eller tegn == "%" da {
+        returner sann
+    }
+    hvis tegn == "\"" eller tegn == "'" eller tegn == "#" da {
+        returner sann
+    }
+    returner usann
+}
+
+funksjon studio_v2_editor_symbol_fra_linje(linje: tekst, kolonne: heltall) -> tekst {
+    hvis linje == "" da {
+        returner ""
+    }
+    hvis kolonne < 1 da {
+        kolonne = 1
+    }
+    la lengde_linjen: heltall = tekst_lengde(linje)
+    hvis lengde_linjen == 0 da {
+        returner ""
+    }
+    hvis kolonne > lengde_linjen da {
+        kolonne = lengde_linjen
+    }
+    la posisjon: heltall = kolonne - 1
+    la tegn: tekst = tekst_slice(linje, posisjon, posisjon + 1)
+    hvis studio_v2_editor_er_symbol_delimiter(tegn) og posisjon > 0 da {
+        posisjon = posisjon - 1
+    }
+    hvis studio_v2_editor_er_symbol_delimiter(tekst_slice(linje, posisjon, posisjon + 1)) da {
+        returner ""
+    }
+    la start: heltall = posisjon
+    mens (start > 0 og ikke studio_v2_editor_er_symbol_delimiter(tekst_slice(linje, start - 1, start))) {
+        start = start - 1
+    }
+    la stopp: heltall = posisjon + 1
+    mens (stopp < lengde_linjen og ikke studio_v2_editor_er_symbol_delimiter(tekst_slice(linje, stopp, stopp + 1))) {
+        stopp = stopp + 1
+    }
+    returner tekst_slice(linje, start, stopp)
+}
+
+funksjon studio_v2_editor_symbol_fra_linje_med_funksjon(linje: tekst, kolonne: heltall) -> tekst {
+    la navn: tekst = studio_v2_editor_symbol_fra_linje(linje, kolonne)
+    la funksjonsnavn: tekst = symbol.studio_v2_symbol_finn_funksjonsnavn(linje)
+    hvis funksjonsnavn != "" og (navn == "funksjon" eller navn == "" eller tekst_starter_med(tekst_trim(linje), "funksjon ")) da {
+        returner funksjonsnavn
+    }
+    returner navn
+}
+
+funksjon studio_v2_editor_er_reservert_symbolnavn(navn: tekst) -> bool {
+    hvis navn == "funksjon" eller navn == "returner" eller navn == "la" da {
+        returner sann
+    }
+    hvis navn == "hvis" eller navn == "ellers" eller navn == "mens" eller navn == "bryt" da {
+        returner sann
+    }
+    hvis navn == "sann" eller navn == "usann" da {
+        returner sann
+    }
+    returner usann
+}
+
+funksjon studio_v2_editor_symbol_foran_foerste_paren(linje: tekst) -> tekst {
+    la paren: heltall = symbol.studio_v2_symbol_finn_tegn_posisjon(linje, "(")
+    hvis paren <= 0 da {
+        returner ""
+    }
+    la slutt: heltall = paren
+    mens (slutt > 0 og tekst_slice(linje, slutt - 1, slutt) == " ") {
+        slutt = slutt - 1
+    }
+    la start: heltall = slutt
+    mens (start > 0 og ikke studio_v2_editor_er_symbol_delimiter(tekst_slice(linje, start - 1, start))) {
+        start = start - 1
+    }
+    la navn: tekst = tekst_trim(tekst_slice(linje, start, slutt))
+    hvis studio_v2_editor_er_reservert_symbolnavn(navn) da {
+        returner ""
+    }
+    returner navn
+}
+
+funksjon studio_v2_editor_symbol_etter_likhet(linje: tekst) -> tekst {
+    la likhet: heltall = symbol.studio_v2_symbol_finn_tegn_posisjon(linje, "=")
+    hvis likhet < 0 da {
+        returner ""
+    }
+    la kandidat: tekst = tekst_trim(tekst_slice(linje, likhet + 1, tekst_lengde(linje)))
+    hvis kandidat == "" da {
+        returner ""
+    }
+    la foran_paren: tekst = studio_v2_editor_symbol_foran_foerste_paren(kandidat)
+    hvis foran_paren != "" da {
+        returner foran_paren
+    }
+    la navn: tekst = studio_v2_editor_symbol_fra_linje(kandidat, tekst_lengde(kandidat))
+    hvis studio_v2_editor_er_reservert_symbolnavn(navn) da {
+        returner ""
+    }
+    returner navn
+}
+
+funksjon studio_v2_editor_symbol_fra_aktiv_linje(linje: tekst) -> tekst {
+    hvis linje == "" da {
+        returner ""
+    }
+    la ren: tekst = tekst_trim(linje)
+    hvis tekst_starter_med(ren, "ellers hvis ") da {
+        ren = tekst_trim(tekst_slice(ren, 12, tekst_lengde(ren)))
+    }
+    hvis tekst_starter_med(ren, "ellers ") da {
+        ren = tekst_trim(tekst_slice(ren, 7, tekst_lengde(ren)))
+    }
+    hvis tekst_starter_med(ren, "returner ") da {
+        ren = tekst_trim(tekst_slice(ren, 9, tekst_lengde(ren)))
+    }
+    hvis tekst_starter_med(ren, "funksjon ") da {
+        la funksjonsnavn: tekst = symbol.studio_v2_symbol_finn_funksjonsnavn(ren)
+        hvis funksjonsnavn != "" da {
+            returner funksjonsnavn
+        }
+    }
+    hvis tekst_starter_med(ren, "la ") da {
+        la etter_likhet: tekst = studio_v2_editor_symbol_etter_likhet(ren)
+        hvis etter_likhet != "" da {
+            returner etter_likhet
+        }
+    }
+    la foran_paren: tekst = studio_v2_editor_symbol_foran_foerste_paren(ren)
+    hvis foran_paren != "" da {
+        returner foran_paren
+    }
+    la fallback: tekst = studio_v2_editor_symbol_fra_linje(ren, tekst_lengde(ren))
+    hvis ikke studio_v2_editor_er_reservert_symbolnavn(fallback) og fallback != "" da {
+        returner fallback
+    }
+    la indeks: heltall = tekst_lengde(ren) - 1
+    mens (indeks >= 0) {
+        mens (indeks >= 0 og studio_v2_editor_er_symbol_delimiter(tekst_slice(ren, indeks, indeks + 1))) {
+            indeks = indeks - 1
+        }
+        hvis indeks < 0 da {
+            returner ""
+        }
+        la slutt: heltall = indeks + 1
+        la start: heltall = indeks
+        mens (start > 0 og ikke studio_v2_editor_er_symbol_delimiter(tekst_slice(ren, start - 1, start))) {
+            start = start - 1
+        }
+        la kandidat: tekst = tekst_slice(ren, start, slutt)
+        hvis ikke studio_v2_editor_er_reservert_symbolnavn(kandidat) da {
+            returner kandidat
+        }
+        indeks = start - 1
+    }
+    returner ""
+}
+
+funksjon studio_v2_editor_signature_navn_fra_completion(rot: tekst, linjetekst: tekst, kolonne: heltall) -> tekst {
+    la forslag: liste_tekst = studio_v2_editor_completion_fra_linjetekst(rot, linjetekst, kolonne)
+    la indeks: heltall = 0
+    mens (indeks < lengde(forslag)) {
+        hvis symbol.studio_v2_symbol_completion_type(forslag[indeks]) == "symbol" eller symbol.studio_v2_symbol_completion_type(forslag[indeks]) == "builtin" da {
+            returner symbol.studio_v2_symbol_completion_navn(forslag[indeks])
+        }
+        indeks = indeks + 1
+    }
+    returner ""
+}
+
+funksjon studio_v2_editor_signature_help_med_hover(rot: tekst, navn: tekst) -> tekst {
+    la signatur: tekst = studio_v2_editor_signature_help(rot, navn)
+    la hover: tekst = studio_v2_editor_hover(rot, navn)
+    hvis hover != "" og ikke tekst_inneholder(signatur, hover) da {
+        returner signatur + "\n" + hover
+    }
+    returner signatur
+}
+
+funksjon studio_v2_editor_hover_fra_linjetekst(rot: tekst, linjetekst: tekst, kolonne: heltall) -> tekst {
+    la navn: tekst = studio_v2_editor_symbol_fra_linje_med_funksjon(linjetekst, kolonne)
+    hvis navn == "" da {
+        returner ""
+    }
+    returner studio_v2_editor_hover(rot, navn)
+}
+
+funksjon studio_v2_editor_signature_help_fra_linjetekst(rot: tekst, linjetekst: tekst, kolonne: heltall) -> tekst {
+    la navn: tekst = studio_v2_editor_signature_navn_fra_linje(linjetekst, kolonne)
+    hvis navn == "" da {
+        navn = studio_v2_editor_signature_navn_fra_completion(rot, linjetekst, kolonne)
+    }
+    hvis navn == "" da {
+        returner ""
+    }
+    la signatur: tekst = studio_v2_editor_signature_help_med_hover(rot, navn)
+    la aktiv_parameter: heltall = studio_v2_editor_aktiv_parameter_fra_linje(linjetekst, kolonne)
+    hvis aktiv_parameter > 0 da {
+        returner signatur + "\nAktiv parameter: " + tekst_fra_heltall(aktiv_parameter)
+    }
+    returner signatur
+}
+
+funksjon studio_v2_editor_hover_fra_buffer(rot: tekst, buffer: liste_tekst, linje_nummer: heltall, kolonne: heltall) -> tekst {
+    hvis linje_nummer < 1 eller linje_nummer > lengde(buffer) da {
+        returner ""
+    }
+    returner studio_v2_editor_hover_fra_linjetekst(rot, buffer[linje_nummer - 1], kolonne)
+}
+
+funksjon studio_v2_editor_signature_help_fra_buffer(rot: tekst, buffer: liste_tekst, linje_nummer: heltall, kolonne: heltall) -> tekst {
+    hvis linje_nummer < 1 eller linje_nummer > lengde(buffer) da {
+        returner ""
+    }
+    returner studio_v2_editor_signature_help_fra_linjetekst(rot, buffer[linje_nummer - 1], kolonne)
+}
+
+funksjon studio_v2_editor_hover_fra_aktiv_linje(rot: tekst, buffer: liste_tekst, linje_nummer: heltall) -> tekst {
+    hvis linje_nummer < 1 eller linje_nummer > lengde(buffer) da {
+        returner ""
+    }
+    la navn: tekst = studio_v2_editor_symbol_fra_aktiv_linje(buffer[linje_nummer - 1])
+    hvis navn == "" da {
+        returner ""
+    }
+    returner studio_v2_editor_hover(rot, navn)
+}
+
+funksjon studio_v2_editor_signature_help_fra_aktiv_linje(rot: tekst, buffer: liste_tekst, linje_nummer: heltall) -> tekst {
+    hvis linje_nummer < 1 eller linje_nummer > lengde(buffer) da {
+        returner ""
+    }
+    la linjetekst: tekst = buffer[linje_nummer - 1]
+    la navn: tekst = studio_v2_editor_signature_navn_fra_linje(linjetekst, tekst_lengde(linjetekst))
+    hvis navn == "" da {
+        navn = studio_v2_editor_signature_navn_fra_completion(rot, linjetekst, tekst_lengde(linjetekst))
+    }
+    hvis navn == "" da {
+        returner ""
+    }
+    returner studio_v2_editor_signature_help_med_hover(rot, navn)
 }
 
 funksjon studio_v2_editor_sok(buffer: liste_tekst, needle: tekst) -> heltall {

@@ -11,6 +11,68 @@ funksjon studio_v2_diagnostics_tekst_oppføring(slag: tekst, fil: tekst, linje: 
     returner slag + "\t" + fil + "\t" + tekst_fra_heltall(linje) + "\t" + melding
 }
 
+funksjon studio_v2_diagnostics_tekst_oppføring_med_kolonne(slag: tekst, fil: tekst, linje: heltall, kolonne: heltall, melding: tekst) -> tekst {
+    returner slag + "\t" + fil + "\t" + tekst_fra_heltall(linje) + "\t" + melding + " @kolonne " + tekst_fra_heltall(kolonne)
+}
+
+funksjon studio_v2_diagnostics_finn_oppføring(resultater: liste_tekst, nøkkel: tekst) -> tekst {
+    la i: heltall = 0
+    la søk: tekst = nøkkel + "\t"
+    mens (i < lengde(resultater)) {
+        hvis tekst_starter_med(resultater[i], søk) da {
+            returner resultater[i]
+        }
+        i = i + 1
+    }
+    returner ""
+}
+
+funksjon studio_v2_diagnostics_alvorlighet_fra_slag(slag: tekst) -> tekst {
+    hvis slag == "syntax_error" da {
+        returner "error"
+    }
+    hvis slag == "warning" da {
+        returner "warning"
+    }
+    hvis slag == "info" da {
+        returner "info"
+    }
+    returner "unknown"
+}
+
+funksjon studio_v2_diagnostics_er_fatal(slag: tekst) -> bool {
+    hvis studio_v2_diagnostics_alvorlighet_fra_slag(slag) == "error" da {
+        returner sann
+    }
+    returner usann
+}
+
+funksjon studio_v2_diagnostics_antall_fatal(diagnoser: liste_tekst) -> heltall {
+    la antall: heltall = 0
+    la indeks: heltall = 0
+    mens (indeks < lengde(diagnoser)) {
+        la deler: liste_tekst = tekst_del_på(diagnoser[indeks], "\t")
+        hvis lengde(deler) > 0 og studio_v2_diagnostics_er_fatal(deler[0]) da {
+            antall = antall + 1
+        }
+        indeks = indeks + 1
+    }
+    returner antall
+}
+
+funksjon studio_v2_diagnostics_antall_gjenvinnbare(diagnoser: liste_tekst) -> heltall {
+    la antall: heltall = 0
+    la indeks: heltall = 0
+    mens (indeks < lengde(diagnoser)) {
+        la deler: liste_tekst = tekst_del_på(diagnoser[indeks], "\t")
+        hvis lengde(deler) > 0 og ikke studio_v2_diagnostics_er_fatal(deler[0]) da {
+            antall = antall + 1
+        }
+        indeks = indeks + 1
+    }
+    returner antall
+}
+
 funksjon studio_v2_diagnostics_tell_tegn(tekstverdi: tekst, tegn: tekst) -> heltall {
     la antall: heltall = 0
     la indeks: heltall = 0
@@ -23,58 +85,335 @@ funksjon studio_v2_diagnostics_tell_tegn(tekstverdi: tekst, tegn: tekst) -> helt
     returner antall
 }
 
+funksjon studio_v2_diagnostics_rest_fra_posisjon(linje: tekst, start_posisjon: heltall) -> tekst {
+    returner tekst_trim(symbol.studio_v2_symbol_rens_linje_for_søk(tekst_slice(linje, start_posisjon, tekst_lengde(linje))))
+}
+
+funksjon studio_v2_diagnostics_blokk_rest_fra_linje(linje: tekst, blokk_start: heltall) -> tekst {
+    returner studio_v2_diagnostics_rest_fra_posisjon(linje, blokk_start + 1)
+}
+
+funksjon studio_v2_diagnostics_setningstype(linje: tekst) -> tekst {
+    la renset: tekst = tekst_trim(symbol.studio_v2_symbol_rens_linje_for_søk(linje))
+    hvis renset == "" da {
+        returner "tom"
+    }
+    hvis tekst_starter_med(renset, "funksjon ") da {
+        returner "funksjon"
+    }
+    hvis tekst_starter_med(renset, "bruk ") eller renset == "bruk" da {
+        returner "bruk"
+    }
+    hvis tekst_starter_med(renset, "la ") da {
+        returner "la"
+    }
+    hvis tekst_starter_med(renset, "returner") da {
+        returner "returner"
+    }
+    hvis tekst_starter_med(renset, "ellers hvis ") da {
+        returner "ellers hvis"
+    }
+    hvis renset == "ellers" eller tekst_starter_med(renset, "ellers {") da {
+        returner "ellers"
+    }
+    hvis tekst_starter_med(renset, "hvis ") da {
+        returner "hvis"
+    }
+    hvis tekst_starter_med(renset, "mens ") da {
+        returner "mens"
+    }
+    returner "ukjent"
+}
+
+funksjon studio_v2_diagnostics_setningskolonne(linje: tekst) -> heltall {
+    la indeks: heltall = 0
+    mens (indeks < tekst_lengde(linje)) {
+        la tegn: tekst = tekst_slice(linje, indeks, indeks + 1)
+        hvis tegn != " " og tegn != "\t" da {
+            returner indeks + 1
+        }
+        indeks = indeks + 1
+    }
+    returner 1
+}
+
+funksjon studio_v2_diagnostics_linje_har_uavsluttet_streng(linje: tekst) -> bool {
+    la indeks: heltall = 0
+    la i_streng: bool = usann
+    la escape: bool = usann
+    la grense: heltall = tekst_lengde(linje)
+    mens (indeks < grense) {
+        la tegn: tekst = tekst_slice(linje, indeks, indeks + 1)
+        hvis i_streng da {
+            hvis escape da {
+                escape = usann
+            } ellers hvis tegn == "\\" da {
+                escape = sann
+            } ellers hvis tegn == "\"" da {
+                i_streng = usann
+            }
+        } ellers {
+            hvis tegn == "\"" da {
+                i_streng = sann
+            } ellers hvis tegn == "#" da {
+                returner usann
+            } ellers hvis tegn == "/" og indeks + 1 < grense og tekst_slice(linje, indeks + 1, indeks + 2) == "/" da {
+                returner usann
+            }
+        }
+        indeks = indeks + 1
+    }
+    returner i_streng
+}
+
 funksjon studio_v2_diagnostics_syntaks_fra_innhold(sti: tekst, innhold: tekst) -> liste_tekst {
     la resultater: liste_tekst = []
     la linjer: liste_tekst = del_linjer(innhold)
     la parentes: heltall = 0
+    la parentes_linje: heltall = 0
+    la parentes_kolonne: heltall = 0
     la klammer: heltall = 0
+    la klammer_linje: heltall = 0
+    la klammer_kolonne: heltall = 0
     la hakeparentes: heltall = 0
+    la hakeparentes_linje: heltall = 0
+    la hakeparentes_kolonne: heltall = 0
     la linje_indeks: heltall = 0
     mens (linje_indeks < lengde(linjer)) {
         la linje: tekst = linjer[linje_indeks]
+        la renset: tekst = tekst_trim(symbol.studio_v2_symbol_rens_linje_for_søk(linje))
+        la setningstype: tekst = studio_v2_diagnostics_setningstype(linje)
+        la setningskolonne: heltall = studio_v2_diagnostics_setningskolonne(linje)
         la tegn_indeks: heltall = 0
-        mens (tegn_indeks < tekst_lengde(linje)) {
-            la tegn: tekst = tekst_slice(linje, tegn_indeks, tegn_indeks + 1)
+        mens (tegn_indeks < tekst_lengde(renset)) {
+            la tegn: tekst = tekst_slice(renset, tegn_indeks, tegn_indeks + 1)
             hvis tegn == "(" da {
                 parentes = parentes + 1
+                parentes_linje = linje_indeks + 1
+                parentes_kolonne = setningskolonne + tegn_indeks + 1
             } ellers hvis tegn == ")" da {
                 parentes = parentes - 1
                 hvis parentes < 0 da {
                     legg_til(resultater, studio_v2_diagnostics_tekst_oppføring("syntax_error", sti, linje_indeks + 1, "for mange avsluttende parenteser"))
                     parentes = 0
+                    parentes_linje = 0
+                    parentes_kolonne = 0
                 }
             } ellers hvis tegn == "{" da {
                 klammer = klammer + 1
+                klammer_linje = linje_indeks + 1
+                klammer_kolonne = setningskolonne + tegn_indeks + 1
             } ellers hvis tegn == "}" da {
                 klammer = klammer - 1
                 hvis klammer < 0 da {
                     legg_til(resultater, studio_v2_diagnostics_tekst_oppføring("syntax_error", sti, linje_indeks + 1, "for mange avsluttende klammer"))
                     klammer = 0
+                    klammer_linje = 0
+                    klammer_kolonne = 0
                 }
             } ellers hvis tegn == "[" da {
                 hakeparentes = hakeparentes + 1
+                hakeparentes_linje = linje_indeks + 1
+                hakeparentes_kolonne = setningskolonne + tegn_indeks + 1
             } ellers hvis tegn == "]" da {
                 hakeparentes = hakeparentes - 1
                 hvis hakeparentes < 0 da {
                     legg_til(resultater, studio_v2_diagnostics_tekst_oppføring("syntax_error", sti, linje_indeks + 1, "for mange avsluttende hakeparenteser"))
                     hakeparentes = 0
+                    hakeparentes_linje = 0
+                    hakeparentes_kolonne = 0
                 }
             }
             tegn_indeks = tegn_indeks + 1
         }
-        hvis tekst_starter_med(tekst_trim(linje), "funksjon ") og ikke tekst_inneholder(linje, "->") da {
+        hvis setningstype == "funksjon" og ikke tekst_inneholder(renset, "->") da {
             legg_til(resultater, studio_v2_diagnostics_tekst_oppføring("syntax_error", sti, linje_indeks + 1, "mangler returtype med ->"))
+        }
+        hvis setningstype == "funksjon" og ikke tekst_inneholder(renset, "(") da {
+            legg_til(resultater, studio_v2_diagnostics_tekst_oppføring("syntax_error", sti, linje_indeks + 1, "mangler åpning ( i signatur"))
+        }
+        hvis setningstype == "funksjon" og ikke tekst_inneholder(renset, ")") da {
+            legg_til(resultater, studio_v2_diagnostics_tekst_oppføring("syntax_error", sti, linje_indeks + 1, "mangler avsluttende ) i signatur"))
+        }
+        hvis setningstype == "funksjon" og symbol.studio_v2_symbol_finn_funksjonsnavn(renset) == "" da {
+            legg_til(resultater, studio_v2_diagnostics_tekst_oppføring_med_kolonne("syntax_error", sti, linje_indeks + 1, setningskolonne, "mangler funksjonsnavn"))
+        }
+        hvis setningstype == "funksjon" og tekst_inneholder(renset, "->") da {
+            la pil_posisjon: heltall = symbol.studio_v2_symbol_finn_tekst_posisjon(renset, "->")
+            hvis pil_posisjon >= 0 da {
+                la returtype: tekst = studio_v2_diagnostics_rest_fra_posisjon(renset, pil_posisjon + 2)
+                hvis returtype == "" eller returtype == "{" da {
+                    legg_til(resultater, studio_v2_diagnostics_tekst_oppføring("syntax_error", sti, linje_indeks + 1, "mangler returtype etter ->"))
+                }
+                hvis symbol.studio_v2_symbol_finn_tekst_posisjon(tekst_slice(renset, pil_posisjon + 2, tekst_lengde(renset)), "->") >= 0 da {
+                    legg_til(resultater, studio_v2_diagnostics_tekst_oppføring("syntax_error", sti, linje_indeks + 1, "for mange -> i signatur"))
+                }
+            }
+        }
+        hvis setningstype == "funksjon" og tekst_inneholder(renset, "(") og tekst_inneholder(renset, ")") da {
+            la åpning: heltall = symbol.studio_v2_symbol_finn_tekst_posisjon(renset, "(")
+            la lukking: heltall = symbol.studio_v2_symbol_finn_siste_tegn_posisjon(renset, ")")
+            hvis åpning >= 0 og lukking > åpning da {
+                la parametre: tekst = tekst_trim(symbol.studio_v2_symbol_rens_linje_for_søk(tekst_slice(renset, åpning + 1, lukking)))
+                hvis parametre != "" og ikke tekst_inneholder(parametre, ":") da {
+                    legg_til(resultater, studio_v2_diagnostics_tekst_oppføring("syntax_error", sti, linje_indeks + 1, "mangler : i parameter"))
+                }
+                hvis tekst_inneholder(parametre, ",,") eller tekst_starter_med(parametre, ",") eller tekst_slutter_med(parametre, ",") da {
+                    legg_til(resultater, studio_v2_diagnostics_tekst_oppføring("syntax_error", sti, linje_indeks + 1, "mangler parameter etter komma"))
+                }
+            }
+        }
+        hvis setningstype == "funksjon" og ikke tekst_inneholder(renset, "{") da {
+            legg_til(resultater, studio_v2_diagnostics_tekst_oppføring("syntax_error", sti, linje_indeks + 1, "mangler funksjonskropp"))
+        } ellers hvis setningstype == "funksjon" og tekst_inneholder(renset, "{") da {
+            la blokk_start: heltall = symbol.studio_v2_symbol_finn_tekst_posisjon(renset, "{")
+            hvis blokk_start >= 0 da {
+                la blokk_rest: tekst = studio_v2_diagnostics_blokk_rest_fra_linje(renset, blokk_start)
+                hvis blokk_rest == "" da {
+                    legg_til(resultater, studio_v2_diagnostics_tekst_oppføring("syntax_error", sti, linje_indeks + 1, "mangler innhold i funksjonsblokk"))
+                }
+            }
+        }
+        la ren_linje: tekst = renset
+        hvis setningstype == "bruk" og ren_linje == "bruk" da {
+            legg_til(resultater, studio_v2_diagnostics_tekst_oppføring_med_kolonne("syntax_error", sti, linje_indeks + 1, setningskolonne, "mangler modulnavn etter bruk"))
+        } ellers hvis setningstype == "bruk" da {
+            la bruk_innhold: tekst = tekst_trim(symbol.studio_v2_symbol_rens_linje_for_søk(tekst_slice(ren_linje, 5, tekst_lengde(ren_linje))))
+            la som_posisjon: heltall = symbol.studio_v2_symbol_finn_tekst_posisjon(bruk_innhold, " som ")
+            hvis som_posisjon >= 0 da {
+                la modul: tekst = tekst_trim(tekst_slice(bruk_innhold, 0, som_posisjon))
+                hvis modul == "" da {
+                    legg_til(resultater, studio_v2_diagnostics_tekst_oppføring_med_kolonne("syntax_error", sti, linje_indeks + 1, setningskolonne, "mangler modulnavn før som"))
+                }
+                la alias: tekst = studio_v2_diagnostics_rest_fra_posisjon(bruk_innhold, som_posisjon + 5)
+                hvis alias == "" da {
+                    legg_til(resultater, studio_v2_diagnostics_tekst_oppføring_med_kolonne("syntax_error", sti, linje_indeks + 1, setningskolonne + som_posisjon + 5, "mangler alias etter som"))
+                } ellers hvis tekst_starter_med(alias, "#") da {
+                    legg_til(resultater, studio_v2_diagnostics_tekst_oppføring_med_kolonne("syntax_error", sti, linje_indeks + 1, setningskolonne + som_posisjon + 5, "mangler alias etter som"))
+                } ellers hvis tekst_slutter_med(alias, ",") da {
+                    legg_til(resultater, studio_v2_diagnostics_tekst_oppføring_med_kolonne("syntax_error", sti, linje_indeks + 1, setningskolonne + som_posisjon + 5, "mangler alias etter som"))
+                }
+            } ellers hvis bruk_innhold != "" da {
+                legg_til(resultater, studio_v2_diagnostics_tekst_oppføring_med_kolonne("syntax_error", sti, linje_indeks + 1, setningskolonne, "mangler alias etter som"))
+            }
+        } ellers hvis setningstype == "la" da {
+            hvis symbol.studio_v2_symbol_finn_lokalnavn(ren_linje) == "" da {
+                legg_til(resultater, studio_v2_diagnostics_tekst_oppføring_med_kolonne("syntax_error", sti, linje_indeks + 1, setningskolonne, "mangler variabelnavn"))
+            } ellers hvis symbol.studio_v2_symbol_finn_tekst_posisjon(ren_linje, "=") < 0 da {
+                legg_til(resultater, studio_v2_diagnostics_tekst_oppføring_med_kolonne("syntax_error", sti, linje_indeks + 1, setningskolonne, "mangler = i deklarasjon"))
+            } ellers hvis symbol.studio_v2_symbol_finn_tekst_posisjon(ren_linje, "=") >= 0 da {
+                la likhet_posisjon: heltall = symbol.studio_v2_symbol_finn_tekst_posisjon(ren_linje, "=")
+                la verdi_tekst: tekst = studio_v2_diagnostics_rest_fra_posisjon(ren_linje, likhet_posisjon + 1)
+                hvis verdi_tekst == "" da {
+                    legg_til(resultater, studio_v2_diagnostics_tekst_oppføring_med_kolonne("syntax_error", sti, linje_indeks + 1, setningskolonne + likhet_posisjon + 1, "mangler verdi etter ="))
+                } ellers hvis tekst_starter_med(verdi_tekst, "#") da {
+                    legg_til(resultater, studio_v2_diagnostics_tekst_oppføring_med_kolonne("syntax_error", sti, linje_indeks + 1, setningskolonne + likhet_posisjon + 1, "mangler verdi etter ="))
+                } ellers hvis tekst_slutter_med(verdi_tekst, ",") da {
+                    legg_til(resultater, studio_v2_diagnostics_tekst_oppføring_med_kolonne("syntax_error", sti, linje_indeks + 1, setningskolonne + likhet_posisjon + 1, "mangler verdi etter komma"))
+                }
+            }
+        } ellers hvis setningstype == "returner" da {
+            la retur_del: tekst = studio_v2_diagnostics_rest_fra_posisjon(ren_linje, 8)
+            hvis retur_del == "" da {
+                legg_til(resultater, studio_v2_diagnostics_tekst_oppføring_med_kolonne("syntax_error", sti, linje_indeks + 1, setningskolonne, "mangler verdi etter returner"))
+            } ellers hvis tekst_starter_med(retur_del, ",") da {
+                legg_til(resultater, studio_v2_diagnostics_tekst_oppføring_med_kolonne("syntax_error", sti, linje_indeks + 1, setningskolonne, "mangler verdi etter returner"))
+            }
+        }
+        hvis setningstype == "ellers" og ren_linje == "ellers" da {
+            legg_til(resultater, studio_v2_diagnostics_tekst_oppføring_med_kolonne("syntax_error", sti, linje_indeks + 1, setningskolonne, "mangler hvis etter ellers"))
+        } ellers hvis setningstype == "ellers" og tekst_starter_med(ren_linje, "ellers {") da {
+            la blokk_start: heltall = symbol.studio_v2_symbol_finn_tekst_posisjon(ren_linje, "{")
+            hvis blokk_start >= 0 da {
+                la blokk_rest: tekst = studio_v2_diagnostics_blokk_rest_fra_linje(ren_linje, blokk_start)
+                hvis blokk_rest == "" da {
+                    legg_til(resultater, studio_v2_diagnostics_tekst_oppføring_med_kolonne("syntax_error", sti, linje_indeks + 1, setningskolonne + blokk_start + 1, "mangler innhold i ellers-blokk"))
+                }
+            }
+        }
+        hvis setningstype == "hvis" eller setningstype == "mens" eller setningstype == "ellers hvis" da {
+            hvis ren_linje == "hvis da" eller ren_linje == "mens da" eller ren_linje == "ellers hvis da" da {
+                legg_til(resultater, studio_v2_diagnostics_tekst_oppføring_med_kolonne("syntax_error", sti, linje_indeks + 1, setningskolonne, "mangler betingelse etter kontrollflyt"))
+            }
+        }
+        hvis setningstype == "hvis" da {
+            la betingelse: tekst = studio_v2_diagnostics_rest_fra_posisjon(ren_linje, 5)
+            hvis betingelse == "" eller betingelse == "da" da {
+                legg_til(resultater, studio_v2_diagnostics_tekst_oppføring_med_kolonne("syntax_error", sti, linje_indeks + 1, setningskolonne + 5, "mangler betingelse etter hvis"))
+            }
+            la kontroll_fortsatt: tekst = studio_v2_diagnostics_rest_fra_posisjon(ren_linje, 5)
+            hvis ikke tekst_inneholder(kontroll_fortsatt, " da ") og ikke tekst_slutter_med(kontroll_fortsatt, " da") da {
+                legg_til(resultater, studio_v2_diagnostics_tekst_oppføring_med_kolonne("syntax_error", sti, linje_indeks + 1, setningskolonne + 5, "mangler da etter kontrollflyt"))
+            }
+        } ellers hvis setningstype == "ellers hvis" da {
+            la betingelse: tekst = studio_v2_diagnostics_rest_fra_posisjon(ren_linje, 12)
+            hvis betingelse == "" eller betingelse == "da" da {
+                legg_til(resultater, studio_v2_diagnostics_tekst_oppføring_med_kolonne("syntax_error", sti, linje_indeks + 1, setningskolonne + 12, "mangler betingelse etter ellers hvis"))
+            }
+            la kontroll_fortsatt: tekst = studio_v2_diagnostics_rest_fra_posisjon(ren_linje, 12)
+            hvis ikke tekst_inneholder(kontroll_fortsatt, " da ") og ikke tekst_slutter_med(kontroll_fortsatt, " da") da {
+                legg_til(resultater, studio_v2_diagnostics_tekst_oppføring_med_kolonne("syntax_error", sti, linje_indeks + 1, setningskolonne + 12, "mangler da etter kontrollflyt"))
+            }
+        } ellers hvis setningstype == "mens" da {
+            la betingelse: tekst = studio_v2_diagnostics_rest_fra_posisjon(ren_linje, 5)
+            hvis betingelse == "" eller betingelse == "da" da {
+                legg_til(resultater, studio_v2_diagnostics_tekst_oppføring_med_kolonne("syntax_error", sti, linje_indeks + 1, setningskolonne + 5, "mangler betingelse etter mens"))
+            }
+            la kontroll_fortsatt: tekst = studio_v2_diagnostics_rest_fra_posisjon(ren_linje, 5)
+            hvis ikke tekst_inneholder(kontroll_fortsatt, " da ") og ikke tekst_slutter_med(kontroll_fortsatt, " da") da {
+                legg_til(resultater, studio_v2_diagnostics_tekst_oppføring_med_kolonne("syntax_error", sti, linje_indeks + 1, setningskolonne + 5, "mangler da etter kontrollflyt"))
+            }
+        }
+        hvis setningstype == "hvis" da {
+            hvis ikke tekst_inneholder(ren_linje, "{") da {
+                legg_til(resultater, studio_v2_diagnostics_tekst_oppføring_med_kolonne("syntax_error", sti, linje_indeks + 1, setningskolonne, "mangler blokk etter kontrollflyt"))
+            } ellers hvis tekst_inneholder(ren_linje, "{") da {
+                la blokk_start: heltall = symbol.studio_v2_symbol_finn_tekst_posisjon(ren_linje, "{")
+                hvis blokk_start >= 0 da {
+                    la blokk_rest: tekst = studio_v2_diagnostics_blokk_rest_fra_linje(ren_linje, blokk_start)
+                    hvis blokk_rest == "" da {
+                        legg_til(resultater, studio_v2_diagnostics_tekst_oppføring_med_kolonne("syntax_error", sti, linje_indeks + 1, setningskolonne + blokk_start + 1, "mangler innhold i hvis-blokk"))
+                    }
+                }
+            }
+        } ellers hvis setningstype == "ellers hvis" da {
+            hvis ikke tekst_inneholder(ren_linje, "{") da {
+                legg_til(resultater, studio_v2_diagnostics_tekst_oppføring_med_kolonne("syntax_error", sti, linje_indeks + 1, setningskolonne, "mangler blokk etter kontrollflyt"))
+            } ellers hvis tekst_inneholder(ren_linje, "{") da {
+                la blokk_start: heltall = symbol.studio_v2_symbol_finn_tekst_posisjon(ren_linje, "{")
+                hvis blokk_start >= 0 da {
+                    la blokk_rest: tekst = studio_v2_diagnostics_blokk_rest_fra_linje(ren_linje, blokk_start)
+                    hvis blokk_rest == "" da {
+                        legg_til(resultater, studio_v2_diagnostics_tekst_oppføring_med_kolonne("syntax_error", sti, linje_indeks + 1, setningskolonne + blokk_start + 1, "mangler innhold i ellers hvis-blokk"))
+                    }
+                }
+            }
+        } ellers hvis setningstype == "mens" da {
+            hvis ikke tekst_inneholder(ren_linje, "{") da {
+                legg_til(resultater, studio_v2_diagnostics_tekst_oppføring_med_kolonne("syntax_error", sti, linje_indeks + 1, setningskolonne, "mangler blokk etter kontrollflyt"))
+            } ellers hvis tekst_inneholder(ren_linje, "{") da {
+                la blokk_start: heltall = symbol.studio_v2_symbol_finn_tekst_posisjon(ren_linje, "{")
+                hvis blokk_start >= 0 da {
+                    la blokk_rest: tekst = studio_v2_diagnostics_blokk_rest_fra_linje(ren_linje, blokk_start)
+                    hvis blokk_rest == "" da {
+                        legg_til(resultater, studio_v2_diagnostics_tekst_oppføring_med_kolonne("syntax_error", sti, linje_indeks + 1, setningskolonne + blokk_start + 1, "mangler innhold i mens-blokk"))
+                    }
+                }
+            }
+        }
+        hvis studio_v2_diagnostics_linje_har_uavsluttet_streng(linje) da {
+            legg_til(resultater, studio_v2_diagnostics_tekst_oppføring_med_kolonne("syntax_error", sti, linje_indeks + 1, setningskolonne, "mangler avsluttende \""))
         }
         linje_indeks = linje_indeks + 1
     }
     hvis parentes > 0 da {
-        legg_til(resultater, studio_v2_diagnostics_tekst_oppføring("syntax_error", sti, lengde(linjer), "mangler avsluttende parentes"))
+        legg_til(resultater, studio_v2_diagnostics_tekst_oppføring_med_kolonne("syntax_error", sti, parentes_linje, parentes_kolonne, "mangler avsluttende parentes"))
     }
     hvis klammer > 0 da {
-        legg_til(resultater, studio_v2_diagnostics_tekst_oppføring("syntax_error", sti, lengde(linjer), "mangler avsluttende klamme"))
+        legg_til(resultater, studio_v2_diagnostics_tekst_oppføring_med_kolonne("syntax_error", sti, klammer_linje, klammer_kolonne, "mangler avsluttende klamme"))
     }
     hvis hakeparentes > 0 da {
-        legg_til(resultater, studio_v2_diagnostics_tekst_oppføring("syntax_error", sti, lengde(linjer), "mangler avsluttende hakeparentes"))
+        legg_til(resultater, studio_v2_diagnostics_tekst_oppføring_med_kolonne("syntax_error", sti, hakeparentes_linje, hakeparentes_kolonne, "mangler avsluttende hakeparentes"))
     }
     returner resultater
 }
@@ -114,44 +453,66 @@ funksjon studio_v2_diagnostics_fra_workspace(rot: tekst) -> liste_tekst {
     la resultater: liste_tekst = []
     la filer: liste_tekst = workspace.studio_v2_state_workspace_filer(rot)
     la symbol_indeks: liste_tekst = symbol.studio_v2_symbol_indeks_fra_filer(filer)
+    la symbol_sammendrag: liste_tekst = symbol.studio_v2_symbol_workspace_sammendrag(rot)
     la syntaks: liste_tekst = studio_v2_diagnostics_syntaks_fra_workspace(rot)
     la aktiv_fil: tekst = workspace.studio_v2_state_aktiv_fil(rot)
     legg_til(resultater, "workspace\tNorscode Studio v2\t" + rot)
     legg_til(resultater, "aktivitetsfil\t" + aktiv_fil)
     legg_til(resultater, "åpne_filer\t" + tekst_fra_heltall(lengde(workspace.studio_v2_state_apne_filer(rot, aktiv_fil))))
     legg_til(resultater, "workspace_filer\t" + tekst_fra_heltall(lengde(filer)))
+    legg_til(resultater, "workspace_sammendrag\t" + tekst_fra_heltall(lengde(symbol_sammendrag)))
     legg_til(resultater, "syntax_errors\t" + tekst_fra_heltall(lengde(syntaks)))
+    legg_til(resultater, "syntax_errors_fatal\t" + tekst_fra_heltall(studio_v2_diagnostics_antall_fatal(syntaks)))
+    legg_til(resultater, "syntax_errors_gjenvinnbare\t" + tekst_fra_heltall(studio_v2_diagnostics_antall_gjenvinnbare(syntaks)))
     legg_til(resultater, "symbol_definisjoner\t" + tekst_fra_heltall(symbol.studio_v2_symbol_indeks_antall_definisjoner(symbol_indeks)))
     legg_til(resultater, "symbol_bruk\t" + tekst_fra_heltall(symbol.studio_v2_symbol_indeks_antall_bruk(symbol_indeks)))
     legg_til(resultater, "symboler\t" + tekst_fra_heltall(lengde(symbol_indeks)))
+    la sammendrag_indeks: heltall = 0
+    mens (sammendrag_indeks < lengde(symbol_sammendrag) og sammendrag_indeks < 4) {
+        legg_til(resultater, symbol_sammendrag[sammendrag_indeks])
+        sammendrag_indeks = sammendrag_indeks + 1
+    }
     la syntaks_indeks: heltall = 0
     mens (syntaks_indeks < lengde(syntaks) og syntaks_indeks < 3) {
         legg_til(resultater, syntaks[syntaks_indeks])
         syntaks_indeks = syntaks_indeks + 1
     }
     legg_til(resultater, "status\tklar")
+    legg_til(resultater, "symbol_importer\t" + tekst_fra_heltall(symbol.studio_v2_symbol_indeks_antall_importer(symbol_indeks)))
+    legg_til(resultater, "symbol_lokale\t" + tekst_fra_heltall(symbol.studio_v2_symbol_indeks_antall_lokale(symbol_indeks)))
     returner resultater
 }
 
 funksjon studio_v2_diagnostics_fra_workspace_med_filer(rot: tekst, filer: liste_tekst, symbol_antall: heltall) -> liste_tekst {
     la resultater: liste_tekst = []
     la symbol_indeks: liste_tekst = symbol.studio_v2_symbol_indeks_fra_filer(filer)
+    la symbol_sammendrag: liste_tekst = symbol.studio_v2_symbol_workspace_sammendrag(rot)
     la syntaks: liste_tekst = studio_v2_diagnostics_syntaks_fra_workspace(rot)
     la aktiv_fil: tekst = workspace.studio_v2_state_aktiv_fil(rot)
     legg_til(resultater, "workspace\tNorscode Studio v2\t" + rot)
     legg_til(resultater, "aktivitetsfil\t" + aktiv_fil)
     legg_til(resultater, "åpne_filer\t" + tekst_fra_heltall(lengde(workspace.studio_v2_state_apne_filer(rot, aktiv_fil))))
     legg_til(resultater, "workspace_filer\t" + tekst_fra_heltall(lengde(filer)))
+    legg_til(resultater, "workspace_sammendrag\t" + tekst_fra_heltall(lengde(symbol_sammendrag)))
     legg_til(resultater, "syntax_errors\t" + tekst_fra_heltall(lengde(syntaks)))
+    legg_til(resultater, "syntax_errors_fatal\t" + tekst_fra_heltall(studio_v2_diagnostics_antall_fatal(syntaks)))
+    legg_til(resultater, "syntax_errors_gjenvinnbare\t" + tekst_fra_heltall(studio_v2_diagnostics_antall_gjenvinnbare(syntaks)))
     legg_til(resultater, "symbol_definisjoner\t" + tekst_fra_heltall(symbol.studio_v2_symbol_indeks_antall_definisjoner(symbol_indeks)))
     legg_til(resultater, "symbol_bruk\t" + tekst_fra_heltall(symbol.studio_v2_symbol_indeks_antall_bruk(symbol_indeks)))
     legg_til(resultater, "symboler\t" + tekst_fra_heltall(symbol_antall))
+    la sammendrag_indeks: heltall = 0
+    mens (sammendrag_indeks < lengde(symbol_sammendrag) og sammendrag_indeks < 4) {
+        legg_til(resultater, symbol_sammendrag[sammendrag_indeks])
+        sammendrag_indeks = sammendrag_indeks + 1
+    }
     la syntaks_indeks: heltall = 0
     mens (syntaks_indeks < lengde(syntaks) og syntaks_indeks < 3) {
         legg_til(resultater, syntaks[syntaks_indeks])
         syntaks_indeks = syntaks_indeks + 1
     }
     legg_til(resultater, "status\tklar")
+    legg_til(resultater, "symbol_importer\t" + tekst_fra_heltall(symbol.studio_v2_symbol_indeks_antall_importer(symbol_indeks)))
+    legg_til(resultater, "symbol_lokale\t" + tekst_fra_heltall(symbol.studio_v2_symbol_indeks_antall_lokale(symbol_indeks)))
     returner resultater
 }
 

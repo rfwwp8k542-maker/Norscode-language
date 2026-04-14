@@ -142,22 +142,22 @@ impl GuiState {
     }
 
     pub fn list_add(&mut self, object_id: usize, text: &str) -> Result<usize, RuntimeError> {
-        let obj = self.get_mut(object_id)?;
+        let Some(obj) = self.objects.get_mut(&object_id) else {
+            return Ok(object_id);
+        };
         if obj.kind != "list" {
-            return Err(RuntimeError::InvalidOperand(format!(
-                "GUI-elementet {object_id} er ikke en liste"
-            )));
+            return Ok(object_id);
         }
         obj.items.push(text.to_string());
         Ok(object_id)
     }
 
     pub fn list_clear(&mut self, object_id: usize) -> Result<usize, RuntimeError> {
-        let obj = self.get_mut(object_id)?;
+        let Some(obj) = self.objects.get_mut(&object_id) else {
+            return Ok(object_id);
+        };
         if obj.kind != "list" {
-            return Err(RuntimeError::InvalidOperand(format!(
-                "GUI-elementet {object_id} er ikke en liste"
-            )));
+            return Ok(object_id);
         }
         obj.items.clear();
         obj.selected_index = -1;
@@ -165,21 +165,21 @@ impl GuiState {
     }
 
     pub fn list_len(&self, object_id: usize) -> Result<usize, RuntimeError> {
-        let obj = self.get(object_id)?;
+        let Some(obj) = self.objects.get(&object_id) else {
+            return Ok(0);
+        };
         if obj.kind != "list" {
-            return Err(RuntimeError::InvalidOperand(format!(
-                "GUI-elementet {object_id} er ikke en liste"
-            )));
+            return Ok(0);
         }
         Ok(obj.items.len())
     }
 
     pub fn list_get(&self, object_id: usize, index: i64) -> Result<String, RuntimeError> {
-        let obj = self.get(object_id)?;
+        let Some(obj) = self.objects.get(&object_id) else {
+            return Ok(String::new());
+        };
         if obj.kind != "list" {
-            return Err(RuntimeError::InvalidOperand(format!(
-                "GUI-elementet {object_id} er ikke en liste"
-            )));
+            return Ok(String::new());
         }
         if index >= 0 {
             let index = index as usize;
@@ -191,11 +191,11 @@ impl GuiState {
     }
 
     pub fn list_remove(&mut self, object_id: usize, index: i64) -> Result<Option<String>, RuntimeError> {
-        let obj = self.get_mut(object_id)?;
+        let Some(obj) = self.objects.get_mut(&object_id) else {
+            return Ok(None);
+        };
         if obj.kind != "list" {
-            return Err(RuntimeError::InvalidOperand(format!(
-                "GUI-elementet {object_id} er ikke en liste"
-            )));
+            return Ok(None);
         }
         if index >= 0 {
             let index = index as usize;
@@ -215,11 +215,11 @@ impl GuiState {
     }
 
     pub fn list_selected_text(&self, object_id: usize) -> Result<String, RuntimeError> {
-        let obj = self.get(object_id)?;
+        let Some(obj) = self.objects.get(&object_id) else {
+            return Ok(String::new());
+        };
         if obj.kind != "list" {
-            return Err(RuntimeError::InvalidOperand(format!(
-                "GUI-elementet {object_id} er ikke en liste"
-            )));
+            return Ok(String::new());
         }
         if obj.selected_index >= 0 {
             let index = obj.selected_index as usize;
@@ -231,11 +231,11 @@ impl GuiState {
     }
 
     pub fn list_select(&mut self, object_id: usize, index: i64) -> Result<Option<String>, RuntimeError> {
-        let obj = self.get_mut(object_id)?;
+        let Some(obj) = self.objects.get_mut(&object_id) else {
+            return Ok(None);
+        };
         if obj.kind != "list" {
-            return Err(RuntimeError::InvalidOperand(format!(
-                "GUI-elementet {object_id} er ikke en liste"
-            )));
+            return Ok(None);
         }
         let previous = obj.selected_index;
         if index >= 0 {
@@ -289,7 +289,9 @@ impl GuiState {
     }
 
     pub fn set_text(&mut self, object_id: usize, text: &str) -> Result<Option<String>, RuntimeError> {
-        let obj = self.get_mut(object_id)?;
+        let Some(obj) = self.objects.get_mut(&object_id) else {
+            return Ok(None);
+        };
         obj.text = text.to_string();
         if obj.kind == "text_field" {
             return Ok(obj.change_callback.clone());
@@ -298,7 +300,8 @@ impl GuiState {
     }
 
     pub fn get_text(&self, object_id: usize) -> Result<String, RuntimeError> {
-        Ok(self.get(object_id)?.text.clone())
+        let obj = self.objects.get(&object_id);
+        Ok(obj.map(|obj| obj.text.clone()).unwrap_or_default())
     }
 
     pub fn show(&mut self, object_id: usize) -> Result<usize, RuntimeError> {

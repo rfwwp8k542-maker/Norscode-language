@@ -1,0 +1,26 @@
+bruk studio_v2.studio_state som workspace
+bruk studio_v2.symbol som symbol
+
+test "studio v2 perf smoke" {
+    la rot: tekst = "/tmp/norscode-studio-v2-perf"
+    skriv_fil(rot + "/studio_v2/a.no", "funksjon a() -> tekst {\n    returner b\n}\n")
+    skriv_fil(rot + "/studio_v2/b.no", "bruk std.io som io\nfunksjon b() -> tekst {\n    la c = 1\n    returner c\n}\n")
+    skriv_fil(rot + "/studio_v2/c.no", "funksjon c() -> tekst {\n    returner a\n}\n")
+    skriv_fil(rot + "/studio_v2/d.no", "funksjon d() -> tekst {\n    returner b\n}\n")
+    skriv_fil(rot + "/studio_v2/e.no", "bruk std.math som math\nfunksjon e() -> tekst {\n    returner c\n}\n")
+    la filer: liste_tekst = [rot + "/studio_v2/a.no", rot + "/studio_v2/b.no", rot + "/studio_v2/c.no", rot + "/studio_v2/d.no", rot + "/studio_v2/e.no"]
+    la indeks: liste_tekst = symbol.studio_v2_symbol_indeks_fra_filer(filer)
+    assert(symbol.studio_v2_symbol_indeks_antall_definisjoner(indeks) >= 5)
+    assert(symbol.studio_v2_symbol_indeks_antall_importer(indeks) >= 2)
+    assert(symbol.studio_v2_symbol_indeks_antall_lokale(indeks) >= 1)
+    assert(symbol.studio_v2_symbol_indeks_antall_bruk(indeks) >= 4)
+    assert(lengde(symbol.studio_v2_symbol_workspace_sammendrag(rot)) >= 6)
+    assert(lengde(symbol.studio_v2_symbol_completion_fra_indeks(indeks, "a", 10)) > 0)
+    assert(lengde(symbol.studio_v2_symbol_completion_fra_indeks(indeks, "b", 10)) > 0)
+    assert(lengde(symbol.studio_v2_symbol_completion_fra_indeks(indeks, "c", 10)) > 0)
+}
+
+funksjon start() -> heltall {
+    skriv("Studio v2 perf smoke er klar")
+    returner 0
+}

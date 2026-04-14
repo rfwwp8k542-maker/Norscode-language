@@ -1,205 +1,961 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
+#include <dirent.h>
+#include <sys/stat.h>
+#ifdef _WIN32
+#include <process.h>
+#else
+#include <unistd.h>
+#include <sys/wait.h>
+#endif
 
-typedef struct { int lengde; int kapasitet; int *data; } ListeHeiltall;
-typedef struct { int lengde; int kapasitet; char **data; } ListeTekst;
+typedef struct { int *data; int len; int cap; } nl_list_int;
+typedef struct { char **data; int len; int cap; } nl_list_text;
 
-static void nl_fail(const char *msg) { fprintf(stderr, "%s\n", msg); exit(1); }
-static int sjekk_indeks(int idx, int lengde) { if (idx < 0 || idx >= lengde) nl_fail("Indeks utenfor område"); return idx; }
-static void skriv_heltall(int x) { printf("%d\n", x); }
-static void skriv_bool(int x) { printf("%s\n", x ? "sann" : "usann"); }
-static void skriv_tekst(const char *s) { printf("%s\n", s); }
-static char *nl_strdup(const char *s) { size_t len = strlen(s); char *out = (char *)malloc(len + 1); if (!out) nl_fail("Minnefeil"); memcpy(out, s, len + 1); return out; }
-static char *tekst_pluss(const char *a, const char *b) { size_t la = strlen(a), lb = strlen(b); char *out = (char *)malloc(la + lb + 1); if (!out) nl_fail("Minnefeil"); memcpy(out, a, la); memcpy(out + la, b, lb + 1); return out; }
-static char *tekst_fra_heltall_builtin(int x) { char buffer[64]; snprintf(buffer, sizeof(buffer), "%d", x); return nl_strdup(buffer); }
-static char *tekst_fra_bool_builtin(int x) { return nl_strdup(x ? "sann" : "usann"); }
-static char *les_input_builtin(const char *prompt) { char buffer[1024]; printf("%s", prompt); if (!fgets(buffer, sizeof(buffer), stdin)) return nl_strdup(""); buffer[strcspn(buffer, "\n")] = 0; return nl_strdup(buffer); }
-static ListeHeiltall lag_liste_heltall(int antall, int *verdier) { ListeHeiltall l; l.lengde = antall; l.kapasitet = antall > 0 ? antall : 1; l.data = (int *)malloc(sizeof(int) * l.kapasitet); if (!l.data) nl_fail("Minnefeil"); for (int i = 0; i < antall; i++) l.data[i] = verdier ? verdier[i] : 0; return l; }
-static ListeTekst lag_liste_tekst(int antall, char **verdier) { ListeTekst l; l.lengde = antall; l.kapasitet = antall > 0 ? antall : 1; l.data = (char **)malloc(sizeof(char*) * l.kapasitet); if (!l.data) nl_fail("Minnefeil"); for (int i = 0; i < antall; i++) l.data[i] = verdier ? verdier[i] : nl_strdup(""); return l; }
-static void reserve_heltall(ListeHeiltall *l) { if (l->lengde < l->kapasitet) return; l->kapasitet *= 2; l->data = (int *)realloc(l->data, sizeof(int) * l->kapasitet); if (!l->data) nl_fail("Minnefeil"); }
-static void reserve_tekst(ListeTekst *l) { if (l->lengde < l->kapasitet) return; l->kapasitet *= 2; l->data = (char **)realloc(l->data, sizeof(char*) * l->kapasitet); if (!l->data) nl_fail("Minnefeil"); }
-static void legg_til_heltall_builtin(ListeHeiltall *l, int verdi) { reserve_heltall(l); l->data[l->lengde++] = verdi; }
-static void legg_til_tekst_builtin(ListeTekst *l, char *verdi) { reserve_tekst(l); l->data[l->lengde++] = verdi; }
-static int pop_siste_heltall_builtin(ListeHeiltall *l) { if (l->lengde <= 0) nl_fail("Kan ikke poppe fra tom liste"); return l->data[--l->lengde]; }
-static char *pop_siste_tekst_builtin(ListeTekst *l) { if (l->lengde <= 0) nl_fail("Kan ikke poppe fra tom liste"); return l->data[--l->lengde]; }
-static void fjern_indeks_heltall_builtin(ListeHeiltall *l, int indeks) { sjekk_indeks(indeks, l->lengde); for (int i = indeks; i < l->lengde - 1; i++) l->data[i] = l->data[i + 1]; l->lengde--; }
-static void fjern_indeks_tekst_builtin(ListeTekst *l, int indeks) { sjekk_indeks(indeks, l->lengde); for (int i = indeks; i < l->lengde - 1; i++) l->data[i] = l->data[i + 1]; l->lengde--; }
-static void sett_inn_heltall_builtin(ListeHeiltall *l, int indeks, int verdi) { if (indeks < 0 || indeks > l->lengde) nl_fail("Indeks utenfor område"); reserve_heltall(l); for (int i = l->lengde; i > indeks; i--) l->data[i] = l->data[i - 1]; l->data[indeks] = verdi; l->lengde++; }
-static void sett_inn_tekst_builtin(ListeTekst *l, int indeks, char *verdi) { if (indeks < 0 || indeks > l->lengde) nl_fail("Indeks utenfor område"); reserve_tekst(l); for (int i = l->lengde; i > indeks; i--) l->data[i] = l->data[i - 1]; l->data[indeks] = verdi; l->lengde++; }
+static int nl_call_callback(const char *name, int widget_id);
 
-/* modul: math */
-int math__pluss(int a, int b);
-/* modul: math */
-int math__minus(int a, int b);
-/* modul: math */
-int math__gange(int a, int b);
-/* modul: math */
-int math__del(int a, int b);
-/* modul: math */
-int math__maks(int a, int b);
-/* modul: math */
-int math__min(int a, int b);
-/* modul: math */
-int math__absolutt(int x);
-/* modul: tekstmodul */
-char * tekstmodul__hilsen(char * navn);
-/* modul: tekstmodul */
-char * tekstmodul__rop(char * tekstverdi);
-/* modul: tekstmodul */
-char * tekstmodul__omgitt_av_klammer(char * tekstverdi);
-/* modul: tekstmodul */
-char * tekstmodul__ja_nei(int verdi);
-/* modul: tekstmodul */
-char * tekstmodul__tall_til_tekst(int verdi);
-/* modul: tekstmodul */
-char * tekstmodul__bool_til_tekst(int verdi);
-/* modul: listemodul */
-int listemodul__legg_til_tall(ListeHeiltall *liste, int verdi);
-/* modul: listemodul */
-int listemodul__legg_til_tekst(ListeTekst *liste, char * verdi);
-/* modul: listemodul */
-int listemodul__siste_tall(ListeHeiltall *liste);
-/* modul: listemodul */
-char * listemodul__siste_tekst(ListeTekst *liste);
-/* modul: listemodul */
-int listemodul__antall_tall(ListeHeiltall liste);
-/* modul: listemodul */
-int listemodul__antall_tekst(ListeTekst liste);
-int start();
-
-int math__pluss(int a, int b) {
-    return (a + b);
+static nl_list_int *nl_list_int_new(void) {
+    nl_list_int *l = (nl_list_int *)malloc(sizeof(nl_list_int));
+    if (!l) { perror("malloc"); exit(1); }
+    l->len = 0;
+    l->cap = 8;
+    l->data = (int *)malloc(sizeof(int) * l->cap);
+    if (!l->data) { perror("malloc"); exit(1); }
+    return l;
 }
 
-int math__minus(int a, int b) {
-    return (a - b);
+static nl_list_text *nl_list_text_new(void) {
+    nl_list_text *l = (nl_list_text *)malloc(sizeof(nl_list_text));
+    if (!l) { perror("malloc"); exit(1); }
+    l->len = 0;
+    l->cap = 8;
+    l->data = (char **)malloc(sizeof(char *) * l->cap);
+    if (!l->data) { perror("malloc"); exit(1); }
+    return l;
 }
 
-int math__gange(int a, int b) {
-    return (a * b);
+static void nl_list_int_ensure(nl_list_int *l, int need) {
+    if (need <= l->cap) { return; }
+    while (l->cap < need) { l->cap *= 2; }
+    l->data = (int *)realloc(l->data, sizeof(int) * l->cap);
+    if (!l->data) { perror("realloc"); exit(1); }
 }
 
-int math__del(int a, int b) {
-    int resultat = 0;
-    if ((b == 0)) {
-        resultat = 0;
+static void nl_list_text_ensure(nl_list_text *l, int need) {
+    if (need <= l->cap) { return; }
+    while (l->cap < need) { l->cap *= 2; }
+    l->data = (char **)realloc(l->data, sizeof(char *) * l->cap);
+    if (!l->data) { perror("realloc"); exit(1); }
+}
+
+static int nl_list_int_len(nl_list_int *l) { return l ? l->len : 0; }
+static int nl_list_text_len(nl_list_text *l) { return l ? l->len : 0; }
+
+static int nl_list_int_push(nl_list_int *l, int v) {
+    nl_list_int_ensure(l, l->len + 1);
+    l->data[l->len++] = v;
+    return l->len;
+}
+
+static int nl_list_text_push(nl_list_text *l, char *v) {
+    nl_list_text_ensure(l, l->len + 1);
+    l->data[l->len++] = v;
+    return l->len;
+}
+
+static int nl_list_int_pop(nl_list_int *l) {
+    if (!l || l->len == 0) { return 0; }
+    int v = l->data[l->len - 1];
+    l->len -= 1;
+    return v;
+}
+
+static char *nl_list_text_pop(nl_list_text *l) {
+    if (!l || l->len == 0) { return ""; }
+    char *v = l->data[l->len - 1];
+    l->len -= 1;
+    return v;
+}
+
+static int nl_list_int_remove(nl_list_int *l, int idx) {
+    if (!l || idx < 0 || idx >= l->len) { return nl_list_int_len(l); }
+    for (int i = idx; i < l->len - 1; i++) { l->data[i] = l->data[i + 1]; }
+    l->len -= 1;
+    return l->len;
+}
+
+static int nl_list_text_remove(nl_list_text *l, int idx) {
+    if (!l || idx < 0 || idx >= l->len) { return nl_list_text_len(l); }
+    for (int i = idx; i < l->len - 1; i++) { l->data[i] = l->data[i + 1]; }
+    l->len -= 1;
+    return l->len;
+}
+
+static int nl_list_int_set(nl_list_int *l, int idx, int v) {
+    if (!l || idx < 0 || idx >= l->len) { return nl_list_int_len(l); }
+    l->data[idx] = v;
+    return l->len;
+}
+
+static int nl_list_text_set(nl_list_text *l, int idx, char *v) {
+    if (!l || idx < 0 || idx >= l->len) { return nl_list_text_len(l); }
+    l->data[idx] = v;
+    return l->len;
+}
+
+static char *nl_strdup(const char *s) {
+    if (!s) { s = ""; }
+    size_t n = strlen(s) + 1;
+    char *out = (char *)malloc(n);
+    if (!out) { perror("malloc"); exit(1); }
+    memcpy(out, s, n);
+    return out;
+}
+
+static int nl_streq(const char *a, const char *b) {
+    if (!a) { a = ""; }
+    if (!b) { b = ""; }
+    return strcmp(a, b) == 0;
+}
+
+static char *nl_concat(const char *a, const char *b) {
+    if (!a) { a = ""; }
+    if (!b) { b = ""; }
+    size_t al = strlen(a);
+    size_t bl = strlen(b);
+    char *out = (char *)malloc(al + bl + 1);
+    if (!out) { perror("malloc"); exit(1); }
+    memcpy(out, a, al);
+    memcpy(out + al, b, bl);
+    out[al + bl] = '\0';
+    return out;
+}
+
+static int nl_run_command(nl_list_text *parts) {
+    if (!parts || !parts->data || parts->len <= 0) { return 1; }
+    char **argv = (char **)calloc((size_t)parts->len + 1, sizeof(char *));
+    if (!argv) { perror("calloc"); exit(1); }
+    for (int i = 0; i < parts->len; i++) {
+        argv[i] = nl_strdup(parts->data[i] ? parts->data[i] : "");
     }
-    else {
-        resultat = (a / b);
+    argv[parts->len] = NULL;
+    #ifdef _WIN32
+    int status = _spawnvp(_P_WAIT, argv[0], (const char * const *)argv);
+    for (int i = 0; i < parts->len; i++) { free(argv[i]); }
+    free(argv);
+    if (status == -1) { return 1; }
+    return status == 0 ? 0 : 1;
+    #else
+    pid_t pid = fork();
+    if (pid == -1) {
+        for (int i = 0; i < parts->len; i++) { free(argv[i]); }
+        free(argv);
+        return 1;
     }
-    return resultat;
-}
-
-int math__maks(int a, int b) {
-    int resultat = a;
-    if ((a > b)) {
-        resultat = a;
+    if (pid == 0) {
+        execvp(argv[0], argv);
+        _exit(127);
     }
-    else {
-        resultat = b;
+    int status = 1;
+    if (waitpid(pid, &status, 0) == -1) {
+        for (int i = 0; i < parts->len; i++) { free(argv[i]); }
+        free(argv);
+        return 1;
     }
-    return resultat;
+    for (int i = 0; i < parts->len; i++) { free(argv[i]); }
+    free(argv);
+    if (WIFEXITED(status)) { return WEXITSTATUS(status) == 0 ? 0 : WEXITSTATUS(status); }
+    if (WIFSIGNALED(status)) { return 128 + WTERMSIG(status); }
+    return 1;
+    #endif
 }
 
-int math__min(int a, int b) {
-    int resultat = a;
-    if ((a < b)) {
-        resultat = a;
+static char *nl_read_input(const char *prompt) {
+    (void)prompt;
+    return nl_strdup("");
+}
+
+static char *nl_int_to_text(int value) {
+    char buffer[32];
+    snprintf(buffer, sizeof(buffer), "%d", value);
+    return nl_strdup(buffer);
+}
+
+static int nl_text_er_ordtegn(const char *text) {
+    if (!text) { return 0; }
+    const unsigned char *s = (const unsigned char *)text;
+    unsigned char lead = s[0];
+    int width = 1;
+    int cp = 0;
+    if ((lead & 0x80) == 0) { cp = lead; }
+    else if ((lead & 0xE0) == 0xC0) { width = 2; cp = ((lead & 0x1F) << 6) | (s[1] & 0x3F); }
+    else if ((lead & 0xF0) == 0xE0) { width = 3; cp = ((lead & 0x0F) << 12) | ((s[1] & 0x3F) << 6) | (s[2] & 0x3F); }
+    else if ((lead & 0xF8) == 0xF0) { width = 4; cp = ((lead & 0x07) << 18) | ((s[1] & 0x3F) << 12) | ((s[2] & 0x3F) << 6) | (s[3] & 0x3F); }
+    else { return 0; }
+    if (s[width] != '\0') { return 0; }
+    if ((cp >= '0' && cp <= '9') || (cp >= 'A' && cp <= 'Z') || (cp >= 'a' && cp <= 'z') || cp == '_') { return 1; }
+    return cp == 0x00C5 || cp == 0x00E5 || cp == 0x00C6 || cp == 0x00E6 || cp == 0x00D8 || cp == 0x00F8;
+}
+
+static nl_list_text *nl_split_words(const char *s) {
+    nl_list_text *out = nl_list_text_new();
+    char *copy = nl_strdup(s ? s : "");
+    char *tok = strtok(copy, " \t\r\n");
+    while (tok) {
+        nl_list_text_push(out, nl_strdup(tok));
+        tok = strtok(NULL, " \t\r\n");
     }
-    else {
-        resultat = b;
+    return out;
+}
+
+static nl_list_text *nl_tokenize_simple(const char *s) {
+    nl_list_text *out = nl_list_text_new();
+    if (!s) { return out; }
+    char token[256];
+    int tlen = 0;
+    int in_comment = 0;
+    for (const char *p = s; ; ++p) {
+        char c = *p;
+        if (c == '\0') {
+            if (tlen > 0) { token[tlen] = '\0'; nl_list_text_push(out, nl_strdup(token)); }
+            break;
+        }
+        if (in_comment) {
+            if (c == '\n') { in_comment = 0; }
+            continue;
+        }
+        if (c == '#') {
+            if (tlen > 0) { token[tlen] = '\0'; nl_list_text_push(out, nl_strdup(token)); tlen = 0; }
+            in_comment = 1;
+            continue;
+        }
+        if (isalnum((unsigned char)c) || c == '_' || c == '-' || (unsigned char)c >= 128) {
+            if (tlen < 255) { token[tlen++] = c; }
+            continue;
+        }
+        if (tlen > 0) {
+            token[tlen] = '\0';
+            nl_list_text_push(out, nl_strdup(token));
+            tlen = 0;
+        }
     }
-    return resultat;
+    return out;
 }
 
-int math__absolutt(int x) {
-    int resultat = x;
-    if ((x < 0)) {
-        resultat = (-x);
+static nl_list_text *nl_tokenize_expression(const char *s) {
+    nl_list_text *out = nl_list_text_new();
+    if (!s) { return out; }
+    int in_comment = 0;
+    for (const char *p = s; *p; ) {
+        char c = *p;
+        if (in_comment) {
+            if (c == '\n') { in_comment = 0; }
+            p++;
+            continue;
+        }
+        if (c == '#') { in_comment = 1; p++; continue; }
+        if (isspace((unsigned char)c)) { p++; continue; }
+        if (isdigit((unsigned char)c)) {
+            char token[256];
+            int tlen = 0;
+            while (*p && isdigit((unsigned char)*p)) {
+                if (tlen < 255) { token[tlen++] = *p; }
+                p++;
+            }
+            token[tlen] = '\0';
+            nl_list_text_push(out, nl_strdup(token));
+            continue;
+        }
+        if (isalpha((unsigned char)c) || c == '_' || (unsigned char)c >= 128) {
+            char token[256];
+            int tlen = 0;
+            while (*p && (isalnum((unsigned char)*p) || *p == '_' || (unsigned char)*p >= 128)) {
+                if (tlen < 255) { token[tlen++] = *p; }
+                p++;
+            }
+            token[tlen] = '\0';
+            nl_list_text_push(out, nl_strdup(token));
+            continue;
+        }
+        if ((c == '&' && p[1] == '&') || (c == '|' && p[1] == '|') || (c == '=' && p[1] == '=') ||
+            (c == '!' && p[1] == '=') || (c == '<' && p[1] == '=') || (c == '>' && p[1] == '=') ||
+            (c == '+' && p[1] == '=') || (c == '-' && p[1] == '=') || (c == '*' && p[1] == '=') ||
+            (c == '/' && p[1] == '=') || (c == '%' && p[1] == '=')) {
+            char token[3];
+            token[0] = c;
+            token[1] = p[1];
+            token[2] = '\0';
+            nl_list_text_push(out, nl_strdup(token));
+            p += 2;
+            continue;
+        }
+        if (c == '(' || c == ')' || c == '+' || c == '-' || c == '*' || c == '/' || c == '%' || c == '<' || c == '>' || c == '=' || c == ';') {
+            char token[2];
+            token[0] = c;
+            token[1] = '\0';
+            nl_list_text_push(out, nl_strdup(token));
+            p++;
+            continue;
+        }
+        char unknown[2];
+        unknown[0] = c;
+        unknown[1] = '\0';
+        nl_list_text_push(out, nl_strdup(unknown));
+        p++;
     }
-    else {
-        resultat = x;
+    return out;
+}
+
+static char *nl_bool_to_text(int value) {
+    return nl_strdup(value ? "sann" : "usann");
+}
+
+static char *nl_text_to_lower(const char *text) {
+    if (!text) { return nl_strdup(""); }
+    size_t len = strlen(text);
+    char *out = (char *)malloc(len + 1);
+    if (!out) { perror("malloc"); exit(1); }
+    for (size_t i = 0; i < len; i++) { out[i] = (char)tolower((unsigned char)text[i]); }
+    out[len] = '\0';
+    return out;
+}
+
+static char *nl_text_to_upper(const char *text) {
+    if (!text) { return nl_strdup(""); }
+    size_t len = strlen(text);
+    char *out = (char *)malloc(len + 1);
+    if (!out) { perror("malloc"); exit(1); }
+    for (size_t i = 0; i < len; i++) { out[i] = (char)toupper((unsigned char)text[i]); }
+    out[len] = '\0';
+    return out;
+}
+
+static char *nl_text_to_title(const char *text) {
+    if (!text) { return nl_strdup(""); }
+    size_t len = strlen(text);
+    char *out = (char *)malloc(len + 1);
+    if (!out) { perror("malloc"); exit(1); }
+    int new_word = 1;
+    for (size_t i = 0; i < len; i++) {
+        unsigned char ch = (unsigned char)text[i];
+        if (ch < 128 && (isalnum(ch) || ch == '_')) {
+            out[i] = (char)(new_word ? toupper(ch) : tolower(ch));
+            new_word = 0;
+        } else {
+            out[i] = (char)ch;
+            new_word = 1;
+        }
     }
-    return resultat;
+    out[len] = '\0';
+    return out;
 }
 
-char * tekstmodul__hilsen(char * navn) {
-    return tekst_pluss(nl_strdup("Hei "), navn);
-}
-
-char * tekstmodul__rop(char * tekstverdi) {
-    return tekst_pluss(tekstverdi, nl_strdup("!"));
-}
-
-char * tekstmodul__omgitt_av_klammer(char * tekstverdi) {
-    return tekst_pluss(tekst_pluss(nl_strdup("["), tekstverdi), nl_strdup("]"));
-}
-
-char * tekstmodul__ja_nei(int verdi) {
-    char * resultat = nl_strdup("");
-    if (verdi) {
-        resultat = nl_strdup("ja");
+static char *nl_text_reverse(const char *text) {
+    if (!text) { return nl_strdup(""); }
+    size_t len = strlen(text);
+    char *out = (char *)malloc(len + 1);
+    if (!out) { perror("malloc"); exit(1); }
+    size_t *starts = (size_t *)malloc(sizeof(size_t) * (len + 1));
+    size_t *sizes = (size_t *)malloc(sizeof(size_t) * (len + 1));
+    if (!starts || !sizes) { perror("malloc"); exit(1); }
+    size_t count = 0;
+    size_t i = 0;
+    while (i < len) {
+        size_t start = i;
+        unsigned char ch = (unsigned char)text[i];
+        if ((ch & 0x80) == 0) {
+            i += 1;
+        } else if ((ch & 0xE0) == 0xC0) {
+            i += 2;
+        } else if ((ch & 0xF0) == 0xE0) {
+            i += 3;
+        } else if ((ch & 0xF8) == 0xF0) {
+            i += 4;
+        } else {
+            i += 1;
+        }
+        starts[count] = start;
+        sizes[count] = i - start;
+        count++;
     }
-    else {
-        resultat = nl_strdup("nei");
+    size_t out_pos = 0;
+    for (size_t idx = count; idx > 0; idx--) {
+        size_t src = starts[idx - 1];
+        size_t cp_len = sizes[idx - 1];
+        memcpy(out + out_pos, text + src, cp_len);
+        out_pos += cp_len;
     }
-    return resultat;
+    out[out_pos] = '\0';
+    free(starts);
+    free(sizes);
+    return out;
 }
 
-char * tekstmodul__tall_til_tekst(int verdi) {
-    return tekst_fra_heltall_builtin(verdi);
+static nl_list_text *nl_text_split_by(const char *text, const char *sep) {
+    nl_list_text *out = nl_list_text_new();
+    if (!text) { text = ""; }
+    if (!sep) { sep = ""; }
+    size_t sep_len = strlen(sep);
+    if (sep_len == 0) {
+        nl_list_text_push(out, nl_strdup(text));
+        return out;
+    }
+    const char *cursor = text;
+    const char *hit = NULL;
+    while ((hit = strstr(cursor, sep)) != NULL) {
+        size_t chunk = (size_t)(hit - cursor);
+        char *part = (char *)malloc(chunk + 1);
+        if (!part) { perror("malloc"); exit(1); }
+        memcpy(part, cursor, chunk);
+        part[chunk] = '\0';
+        nl_list_text_push(out, part);
+        cursor = hit + sep_len;
+    }
+    nl_list_text_push(out, nl_strdup(cursor));
+    return out;
 }
 
-char * tekstmodul__bool_til_tekst(int verdi) {
-    return tekst_fra_bool_builtin(verdi);
+static int nl_text_to_int(const char *s) {
+    if (!s) { return 0; }
+    return (int)strtol(s, NULL, 10);
 }
 
-int listemodul__legg_til_tall(ListeHeiltall *liste, int verdi) {
-    return (legg_til_heltall_builtin(liste, verdi), 0);
+static int nl_text_slutter_med(const char *text, const char *suffix) {
+    if (!text) { text = ""; }
+    if (!suffix) { suffix = ""; }
+    size_t text_len = strlen(text);
+    size_t suffix_len = strlen(suffix);
+    if (suffix_len > text_len) { return 0; }
+    return strcmp(text + (text_len - suffix_len), suffix) == 0;
 }
 
-int listemodul__legg_til_tekst(ListeTekst *liste, char * verdi) {
-    return (legg_til_tekst_builtin(liste, verdi), 0);
+static int nl_text_starter_med(const char *text, const char *prefix) {
+    if (!text) { text = ""; }
+    if (!prefix) { prefix = ""; }
+    size_t text_len = strlen(text);
+    size_t prefix_len = strlen(prefix);
+    if (prefix_len > text_len) { return 0; }
+    return strncmp(text, prefix, prefix_len) == 0;
 }
 
-int listemodul__siste_tall(ListeHeiltall *liste) {
-    return pop_siste_heltall_builtin(liste);
+static int nl_text_inneholder(const char *text, const char *needle) {
+    if (!text) { text = ""; }
+    if (!needle) { needle = ""; }
+    return strstr(text, needle) != NULL;
 }
 
-char * listemodul__siste_tekst(ListeTekst *liste) {
-    return pop_siste_tekst_builtin(liste);
+static char *nl_text_erstatt(const char *text, const char *old, const char *new_text) {
+    if (!text) { text = ""; }
+    if (!old) { old = ""; }
+    if (!new_text) { new_text = ""; }
+    if (!old[0]) { return nl_strdup(text); }
+    const char *cursor = text;
+    size_t old_len = strlen(old);
+    size_t new_len = strlen(new_text);
+    size_t count = 0;
+    const char *hit = text;
+    while ((hit = strstr(hit, old)) != NULL) { count++; hit += old_len; }
+    size_t result_len = strlen(text) + count * (new_len - old_len);
+    char *out = (char *)malloc(result_len + 1);
+    if (!out) { perror("malloc"); exit(1); }
+    char *write = out;
+    while ((hit = strstr(cursor, old)) != NULL) {
+        size_t chunk = (size_t)(hit - cursor);
+        memcpy(write, cursor, chunk);
+        write += chunk;
+        memcpy(write, new_text, new_len);
+        write += new_len;
+        cursor = hit + old_len;
+    }
+    strcpy(write, cursor);
+    return out;
 }
 
-int listemodul__antall_tall(ListeHeiltall liste) {
-    return liste.lengde;
+static int nl_utf8_char_width(unsigned char lead) {
+    if ((lead & 0x80) == 0) { return 1; }
+    if ((lead & 0xE0) == 0xC0) { return 2; }
+    if ((lead & 0xF0) == 0xE0) { return 3; }
+    if ((lead & 0xF8) == 0xF0) { return 4; }
+    return 1;
 }
 
-int listemodul__antall_tekst(ListeTekst liste) {
-    return liste.lengde;
+static int nl_utf8_codepoint_at(const char *text, int byte_index) {
+    const unsigned char *s = (const unsigned char *)(text ? text : "");
+    unsigned char lead = s[byte_index];
+    if (lead == '\0') { return -1; }
+    if ((lead & 0x80) == 0) { return lead; }
+    if ((lead & 0xE0) == 0xC0) { return ((lead & 0x1F) << 6) | (s[byte_index + 1] & 0x3F); }
+    if ((lead & 0xF0) == 0xE0) { return ((lead & 0x0F) << 12) | ((s[byte_index + 1] & 0x3F) << 6) | (s[byte_index + 2] & 0x3F); }
+    if ((lead & 0xF8) == 0xF0) { return ((lead & 0x07) << 18) | ((s[byte_index + 1] & 0x3F) << 12) | ((s[byte_index + 2] & 0x3F) << 6) | (s[byte_index + 3] & 0x3F); }
+    return lead;
 }
 
-int start() {
-    int sum = math__pluss(10, 20);
-    int diff = math__minus(50, 8);
-    char * melding = tekstmodul__hilsen(nl_strdup("Jan"));
-    ListeHeiltall tall = lag_liste_heltall(3, (int[]){1, 2, 3});
-    ListeTekst ord = lag_liste_tekst(3, (char*[]){nl_strdup("hei"), nl_strdup("på"), nl_strdup("deg")});
-    listemodul__legg_til_tall(&tall, 99);
-    listemodul__legg_til_tekst(&ord, nl_strdup("nå"));
-    skriv_tekst(nl_strdup("Sum:"));
-    skriv_tekst(tekst_fra_heltall_builtin(sum));
-    skriv_tekst(nl_strdup("Minus:"));
-    skriv_tekst(tekst_fra_heltall_builtin(diff));
-    skriv_tekst(nl_strdup("Melding:"));
-    skriv_tekst(tekstmodul__rop(melding));
-    skriv_tekst(nl_strdup("Antall tall:"));
-    skriv_tekst(tekst_fra_heltall_builtin(listemodul__antall_tall(tall)));
-    skriv_tekst(nl_strdup("Antall ord:"));
-    skriv_tekst(tekst_fra_heltall_builtin(listemodul__antall_tekst(ord)));
-    return 0;
+static int nl_utf8_text_length(const char *text) {
+    if (!text) { return 0; }
+    int count = 0;
+    for (const unsigned char *p = (const unsigned char *)text; *p; p += nl_utf8_char_width(*p)) { count++; }
+    return count;
 }
 
-int main(void) {
-    return start();
+static int nl_utf8_char_offset(const char *text, int char_index) {
+    if (!text) { return 0; }
+    if (char_index <= 0) { return 0; }
+    int current = 0;
+    int byte_index = 0;
+    while (text[byte_index] != '\0' && current < char_index) {
+        byte_index += nl_utf8_char_width((unsigned char)text[byte_index]);
+        current++;
+    }
+    return byte_index;
 }
+
+static int nl_utf8_is_ordtegn(const char *text) {
+    if (!text) { return 0; }
+    int len = (int)strlen(text);
+    if (len <= 0) { return 0; }
+    int cp = nl_utf8_codepoint_at(text, 0);
+    if (cp < 0) { return 0; }
+    if (text[nl_utf8_char_width((unsigned char)text[0])] != '\0') { return 0; }
+    if ((cp >= '0' && cp <= '9') || (cp >= 'A' && cp <= 'Z') || (cp >= 'a' && cp <= 'z') || cp == '_') { return 1; }
+    return cp == 0x00C5 || cp == 0x00E5 || cp == 0x00C6 || cp == 0x00E6 || cp == 0x00D8 || cp == 0x00F8;
+}
+
+static nl_list_text *nl_split_lines(const char *s) {
+    nl_list_text *out = nl_list_text_new();
+    const char *start = s ? s : "";
+    const char *p = start;
+    if (*p == '\0') {
+        nl_list_text_push(out, nl_strdup(""));
+        return out;
+    }
+    while (1) {
+        if (*p == '\n' || *p == '\0') {
+            size_t len = (size_t)(p - start);
+            char *line = (char *)malloc(len + 1);
+            if (!line) { perror("malloc"); exit(1); }
+            memcpy(line, start, len);
+            line[len] = '\0';
+            nl_list_text_push(out, line);
+            if (*p == '\0') { break; }
+            start = p + 1;
+            }
+            if (*p == '\0') { break; }
+            p++;
+        }
+        return out;
+    }
+    
+    static int nl_assert(int cond) {
+        if (!cond) {
+            printf("assert failed\n");
+            exit(1);
+        }
+        return 0;
+    }
+    
+    static int nl_assert_eq_int(int a, int b) {
+        if (a != b) {
+            printf("assert_eq failed: %d != %d\n", a, b);
+            exit(1);
+        }
+        return 0;
+    }
+    
+    static int nl_assert_ne_int(int a, int b) {
+        if (a == b) {
+            printf("assert_ne failed: %d == %d\n", a, b);
+            exit(1);
+        }
+        return 0;
+    }
+    
+    static int nl_assert_eq_text(const char *a, const char *b) {
+        if (!nl_streq(a, b)) {
+            printf("assert_eq failed: \"%s\" != \"%s\"\n", a ? a : "", b ? b : "");
+            exit(1);
+        }
+        return 0;
+    }
+    
+    static int nl_assert_ne_text(const char *a, const char *b) {
+        if (nl_streq(a, b)) {
+            printf("assert_ne failed: \"%s\" == \"%s\"\n", a ? a : "", b ? b : "");
+            exit(1);
+        }
+        return 0;
+    }
+    
+    static int nl_list_int_equal(nl_list_int *a, nl_list_int *b) {
+        if (a == b) { return 1; }
+        if (!a || !b) { return 0; }
+        if (a->len != b->len) { return 0; }
+        for (int i = 0; i < a->len; i++) { if (a->data[i] != b->data[i]) { return 0; } }
+        return 1;
+    }
+    
+    static int nl_list_text_equal(nl_list_text *a, nl_list_text *b) {
+        if (a == b) { return 1; }
+        if (!a || !b) { return 0; }
+        if (a->len != b->len) { return 0; }
+        for (int i = 0; i < a->len; i++) { if (!nl_streq(a->data[i], b->data[i])) { return 0; } }
+        return 1;
+    }
+    
+    static void nl_print_text(const char *s) {
+        printf("%s\n", s ? s : "");
+    }
+    
+    static int nl_file_exists(const char *path) {
+        if (!path) { return 0; }
+        FILE *f = fopen(path, "r");
+        if (!f) { return 0; }
+        fclose(f);
+        return 1;
+    }
+    
+    static char *nl_read_file(const char *path) {
+        if (!path) { return nl_strdup(""); }
+        FILE *f = fopen(path, "rb");
+        if (!f) { return nl_strdup(""); }
+        fseek(f, 0, SEEK_END);
+        long size = ftell(f);
+        fseek(f, 0, SEEK_SET);
+        if (size < 0) { fclose(f); return nl_strdup(""); }
+        char *buf = (char *)malloc((size_t)size + 1);
+        if (!buf) { fclose(f); perror("malloc"); exit(1); }
+        size_t read_n = fread(buf, 1, (size_t)size, f);
+        buf[read_n] = '\0';
+        fclose(f);
+        return buf;
+    }
+    
+    static char *nl_read_env(const char *name) {
+        if (!name) { return nl_strdup(""); }
+        const char *value = getenv(name);
+        return nl_strdup(value ? value : "");
+    }
+    
+    static char *nl_text_trim(const char *text) {
+        if (!text) { return nl_strdup(""); }
+        const char *start = text;
+        while (*start && isspace((unsigned char)*start)) { start++; }
+        const char *end = text + strlen(text);
+        while (end > start && isspace((unsigned char)*(end - 1))) { end--; }
+        size_t len = (size_t)(end - start);
+        char *out = (char *)malloc(len + 1);
+        if (!out) { perror("malloc"); exit(1); }
+        memcpy(out, start, len);
+        out[len] = '\0';
+        return out;
+    }
+    
+    static int nl_text_length(const char *text) {
+        return nl_utf8_text_length(text);
+    }
+    
+    static char *nl_text_slice(const char *text, int start, int end) {
+        if (!text) { return nl_strdup(""); }
+        int len_text = nl_utf8_text_length(text);
+        if (start < 0) { start = 0; }
+        if (end < start) { end = start; }
+        if (start > len_text) { start = len_text; }
+        if (end > len_text) { end = len_text; }
+        int start_byte = nl_utf8_char_offset(text, start);
+        int end_byte = nl_utf8_char_offset(text, end);
+        int len = end_byte - start_byte;
+        char *out = (char *)malloc((size_t)len + 1);
+        if (!out) { perror("malloc"); exit(1); }
+        memcpy(out, text + start_byte, (size_t)len);
+        out[len] = '\0';
+        return out;
+    }
+    
+    static char *nl_sass_replace_variables(const char *text, nl_list_text *names, nl_list_text *values) {
+        char *current = nl_strdup(text ? text : "");
+        for (int i = 0; i < nl_list_text_len(names); i++) {
+            char *needle = nl_concat("$", names->data[i] ? names->data[i] : "");
+            char *next = nl_text_erstatt(current, needle, values->data[i] ? values->data[i] : "");
+            free(needle);
+            free(current);
+            current = next;
+        }
+        return current;
+    }
+    
+    static char *nl_sass_to_css(const char *source) {
+        nl_list_text *lines = nl_split_lines(source ? source : "");
+        nl_list_text *names = nl_list_text_new();
+        nl_list_text *values = nl_list_text_new();
+        nl_list_text *stack = nl_list_text_new();
+        char *out = nl_strdup("");
+        for (int i = 0; i < nl_list_text_len(lines); i++) {
+            char *trimmed = nl_text_trim(lines->data[i]);
+            if (!trimmed[0] || (trimmed[0] == '/' && trimmed[1] == '/') || trimmed[0] == '*') { free(trimmed); continue; }
+            if (trimmed[0] == '$' && strchr(trimmed, ':') && trimmed[strlen(trimmed) - 1] == ';') {
+                char *colon = strchr(trimmed, ':');
+                char *name = nl_text_trim(nl_text_slice(trimmed, 1, (int)(colon - trimmed)));
+                char *value_raw = nl_text_slice(trimmed, (int)(colon - trimmed) + 1, (int)strlen(trimmed) - 1);
+                char *value = nl_text_trim(value_raw);
+                nl_list_text_push(names, name);
+                nl_list_text_push(values, value);
+                free(value_raw);
+                free(trimmed);
+                continue;
+            }
+            char *replaced = nl_sass_replace_variables(trimmed, names, values);
+            free(trimmed);
+            trimmed = replaced;
+            size_t len = strlen(trimmed);
+            if (len > 0 && trimmed[len - 1] == '{') {
+                char *selector = nl_text_trim(nl_text_slice(trimmed, 0, (int)len - 1));
+                if (selector[0] == '&' && nl_list_text_len(stack) > 0) {
+                    char *parent = stack->data[nl_list_text_len(stack) - 1];
+                    char *combined = nl_text_erstatt(selector, "&", parent ? parent : "");
+                    free(selector);
+                    selector = combined;
+                } else if (nl_list_text_len(stack) > 0) {
+                    char *parent = stack->data[nl_list_text_len(stack) - 1];
+                    char *combined = nl_concat(nl_concat(parent ? parent : "", " "), selector);
+                    free(selector);
+                    selector = combined;
+                }
+                nl_list_text_push(stack, selector);
+                free(trimmed);
+                continue;
+            }
+            if (strcmp(trimmed, "}") == 0) {
+                if (nl_list_text_len(stack) > 0) {
+                    free(nl_list_text_pop(stack));
+                }
+                free(trimmed);
+                continue;
+            }
+            if (strchr(trimmed, ':') && trimmed[len - 1] == ';') {
+                char *selector = nl_list_text_len(stack) > 0 ? stack->data[nl_list_text_len(stack) - 1] : "";
+                if (selector && selector[0]) {
+                    char *block = nl_concat(nl_concat(nl_concat(selector, " { "), trimmed), " }\n");
+                    char *next = nl_concat(out, block);
+                    free(out);
+                    free(block);
+                    out = next;
+                } else {
+                    char *block = nl_concat(trimmed, "\n");
+                    char *next = nl_concat(out, block);
+                    free(out);
+                    free(block);
+                    out = next;
+                }
+                free(trimmed);
+                continue;
+            }
+            free(trimmed);
+        }
+        return out;
+    }
+    
+    static nl_list_text *nl_read_argv(void) {
+        const char *raw = getenv("NORSCODE_ARGS");
+        if (!raw || !raw[0]) { return nl_list_text_new(); }
+        return nl_split_lines(raw);
+    }
+    
+    static int nl_has_studio_suffix(const char *name) {
+        const char *suffixes[] = {".no", ".md", ".toml", ".py", ".sh", ".ps1"};
+        size_t name_len = name ? strlen(name) : 0;
+        for (size_t i = 0; i < sizeof(suffixes) / sizeof(suffixes[0]); i++) {
+            size_t suffix_len = strlen(suffixes[i]);
+            if (name_len >= suffix_len && strcmp(name + (name_len - suffix_len), suffixes[i]) == 0) { return 1; }
+        }
+        return 0;
+    }
+    
+    static int nl_should_skip_entry(const char *name) {
+        if (!name || !name[0]) { return 1; }
+        if (name[0] == '.') { return 1; }
+        return strcmp(name, "build") == 0 || strcmp(name, "dist") == 0 || strcmp(name, "__pycache__") == 0 || strcmp(name, ".venv") == 0;
+    }
+    
+    static void nl_collect_files(const char *root, const char *rel, nl_list_text *out) {
+        char *path = rel && rel[0] ? nl_concat(root, rel) : nl_strdup(root);
+        DIR *dir = opendir(path);
+        if (!dir) { free(path); return; }
+        struct dirent *entry;
+        while ((entry = readdir(dir)) != NULL) {
+            const char *name = entry->d_name;
+            if (strcmp(name, ".") == 0 || strcmp(name, "..") == 0) { continue; }
+            if (nl_should_skip_entry(name)) { continue; }
+            char *next_rel = rel && rel[0] ? nl_concat(nl_concat(rel, "/"), name) : nl_strdup(name);
+            char *next_path = nl_concat(nl_concat(path, "/"), name);
+            struct stat st;
+            if (stat(next_path, &st) == 0 && S_ISDIR(st.st_mode)) {
+                nl_collect_files(root, next_rel, out);
+            } else if (nl_has_studio_suffix(name)) {
+                nl_list_text_push(out, next_rel);
+                next_rel = NULL;
+            }
+            if (next_rel) { free(next_rel); }
+            free(next_path);
+        }
+        closedir(dir);
+        free(path);
+    }
+    
+    static void nl_collect_files_tree(const char *root, const char *rel, nl_list_text *out) {
+        char *path = rel && rel[0] ? nl_concat(root, rel) : nl_strdup(root);
+        DIR *dir = opendir(path);
+        if (!dir) { free(path); return; }
+        struct dirent *entry;
+        while ((entry = readdir(dir)) != NULL) {
+            const char *name = entry->d_name;
+            if (strcmp(name, ".") == 0 || strcmp(name, "..") == 0) { continue; }
+            if (nl_should_skip_entry(name)) { continue; }
+            char *next_rel = rel && rel[0] ? nl_concat(nl_concat(rel, "/"), name) : nl_strdup(name);
+            char *next_path = nl_concat(nl_concat(path, "/"), name);
+            struct stat st;
+            if (stat(next_path, &st) == 0 && S_ISDIR(st.st_mode)) {
+                char *folder = nl_concat(next_rel, "/");
+                nl_list_text_push(out, folder);
+                free(folder);
+                nl_collect_files_tree(root, next_rel, out);
+            } else if (nl_has_studio_suffix(name)) {
+                nl_list_text_push(out, next_rel);
+                next_rel = NULL;
+            }
+            if (next_rel) { free(next_rel); }
+            free(next_path);
+        }
+        closedir(dir);
+        free(path);
+    }
+    
+    static nl_list_text *nl_list_files(const char *root) {
+        nl_list_text *out = nl_list_text_new();
+        if (!root || !root[0]) { root = "."; }
+        nl_collect_files(root, "", out);
+        return out;
+    }
+    
+    static nl_list_text *nl_list_files_tree(const char *root) {
+        nl_list_text *out = nl_list_text_new();
+        if (!root || !root[0]) { root = "."; }
+        nl_collect_files_tree(root, "", out);
+        return out;
+    }
+    
+    static int nl_write_file(const char *path, const char *text) {
+        if (!path) { return 0; }
+        FILE *f = fopen(path, "wb");
+        if (!f) { return 0; }
+        if (text) { fputs(text, f); }
+        fclose(f);
+        return 1;
+    }
+    
+    int math__pluss(int a, int b);
+    int math__minus(int a, int b);
+    int math__gange(int a, int b);
+    int math__del(int a, int b);
+    int math__maks(int a, int b);
+    int math__min(int a, int b);
+    int math__absolutt(int x);
+    char * tekstmodul__hilsen(char * navn);
+    char * tekstmodul__rop(char * tekstverdi);
+    char * tekstmodul__omgitt_av_klammer(char * tekstverdi);
+    char * tekstmodul__ja_nei(int verdi);
+    char * tekstmodul__tall_til_tekst(int verdi);
+    char * tekstmodul__bool_til_tekst(int verdi);
+    int start();
+    
+    int math__pluss(int a, int b) {
+        return (a + b);
+        return 0;
+    }
+    
+    int math__minus(int a, int b) {
+        return (a - b);
+        return 0;
+    }
+    
+    int math__gange(int a, int b) {
+        return (a * b);
+        return 0;
+    }
+    
+    int math__del(int a, int b) {
+        if (b == 0) {
+            return 0;
+        }
+        return (a / b);
+        return 0;
+    }
+    
+    int math__maks(int a, int b) {
+        if (a > b) {
+            return a;
+        }
+        return b;
+        return 0;
+    }
+    
+    int math__min(int a, int b) {
+        if (a < b) {
+            return a;
+        }
+        return b;
+        return 0;
+    }
+    
+    int math__absolutt(int x) {
+        if (x < 0) {
+            return (-(x));
+        }
+        return x;
+        return 0;
+    }
+    
+    char * tekstmodul__hilsen(char * navn) {
+        return nl_concat("Hei ", navn);
+        return "";
+    }
+    
+    char * tekstmodul__rop(char * tekstverdi) {
+        return nl_concat(tekstverdi, "!");
+        return "";
+    }
+    
+    char * tekstmodul__omgitt_av_klammer(char * tekstverdi) {
+        return nl_concat(nl_concat("[", tekstverdi), "]");
+        return "";
+    }
+    
+    char * tekstmodul__ja_nei(int verdi) {
+        if (verdi) {
+            return "ja";
+        }
+        return "nei";
+        return "";
+    }
+    
+    char * tekstmodul__tall_til_tekst(int verdi) {
+        return nl_int_to_text(verdi);
+        return "";
+    }
+    
+    char * tekstmodul__bool_til_tekst(int verdi) {
+        return nl_bool_to_text(verdi);
+        return "";
+    }
+    
+    int start() {
+        int sum = math__pluss(10, 20);
+        nl_print_text(nl_int_to_text(sum));
+        nl_print_text(tekstmodul__hilsen("Jan"));
+        return 0;
+        return 0;
+    }
+    
+    int main(void) {
+        return start();
+    }

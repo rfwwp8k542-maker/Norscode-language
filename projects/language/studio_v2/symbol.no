@@ -1,3 +1,5 @@
+bruk studio_v2.studio_state som workspace
+
 # Studio v2 symbol intelligence foundation.
 
 funksjon studio_v2_symbol_indeks_tom() -> liste_tekst {
@@ -12,6 +14,22 @@ funksjon studio_v2_symbol_finn_tegn_posisjon(tekstverdi: tekst, tegn: tekst) -> 
     la indeks: heltall = 0
     mens (indeks < tekst_lengde(tekstverdi)) {
         hvis tekst_slice(tekstverdi, indeks, indeks + 1) == tegn da {
+            returner indeks
+        }
+        indeks = indeks + 1
+    }
+    returner -1
+}
+
+funksjon studio_v2_symbol_finn_tekst_posisjon(tekstverdi: tekst, søk: tekst) -> heltall {
+    hvis søk == "" da {
+        returner -1
+    }
+    la indeks: heltall = 0
+    la grense: heltall = tekst_lengde(tekstverdi)
+    la søk_lengde: heltall = tekst_lengde(søk)
+    mens (indeks < grense) {
+        hvis indeks + søk_lengde <= grense og tekst_slice(tekstverdi, indeks, indeks + søk_lengde) == søk da {
             returner indeks
         }
         indeks = indeks + 1
@@ -45,6 +63,147 @@ funksjon studio_v2_symbol_liste_til_tekst(verdier: liste_tekst) -> tekst {
     returner resultat
 }
 
+funksjon studio_v2_symbol_rens_linje_for_søk(linje: tekst) -> tekst {
+    la resultat: tekst = ""
+    la indeks: heltall = 0
+    la i_streng: bool = usann
+    la escape: bool = usann
+    la grense: heltall = tekst_lengde(linje)
+    mens (indeks < grense) {
+        la tegn: tekst = tekst_slice(linje, indeks, indeks + 1)
+        hvis i_streng da {
+            hvis escape da {
+                escape = usann
+            } ellers hvis tegn == "\\" da {
+                escape = sann
+            } ellers hvis tegn == "\"" da {
+                i_streng = usann
+            }
+            resultat = resultat + " "
+        } ellers {
+            hvis tegn == "\"" da {
+                i_streng = sann
+                resultat = resultat + " "
+            } ellers hvis tegn == "#" da {
+                returner resultat
+            } ellers hvis tegn == "/" og indeks + 1 < grense og tekst_slice(linje, indeks + 1, indeks + 2) == "/" da {
+                returner resultat
+            } ellers {
+                resultat = resultat + tegn
+            }
+        }
+        indeks = indeks + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_symbol_beskrivelse_fra_oppføring(oppføring: tekst) -> tekst {
+    la slag: tekst = studio_v2_symbol_slag_fra_oppføring(oppføring)
+    hvis slag == "funksjon" da {
+        la signatur: tekst = studio_v2_symbol_signatur_fra_oppføring(oppføring)
+        hvis signatur != "" da {
+            returner signatur
+        }
+        la parametere: tekst = studio_v2_symbol_parametere_fra_oppføring(oppføring)
+        hvis parametere != "" da {
+            returner "funksjon(" + parametere + ")"
+        }
+        returner "funksjon"
+    }
+    hvis slag == "import" da {
+        la modul: tekst = studio_v2_symbol_parametere_fra_oppføring(oppføring)
+        hvis modul != "" da {
+            returner "import " + modul
+        }
+        returner "import"
+    }
+    hvis slag == "lokal" da {
+        returner "lokal"
+    }
+    hvis slag == "bruk" da {
+        returner "bruk"
+    }
+    returner slag
+}
+
+funksjon studio_v2_symbol_hover_fra_oppføring(oppføring: tekst) -> tekst {
+    la navn: tekst = studio_v2_symbol_navn_fra_oppføring(oppføring)
+    la parametere: tekst = studio_v2_symbol_parametere_fra_oppføring(oppføring)
+    la beskrivelse: tekst = studio_v2_symbol_beskrivelse_fra_oppføring(oppføring)
+    la fil: tekst = studio_v2_symbol_oppføring_fil(oppføring)
+    la linje: heltall = studio_v2_symbol_oppføring_linje(oppføring)
+    la resultat: tekst = navn
+    hvis parametere != "" da {
+        resultat = resultat + "(" + parametere + ")"
+    }
+    hvis beskrivelse != "" da {
+        resultat = resultat + "\n" + beskrivelse
+    }
+    hvis fil != "" da {
+        resultat = resultat + "\n" + fil + ":" + tekst_fra_heltall(linje)
+    }
+    returner resultat
+}
+
+funksjon studio_v2_symbol_signature_help_fra_oppføring(oppføring: tekst) -> tekst {
+    la navn: tekst = studio_v2_symbol_navn_fra_oppføring(oppføring)
+    la parametere: tekst = studio_v2_symbol_parametere_fra_oppføring(oppføring)
+    la beskrivelse: tekst = studio_v2_symbol_beskrivelse_fra_oppføring(oppføring)
+    la resultat: tekst = navn
+    hvis parametere != "" da {
+        resultat = resultat + "(" + parametere + ")"
+    } ellers {
+        resultat = resultat + "()"
+    }
+    hvis beskrivelse != "" da {
+        resultat = resultat + "\n" + beskrivelse
+    }
+    returner resultat
+}
+
+funksjon studio_v2_symbol_hover_fra_workspace(rot: tekst, navn: tekst) -> tekst {
+    la oppføring: tekst = studio_v2_symbol_indeks_finn_prioritert_navn(studio_v2_symbol_indeks_fra_workspace(rot), navn)
+    hvis oppføring == "" da {
+        returner ""
+    }
+    returner studio_v2_symbol_hover_fra_oppføring(oppføring)
+}
+
+funksjon studio_v2_symbol_signature_help_fra_workspace(rot: tekst, navn: tekst) -> tekst {
+    la oppføring: tekst = studio_v2_symbol_indeks_finn_prioritert_navn(studio_v2_symbol_indeks_fra_workspace(rot), navn)
+    hvis oppføring == "" da {
+        returner ""
+    }
+    returner studio_v2_symbol_signature_help_fra_oppføring(oppføring)
+}
+
+funksjon studio_v2_symbol_hurtiginfo_fra_oppføring(oppføring: tekst) -> tekst {
+    la hover: tekst = studio_v2_symbol_hover_fra_oppføring(oppføring)
+    la signature: tekst = studio_v2_symbol_signature_help_fra_oppføring(oppføring)
+    hvis hover == "" og signature == "" da {
+        returner ""
+    }
+    hvis hover == "" da {
+        returner signature
+    }
+    hvis signature == "" da {
+        returner hover
+    }
+    returner hover + " · " + signature
+}
+
+funksjon studio_v2_symbol_hurtiginfo_fra_indeks(indeks: liste_tekst, navn: tekst) -> tekst {
+    la oppføring: tekst = studio_v2_symbol_indeks_finn_prioritert_navn(indeks, navn)
+    hvis oppføring == "" da {
+        returner ""
+    }
+    returner studio_v2_symbol_hurtiginfo_fra_oppføring(oppføring)
+}
+
+funksjon studio_v2_symbol_hurtiginfo_fra_workspace(rot: tekst, navn: tekst) -> tekst {
+    returner studio_v2_symbol_hurtiginfo_fra_indeks(studio_v2_symbol_indeks_fra_workspace(rot), navn)
+}
+
 funksjon studio_v2_symbol_completion_oppføring(slag: tekst, navn: tekst, detalj: tekst) -> tekst {
     returner slag + "\t" + navn + "\t" + detalj
 }
@@ -73,6 +232,52 @@ funksjon studio_v2_symbol_completion_unique_add(resultat: liste_tekst, kandidat:
     }
     hvis ikke funnet og kandidat != "" da {
         legg_til(resultat, kandidat)
+    }
+    returner resultat
+}
+
+funksjon studio_v2_symbol_completion_match_starter_med(kandidat: tekst, prefix: tekst) -> bool {
+    hvis prefix == "" da {
+        returner sann
+    }
+    returner tekst_starter_med(kandidat, prefix)
+}
+
+funksjon studio_v2_symbol_completion_match_utenfor_start(kandidat: tekst, prefix: tekst) -> bool {
+    hvis prefix == "" da {
+        returner usann
+    }
+    hvis tekst_starter_med(kandidat, prefix) da {
+        returner usann
+    }
+    returner tekst_inneholder(kandidat, prefix)
+}
+
+funksjon studio_v2_symbol_completion_match_nøyaktig(kandidat: tekst, prefix: tekst) -> bool {
+    hvis prefix == "" da {
+        returner usann
+    }
+    returner kandidat == prefix
+}
+
+funksjon studio_v2_symbol_completion_tilfoy_fra_liste_fase(resultat: liste_tekst, kandidater: liste_tekst, slag: tekst, detalj: tekst, prefix: tekst, fase: tekst, maks: heltall) -> liste_tekst {
+    la indeks: heltall = 0
+    mens (indeks < lengde(kandidater) og lengde(resultat) < maks) {
+        la kandidat: tekst = kandidater[indeks]
+        hvis fase == "nøyaktig" da {
+            hvis studio_v2_symbol_completion_match_nøyaktig(kandidat, prefix) da {
+                resultat = studio_v2_symbol_completion_unique_add(resultat, studio_v2_symbol_completion_oppføring(slag, kandidat, detalj))
+            }
+        } ellers hvis fase == "starter" da {
+            hvis studio_v2_symbol_completion_match_starter_med(kandidat, prefix) da {
+                resultat = studio_v2_symbol_completion_unique_add(resultat, studio_v2_symbol_completion_oppføring(slag, kandidat, detalj))
+            }
+        } ellers hvis fase == "inne" da {
+            hvis studio_v2_symbol_completion_match_utenfor_start(kandidat, prefix) da {
+                resultat = studio_v2_symbol_completion_unique_add(resultat, studio_v2_symbol_completion_oppføring(slag, kandidat, detalj))
+            }
+        }
+        indeks = indeks + 1
     }
     returner resultat
 }
@@ -118,44 +323,143 @@ funksjon studio_v2_symbol_completion_builtins() -> liste_tekst {
     ]
 }
 
-funksjon studio_v2_symbol_completion_fra_workspace(rot: tekst, prefix: tekst, maks: heltall) -> liste_tekst {
+funksjon studio_v2_symbol_completion_keyword_detalj(navn: tekst) -> tekst {
+    hvis navn == "bruk" da {
+        returner "importer modul"
+    }
+    hvis navn == "ellers" da {
+        returner "kontrollflyt"
+    }
+    hvis navn == "funksjon" da {
+        returner "definer funksjon"
+    }
+    hvis navn == "hvis" da {
+        returner "betinget gren"
+    }
+    hvis navn == "mens" da {
+        returner "løkke"
+    }
+    hvis navn == "returner" da {
+        returner "returner verdi"
+    }
+    hvis navn == "bryt" da {
+        returner "avslutt løkke"
+    }
+    hvis navn == "sann" eller navn == "usann" da {
+        returner "boolsk verdi"
+    }
+    returner "språk"
+}
+
+funksjon studio_v2_symbol_completion_builtin_detalj(navn: tekst) -> tekst {
+    hvis tekst_starter_med(navn, "tekst_") da {
+        returner "tekstverktøy"
+    }
+    hvis tekst_starter_med(navn, "liste_") da {
+        returner "lister og samlinger"
+    }
+    hvis tekst_starter_med(navn, "fil_") da {
+        returner "filsystem"
+    }
+    hvis navn == "heltall_fra_tekst" eller navn == "bool_fra_tekst" da {
+        returner "konvertering"
+    }
+    hvis navn == "legg_til" eller navn == "lengde" da {
+        returner "samlinger"
+    }
+    hvis navn == "skriv_fil" eller navn == "les_fil" eller navn == "liste_filer" eller navn == "liste_filer_tre" da {
+        returner "filsystem"
+    }
+    hvis navn == "kjør_kommando" da {
+        returner "shell-kjøring"
+    }
+    returner "stdlib"
+}
+
+funksjon studio_v2_symbol_palette_fra_slag(indeks: liste_tekst, slag: tekst, resultat: liste_tekst, maks: heltall) -> liste_tekst {
+    la i: heltall = 0
+    mens (i < lengde(indeks) og lengde(resultat) < maks) {
+        hvis studio_v2_symbol_slag_fra_oppføring(indeks[i]) == slag da {
+            resultat = studio_v2_symbol_completion_unique_add(resultat, studio_v2_symbol_navn_fra_oppføring(indeks[i]))
+        }
+        i = i + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_symbol_palette_prioritert(indeks: liste_tekst, maks: heltall) -> liste_tekst {
     la resultat: liste_tekst = []
-    la indeks: liste_tekst = studio_v2_symbol_indeks_fra_workspace(rot)
-    la symbol_navn: liste_tekst = studio_v2_symbol_palette(indeks, maks)
+    resultat = studio_v2_symbol_palette_fra_slag(indeks, "lokal", resultat, maks)
+    resultat = studio_v2_symbol_palette_fra_slag(indeks, "import", resultat, maks)
+    resultat = studio_v2_symbol_palette_fra_slag(indeks, "funksjon", resultat, maks)
+    resultat = studio_v2_symbol_palette_fra_slag(indeks, "bruk", resultat, maks)
+    returner resultat
+}
+
+funksjon studio_v2_symbol_completion_fra_indeks(indeks: liste_tekst, prefix: tekst, maks: heltall) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la symbol_navn: liste_tekst = studio_v2_symbol_palette_prioritert(indeks, maks)
     la keywords: liste_tekst = studio_v2_symbol_completion_keywords()
     la builtins: liste_tekst = studio_v2_symbol_completion_builtins()
+    resultat = studio_v2_symbol_completion_tilfoy_fra_liste_fase(resultat, keywords, "keyword", "språk", prefix, "nøyaktig", maks)
+    resultat = studio_v2_symbol_completion_tilfoy_fra_liste_fase(resultat, builtins, "builtin", "stdlib", prefix, "nøyaktig", maks)
     la i: heltall = 0
-    mens (i < lengde(keywords) og lengde(resultat) < maks) {
-        la kandidat: tekst = keywords[i]
-        hvis studio_v2_symbol_completion_match(kandidat, prefix) da {
-            resultat = studio_v2_symbol_completion_unique_add(resultat, studio_v2_symbol_completion_oppføring("keyword", kandidat, "språk"))
+    mens (i < lengde(symbol_navn) og lengde(resultat) < maks) {
+        la navn: tekst = symbol_navn[i]
+        la oppføring: tekst = studio_v2_symbol_indeks_finn_prioritert_navn(indeks, navn)
+        la detalj: tekst = studio_v2_symbol_beskrivelse_fra_oppføring(oppføring)
+        la sted: tekst = studio_v2_symbol_oppføring_sted(oppføring)
+        hvis detalj == "" da {
+            detalj = sted
+        } ellers {
+            detalj = detalj + " · " + sted
+        }
+        hvis studio_v2_symbol_completion_match_nøyaktig(navn, prefix) da {
+            resultat = studio_v2_symbol_completion_unique_add(resultat, studio_v2_symbol_completion_oppføring("symbol", navn, detalj))
         }
         i = i + 1
     }
-    i = 0
-    mens (i < lengde(builtins) og lengde(resultat) < maks) {
-        la kandidat: tekst = builtins[i]
-        hvis studio_v2_symbol_completion_match(kandidat, prefix) da {
-            resultat = studio_v2_symbol_completion_unique_add(resultat, studio_v2_symbol_completion_oppføring("builtin", kandidat, "stdlib"))
-        }
-        i = i + 1
-    }
+    resultat = studio_v2_symbol_completion_tilfoy_fra_liste_fase(resultat, keywords, "keyword", "språk", prefix, "starter", maks)
+    resultat = studio_v2_symbol_completion_tilfoy_fra_liste_fase(resultat, builtins, "builtin", "stdlib", prefix, "starter", maks)
     i = 0
     mens (i < lengde(symbol_navn) og lengde(resultat) < maks) {
         la navn: tekst = symbol_navn[i]
-        hvis studio_v2_symbol_completion_match(navn, prefix) da {
-            la oppføring: tekst = studio_v2_symbol_indeks_finn(indeks, navn)
-            la detalj: tekst = studio_v2_symbol_signatur_fra_oppføring(oppføring)
+        la oppføring: tekst = studio_v2_symbol_indeks_finn_prioritert_navn(indeks, navn)
+        la detalj: tekst = studio_v2_symbol_beskrivelse_fra_oppføring(oppføring)
+        la sted: tekst = studio_v2_symbol_oppføring_sted(oppføring)
+        hvis detalj == "" da {
+            detalj = sted
+        } ellers {
+            detalj = detalj + " · " + sted
+        }
+        hvis ikke studio_v2_symbol_completion_match_nøyaktig(navn, prefix) og studio_v2_symbol_completion_match_starter_med(navn, prefix) da {
+            resultat = studio_v2_symbol_completion_unique_add(resultat, studio_v2_symbol_completion_oppføring("symbol", navn, detalj))
+        }
+        i = i + 1
+    }
+    resultat = studio_v2_symbol_completion_tilfoy_fra_liste_fase(resultat, keywords, "keyword", "språk", prefix, "inne", maks)
+    resultat = studio_v2_symbol_completion_tilfoy_fra_liste_fase(resultat, builtins, "builtin", "stdlib", prefix, "inne", maks)
+    i = 0
+    mens (i < lengde(symbol_navn) og lengde(resultat) < maks) {
+        la navn: tekst = symbol_navn[i]
+        hvis studio_v2_symbol_completion_match_utenfor_start(navn, prefix) da {
+            la oppføring: tekst = studio_v2_symbol_indeks_finn_prioritert_navn(indeks, navn)
+            la detalj: tekst = studio_v2_symbol_beskrivelse_fra_oppføring(oppføring)
+            la sted: tekst = studio_v2_symbol_oppføring_sted(oppføring)
             hvis detalj == "" da {
-                detalj = studio_v2_symbol_oppføring_fil(oppføring) + ":" + tekst_fra_heltall(studio_v2_symbol_oppføring_linje(oppføring))
+                detalj = sted
             } ellers {
-                detalj = detalj + " · " + studio_v2_symbol_oppføring_fil(oppføring) + ":" + tekst_fra_heltall(studio_v2_symbol_oppføring_linje(oppføring))
+                detalj = detalj + " · " + sted
             }
             resultat = studio_v2_symbol_completion_unique_add(resultat, studio_v2_symbol_completion_oppføring("symbol", navn, detalj))
         }
         i = i + 1
     }
     returner resultat
+}
+
+funksjon studio_v2_symbol_completion_fra_workspace(rot: tekst, prefix: tekst, maks: heltall) -> liste_tekst {
+    returner studio_v2_symbol_completion_fra_indeks(studio_v2_symbol_indeks_fra_workspace(rot), prefix, maks)
 }
 
 funksjon studio_v2_symbol_completion_type(oppføring: tekst) -> tekst {
@@ -235,18 +539,109 @@ funksjon studio_v2_symbol_finn_funksjonsparametere(linje: tekst) -> tekst {
     returner studio_v2_symbol_liste_til_tekst(navn)
 }
 
+funksjon studio_v2_symbol_finn_importnavn(linje: tekst) -> tekst {
+    la ren: tekst = tekst_trim(linje)
+    hvis ikke tekst_starter_med(ren, "bruk ") da {
+        returner ""
+    }
+    la rest: tekst = tekst_trim(tekst_slice(ren, 5, tekst_lengde(ren)))
+    hvis rest == "" da {
+        returner ""
+    }
+    la som_posisjon: heltall = studio_v2_symbol_finn_tegn_posisjon(rest, " som ")
+    hvis som_posisjon >= 0 da {
+        returner tekst_trim(tekst_slice(rest, 0, som_posisjon))
+    }
+    returner rest
+}
+
+funksjon studio_v2_symbol_finn_importalias(linje: tekst) -> tekst {
+    la ren: tekst = tekst_trim(linje)
+    hvis ikke tekst_starter_med(ren, "bruk ") da {
+        returner ""
+    }
+    la rest: tekst = tekst_trim(tekst_slice(ren, 5, tekst_lengde(ren)))
+    hvis rest == "" da {
+        returner ""
+    }
+    la som_posisjon: heltall = studio_v2_symbol_finn_tegn_posisjon(rest, " som ")
+    hvis som_posisjon < 0 da {
+        returner ""
+    }
+    returner tekst_trim(tekst_slice(rest, som_posisjon + 5, tekst_lengde(rest)))
+}
+
+funksjon studio_v2_symbol_finn_lokalnavn(linje: tekst) -> tekst {
+    la ren: tekst = tekst_trim(linje)
+    hvis ikke tekst_starter_med(ren, "la ") da {
+        returner ""
+    }
+    la rest: tekst = tekst_trim(tekst_slice(ren, 3, tekst_lengde(ren)))
+    hvis rest == "" da {
+        returner ""
+    }
+    la slutt: heltall = studio_v2_symbol_finn_tegn_posisjon(rest, "=")
+    hvis slutt < 0 da {
+        slutt = studio_v2_symbol_finn_tegn_posisjon(rest, ":")
+    }
+    hvis slutt < 0 da {
+        slutt = studio_v2_symbol_finn_tegn_posisjon(rest, " ")
+    }
+    hvis slutt < 0 da {
+        returner rest
+    }
+    returner tekst_trim(tekst_slice(rest, 0, slutt))
+}
+
+funksjon studio_v2_symbol_finn_kolonne_fra_segment(linje: tekst, prefix: tekst, segment: tekst) -> heltall {
+    hvis segment == "" da {
+        returner 0
+    }
+    la start: heltall = studio_v2_symbol_finn_tekst_posisjon(linje, prefix)
+    hvis start < 0 da {
+        returner 0
+    }
+    start = start + tekst_lengde(prefix)
+    la rest: tekst = tekst_slice(linje, start, tekst_lengde(linje))
+    la posisjon: heltall = studio_v2_symbol_finn_tekst_posisjon(rest, segment)
+    hvis posisjon < 0 da {
+        returner 0
+    }
+    returner start + posisjon + 1
+}
+
 funksjon studio_v2_symbol_indeks_fra_kilde(sti: tekst, kilde: tekst) -> liste_tekst {
     la resultat: liste_tekst = []
     la linjer: liste_tekst = del_linjer(kilde)
     la linje_nummer: heltall = 0
     mens (linje_nummer < lengde(linjer)) {
-        la ren: tekst = tekst_trim(linjer[linje_nummer])
+        la renset: tekst = studio_v2_symbol_rens_linje_for_søk(linjer[linje_nummer])
+        la ren: tekst = tekst_trim(renset)
         hvis ren != "" og ikke tekst_starter_med(ren, "#") og ikke tekst_starter_med(ren, "//") da {
             hvis tekst_starter_med(ren, "funksjon ") da {
                 la navn: tekst = studio_v2_symbol_finn_funksjonsnavn(ren)
                 hvis navn != "" da {
                     la parametere: tekst = studio_v2_symbol_finn_funksjonsparametere(ren)
-                    legg_til(resultat, sti + "\t" + tekst_fra_heltall(linje_nummer + 1) + "\tfunksjon\t" + navn + "\t" + ren + "\t" + parametere)
+                    la kolonne: heltall = studio_v2_symbol_finn_kolonne_fra_segment(renset, "funksjon ", navn)
+                    legg_til(resultat, sti + "\t" + tekst_fra_heltall(linje_nummer + 1) + "\tfunksjon\t" + navn + "\t" + ren + "\t" + parametere + "\t" + tekst_fra_heltall(kolonne))
+                }
+            } ellers hvis tekst_starter_med(ren, "bruk ") da {
+                la navn: tekst = studio_v2_symbol_finn_importnavn(ren)
+                la alias: tekst = studio_v2_symbol_finn_importalias(ren)
+                hvis navn != "" da {
+                    hvis alias != "" da {
+                        la kolonne: heltall = studio_v2_symbol_finn_kolonne_fra_segment(renset, "bruk " + navn + " som ", alias)
+                        legg_til(resultat, sti + "\t" + tekst_fra_heltall(linje_nummer + 1) + "\timport\t" + alias + "\t" + ren + "\t" + navn + "\t" + tekst_fra_heltall(kolonne))
+                    } ellers {
+                        la kolonne: heltall = studio_v2_symbol_finn_kolonne_fra_segment(renset, "bruk ", navn)
+                        legg_til(resultat, sti + "\t" + tekst_fra_heltall(linje_nummer + 1) + "\timport\t" + navn + "\t" + ren + "\t\t" + tekst_fra_heltall(kolonne))
+                    }
+                }
+            } ellers hvis tekst_starter_med(ren, "la ") da {
+                la navn: tekst = studio_v2_symbol_finn_lokalnavn(ren)
+                hvis navn != "" da {
+                    la kolonne: heltall = studio_v2_symbol_finn_kolonne_fra_segment(renset, "la ", navn)
+                    legg_til(resultat, sti + "\t" + tekst_fra_heltall(linje_nummer + 1) + "\tlokal\t" + navn + "\t" + ren + "\t\t" + tekst_fra_heltall(kolonne))
                 }
             }
         }
@@ -260,15 +655,41 @@ funksjon studio_v2_symbol_bruk_indeks_fra_kilde(sti: tekst, kilde: tekst, navn: 
     la linjer: liste_tekst = del_linjer(kilde)
     la linje_nummer: heltall = 0
     mens (linje_nummer < lengde(linjer)) {
-        la ren: tekst = tekst_trim(linjer[linje_nummer])
+        la ren: tekst = tekst_trim(studio_v2_symbol_rens_linje_for_søk(linjer[linje_nummer]))
         hvis ren != "" og ikke tekst_starter_med(ren, "#") og ikke tekst_starter_med(ren, "//") da {
-            hvis ikke tekst_starter_med(ren, "funksjon ") og tekst_inneholder(ren, navn) da {
-                legg_til(resultat, sti + "\t" + tekst_fra_heltall(linje_nummer + 1) + "\tbruk\t" + navn + "\t" + ren)
+            hvis ikke tekst_starter_med(ren, "funksjon ") og studio_v2_symbol_linjetreff_ord(ren, navn) da {
+                legg_til(resultat, sti + "\t" + tekst_fra_heltall(linje_nummer + 1) + "\tbruk\t" + navn + "\t" + ren + "\t\t0")
             }
         }
         linje_nummer = linje_nummer + 1
     }
     returner resultat
+}
+
+funksjon studio_v2_symbol_linjetreff_ord(tekstverdi: tekst, navn: tekst) -> bool {
+    hvis navn == "" da {
+        returner usann
+    }
+    la posisjon: heltall = 0
+    la grense: heltall = tekst_lengde(tekstverdi)
+    la navn_lengde: heltall = tekst_lengde(navn)
+    mens (posisjon < grense) {
+        hvis posisjon + navn_lengde <= grense og tekst_slice(tekstverdi, posisjon, posisjon + navn_lengde) == navn da {
+            la venstre_ok: bool = sann
+            la høyre_ok: bool = sann
+            hvis posisjon > 0 da {
+                venstre_ok = ikke studio_v2_symbol_er_ordtegn_pos(tekstverdi, posisjon - 1)
+            }
+            hvis posisjon + navn_lengde < grense da {
+                høyre_ok = ikke studio_v2_symbol_er_ordtegn_pos(tekstverdi, posisjon + navn_lengde)
+            }
+            hvis venstre_ok og høyre_ok da {
+                returner sann
+            }
+        }
+        posisjon = posisjon + 1
+    }
+    returner usann
 }
 
 funksjon studio_v2_symbol_filer_i_katalog(rot: tekst, katalog: tekst) -> liste_tekst {
@@ -321,7 +742,7 @@ funksjon studio_v2_symbol_bruk_indeks_fra_fil(rot: tekst, sti_relativ: tekst, na
 }
 
 funksjon studio_v2_symbol_indeks_fra_workspace(rot: tekst) -> liste_tekst {
-    returner studio_v2_symbol_indeks_fra_filer(studio_v2_symbol_workspace_filer(rot))
+    returner studio_v2_symbol_cache_indeks(studio_v2_symbol_cache_fra_workspace(rot))
 }
 
 funksjon studio_v2_symbol_indeks_fra_filer(filer: liste_tekst) -> liste_tekst {
@@ -340,6 +761,158 @@ funksjon studio_v2_symbol_indeks_fra_filer(filer: liste_tekst) -> liste_tekst {
         fil_indeks = fil_indeks + 1
     }
     returner resultat
+}
+
+funksjon studio_v2_symbol_indeks_uten_fil(indeks: liste_tekst, fil: tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la i: heltall = 0
+    mens (i < lengde(indeks)) {
+        hvis studio_v2_symbol_oppføring_fil(indeks[i]) != fil da {
+            legg_til(resultat, indeks[i])
+        }
+        i = i + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_symbol_indeks_oppdater_fil(indeks: liste_tekst, fil: tekst, innhold: tekst) -> liste_tekst {
+    la resultat: liste_tekst = studio_v2_symbol_indeks_uten_fil(indeks, fil)
+    la nytt: liste_tekst = studio_v2_symbol_indeks_fra_kilde(fil, innhold)
+    la i: heltall = 0
+    mens (i < lengde(nytt)) {
+        legg_til(resultat, nytt[i])
+        i = i + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_symbol_cache_tom() -> liste_tekst {
+    returner ["cache\t", "filer_start", "indeks_start"]
+}
+
+funksjon studio_v2_symbol_cache_rot(cache: liste_tekst) -> tekst {
+    hvis lengde(cache) > 0 da {
+        la deler: liste_tekst = tekst_del_på(cache[0], "\t")
+        hvis lengde(deler) > 1 da {
+            returner deler[1]
+        }
+    }
+    returner ""
+}
+
+funksjon studio_v2_symbol_cache_filer(cache: liste_tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la i: heltall = 0
+    la i_filer: heltall = -1
+    mens (i < lengde(cache)) {
+        hvis cache[i] == "filer_start" da {
+            i_filer = i + 1
+        } ellers hvis cache[i] == "indeks_start" da {
+            hvis i_filer >= 0 da {
+                la j: heltall = i_filer
+                mens (j < i) {
+                    hvis tekst_starter_med(cache[j], "fil\t") da {
+                        la deler: liste_tekst = tekst_del_på(cache[j], "\t")
+                        hvis lengde(deler) > 1 da {
+                            legg_til(resultat, deler[1])
+                        }
+                    }
+                    j = j + 1
+                }
+            }
+            returner resultat
+        }
+        i = i + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_symbol_cache_indeks(cache: liste_tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la i: heltall = 0
+    la indeks_start: heltall = -1
+    mens (i < lengde(cache)) {
+        hvis cache[i] == "indeks_start" da {
+            indeks_start = i + 1
+            i = lengde(cache)
+        }
+        i = i + 1
+    }
+    hvis indeks_start >= 0 da {
+        la j: heltall = indeks_start
+        mens (j < lengde(cache)) {
+            legg_til(resultat, cache[j])
+            j = j + 1
+        }
+    }
+    returner resultat
+}
+
+funksjon studio_v2_symbol_cache_bygg(rot: tekst, filer: liste_tekst, indeks: liste_tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    legg_til(resultat, "cache\t" + rot)
+    legg_til(resultat, "filer_start")
+    la fil_indeks: heltall = 0
+    mens (fil_indeks < lengde(filer)) {
+        legg_til(resultat, "fil\t" + filer[fil_indeks])
+        fil_indeks = fil_indeks + 1
+    }
+    legg_til(resultat, "indeks_start")
+    la symbol_indeks: heltall = 0
+    mens (symbol_indeks < lengde(indeks)) {
+        legg_til(resultat, indeks[symbol_indeks])
+        symbol_indeks = symbol_indeks + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_symbol_cache_fra_workspace(rot: tekst) -> liste_tekst {
+    la session: liste_tekst = workspace.studio_v2_state_session_les(rot)
+    la cache: liste_tekst = workspace.studio_v2_state_session_symbol_cache(session)
+    la filer: liste_tekst = studio_v2_symbol_workspace_filer(rot)
+    hvis lengde(cache) > 0 og studio_v2_symbol_cache_rot(cache) == rot da {
+        la cache_filer: liste_tekst = studio_v2_symbol_cache_filer(cache)
+        hvis lengde(cache_filer) == lengde(filer) da {
+            la lik: bool = sann
+            la indeks: heltall = 0
+            mens (indeks < lengde(filer) og lik) {
+                hvis cache_filer[indeks] != filer[indeks] da {
+                    lik = usann
+                }
+                indeks = indeks + 1
+            }
+            hvis lik da {
+                returner cache
+            }
+        }
+    }
+    la indeks: liste_tekst = studio_v2_symbol_indeks_fra_filer(filer)
+    la cache_ny: liste_tekst = studio_v2_symbol_cache_bygg(rot, filer, indeks)
+    workspace.studio_v2_state_session_symbol_cache_skriv_med_tilstand(rot, cache_ny)
+    returner cache_ny
+}
+
+funksjon studio_v2_symbol_cache_oppdater_fil(cache: liste_tekst, fil: tekst, innhold: tekst) -> liste_tekst {
+    la rot: tekst = studio_v2_symbol_cache_rot(cache)
+    la filer: liste_tekst = studio_v2_symbol_cache_filer(cache)
+    la indeks: liste_tekst = studio_v2_symbol_cache_indeks(cache)
+    la nye_filer: liste_tekst = studio_v2_symbol_indeks_uten_fil(filer, fil)
+    hvis fil != "" da {
+        legg_til(nye_filer, fil)
+    }
+    la ny_indeks: liste_tekst = studio_v2_symbol_indeks_oppdater_fil(indeks, fil, innhold)
+    returner studio_v2_symbol_cache_bygg(rot, nye_filer, ny_indeks)
+}
+
+funksjon studio_v2_symbol_cache_oppdater_fil_skriv_med_tilstand(rot: tekst, fil: tekst, innhold: tekst) -> liste_tekst {
+    la session: liste_tekst = workspace.studio_v2_state_session_les(rot)
+    la cache: liste_tekst = workspace.studio_v2_state_session_symbol_cache(session)
+    hvis lengde(cache) == 0 eller studio_v2_symbol_cache_rot(cache) != rot da {
+        cache = studio_v2_symbol_cache_fra_workspace(rot)
+    }
+    la cache_ny: liste_tekst = studio_v2_symbol_cache_oppdater_fil(cache, fil, innhold)
+    workspace.studio_v2_state_session_symbol_cache_skriv_med_tilstand(rot, cache_ny)
+    returner cache_ny
 }
 
 funksjon studio_v2_symbol_bruk_indeks_fra_workspace(rot: tekst, navn: tekst) -> liste_tekst {
@@ -387,6 +960,46 @@ funksjon studio_v2_symbol_indeks_finn(indeks: liste_tekst, navn: tekst) -> tekst
     returner ""
 }
 
+funksjon studio_v2_symbol_indeks_finn_navn(indeks: liste_tekst, navn: tekst) -> tekst {
+    la søk: tekst = "\t" + navn + "\t"
+    la i: heltall = 0
+    mens (i < lengde(indeks)) {
+        hvis tekst_inneholder(indeks[i], søk) da {
+            returner indeks[i]
+        }
+        i = i + 1
+    }
+    returner ""
+}
+
+funksjon studio_v2_symbol_indeks_finn_med_slag(indeks: liste_tekst, slag: tekst, navn: tekst) -> tekst {
+    la søk: tekst = "\t" + slag + "\t" + navn + "\t"
+    la i: heltall = 0
+    mens (i < lengde(indeks)) {
+        hvis tekst_inneholder(indeks[i], søk) da {
+            returner indeks[i]
+        }
+        i = i + 1
+    }
+    returner ""
+}
+
+funksjon studio_v2_symbol_indeks_finn_prioritert_navn(indeks: liste_tekst, navn: tekst) -> tekst {
+    la kandidat: tekst = studio_v2_symbol_indeks_finn_med_slag(indeks, "lokal", navn)
+    hvis kandidat != "" da {
+        returner kandidat
+    }
+    kandidat = studio_v2_symbol_indeks_finn_med_slag(indeks, "import", navn)
+    hvis kandidat != "" da {
+        returner kandidat
+    }
+    kandidat = studio_v2_symbol_indeks_finn_med_slag(indeks, "funksjon", navn)
+    hvis kandidat != "" da {
+        returner kandidat
+    }
+    returner studio_v2_symbol_indeks_finn_navn(indeks, navn)
+}
+
 funksjon studio_v2_symbol_indeks_finn_bruk(indeks: liste_tekst, navn: tekst) -> tekst {
     la søk: tekst = "\tbruk\t" + navn + "\t"
     la i: heltall = 0
@@ -432,23 +1045,47 @@ funksjon studio_v2_symbol_parametere_fra_oppføring(oppføring: tekst) -> tekst 
 }
 
 funksjon studio_v2_symbol_goto_def(rot: tekst, navn: tekst) -> tekst {
-    returner studio_v2_symbol_indeks_finn(studio_v2_symbol_indeks_fra_workspace(rot), navn)
+    returner studio_v2_symbol_goto_def_fra_indeks(studio_v2_symbol_indeks_fra_workspace(rot), navn)
+}
+
+funksjon studio_v2_symbol_goto_def_fra_indeks(indeks: liste_tekst, navn: tekst) -> tekst {
+    returner studio_v2_symbol_indeks_finn_prioritert_navn(indeks, navn)
 }
 
 funksjon studio_v2_symbol_find_references(rot: tekst, navn: tekst) -> liste_tekst {
-    returner studio_v2_symbol_bruk_indeks_fra_workspace(rot, navn)
+    returner studio_v2_symbol_find_references_fra_indeks(studio_v2_symbol_indeks_fra_workspace(rot), navn)
+}
+
+funksjon studio_v2_symbol_find_references_fra_indeks(indeks: liste_tekst, navn: tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la i: heltall = 0
+    mens (i < lengde(indeks)) {
+        hvis studio_v2_symbol_slag_fra_oppføring(indeks[i]) == "bruk" og studio_v2_symbol_navn_fra_oppføring(indeks[i]) == navn da {
+            legg_til(resultat, indeks[i])
+        }
+        i = i + 1
+    }
+    returner resultat
 }
 
 funksjon studio_v2_symbol_goto_reference(rot: tekst, navn: tekst) -> tekst {
-    returner studio_v2_symbol_indeks_forste(studio_v2_symbol_find_references(rot, navn))
+    returner studio_v2_symbol_goto_reference_fra_indeks(studio_v2_symbol_indeks_fra_workspace(rot), navn)
+}
+
+funksjon studio_v2_symbol_goto_reference_fra_indeks(indeks: liste_tekst, navn: tekst) -> tekst {
+    returner studio_v2_symbol_indeks_forste(studio_v2_symbol_find_references_fra_indeks(indeks, navn))
 }
 
 funksjon studio_v2_symbol_navigasjon_forslag(rot: tekst, needle: tekst) -> tekst {
-    la kandidat: tekst = studio_v2_symbol_goto_def(rot, needle)
+    returner studio_v2_symbol_navigasjon_forslag_fra_indeks(studio_v2_symbol_indeks_fra_workspace(rot), rot, needle)
+}
+
+funksjon studio_v2_symbol_navigasjon_forslag_fra_indeks(indeks: liste_tekst, rot: tekst, needle: tekst) -> tekst {
+    la kandidat: tekst = studio_v2_symbol_goto_def_fra_indeks(indeks, needle)
     hvis kandidat != "" da {
         returner kandidat
     }
-    kandidat = studio_v2_symbol_goto_reference(rot, needle)
+    kandidat = studio_v2_symbol_goto_reference_fra_indeks(indeks, needle)
     hvis kandidat != "" da {
         returner kandidat
     }
@@ -473,6 +1110,24 @@ funksjon studio_v2_symbol_oppføring_linje(oppføring: tekst) -> heltall {
         returner heltall_fra_tekst(deler[1])
     }
     returner 0
+}
+
+funksjon studio_v2_symbol_oppføring_kolonne(oppføring: tekst) -> heltall {
+    la deler: liste_tekst = studio_v2_symbol_oppføring_deler(oppføring)
+    hvis lengde(deler) > 6 da {
+        returner heltall_fra_tekst(deler[6])
+    }
+    returner 0
+}
+
+funksjon studio_v2_symbol_oppføring_sted(oppføring: tekst) -> tekst {
+    la fil: tekst = studio_v2_symbol_oppføring_fil(oppføring)
+    la linje: heltall = studio_v2_symbol_oppføring_linje(oppføring)
+    la kolonne: heltall = studio_v2_symbol_oppføring_kolonne(oppføring)
+    hvis kolonne > 0 da {
+        returner fil + ":" + tekst_fra_heltall(linje) + ":" + tekst_fra_heltall(kolonne)
+    }
+    returner fil + ":" + tekst_fra_heltall(linje)
 }
 
 funksjon studio_v2_symbol_quick_jump(rot: tekst, needle: tekst) -> tekst {
@@ -526,6 +1181,113 @@ funksjon studio_v2_symbol_rename_preview(rot: tekst, gammelt: tekst, nytt: tekst
     returner preview
 }
 
+funksjon studio_v2_symbol_rename_berørte_filer_fra_indeks(indeks: liste_tekst, gammelt: tekst) -> liste_tekst {
+    la referanser: liste_tekst = studio_v2_symbol_find_references_fra_indeks(indeks, gammelt)
+    la filer: liste_tekst = []
+    la i: heltall = 0
+    mens (i < lengde(referanser)) {
+        la fil: tekst = studio_v2_symbol_oppføring_fil(referanser[i])
+        hvis fil != "" da {
+            filer = studio_v2_symbol_completion_unique_add(filer, fil)
+        }
+        i = i + 1
+    }
+    returner filer
+}
+
+funksjon studio_v2_symbol_rename_preview_fra_indeks(indeks: liste_tekst, gammelt: tekst, nytt: tekst) -> liste_tekst {
+    la referanser: liste_tekst = studio_v2_symbol_find_references_fra_indeks(indeks, gammelt)
+    la preview: liste_tekst = []
+    la i: heltall = 0
+    mens (i < lengde(referanser)) {
+        la deler: liste_tekst = tekst_del_på(referanser[i], "\t")
+        hvis lengde(deler) >= 5 da {
+            la nytt_innhold: tekst = tekst_erstatt(deler[4], gammelt, nytt)
+            legg_til(preview, deler[0] + "\t" + deler[1] + "\t" + gammelt + " -> " + nytt + "\t" + nytt_innhold)
+        }
+        i = i + 1
+    }
+    returner preview
+}
+
+funksjon studio_v2_symbol_rename_berørte_oppføringer_fra_indeks(indeks: liste_tekst, fil: tekst, gammelt: tekst) -> liste_tekst {
+    la referanser: liste_tekst = studio_v2_symbol_find_references_fra_indeks(indeks, gammelt)
+    la resultat: liste_tekst = []
+    la i: heltall = 0
+    mens (i < lengde(referanser)) {
+        hvis studio_v2_symbol_oppføring_fil(referanser[i]) == fil da {
+            legg_til(resultat, referanser[i])
+        }
+        i = i + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_symbol_tekst_fra_linjer(linjer: liste_tekst) -> tekst {
+    la resultat: tekst = ""
+    la i: heltall = 0
+    mens (i < lengde(linjer)) {
+        hvis i > 0 da {
+            resultat = resultat + "\n"
+        }
+        resultat = resultat + linjer[i]
+        i = i + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_symbol_rename_appliser_oppføring(innhold: tekst, oppføring: tekst, gammelt: tekst, nytt: tekst) -> tekst {
+    la linjer: liste_tekst = del_linjer(innhold)
+    la linje_indeks: heltall = studio_v2_symbol_oppføring_linje(oppføring) - 1
+    la kolonne: heltall = studio_v2_symbol_oppføring_kolonne(oppføring)
+    hvis linje_indeks < 0 eller linje_indeks >= lengde(linjer) eller kolonne <= 0 da {
+        returner innhold
+    }
+    la linje: tekst = linjer[linje_indeks]
+    la start: heltall = kolonne - 1
+    la slutt: heltall = start + tekst_lengde(gammelt)
+    hvis start < 0 eller slutt > tekst_lengde(linje) da {
+        returner innhold
+    }
+    hvis tekst_slice(linje, start, slutt) != gammelt da {
+        returner innhold
+    }
+    linjer[linje_indeks] = tekst_slice(linje, 0, start) + nytt + tekst_slice(linje, slutt, tekst_lengde(linje))
+    returner studio_v2_symbol_tekst_fra_linjer(linjer)
+}
+
+funksjon studio_v2_symbol_rename_appliser_innhold_fra_oppføringer(innhold: tekst, oppføringer: liste_tekst, gammelt: tekst, nytt: tekst) -> tekst {
+    la resultat: tekst = innhold
+    la gjenværende: liste_tekst = oppføringer
+    mens (lengde(gjenværende) > 0) {
+        la valg_indeks: heltall = 0
+        la valg_linje: heltall = -1
+        la valg_kolonne: heltall = -1
+        la i: heltall = 0
+        mens (i < lengde(gjenværende)) {
+            la linje: heltall = studio_v2_symbol_oppføring_linje(gjenværende[i])
+            la kolonne: heltall = studio_v2_symbol_oppføring_kolonne(gjenværende[i])
+            hvis linje > valg_linje eller (linje == valg_linje og kolonne > valg_kolonne) da {
+                valg_linje = linje
+                valg_kolonne = kolonne
+                valg_indeks = i
+            }
+            i = i + 1
+        }
+        resultat = studio_v2_symbol_rename_appliser_oppføring(resultat, gjenværende[valg_indeks], gammelt, nytt)
+        la neste: liste_tekst = []
+        la j: heltall = 0
+        mens (j < lengde(gjenværende)) {
+            hvis j != valg_indeks da {
+                legg_til(neste, gjenværende[j])
+            }
+            j = j + 1
+        }
+        gjenværende = neste
+    }
+    returner resultat
+}
+
 funksjon studio_v2_symbol_rename_preview_fra_fil(rot: tekst, sti_relativ: tekst, gammelt: tekst, nytt: tekst) -> liste_tekst {
     la referanser: liste_tekst = studio_v2_symbol_bruk_indeks_fra_fil(rot, sti_relativ, gammelt)
     la preview: liste_tekst = []
@@ -542,25 +1304,81 @@ funksjon studio_v2_symbol_rename_preview_fra_fil(rot: tekst, sti_relativ: tekst,
 }
 
 funksjon studio_v2_symbol_rename_preview_fra_filer(filer: liste_tekst, gammelt: tekst, nytt: tekst) -> liste_tekst {
-    la referanser: liste_tekst = studio_v2_symbol_bruk_indeks_fra_filer(filer, gammelt)
-    la preview: liste_tekst = []
-    la i: heltall = 0
-    mens (i < lengde(referanser)) {
-        la deler: liste_tekst = tekst_del_på(referanser[i], "\t")
-        hvis lengde(deler) >= 5 da {
-            la nytt_innhold: tekst = tekst_erstatt(deler[4], gammelt, nytt)
-            legg_til(preview, deler[0] + "\t" + deler[1] + "\t" + gammelt + " -> " + nytt + "\t" + nytt_innhold)
-        }
-        i = i + 1
-    }
-    returner preview
+    returner studio_v2_symbol_rename_preview_fra_indeks(studio_v2_symbol_indeks_fra_filer(filer), gammelt, nytt)
 }
 
-funksjon studio_v2_symbol_rename_appliser_tekst(innhold: tekst, gammelt: tekst, nytt: tekst) -> tekst {
+funksjon studio_v2_symbol_er_ordtegn_pos(tekstverdi: tekst, posisjon: heltall) -> bool {
+    hvis posisjon < 0 eller posisjon >= tekst_lengde(tekstverdi) da {
+        returner usann
+    }
+    returner tekst_er_ordtegn(tekst_slice(tekstverdi, posisjon, posisjon + 1))
+}
+
+funksjon studio_v2_symbol_erstatt_ord(innhold: tekst, gammelt: tekst, nytt: tekst) -> tekst {
     hvis gammelt == "" eller gammelt == nytt da {
         returner innhold
     }
-    returner tekst_erstatt(innhold, gammelt, nytt)
+    la resultat: tekst = ""
+    la posisjon: heltall = 0
+    la grense: heltall = tekst_lengde(innhold)
+    la gammelt_lengde: heltall = tekst_lengde(gammelt)
+    mens (posisjon < grense) {
+        hvis posisjon + gammelt_lengde <= grense og tekst_slice(innhold, posisjon, posisjon + gammelt_lengde) == gammelt da {
+            la venstre_ok: bool = sann
+            la høyre_ok: bool = sann
+            hvis posisjon > 0 da {
+                venstre_ok = ikke studio_v2_symbol_er_ordtegn_pos(innhold, posisjon - 1)
+            }
+            hvis posisjon + gammelt_lengde < grense da {
+                høyre_ok = ikke studio_v2_symbol_er_ordtegn_pos(innhold, posisjon + gammelt_lengde)
+            }
+            hvis venstre_ok og høyre_ok da {
+                resultat = resultat + nytt
+                posisjon = posisjon + gammelt_lengde
+                fortsett
+            }
+        }
+        resultat = resultat + tekst_slice(innhold, posisjon, posisjon + 1)
+        posisjon = posisjon + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_symbol_rename_appliser_tekst(innhold: tekst, gammelt: tekst, nytt: tekst) -> tekst {
+    returner studio_v2_symbol_erstatt_ord(innhold, gammelt, nytt)
+}
+
+funksjon studio_v2_symbol_rename_konflikt_fra_indeks(indeks: liste_tekst, gammelt: tekst, nytt: tekst) -> tekst {
+    hvis gammelt == nytt da {
+        returner ""
+    }
+    la eksisterende: tekst = studio_v2_symbol_indeks_finn_prioritert_navn(indeks, nytt)
+    hvis eksisterende != "" da {
+        hvis studio_v2_symbol_navn_fra_oppføring(eksisterende) != gammelt da {
+            returner eksisterende
+        }
+    }
+    returner ""
+}
+
+funksjon studio_v2_symbol_rename_status(rot: tekst, gammelt: tekst, nytt: tekst) -> tekst {
+    hvis gammelt == "" eller nytt == "" da {
+        returner "tom"
+    }
+    hvis gammelt == nytt da {
+        returner "ingen_endring"
+    }
+    hvis studio_v2_symbol_rename_konflikt_fra_indeks(studio_v2_symbol_indeks_fra_workspace(rot), gammelt, nytt) != "" da {
+        returner "konflikt"
+    }
+    returner "klar"
+}
+
+funksjon studio_v2_symbol_rename_klar(rot: tekst, gammelt: tekst, nytt: tekst) -> bool {
+    hvis studio_v2_symbol_rename_status(rot, gammelt, nytt) == "klar" da {
+        returner sann
+    }
+    returner usann
 }
 
 funksjon studio_v2_symbol_rename_appliser_fil(rot: tekst, sti_relativ: tekst, gammelt: tekst, nytt: tekst) -> bool {
@@ -569,25 +1387,36 @@ funksjon studio_v2_symbol_rename_appliser_fil(rot: tekst, sti_relativ: tekst, ga
         returner usann
     }
     la innhold: tekst = les_fil(sti)
-    la nytt_innhold: tekst = studio_v2_symbol_rename_appliser_tekst(innhold, gammelt, nytt)
+    la oppføringer: liste_tekst = studio_v2_symbol_rename_berørte_oppføringer_fra_indeks(studio_v2_symbol_indeks_fra_kilde(sti_relativ, innhold), sti_relativ, gammelt)
+    la nytt_innhold: tekst = studio_v2_symbol_rename_appliser_innhold_fra_oppføringer(innhold, oppføringer, gammelt, nytt)
     hvis nytt_innhold == innhold da {
         returner usann
     }
     skriv_fil(sti, nytt_innhold)
+    studio_v2_symbol_cache_oppdater_fil_skriv_med_tilstand(rot, sti_relativ, nytt_innhold)
     returner sann
 }
 
 funksjon studio_v2_symbol_rename_appliser_filer(rot: tekst, filer: liste_tekst, gammelt: tekst, nytt: tekst) -> heltall {
+    la indeks: liste_tekst = studio_v2_symbol_indeks_fra_filer(filer)
+    la berørte_filer: liste_tekst = studio_v2_symbol_rename_berørte_filer_fra_indeks(indeks, gammelt)
     la antall: heltall = 0
-    la indeks: heltall = 0
-    mens (indeks < lengde(filer)) {
-        la sti: tekst = filer[indeks]
+    la posisjon: heltall = 0
+    mens (posisjon < lengde(berørte_filer)) {
+        la sti: tekst = berørte_filer[posisjon]
         hvis studio_v2_symbol_er_kilde_fil(sti) da {
-            hvis studio_v2_symbol_rename_appliser_fil(rot, sti, gammelt, nytt) da {
-                antall = antall + 1
+            la innhold: tekst = studio_v2_symbol_fil_innhold(rot, sti)
+            hvis innhold != "" da {
+                la oppføringer: liste_tekst = studio_v2_symbol_rename_berørte_oppføringer_fra_indeks(indeks, sti, gammelt)
+                la nytt_innhold: tekst = studio_v2_symbol_rename_appliser_innhold_fra_oppføringer(innhold, oppføringer, gammelt, nytt)
+                hvis nytt_innhold != innhold da {
+                    skriv_fil(rot + "/" + sti, nytt_innhold)
+                    studio_v2_symbol_cache_oppdater_fil_skriv_med_tilstand(rot, sti, nytt_innhold)
+                    antall = antall + 1
+                }
             }
         }
-        indeks = indeks + 1
+        posisjon = posisjon + 1
     }
     returner antall
 }
@@ -597,6 +1426,30 @@ funksjon studio_v2_symbol_indeks_antall_definisjoner(indeks: liste_tekst) -> hel
     la i: heltall = 0
     mens (i < lengde(indeks)) {
         hvis studio_v2_symbol_slag_fra_oppføring(indeks[i]) == "funksjon" da {
+            antall = antall + 1
+        }
+        i = i + 1
+    }
+    returner antall
+}
+
+funksjon studio_v2_symbol_indeks_antall_importer(indeks: liste_tekst) -> heltall {
+    la antall: heltall = 0
+    la i: heltall = 0
+    mens (i < lengde(indeks)) {
+        hvis studio_v2_symbol_slag_fra_oppføring(indeks[i]) == "import" da {
+            antall = antall + 1
+        }
+        i = i + 1
+    }
+    returner antall
+}
+
+funksjon studio_v2_symbol_indeks_antall_lokale(indeks: liste_tekst) -> heltall {
+    la antall: heltall = 0
+    la i: heltall = 0
+    mens (i < lengde(indeks)) {
+        hvis studio_v2_symbol_slag_fra_oppføring(indeks[i]) == "lokal" da {
             antall = antall + 1
         }
         i = i + 1
@@ -614,4 +1467,62 @@ funksjon studio_v2_symbol_indeks_antall_bruk(indeks: liste_tekst) -> heltall {
         i = i + 1
     }
     returner antall
+}
+
+funksjon studio_v2_symbol_indeks_unique_filer(indeks: liste_tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la i: heltall = 0
+    mens (i < lengde(indeks)) {
+        la fil: tekst = studio_v2_symbol_oppføring_fil(indeks[i])
+        hvis fil != "" da {
+            resultat = studio_v2_symbol_completion_unique_add(resultat, fil)
+        }
+        i = i + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_symbol_indeks_oppføringer_for_fil(indeks: liste_tekst, fil: tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la i: heltall = 0
+    mens (i < lengde(indeks)) {
+        hvis studio_v2_symbol_oppføring_fil(indeks[i]) == fil da {
+            legg_til(resultat, indeks[i])
+        }
+        i = i + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_symbol_indeks_definisjoner_for_fil(indeks: liste_tekst, fil: tekst) -> heltall {
+    la oppføringer: liste_tekst = studio_v2_symbol_indeks_oppføringer_for_fil(indeks, fil)
+    returner studio_v2_symbol_indeks_antall_definisjoner(oppføringer)
+}
+
+funksjon studio_v2_symbol_indeks_bruk_for_fil(indeks: liste_tekst, fil: tekst) -> heltall {
+    la oppføringer: liste_tekst = studio_v2_symbol_indeks_oppføringer_for_fil(indeks, fil)
+    returner studio_v2_symbol_indeks_antall_bruk(oppføringer)
+}
+
+funksjon studio_v2_symbol_workspace_sammendrag(rot: tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la cache: liste_tekst = studio_v2_symbol_cache_fra_workspace(rot)
+    la filer: liste_tekst = studio_v2_symbol_cache_filer(cache)
+    la indeks: liste_tekst = studio_v2_symbol_cache_indeks(cache)
+    legg_til(resultat, "workspace\t" + rot)
+    legg_til(resultat, "cache_filer\t" + tekst_fra_heltall(lengde(filer)))
+    legg_til(resultat, "cache_symboler\t" + tekst_fra_heltall(lengde(indeks)))
+    legg_til(resultat, "filer\t" + tekst_fra_heltall(lengde(filer)))
+    legg_til(resultat, "symboler\t" + tekst_fra_heltall(lengde(indeks)))
+    legg_til(resultat, "definisjoner\t" + tekst_fra_heltall(studio_v2_symbol_indeks_antall_definisjoner(indeks)))
+    legg_til(resultat, "importer\t" + tekst_fra_heltall(studio_v2_symbol_indeks_antall_importer(indeks)))
+    legg_til(resultat, "lokale\t" + tekst_fra_heltall(studio_v2_symbol_indeks_antall_lokale(indeks)))
+    legg_til(resultat, "bruk\t" + tekst_fra_heltall(studio_v2_symbol_indeks_antall_bruk(indeks)))
+    la filer_unique: liste_tekst = studio_v2_symbol_indeks_unique_filer(indeks)
+    la i: heltall = 0
+    mens (i < lengde(filer_unique) og i < 5) {
+        legg_til(resultat, "fil\t" + filer_unique[i] + "\tdef\t" + tekst_fra_heltall(studio_v2_symbol_indeks_definisjoner_for_fil(indeks, filer_unique[i])) + "\tbruk\t" + tekst_fra_heltall(studio_v2_symbol_indeks_bruk_for_fil(indeks, filer_unique[i])))
+        i = i + 1
+    }
+    returner resultat
 }

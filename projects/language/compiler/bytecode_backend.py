@@ -1325,8 +1325,13 @@ class BytecodeVM:
             command = [str(item) for item in (args[0] if args else [])]
             if not command:
                 return 1
-            completed = subprocess.run(command, check=False)
-            return int(completed.returncode)
+            try:
+                completed = subprocess.run(command, check=False)
+                return int(completed.returncode)
+            except FileNotFoundError:
+                return 127
+            except OSError:
+                return 1
         if name == "liste_filer":
             from pathlib import Path
 
@@ -1686,9 +1691,11 @@ class BytecodeVM:
         return object_id
 
     def _gui_list_selected_text(self, object_id: int) -> str:
-        obj = self._gui_get(object_id)
+        obj = self.gui_objects.get(object_id)
+        if obj is None:
+            return ""
         if obj.get("kind") != "list":
-            raise BytecodeRuntimeError(f"GUI-elementet {object_id} er ikke en liste")
+            return ""
         items = obj.setdefault("items", [])
         index = int(obj.get("selected_index", -1))
         if 0 <= index < len(items):

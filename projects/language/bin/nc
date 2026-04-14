@@ -6,7 +6,7 @@ BINARY="$ROOT_DIR/dist/norscode"
 
 if [ ! -x "$BINARY" ]; then
     echo "Norscode binary not found at: $BINARY" >&2
-    echo "Build it with: sh scripts/build-standalone.sh" >&2
+    echo "Denne workspace-kopien mangler også build-wrapperen som README viser til." >&2
     exit 1
 fi
 

@@ -1,91 +1,95 @@
-# GUI-standardbibliotek for Norscode
-#
-# Dette er en liten, headless GUI-API som gir språket en stabil
-# standardlib-flate for vinduer og widgets. Den kan brukes fra
-# både kjørende tolk, bytecode og generert C.
+# Norscode std.gui shim for Studio v2.
 
 funksjon vindu(tittel: tekst) -> heltall {
     returner gui_vindu(tittel)
 }
 
-funksjon panel(foresatt: heltall) -> heltall {
-    returner gui_panel(foresatt)
+funksjon panel(forelder: heltall) -> heltall {
+    returner gui_panel(forelder)
 }
 
-funksjon rad(foresatt: heltall) -> heltall {
-    returner gui_rad(foresatt)
+funksjon rad(forelder: heltall) -> heltall {
+    returner gui_rad(forelder)
 }
 
-funksjon tekst(foresatt: heltall, tekstverdi: tekst) -> heltall {
-    returner gui_tekst(foresatt, tekstverdi)
+funksjon tekst(forelder: heltall, innhold: tekst) -> heltall {
+    returner gui_tekst(forelder, innhold)
 }
 
-funksjon tekstboks(foresatt: heltall, starttekst: tekst) -> heltall {
-    returner gui_tekstboks(foresatt, starttekst)
+funksjon tekstfelt(forelder: heltall, plassholder: tekst) -> heltall {
+    returner gui_tekstfelt(forelder, plassholder)
 }
 
-funksjon editor(foresatt: heltall, starttekst: tekst) -> heltall {
-    returner gui_editor(foresatt, starttekst)
+funksjon editor(forelder: heltall, innhold: tekst) -> heltall {
+    returner gui_editor(forelder, innhold)
 }
 
-funksjon editor_hopp_til(editor_id: heltall, linje: heltall) -> heltall {
-    returner gui_editor_hopp_til(editor_id, linje)
+funksjon liste(forelder: heltall) -> heltall {
+    returner gui_liste(forelder)
 }
 
-funksjon editor_cursor(editor_id: heltall) -> liste_tekst {
-    returner gui_editor_cursor(editor_id)
+funksjon knapp(forelder: heltall, tekstverdi: tekst) -> heltall {
+    returner gui_knapp(forelder, tekstverdi)
 }
 
-funksjon editor_erstatt_fra_til(editor_id: heltall, start_linje: heltall, start_kol: heltall, slutt_linje: heltall, slutt_kol: heltall, tekstverdi: tekst) -> heltall {
-    returner gui_editor_erstatt_fra_til(editor_id, start_linje, start_kol, slutt_linje, slutt_kol, tekstverdi)
+funksjon etikett(forelder: heltall, tekstverdi: tekst) -> heltall {
+    returner gui_etikett(forelder, tekstverdi)
 }
 
-funksjon liste(foresatt: heltall) -> heltall {
-    returner gui_liste(foresatt)
+funksjon tekstboks(forelder: heltall, tekstverdi: tekst) -> heltall {
+    returner gui_tekstboks(forelder, tekstverdi)
 }
 
-funksjon liste_legg_til(liste_id: heltall, tekstverdi: tekst) -> heltall {
-    returner gui_liste_legg_til(liste_id, tekstverdi)
+funksjon editor_hopp_til(widget_id: heltall, linje: heltall) -> heltall {
+    returner gui_editor_hopp_til(widget_id, linje)
 }
 
-funksjon liste_tom(liste_id: heltall) -> heltall {
-    returner gui_liste_tom(liste_id)
+funksjon editor_cursor(widget_id: heltall) -> liste_tekst {
+    returner gui_editor_cursor(widget_id)
 }
 
-funksjon liste_antall(liste_id: heltall) -> heltall {
-    returner gui_liste_antall(liste_id)
+funksjon editor_erstatt_fra_til(widget_id: heltall, start_linje: heltall, start_kolonne: heltall, slutt_linje: heltall, slutt_kolonne: heltall, erstatt: tekst) -> heltall {
+    returner gui_editor_erstatt_fra_til(widget_id, start_linje, start_kolonne, slutt_linje, slutt_kolonne, erstatt)
 }
 
-funksjon liste_filer_tre(sti: tekst) -> liste_tekst {
-    returner gui_liste_filer_tre(sti)
+funksjon liste_legg_til(widget_id: heltall, innhold: tekst) -> heltall {
+    returner gui_liste_legg_til(widget_id, innhold)
 }
 
-funksjon liste_hent(liste_id: heltall, indeks: heltall) -> tekst {
-    returner gui_liste_hent(liste_id, indeks)
+funksjon liste_tom(widget_id: heltall) -> heltall {
+    returner gui_liste_tom(widget_id)
 }
 
-funksjon liste_fjern(liste_id: heltall, indeks: heltall) -> heltall {
-    returner gui_liste_fjern(liste_id, indeks)
+funksjon liste_antall(widget_id: heltall) -> heltall {
+    returner gui_liste_antall(widget_id)
 }
 
-funksjon liste_valgt(liste_id: heltall) -> tekst {
-    returner gui_liste_valgt(liste_id)
+funksjon liste_hent(widget_id: heltall, indeks: heltall) -> tekst {
+    returner gui_liste_hent(widget_id, indeks)
 }
 
-funksjon liste_velg(liste_id: heltall, indeks: heltall) -> heltall {
-    returner gui_liste_velg(liste_id, indeks)
+funksjon liste_fjern(widget_id: heltall, indeks: heltall) -> heltall {
+    returner gui_liste_fjern(widget_id, indeks)
 }
 
-funksjon på_klikk(widget_id: heltall, funksjonsnavn: tekst) -> heltall {
-    returner gui_på_klikk(widget_id, funksjonsnavn)
+funksjon liste_valgt(widget_id: heltall) -> tekst {
+    returner gui_liste_valgt(widget_id)
 }
 
-funksjon på_endring(widget_id: heltall, funksjonsnavn: tekst) -> heltall {
-    returner gui_på_endring(widget_id, funksjonsnavn)
+funksjon liste_velg(widget_id: heltall, indeks: heltall) -> heltall {
+    returner gui_liste_velg(widget_id, indeks)
 }
 
-funksjon på_tast(widget_id: heltall, tast: tekst, funksjonsnavn: tekst) -> heltall {
-    returner gui_på_tast(widget_id, tast, funksjonsnavn)
+funksjon på_klikk(widget_id: heltall, callback: tekst) -> heltall {
+    returner gui_på_klikk(widget_id, callback)
+}
+
+funksjon på_endring(widget_id: heltall, callback: tekst) -> heltall {
+    returner gui_på_endring(widget_id, callback)
+}
+
+funksjon på_tast(widget_id: heltall, tast: tekst, callback: tekst) -> heltall {
+    returner gui_på_tast(widget_id, tast, callback)
 }
 
 funksjon trykk(widget_id: heltall) -> heltall {
@@ -104,18 +108,6 @@ funksjon barn(widget_id: heltall, indeks: heltall) -> heltall {
     returner gui_barn(widget_id, indeks)
 }
 
-funksjon knapp(foresatt: heltall, tekstverdi: tekst) -> heltall {
-    returner gui_knapp(foresatt, tekstverdi)
-}
-
-funksjon etikett(foresatt: heltall, tekstverdi: tekst) -> heltall {
-    returner gui_etikett(foresatt, tekstverdi)
-}
-
-funksjon tekstfelt(foresatt: heltall, starttekst: tekst) -> heltall {
-    returner gui_tekstfelt(foresatt, starttekst)
-}
-
 funksjon sett_tekst(widget_id: heltall, tekstverdi: tekst) -> heltall {
     returner gui_sett_tekst(widget_id, tekstverdi)
 }
@@ -124,10 +116,10 @@ funksjon hent_tekst(widget_id: heltall) -> tekst {
     returner gui_hent_tekst(widget_id)
 }
 
-funksjon vis(vindu_id: heltall) -> heltall {
-    returner gui_vis(vindu_id)
+funksjon vis(widget_id: heltall) -> heltall {
+    returner gui_vis(widget_id)
 }
 
-funksjon lukk(vindu_id: heltall) -> heltall {
-    returner gui_lukk(vindu_id)
+funksjon lukk(widget_id: heltall) -> heltall {
+    returner gui_lukk(widget_id)
 }

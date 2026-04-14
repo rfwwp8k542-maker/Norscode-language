@@ -5,12 +5,111 @@ funksjon studio_v2_prosjektnavn() -> tekst {
 }
 
 funksjon studio_v2_prosjektrot(args: liste_tekst) -> tekst {
-    hvis lengde(args) > 0 da {
-        returner args[0]
+    la indeks: heltall = 0
+    mens (indeks < lengde(args)) {
+        hvis ikke tekst_starter_med(args[indeks], "--") da {
+            returner args[indeks]
+        }
+        indeks = indeks + 1
     }
     returner "."
 }
 
 funksjon studio_v2_prosjektstatus() -> tekst {
     returner "tom"
+}
+
+funksjon studio_v2_prosjekt_vcs_status_fil(rot: tekst) -> tekst {
+    returner rot + "/.norscode/studio_v2_git_status.txt"
+}
+
+funksjon studio_v2_prosjekt_vcs_diff_fil(rot: tekst) -> tekst {
+    returner rot + "/.norscode/studio_v2_git_diff.txt"
+}
+
+funksjon studio_v2_prosjekt_vcs_branch_fil(rot: tekst) -> tekst {
+    returner rot + "/.norscode/studio_v2_git_branch.txt"
+}
+
+funksjon studio_v2_prosjekt_vcs_commit_fil(rot: tekst) -> tekst {
+    returner rot + "/.norscode/studio_v2_git_commit.txt"
+}
+
+funksjon studio_v2_prosjekt_vcs_kjor(rot: tekst, kommando: tekst, utfil: tekst) -> heltall {
+    returner kjør_kommando(["sh", "-lc", "mkdir -p " + rot + "/.norscode && git -C " + rot + " " + kommando + " > " + utfil + " 2>/dev/null || true"])
+}
+
+funksjon studio_v2_prosjekt_vcs_branch(rot: tekst) -> tekst {
+    la utfil: tekst = studio_v2_prosjekt_vcs_branch_fil(rot)
+    studio_v2_prosjekt_vcs_kjor(rot, "branch --show-current", utfil)
+    hvis fil_eksisterer(utfil) da {
+        la branch: tekst = tekst_trim(les_fil(utfil))
+        hvis branch == "" da {
+            returner "detached"
+        }
+        returner branch
+    }
+    returner "detached"
+}
+
+funksjon studio_v2_prosjekt_vcs_commit(rot: tekst) -> liste_tekst {
+    la utfil: tekst = studio_v2_prosjekt_vcs_commit_fil(rot)
+    studio_v2_prosjekt_vcs_kjor(rot, "log -1 --oneline --decorate --no-color", utfil)
+    hvis fil_eksisterer(utfil) da {
+        returner del_linjer(les_fil(utfil))
+    }
+    returner []
+}
+
+funksjon studio_v2_prosjekt_vcs_history(rot: tekst) -> liste_tekst {
+    la utfil: tekst = rot + "/.norscode/studio_v2_git_history.txt"
+    studio_v2_prosjekt_vcs_kjor(rot, "log --oneline --decorate --no-color --max-count=5", utfil)
+    hvis fil_eksisterer(utfil) da {
+        returner del_linjer(les_fil(utfil))
+    }
+    returner []
+}
+
+funksjon studio_v2_prosjekt_vcs_stage(rot: tekst, fil: tekst) -> heltall {
+    returner kjør_kommando(["sh", "-lc", "git -C " + rot + " add -- " + fil + " >/dev/null 2>&1 || true"])
+}
+
+funksjon studio_v2_prosjekt_vcs_unstage(rot: tekst, fil: tekst) -> heltall {
+    returner kjør_kommando(["sh", "-lc", "git -C " + rot + " restore --staged -- " + fil + " >/dev/null 2>&1 || true"])
+}
+
+funksjon studio_v2_prosjekt_vcs_status(rot: tekst) -> liste_tekst {
+    la utfil: tekst = studio_v2_prosjekt_vcs_status_fil(rot)
+    studio_v2_prosjekt_vcs_kjor(rot, "status --short --untracked-files=all", utfil)
+    hvis fil_eksisterer(utfil) da {
+        returner del_linjer(les_fil(utfil))
+    }
+    returner []
+}
+
+funksjon studio_v2_prosjekt_vcs_diff_stat(rot: tekst) -> liste_tekst {
+    la utfil: tekst = studio_v2_prosjekt_vcs_diff_fil(rot)
+    studio_v2_prosjekt_vcs_kjor(rot, "diff --stat -- .", utfil)
+    hvis fil_eksisterer(utfil) da {
+        returner del_linjer(les_fil(utfil))
+    }
+    returner []
+}
+
+funksjon studio_v2_prosjekt_vcs_changed_filer(rot: tekst) -> liste_tekst {
+    la status: liste_tekst = studio_v2_prosjekt_vcs_status(rot)
+    la resultat: liste_tekst = []
+    la indeks: heltall = 0
+    mens (indeks < lengde(status)) {
+        la linje: tekst = tekst_trim(status[indeks])
+        hvis tekst_lengde(linje) > 3 da {
+            legg_til(resultat, tekst_slice(linje, 3, tekst_lengde(linje)))
+        }
+        indeks = indeks + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_prosjekt_vcs_antall(rot: tekst) -> heltall {
+    returner lengde(studio_v2_prosjekt_vcs_status(rot))
 }

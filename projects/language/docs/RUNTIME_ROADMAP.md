@@ -107,10 +107,6 @@ value is also locked to `Null` so return behavior stays predictable.
 
 ## Phase 4 Notes
 
-The main CLI now has a `runtime-run` bridge command that uses the native
-runtime binary directly and fails when the binary is not built yet. It also
-has a `runtime-check` bridge that validates bytecode through the same native
-runtime contract.
 The `bytecode-run` command now recognizes `.no` and `.ncb.json` files directly,
 uses the native runtime first for those payloads as well, and supports
 `--native-only` for a strict no-fallback pass.
@@ -145,19 +141,16 @@ scripting.
 The main CLI also has a `runtime-doctor` bridge that lists the blockers for
 full native runtime adoption and separates hard blockers from transition
 items.
-The standard `run` command now follows the same pattern and uses the native
-runtime when the binary is present. It also supports `--native-only` when you
-want to require native runtime without fallback.
-The standard `test` command follows the same pattern and uses the native
-runtime path when the binary is present. It also supports `--native-only`
-when you want to require native runtime without fallback, including the full
-test suite path.
+The standard `run` command now uses the native-runtime bridge by default in
+this workspace snapshot.
+The standard `test` command also uses the native-runtime path by default in
+this workspace snapshot.
+The standard `check` command now keeps the semantic validation output while it
+also runs native runtime validation by default in this workspace snapshot.
 The `runtime-suite` command now follows the same pattern and will also try to
 build the native runtime automatically before it runs the suite.
 The `runtime-test` command now also tries to build the native runtime
 automatically before it runs the test file.
-The `runtime-run` and `runtime-check` commands also try to build the native
-runtime automatically before they execute when the default binary is missing.
 CI now has a dedicated job that builds the native runtime and runs a smoke
 test against `tests/test_math.no`, followed by the broader local runtime suite.
 The release workflows also run the same runtime build-and-smoke step before
@@ -174,17 +167,17 @@ runtime parity checks on a single file. It now also tries to build the native
 runtime automatically before it fails when the default binary is missing, and
 it does not fall back to bytecode. Its JSON output also carries top-level
 `build_output` when that automatic build actually happens.
-The `norscode run` command now also supports JSON output for the native-first
-runtime path.
-The `norscode build` command now also supports JSON output for the generated C
-and executable paths.
+The `norscode run` command is now native-first in the top-level CLI path for
+this workspace snapshot.
+The `norscode test` command is now native-first in the top-level CLI path for
+this workspace snapshot.
+The `norscode build` command is now bytecode-first in the top-level CLI path
+for this workspace snapshot.
 The `norscode disasm` command now also supports JSON output for the generated
 C code.
 The `norscode bytecode-run` command now also accepts `.no`, `.nast.json`, and
 `.ncb.json` inputs and can write JSON with top-level `build_output` when an
 automatic native build happens.
-There are also `norscode runtime-run` and `norscode runtime-check` commands
-that can report `build_output` in JSON when an automatic native build happens.
 There is also a `norscode runtime-compare-suite` command for multiple
 representative parity checks. It now also tries to build the native runtime
 automatically before it fails when the default binary is missing, it does not
@@ -298,7 +291,7 @@ the VM core smaller while preserving the same runtime behavior and tests.
 
 ## Phase 5: Remove the old dependencies from runtime
 
-- Native-first runtime entrypoints are in place for the common CLI paths.
+- Native-first runtime entrypoints are in place on the runtime bridge side.
 - Those entrypoints now try to build the native runtime automatically before they run, and they report an error if the binary is still missing.
 - The runtime suite and compare suite JSON now carry `build_output` at the top level when that automatic build actually happens.
 - `runtime-test` JSON also carries top-level `build_output` when auto-build actually happens.
@@ -309,17 +302,15 @@ the VM core smaller while preserving the same runtime behavior and tests.
 - Those same build-first JSON outputs also expose `runtime_backend` at top level.
 - `runtime-compare` JSON also surfaces `fallback_used` and `fallback_used_count` on the individual result whenever fallback is actually used.
 - `norscode run --engine python --json` also surfaces `fallback_used` and `fallback_used_count` on top level.
-- `run`, `runtime-run`, `runtime-check`, and `norscode test` are now strict native and no longer fall back to bytecode when native runtime is missing.
+- `runtime-run` and `runtime-check` are the clearest native-runtime bridge paths in this workspace snapshot.
 - `bytecode-run` is now strict native and no longer falls back to bytecode when native runtime is missing.
 - `runtime-compare` JSON also surfaces `fallback_used_count` on the result payload.
 - Those same JSON outputs also surface `runtime_backend`, so fallback vs native is easy to detect in scripts.
 - `runtime-ci` JSON now also carries top-level `build_output` when auto-build actually happens.
 - `runtime-verify`, `runtime-smoke`, and `runtime-compare-verify` JSON also carry top-level `build_output` when auto-build actually happens; if you pass `--runtime-binary`, that explicit binary is used without fallback.
-- The common runtime paths now use the native runtime directly, and the remaining compatibility paths are intentionally isolated.
-- The full `norscode test` suite path is now native-only and no longer falls back to bytecode.
-- The single-file `norscode test <file>` path is now native-only and no longer falls back to bytecode.
-- `runtime-ci` keeps the runtime-suite and compare-suite gates native-only after auto-build, so the CI report reflects the native path we want to standardize on.
-- Phase 5 is complete for the normal runtime flow. Further work is limited to optional tooling and export ergonomics.
+- The remaining work is to connect the top-level `run` and `test` commands to the native bridge behavior consistently.
+- `runtime-ci` still documents the native path we want to standardize on.
+- Phase 5 is not complete for the top-level CLI flow in this workspace snapshot; the normal `run`/`test` entrypoints still need migration.
 
 - [x] Stop requiring C for normal execution
 - [x] Stop requiring a separate interpreter for normal execution

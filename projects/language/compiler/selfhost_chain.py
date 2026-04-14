@@ -1,5 +1,8 @@
 import json
-import tomllib
+try:
+    import tomllib
+except ImportError:  # pragma: no cover - Python < 3.11 fallback
+    import tomli as tomllib  # type: ignore
 from pathlib import Path
 from typing import Any
 

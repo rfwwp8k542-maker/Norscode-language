@@ -32,11 +32,12 @@ pub(crate) fn handle_fs_builtin<I: Io>(
             if command.is_empty() {
                 return Ok(Some(Value::Int(1)));
             }
-            let status = Command::new(&command[0])
-                .args(&command[1..])
-                .status()
-                .map_err(|err| RuntimeError::IoError(err.to_string()))?;
-            Ok(Some(Value::Int(status.code().unwrap_or(1) as i64)))
+            let status = match Command::new(&command[0]).args(&command[1..]).status() {
+                Ok(status) => status.code().unwrap_or(1),
+                Err(err) if err.kind() == std::io::ErrorKind::NotFound => 127,
+                Err(err) => return Err(RuntimeError::IoError(err.to_string())),
+            };
+            Ok(Some(Value::Int(status as i64)))
         }
         "les_fil" => {
             let path = args.first().map(format_value).unwrap_or_default();

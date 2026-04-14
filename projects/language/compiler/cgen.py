@@ -112,6 +112,11 @@ class CGenerator:
             self.emit_gui_runtime_helpers()
 
         for fn in tree.functions:
+            self.emit(self.signature(fn) + ";")
+        if tree.functions:
+            self.emit()
+
+        for fn in tree.functions:
             self.visit_function(fn)
             self.emit()
 
