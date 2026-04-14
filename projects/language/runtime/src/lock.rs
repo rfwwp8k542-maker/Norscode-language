@@ -641,4 +641,3 @@ fn load_path_project_metadata(path: &std::path::Path) -> (Option<String>, Option
 fn unix_timestamp_rfc3339ish() -> String {
     Utc::now().to_rfc3339()
 }
-}
