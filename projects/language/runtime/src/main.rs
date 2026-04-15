@@ -32,7 +32,8 @@ use crate::add::{preview_add_command, try_add_simple_dependency};
 use crate::project::ProjectRoot;
 use crate::registry::{
     preview_registry_mirror, preview_registry_sign, preview_registry_sync,
-    try_registry_mirror_write_default, try_registry_sign_write_digest,
+    try_registry_mirror_write_default, try_registry_sign_write_config,
+    try_registry_sign_write_digest,
     try_registry_sync_local,
 };
 use crate::update::{preview_update_command_for, try_update_simple_dependencies_for};
@@ -304,6 +305,25 @@ fn main() -> Result<(), RuntimeError> {
             println!("mode={}", result.mode);
         }
         "registry-sign" => match args.next().as_deref() {
+            Some("write-config") => {
+                let Some(result) = try_registry_sign_write_config() else {
+                    eprintln!("fant ikke prosjektrot eller norscode.toml");
+                    return Ok(());
+                };
+                println!("config={}", result.config_path);
+                println!("legacy={}", result.uses_legacy_config);
+                println!("status={}", result.status);
+                println!("registry_path={}", result.registry_path);
+                println!("registry_exists={}", result.registry_exists);
+                if let Some(registry_sha256) = result.registry_sha256.as_ref() {
+                    println!("registry_sha256={}", registry_sha256);
+                }
+                println!("config_changed={}", result.config_changed);
+                println!("mode={}", result.mode);
+                if !result.registry_exists || result.registry_sha256.is_none() {
+                    process::exit(1);
+                }
+            }
             Some("write-digest") => {
                 let Some(result) = try_registry_sign_write_digest() else {
                     eprintln!("fant ikke prosjektrot eller norscode.toml");

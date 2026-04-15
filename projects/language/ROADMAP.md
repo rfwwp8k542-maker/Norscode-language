@@ -60,12 +60,10 @@ Mål:
 - `add` er ute av ren preview-fase
 
 Status:
-- pågår
+- oppnådd som milepæl
 
 Gjenstår:
-- styrke `add`
-- styrke `registry-sign`
-- stabilisere kontrakter i `update` og `registry-sync`
+- videre kontraktforbedringer flyttes til M3 og senere milepæler
 
 ### M3. Registry and distribution
 Mål:
@@ -73,7 +71,7 @@ Mål:
 - registry-format, digest og mirror-output er deterministiske
 
 Status:
-- tidlig påbegynt
+- aktiv milepæl
 
 ### M4. Remove Python as default path
 Mål:
@@ -112,7 +110,7 @@ Status:
 ## Current milestone focus
 
 ### Active milestone
-M2. First native project commands
+M3. Registry and distribution
 
 ### CI native status
 - første native `ci`-pakke er nå på plass
@@ -129,11 +127,10 @@ M2. First native project commands
 - neste steg for `ci` er ikke flere små innganger, men å gjøre de eksisterende runnerne mer like legacy-logikken
 
 ### Definition of done for current milestone
-- `lock` oppfører seg stabilt som native-first kommando
-- `update` enkel standardbruk føles trygg i native spor
-- `registry-sync` enkel standardbruk føles trygg i native spor
-- `add` kan gjøre mer enn preview og smal skrivevei
-- `registry-sign` går fra preview til første faktisk nyttige write-/digest-kontrakt
+- `registry-sync`, `registry-sign` og `registry-mirror` bruker native-first hovedvei i normal flyt
+- standalone/distribusjon bygger fra `projects/language`
+- Linux og macOS standalone-verifisering er tilbake i vanlig CI
+- registry-output, digest og mirror-artifakter er stabile nok til å åpne resten av distribusjonssporet
 
 ### Next focused deliverable: `standalone` / distribution
 Mål:
@@ -159,12 +156,14 @@ Status nå:
 - gamle standalone-jobber er gated til `workflow_dispatch`
 - standalone-sporet bygger fortsatt et eldre infra-lag og må migreres
 - første lokale build-wrapper finnes nå i `projects/language/scripts/build-standalone.py` og `build-standalone.sh`
+- Linux standalone er åpnet igjen som første kontrollsignal
 
 ## Immediate next 14 days
 - migrere standalone/distribusjon til riktig språkspor:
   - definere ny build-vei for `dist/norscode`
   - stoppe avhengighet på gammelt `projects/infra`-oppsett
   - åpne standalone Linux igjen først
+- etter Linux-signal: åpne macOS standalone hvis Linux er grønn
 - holde `registry-sign` i bevegelse etterpå:
   - fullføre digest-kontrakt
   - senere `--write-config`

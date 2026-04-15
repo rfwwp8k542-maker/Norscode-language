@@ -61,6 +61,18 @@ pub struct RegistrySignWriteResult {
 }
 
 #[derive(Debug, Clone)]
+pub struct RegistrySignConfigWriteResult {
+    pub config_path: String,
+    pub uses_legacy_config: bool,
+    pub status: String,
+    pub registry_path: String,
+    pub registry_exists: bool,
+    pub registry_sha256: Option<String>,
+    pub config_changed: bool,
+    pub mode: String,
+}
+
+#[derive(Debug, Clone)]
 pub struct RegistryMirrorPreview {
     pub config_path: String,
     pub uses_legacy_config: bool,
@@ -215,6 +227,103 @@ pub fn try_registry_sign_write_digest() -> Option<RegistrySignWriteResult> {
             "sidecar-noop".to_string()
         },
     })
+}
+
+pub fn try_registry_sign_write_config() -> Option<RegistrySignConfigWriteResult> {
+    let project_root = RegistryProjectRoot::discover_from_cwd()?;
+    let config_path = project_root.project.config.clone();
+    let registry_path = project_root.project.root.join("packages").join("registry.toml");
+    let registry_exists = registry_path.exists();
+    let registry_sha256 = compute_registry_sha256(&registry_path);
+
+    if !registry_exists || registry_sha256.is_none() {
+        return Some(RegistrySignConfigWriteResult {
+            config_path: config_path.display().to_string(),
+            uses_legacy_config: project_root.project.uses_legacy_config(),
+            status: "error".to_string(),
+            registry_path: registry_path.display().to_string(),
+            registry_exists,
+            registry_sha256,
+            config_changed: false,
+            mode: "config-missing-registry".to_string(),
+        });
+    }
+
+    let digest = registry_sha256.clone().unwrap_or_default();
+    let raw_toml = fs::read_to_string(&config_path).ok()?;
+    let (updated_toml, changed) = upsert_security_trusted_registry_sha256(&raw_toml, &digest);
+    if changed {
+        fs::write(&config_path, updated_toml).ok()?;
+    }
+
+    Some(RegistrySignConfigWriteResult {
+        config_path: config_path.display().to_string(),
+        uses_legacy_config: project_root.project.uses_legacy_config(),
+        status: if changed {
+            "updated".to_string()
+        } else {
+            "unchanged".to_string()
+        },
+        registry_path: registry_path.display().to_string(),
+        registry_exists,
+        registry_sha256,
+        config_changed: changed,
+        mode: if changed {
+            "config-write".to_string()
+        } else {
+            "config-noop".to_string()
+        },
+    })
+}
+
+fn upsert_security_trusted_registry_sha256(raw_toml: &str, digest: &str) -> (String, bool) {
+    let desired_line = format!("trusted_registry_sha256 = "{digest}"");
+    let mut lines: Vec<String> = raw_toml.lines().map(ToString::to_string).collect();
+    let mut security_start: Option<usize> = None;
+    let mut security_end = lines.len();
+
+    for (idx, line) in lines.iter().enumerate() {
+        let trimmed = line.trim();
+        if trimmed == "[security]" {
+            security_start = Some(idx);
+            continue;
+        }
+        if security_start.is_some() && trimmed.starts_with('[') && trimmed.ends_with(']') {
+            security_end = idx;
+            break;
+        }
+    }
+
+    if let Some(start) = security_start {
+        for idx in (start + 1)..security_end {
+            if lines[idx].trim_start().starts_with("trusted_registry_sha256") {
+                if lines[idx].trim() == desired_line {
+                    return (raw_toml.to_string(), false);
+                }
+                lines[idx] = desired_line;
+                return (lines.join("
+") + "
+", true);
+            }
+        }
+        lines.insert(start + 1, desired_line);
+        return (lines.join("
+") + "
+", true);
+    }
+
+    let mut output = raw_toml.trim_end().to_string();
+    if !output.is_empty() {
+        output.push_str("
+
+");
+    }
+    output.push_str("[security]
+");
+    output.push_str(&desired_line);
+    output.push('
+');
+    (output, true)
 }
 
 pub fn preview_registry_mirror() -> Option<RegistryMirrorPreview> {

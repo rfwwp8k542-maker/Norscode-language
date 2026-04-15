@@ -107,7 +107,8 @@ Merk:
 - `registry-sign` har nå også et første binært skjelett i `norscode-runtime`, foreløpig som preview av prosjekt/config og registry-fil.
 - `registry-sign --native-runtime` gir nå en første kontrollert preview-bro i toppnivå-CLI-en.
 - native `registry-sign` preview beregner nå også første `registry_sha256` når lokal registry-fil finnes.
-- `registry-sign --native-runtime --write-digest` kan nå skrive en første lokal sidecar til `packages/registry.toml.sha256`, mens `--write-config` fortsatt er legacy-spor.
+- `registry-sign --native-runtime --write-digest` kan nå skrive en første lokal sidecar til `packages/registry.toml.sha256`.
+- `registry-sign --native-runtime --write-config` kan nå også skrive `trusted_registry_sha256` inn i prosjektkonfig som første native config-steg.
 - `registry-mirror --native-runtime` gir nå en første kontrollert preview-bro med prosjekt/config, registry-status og default output-sti.
 - `registry-mirror --native-runtime --write-default` kan nå skrive en første deterministisk default-output til `build/registry_mirror.json`.
 - `ci --native-runtime` gir nå en første kontrollert preview-bro med prosjekt/config og valgt CI-scope.
@@ -142,6 +143,7 @@ Merk:
 - `ci`, `debug`, `migrate-names` og `release` er også prosjektkommandoer i samme toppnivåflate.
 - standalone/distribusjon er neste eksplisitte migrasjonsmål; gamle standalone-jobber i CI er midlertidig gated mens build-sporet flyttes fra eldre `projects/infra` til riktig `projects/language`-grunnlag.
 - `scripts/build-standalone.py` og `scripts/build-standalone.sh` er første lokale byggesteg i det nye standalone-sporet for `projects/language`.
+- milepæl M2 (første native prosjektkommandoer) regnes nå som oppnådd; aktivt fokus er flyttet til registry/distribusjon og standalone-sporet.
 - `bytecode-build` er en lavnivå utviklerkommando for eksplisitt bytecode-artifakt.
 - `run` kan fortsatt beholde generert bytecode ved behov via `--keep-bytecode`.
 - Legacy C/`clang`-stien er nå fjernet fra `run`, `build` og `test`.

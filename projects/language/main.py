@@ -5761,11 +5761,9 @@ def main():
 
         elif args.cmd == "registry-sign":
             if args.native_runtime:
-                if args.write_config:
-                    raise RuntimeError(
-                        "registry-sign --native-runtime støtter foreløpig bare preview uten --write-config"
-                    )
-                action = "write-digest" if args.write_digest else None
+                if args.write_config and args.write_digest:
+                    raise RuntimeError("registry-sign --native-runtime støtter bare én handling om gangen")
+                action = "write-config" if args.write_config else "write-digest" if args.write_digest else None
                 runtime_path, result = run_native_registry_sign_command_captured(
                     action=action,
                     runtime_binary=args.runtime_binary,
@@ -5788,7 +5786,11 @@ def main():
                 else:
                     print(f"Runtime: {runtime_path}")
                     print("Action: registry-sign")
-                    if args.write_digest:
+                    if args.write_config:
+                        print(
+                            "Merk: native registry-sign kan nå skrive trusted_registry_sha256 til prosjektkonfig."
+                        )
+                    elif args.write_digest:
                         print(
                             "Merk: native registry-sign skriver foreløpig en lokal digest-sidecar, ikke config."
                         )
