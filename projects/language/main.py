@@ -4855,6 +4855,11 @@ def main():
     )
     registry_mirror_cmd.add_argument("--json", action="store_true", help="Skriv resultat som JSON")
     registry_mirror_cmd.add_argument(
+        "--legacy-python",
+        action="store_true",
+        help="Bruk legacy Python-flyt eksplisitt i stedet for native standardflyt",
+    )
+    registry_mirror_cmd.add_argument(
         "--native-runtime",
         action="store_true",
         help="Bruk native runtime-binær for preview eller --write-default",
@@ -5906,7 +5911,16 @@ def main():
                         print("Fallback: bruker eksisterende cache")
 
         elif args.cmd == "registry-mirror":
-            if args.native_runtime:
+            use_native_registry_mirror = (
+                not args.legacy_python
+                and (
+                    args.native_runtime
+                    or (
+                        not args.output
+                    )
+                )
+            )
+            if use_native_registry_mirror:
                 if args.output:
                     raise RuntimeError(
                         "registry-mirror --native-runtime støtter foreløpig bare preview uten --output"
@@ -5934,6 +5948,8 @@ def main():
                 else:
                     print(f"Runtime: {runtime_path}")
                     print("Action: registry-mirror")
+                    if not args.native_runtime and not args.json:
+                        print("Merk: registry-mirror bruker nå native runtime-broen som standard.")
                     if args.write_default:
                         print(
                             "Merk: native registry-mirror skriver foreløpig bare første default-output, ikke full mirror-bygging."
@@ -5950,13 +5966,21 @@ def main():
                     sys.exit(result.returncode)
             else:
                 if args.write_default:
-                    raise RuntimeError(
-                        "registry-mirror --write-default krever --native-runtime"
-                    )
+                    raise RuntimeError("registry-mirror --write-default krever native standardflyt eller --native-runtime")
                 payload = registry_mirror(output_file=args.output)
                 if args.json:
-                    print(json.dumps(payload, ensure_ascii=False, indent=2))
+                    print(
+                        json.dumps(
+                            {
+                                "legacy_python": True,
+                                **payload,
+                            },
+                            ensure_ascii=False,
+                            indent=2,
+                        )
+                    )
                 else:
+                    print("Merk: registry-mirror --legacy-python bruker overgangslaget i Python.")
                     print(f"Mirror: {payload['output']}")
                     print(f"Pakker: {payload['count']}")
 

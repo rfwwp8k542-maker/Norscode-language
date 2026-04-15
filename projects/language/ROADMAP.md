@@ -104,7 +104,7 @@ Status:
 | `add` | hybrid/native | partial default | `--legacy-python` | utvide fra enkel native standardflyt med `--name`/`--git`/`--url`/`--ref`/`--pin` til bredere add-paritet |
 | `registry-sync` | hybrid/native | partial default | `--legacy-python` | utvide native registry-logikk utover lokal init |
 | `registry-sign` | hybrid/native | partial default | `--legacy-python` | utvide fra digest/config-write til full sign/config-flyt |
-| `registry-mirror` | hybrid/native | partial | legacy default | utvide fra default-write til full deterministisk mirror-bygging |
+| `registry-mirror` | hybrid/native | partial default | `--legacy-python` | utvide fra default-write til full deterministisk mirror-bygging |
 | `ci` | hybrid/native | partial | legacy default | gjøre eksisterende native check-runnere mer legacy-like og flytte mer av selve CI-logikken inn i native sporet |
 
 ## Current milestone focus

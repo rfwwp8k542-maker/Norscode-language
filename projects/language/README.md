@@ -112,6 +112,7 @@ Merk:
 - enkel `registry-sign` bruker nå native runtime-broen som standard, med `--legacy-python` som eksplisitt fallback.
 - `registry-mirror --native-runtime` gir nå en første kontrollert preview-bro med prosjekt/config, registry-status og default output-sti.
 - `registry-mirror --native-runtime --write-default` kan nå skrive en første deterministisk default-output til `build/registry_mirror.json`.
+- enkel `registry-mirror` bruker nå native runtime-broen som standard, med `--legacy-python` som eksplisitt fallback.
 - `ci --native-runtime` gir nå en første kontrollert preview-bro med prosjekt/config og valgt CI-scope.
 - `ci --native-runtime --snapshot-check` gir nå første smale native CI-check-runner for `tests/ir_snapshot_cases.json`.
 - `ci --native-runtime --parser-fixture-check` gir nå en smal native sjekk av selfhost parity-fixturefiler for valgt suite.

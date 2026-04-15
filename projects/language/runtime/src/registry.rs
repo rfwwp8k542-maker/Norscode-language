@@ -277,7 +277,7 @@ pub fn try_registry_sign_write_config() -> Option<RegistrySignConfigWriteResult>
 }
 
 fn upsert_security_trusted_registry_sha256(raw_toml: &str, digest: &str) -> (String, bool) {
-    let desired_line = format!("trusted_registry_sha256 = "{digest}"");
+    let desired_line = format!("trusted_registry_sha256 = "{}"", digest);
     let mut lines: Vec<String> = raw_toml.lines().map(ToString::to_string).collect();
     let mut security_start: Option<usize> = None;
     let mut security_end = lines.len();
@@ -301,28 +301,20 @@ fn upsert_security_trusted_registry_sha256(raw_toml: &str, digest: &str) -> (Str
                     return (raw_toml.to_string(), false);
                 }
                 lines[idx] = desired_line;
-                return (lines.join("
-") + "
-", true);
+                return (lines.join("\n") + "\n", true);
             }
         }
         lines.insert(start + 1, desired_line);
-        return (lines.join("
-") + "
-", true);
+        return (lines.join("\n") + "\n", true);
     }
 
     let mut output = raw_toml.trim_end().to_string();
     if !output.is_empty() {
-        output.push_str("
-
-");
+        output.push_str("\n\n");
     }
-    output.push_str("[security]
-");
+    output.push_str("[security]\n");
     output.push_str(&desired_line);
-    output.push('
-');
+    output.push('\n');
     (output, true)
 }
 
