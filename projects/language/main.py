@@ -4805,9 +4805,14 @@ def main():
     )
     registry_sign_cmd.add_argument("--json", action="store_true", help="Skriv resultat som JSON")
     registry_sign_cmd.add_argument(
+        "--legacy-python",
+        action="store_true",
+        help="Bruk legacy Python-flyt eksplisitt i stedet for native standardflyt",
+    )
+    registry_sign_cmd.add_argument(
         "--native-runtime",
         action="store_true",
-        help="Bruk native runtime-binær for preview eller --write-digest",
+        help="Bruk native runtime-binær eksplisitt for preview, --write-digest eller --write-config",
     )
     registry_sign_cmd.add_argument(
         "--runtime-binary",
@@ -5760,7 +5765,8 @@ def main():
                     sys.exit(1)
 
         elif args.cmd == "registry-sign":
-            if args.native_runtime:
+            use_native_registry_sign = not args.legacy_python
+            if use_native_registry_sign:
                 if args.write_config and args.write_digest:
                     raise RuntimeError("registry-sign --native-runtime støtter bare én handling om gangen")
                 action = "write-config" if args.write_config else "write-digest" if args.write_digest else None
@@ -5786,6 +5792,8 @@ def main():
                 else:
                     print(f"Runtime: {runtime_path}")
                     print("Action: registry-sign")
+                    if not args.native_runtime and not args.json:
+                        print("Merk: registry-sign bruker nå native runtime-broen som standard.")
                     if args.write_config:
                         print(
                             "Merk: native registry-sign kan nå skrive trusted_registry_sha256 til prosjektkonfig."
@@ -5806,13 +5814,21 @@ def main():
                     sys.exit(result.returncode)
             else:
                 if args.write_digest:
-                    raise RuntimeError(
-                        "registry-sign --write-digest krever --native-runtime"
-                    )
+                    raise RuntimeError("registry-sign --write-digest krever native standardflyt eller --native-runtime")
                 payload = registry_sign(write_config=args.write_config)
                 if args.json:
-                    print(json.dumps(payload, ensure_ascii=False, indent=2))
+                    print(
+                        json.dumps(
+                            {
+                                "legacy_python": True,
+                                **payload,
+                            },
+                            ensure_ascii=False,
+                            indent=2,
+                        )
+                    )
                 else:
+                    print("Merk: registry-sign --legacy-python bruker overgangslaget i Python.")
                     print(f"Registry: {payload['registry']}")
                     print(f"SHA256: {payload['sha256']}")
                     if payload["written_to_config"]:

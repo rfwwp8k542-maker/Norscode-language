@@ -109,6 +109,7 @@ Merk:
 - native `registry-sign` preview beregner nå også første `registry_sha256` når lokal registry-fil finnes.
 - `registry-sign --native-runtime --write-digest` kan nå skrive en første lokal sidecar til `packages/registry.toml.sha256`.
 - `registry-sign --native-runtime --write-config` kan nå også skrive `trusted_registry_sha256` inn i prosjektkonfig som første native config-steg.
+- enkel `registry-sign` bruker nå native runtime-broen som standard, med `--legacy-python` som eksplisitt fallback.
 - `registry-mirror --native-runtime` gir nå en første kontrollert preview-bro med prosjekt/config, registry-status og default output-sti.
 - `registry-mirror --native-runtime --write-default` kan nå skrive en første deterministisk default-output til `build/registry_mirror.json`.
 - `ci --native-runtime` gir nå en første kontrollert preview-bro med prosjekt/config og valgt CI-scope.
