@@ -374,8 +374,12 @@ fn main() -> Result<(), RuntimeError> {
                 println!("legacy={}", result.uses_legacy_config);
                 println!("status={}", result.status);
                 println!("target={}", result.target);
+                println!("registry_path={}", result.registry_path);
                 println!("output_path={}", result.output_path);
                 println!("registry_exists={}", result.registry_exists);
+                if let Some(registry_sha256) = result.registry_sha256.as_ref() {
+                    println!("registry_sha256={}", registry_sha256);
+                }
                 println!("package_count={}", result.package_count);
                 println!("changed={}", result.changed);
                 println!("mode={}", result.mode);
@@ -396,8 +400,12 @@ fn main() -> Result<(), RuntimeError> {
                 println!("legacy={}", result.uses_legacy_config);
                 println!("status={}", result.status);
                 println!("target={}", result.target);
+                println!("registry_path={}", result.registry_path);
                 println!("default_output_path={}", result.default_output_path);
                 println!("registry_exists={}", result.registry_exists);
+                if let Some(registry_sha256) = result.registry_sha256.as_ref() {
+                    println!("registry_sha256={}", registry_sha256);
+                }
                 println!("package_count={}", result.package_count);
                 println!("mode={}", result.mode);
             }

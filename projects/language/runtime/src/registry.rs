@@ -78,8 +78,10 @@ pub struct RegistryMirrorPreview {
     pub uses_legacy_config: bool,
     pub status: String,
     pub target: String,
+    pub registry_path: String,
     pub default_output_path: String,
     pub registry_exists: bool,
+    pub registry_sha256: Option<String>,
     pub package_count: usize,
     pub mode: String,
 }
@@ -90,8 +92,10 @@ pub struct RegistryMirrorWriteResult {
     pub uses_legacy_config: bool,
     pub status: String,
     pub target: String,
+    pub registry_path: String,
     pub output_path: String,
     pub registry_exists: bool,
+    pub registry_sha256: Option<String>,
     pub package_count: usize,
     pub changed: bool,
     pub mode: String,
@@ -328,6 +332,7 @@ pub fn preview_registry_mirror() -> Option<RegistryMirrorPreview> {
         .join("build")
         .join("registry_mirror.json");
     let registry_exists = registry_path.exists();
+    let registry_sha256 = compute_registry_sha256(&registry_path);
     let package_count = read_registry_package_count(&registry_path);
 
     Some(RegistryMirrorPreview {
@@ -335,8 +340,10 @@ pub fn preview_registry_mirror() -> Option<RegistryMirrorPreview> {
         uses_legacy_config: project_root.project.uses_legacy_config(),
         status: "preview".to_string(),
         target: "default".to_string(),
+        registry_path: registry_path.display().to_string(),
         default_output_path: default_output_path.display().to_string(),
         registry_exists,
+        registry_sha256,
         package_count,
         mode: "preview".to_string(),
     })
@@ -407,6 +414,30 @@ pub fn try_registry_mirror_write_default() -> Option<RegistryMirrorWriteResult> 
 
 pub fn future_registry_note() -> &'static str {
     "Registry-logikk skal bo i egen prosjektmodul, ikke i runtime-kjernen."
+}
+
+fn read_registry_package_names(registry_path: &std::path::Path) -> Vec<String> {
+    let Ok(raw) = std::fs::read_to_string(registry_path) else {
+        return Vec::new();
+    };
+
+    let mut current_section = String::new();
+    let mut names: Vec<String> = Vec::new();
+    for line in raw.lines() {
+        let trimmed = line.trim();
+        if trimmed.starts_with('[') && trimmed.ends_with(']') {
+            current_section = trimmed.trim_matches(&['[', ']'][..]).to_string();
+            continue;
+        }
+        if current_section == "packages" && !trimmed.is_empty() && !trimmed.starts_with('#') {
+            if let Some((name, _)) = trimmed.split_once('=') {
+                names.push(name.trim().to_string());
+            }
+        }
+    }
+    names.sort();
+    names.dedup();
+    names
 }
 
 fn read_registry_package_count(registry_path: &std::path::Path) -> usize {
