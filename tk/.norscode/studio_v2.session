@@ -1,0 +1,47 @@
+workspace	tk
+aktiv_fil	actions.no
+aktiv_tab	studio_v2/main.no
+split_fokus	høyre
+tool_window	Project
+run_config	run
+tema	mørk
+keymap	standard
+runtimevalg	run
+palette_open	lukket
+sist_navigasjon	
+search_query	
+project_tree_anchor	
+recent_count	1
+open_count	4
+recent_project	tk
+open_file	actions.no
+open_file	studio_v2/main.no
+open_file	studio_v2/studio_state.no
+open_file	studio_v2/editor.no
+debug_config	run
+debug_mode	paused
+debug_action	resume
+debug_line	1
+symbol_cache	cache	tk
+symbol_cache	filer_start
+symbol_cache	fil	actions.no
+symbol_cache	fil	ai.no
+symbol_cache	fil	ai_context.no
+symbol_cache	fil	diagnostics.no
+symbol_cache	fil	editor.no
+symbol_cache	fil	main.no
+symbol_cache	fil	project.no
+symbol_cache	fil	studio_state.no
+symbol_cache	fil	symbol.no
+symbol_cache	fil	ui.no
+symbol_cache	fil	gui.no
+symbol_cache	fil	advanced.no
+symbol_cache	fil	basic.no
+symbol_cache	fil	gui_demo.no
+symbol_cache	fil	README.md
+symbol_cache	fil	todo_app.no
+symbol_cache	fil	web_auth_protected.no
+symbol_cache	fil	web_crud_sample.no
+symbol_cache	fil	web_hello_api.no
+symbol_cache	fil	web_json_service.no
+symbol_cache	indeks_start

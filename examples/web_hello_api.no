@@ -1,0 +1,28 @@
+bruk std.web som web
+
+funksjon hello_respons(navn: tekst) -> tekst {
+    returner web.http_json_respons("{\"message\":\"Hei, " + navn + "\"}")
+}
+
+funksjon hello_openapi() -> tekst {
+    la api: liste_tekst = web.openapi_tom()
+    assert_eq(web.openapi_info_registrer(api, "title", "Hello API"), 1)
+    assert_eq(web.openapi_info_registrer(api, "version", "1.0.0"), 2)
+    assert_eq(web.openapi_info_registrer(api, "description", "Et lite hello-world API"), 3)
+    assert_eq(web.openapi_rute_registrer(api, "GET", "/hello", "Hilsen", "Returnerer en velkomstmelding", "hello", "HelloResponse"), 4)
+    returner web.openapi_json(api)
+}
+
+test "hello api example" {
+    la respons: tekst = hello_respons("Norscode")
+    assert(tekst_inneholder(respons, "\"message\":\"Hei, Norscode\""))
+    la openapi: tekst = hello_openapi()
+    assert(tekst_inneholder(openapi, "\"Hello API\""))
+    assert(tekst_inneholder(openapi, "\"/hello\""))
+    assert(tekst_inneholder(openapi, "\"response_schema\":\"HelloResponse\""))
+}
+
+funksjon start() -> heltall {
+    skriv("Hello API-eksempelet er klart")
+    returner 0
+}

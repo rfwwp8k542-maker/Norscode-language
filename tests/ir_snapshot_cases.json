@@ -1,0 +1,13 @@
+{
+  "non_strict": [
+    {
+      "name": "enkel_tall_literal",
+      "source": "1"
+    },
+    {
+      "name": "enkel_addisjon",
+      "source": "1 + 2"
+    }
+  ],
+  "strict": []
+}

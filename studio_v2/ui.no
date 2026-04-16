@@ -1,0 +1,519 @@
+# Studio v2 UI foundation.
+
+funksjon studio_v2_ui_shell() -> tekst {
+    returner "studio shell"
+}
+
+funksjon studio_v2_ui_stil_spacing() -> tekst {
+    returner "compact"
+}
+
+funksjon studio_v2_ui_stil_titler() -> tekst {
+    returner "panel-status-header"
+}
+
+funksjon studio_v2_ui_stil_chip() -> tekst {
+    returner "status+active"
+}
+
+funksjon studio_v2_ui_stil_ikon() -> tekst {
+    returner "unicode-icons"
+}
+
+funksjon studio_v2_ui_stil_tekst() -> tekst {
+    returner "title/subtitle/metadata"
+}
+
+funksjon studio_v2_ui_stilguide() -> liste_tekst {
+    returner [
+        "spacing\t" + studio_v2_ui_stil_spacing(),
+        "titles\t" + studio_v2_ui_stil_titler(),
+        "chips\t" + studio_v2_ui_stil_chip(),
+        "icons\t" + studio_v2_ui_stil_ikon(),
+        "text\t" + studio_v2_ui_stil_tekst()
+    ]
+}
+
+funksjon studio_v2_ui_label_project() -> tekst {
+    returner "Project"
+}
+
+funksjon studio_v2_ui_label_editor() -> tekst {
+    returner "Editor"
+}
+
+funksjon studio_v2_ui_label_inspect() -> tekst {
+    returner "Inspect"
+}
+
+funksjon studio_v2_ui_label_run() -> tekst {
+    returner "Run"
+}
+
+funksjon studio_v2_ui_label_technical() -> tekst {
+    returner "Technical"
+}
+
+funksjon studio_v2_ui_label_troubleshooting_guide() -> tekst {
+    returner "Teknisk feilsokingsguide"
+}
+
+funksjon studio_v2_ui_label_search_everywhere() -> tekst {
+    returner "Search Everywhere"
+}
+
+funksjon studio_v2_ui_label_command_palette() -> tekst {
+    returner "Command Palette"
+}
+
+funksjon studio_v2_ui_label_palette() -> tekst {
+    returner "Palette"
+}
+
+funksjon studio_v2_ui_label_welcome() -> tekst {
+    returner "Welcome"
+}
+
+funksjon studio_v2_ui_label_output() -> tekst {
+    returner "Output"
+}
+
+funksjon studio_v2_ui_label_history() -> tekst {
+    returner "History"
+}
+
+funksjon studio_v2_ui_label_project_access() -> tekst {
+    returner "Project Access"
+}
+
+funksjon studio_v2_ui_label_settings() -> tekst {
+    returner "Settings"
+}
+
+funksjon studio_v2_ui_label_problems() -> tekst {
+    returner "Problems"
+}
+
+funksjon studio_v2_ui_label_structure() -> tekst {
+    returner "Structure"
+}
+
+funksjon studio_v2_ui_label_tools() -> tekst {
+    returner "Tools"
+}
+
+funksjon studio_v2_ui_label_references() -> tekst {
+    returner "References"
+}
+
+funksjon studio_v2_ui_label_terminal() -> tekst {
+    returner "Terminal"
+}
+
+funksjon studio_v2_ui_brand_navn() -> tekst {
+    returner "norscode.no"
+}
+
+funksjon studio_v2_ui_brand_logo() -> tekst {
+    returner "logo.svg"
+}
+
+funksjon studio_v2_ui_brand_farge_primary() -> tekst {
+    returner "#0ea5e9"
+}
+
+funksjon studio_v2_ui_brand_farge_accent() -> tekst {
+    returner "#86c7ff"
+}
+
+funksjon studio_v2_ui_brand_farge_surface() -> tekst {
+    returner "#0f172a"
+}
+
+funksjon studio_v2_ui_brand_farge_text() -> tekst {
+    returner "#e5e7eb"
+}
+
+funksjon studio_v2_ui_brand_farger() -> liste_tekst {
+    returner [
+        "primary\t" + studio_v2_ui_brand_farge_primary(),
+        "accent\t" + studio_v2_ui_brand_farge_accent(),
+        "surface\t" + studio_v2_ui_brand_farge_surface(),
+        "text\t" + studio_v2_ui_brand_farge_text()
+    ]
+}
+
+funksjon studio_v2_ui_brand_chip_linje() -> tekst {
+    returner studio_v2_ui_status_chip("Primary", studio_v2_ui_brand_farge_primary())
+        + " · " + studio_v2_ui_status_chip("Accent", studio_v2_ui_brand_farge_accent())
+        + " · " + studio_v2_ui_status_chip("Surface", studio_v2_ui_brand_farge_surface())
+}
+
+funksjon studio_v2_ui_brand_overskrift() -> tekst {
+    returner studio_v2_ui_brand_logo() + " · " + studio_v2_ui_brand_navn()
+}
+
+funksjon studio_v2_ui_logo_banner() -> tekst {
+    returner studio_v2_ui_brand_overskrift() + " · Norscode Studio v2"
+}
+
+funksjon studio_v2_ui_logo_tagline() -> tekst {
+    returner "compact IDE workspace · " + studio_v2_ui_brand_navn() + " style"
+}
+
+funksjon studio_v2_ui_velkomst_oversikt() -> tekst {
+    returner "Open " + studio_v2_ui_label_project() + " · " + studio_v2_ui_label_search_everywhere() + " · Ctrl+P for palette"
+}
+
+funksjon studio_v2_ui_velkomst_undertittel(rot: tekst, session_status: tekst) -> tekst {
+    returner "Workspace: " + rot + " · Session: " + session_status
+}
+
+funksjon studio_v2_ui_velkomst_handlinger() -> liste_tekst {
+    returner [studio_v2_ui_label_project(), studio_v2_ui_label_editor(), studio_v2_ui_label_inspect(), studio_v2_ui_label_palette(), studio_v2_ui_label_run()]
+}
+
+funksjon studio_v2_ui_velkomst_recent_tittel() -> tekst {
+    returner "Recent Workspaces"
+}
+
+funksjon studio_v2_ui_velkomst_recent_status(antall: heltall) -> tekst {
+    returner "Recent: " + tekst_fra_heltall(antall)
+}
+
+funksjon studio_v2_ui_velkomst_recent_current(rot: tekst) -> tekst {
+    returner "Current workspace: " + rot
+}
+
+funksjon studio_v2_ui_velkomst_recent_sammendrag(rot: tekst, antall: heltall) -> tekst {
+    returner "Current workspace: " + rot + " · Recent: " + tekst_fra_heltall(antall)
+}
+
+funksjon studio_v2_ui_velkomst_recent_hint() -> tekst {
+    returner "Select recent workspace, then restore it"
+}
+
+funksjon studio_v2_ui_velkomst_recent_actions() -> tekst {
+    returner "Quick actions: Open · Restore · Search"
+}
+
+funksjon studio_v2_ui_velkomst_recent_restore_status() -> tekst {
+    returner "Restore: selected recent"
+}
+
+funksjon studio_v2_ui_velkomst_recent_shortcut() -> tekst {
+    returner "Shortcut: Enter restores selected recent"
+}
+
+funksjon studio_v2_ui_run_hint() -> tekst {
+    returner "Shortcut: Enter runs selected config"
+}
+
+funksjon studio_v2_ui_run_status_hint() -> tekst {
+    returner "Status: ready"
+}
+
+funksjon studio_v2_ui_run_output_hint() -> tekst {
+    returner "Output: waiting for run"
+}
+
+funksjon studio_v2_ui_run_history_hint() -> tekst {
+    returner "No run history yet"
+}
+
+funksjon studio_v2_ui_run_suite_hint() -> tekst {
+    returner "Suite: Run · Check · Test · Debug · CI · " + studio_v2_ui_label_troubleshooting_guide()
+}
+
+funksjon studio_v2_ui_output_tittel() -> tekst {
+    returner "Run Output"
+}
+
+funksjon studio_v2_ui_output_stdout_tittel() -> tekst {
+    returner "Stdout"
+}
+
+funksjon studio_v2_ui_output_stderr_tittel() -> tekst {
+    returner "Stderr"
+}
+
+funksjon studio_v2_ui_output_hint() -> tekst {
+    returner "Stdout and stderr for the latest run"
+}
+
+funksjon studio_v2_ui_vcs_tittel() -> tekst {
+    returner "Version Control"
+}
+
+funksjon studio_v2_ui_vcs_status_tittel() -> tekst {
+    returner "Changed Files"
+}
+
+funksjon studio_v2_ui_vcs_diff_tittel() -> tekst {
+    returner "Diff"
+}
+
+funksjon studio_v2_ui_vcs_branch_tittel() -> tekst {
+    returner "Current Branch"
+}
+
+funksjon studio_v2_ui_vcs_commit_tittel() -> tekst {
+    returner "Latest Commit"
+}
+
+funksjon studio_v2_ui_vcs_hint() -> tekst {
+    returner "Select a changed file to open it in the editor"
+}
+
+funksjon studio_v2_ui_tool_window_hint() -> tekst {
+    returner "Tool windows: Problems, References, Structure, Terminal. Tab/Shift+Tab cycles the bar, Ctrl+4..7 jumps directly"
+}
+
+funksjon studio_v2_ui_structure_hint() -> tekst {
+    returner "Structure: symbol overview"
+}
+
+funksjon studio_v2_ui_search_hint() -> tekst {
+    returner "Shortcut: Enter opens selected result. Use Tab/Down to move through matches."
+}
+
+funksjon studio_v2_ui_palette_hint() -> tekst {
+    returner "Shortcut: Enter runs selected command. Use Tab/Down to preview commands."
+}
+
+funksjon studio_v2_ui_palette_lukket_hint() -> tekst {
+    returner "Ctrl+P opens the command palette"
+}
+
+funksjon studio_v2_ui_project_hint() -> tekst {
+    returner "Shortcut: Enter opens file · Tab/Down to jump between files"
+}
+
+funksjon studio_v2_ui_editor_hint() -> tekst {
+    returner "Shortcut: Enter opens tab"
+}
+
+funksjon studio_v2_ui_fokus_hint() -> tekst {
+    returner "Tip: Use Ctrl+1..3 for focus rows, Tab/Shift+Tab on focus/tool-window rows. Ctrl+4..7 jumps directly to Problems/Refs/Structure/Terminal"
+}
+
+funksjon studio_v2_ui_references_hint() -> tekst {
+    returner "Shortcut: Enter opens reference · Tab/Down navigates list"
+}
+
+funksjon studio_v2_ui_rename_hint() -> tekst {
+    returner "Shortcut: Enter previews rename"
+}
+
+funksjon studio_v2_ui_rename_apply_hint() -> tekst {
+    returner "Apply Rename writes changes to disk"
+}
+
+funksjon studio_v2_ui_terminal_hint() -> tekst {
+    returner "Shortcut: Enter logs command"
+}
+
+funksjon studio_v2_ui_problems_hint() -> tekst {
+    returner "Shortcut: Enter logs problem"
+}
+
+funksjon studio_v2_ui_velkomst_spacer() -> tekst {
+    returner ""
+}
+
+funksjon studio_v2_ui_layout() -> liste_tekst {
+    returner ["tool-window-stripe", "project", "editor", "inspector", "status-bar"]
+}
+
+funksjon studio_v2_ui_status() -> tekst {
+    returner "klar"
+}
+
+funksjon studio_v2_ui_tema_lys() -> tekst {
+    returner "lys"
+}
+
+funksjon studio_v2_ui_tema_mork() -> tekst {
+    returner "mørk"
+}
+
+funksjon studio_v2_ui_tema_standard() -> tekst {
+    returner studio_v2_ui_tema_mork()
+}
+
+funksjon studio_v2_ui_tema_status(tema: tekst) -> tekst {
+    hvis tema == studio_v2_ui_tema_lys() da {
+        returner "aktivt"
+    }
+    hvis tema == studio_v2_ui_tema_mork() da {
+        returner "aktivt"
+    }
+    returner "ukjent"
+}
+
+funksjon studio_v2_ui_tema_palett() -> liste_tekst {
+    returner [studio_v2_ui_tema_lys(), studio_v2_ui_tema_mork()]
+}
+
+funksjon studio_v2_ui_keymap_standard() -> tekst {
+    returner "standard"
+}
+
+funksjon studio_v2_ui_keymap_vim() -> tekst {
+    returner "vim"
+}
+
+funksjon studio_v2_ui_keymap_palett() -> liste_tekst {
+    returner [studio_v2_ui_keymap_standard(), studio_v2_ui_keymap_vim()]
+}
+
+funksjon studio_v2_ui_runtimevalg_run() -> tekst {
+    returner "run"
+}
+
+funksjon studio_v2_ui_runtimevalg_check() -> tekst {
+    returner "check"
+}
+
+funksjon studio_v2_ui_runtimevalg_test() -> tekst {
+    returner "test"
+}
+
+funksjon studio_v2_ui_runtimevalg_palett() -> liste_tekst {
+    returner [studio_v2_ui_runtimevalg_run(), studio_v2_ui_runtimevalg_check(), studio_v2_ui_runtimevalg_test()]
+}
+
+funksjon studio_v2_ui_tema_fra_navn(navn: tekst) -> tekst {
+    hvis navn == "lys" da {
+        returner studio_v2_ui_tema_lys()
+    }
+    hvis navn == "mørk" eller navn == "mork" da {
+        returner studio_v2_ui_tema_mork()
+    }
+    returner studio_v2_ui_tema_standard()
+}
+
+funksjon studio_v2_ui_snarveier() -> liste_tekst {
+    returner [
+        "Ctrl+O\tåpne",
+        "Ctrl+S\tlagre",
+        "Ctrl+Enter\tkjør",
+        "Ctrl+Shift+C\tcheck",
+        "Ctrl+P\tpalett",
+        "Ctrl+4\tProblems",
+        "Ctrl+5\tReferences",
+        "Ctrl+6\tStructure",
+        "Ctrl+7\tTerminal",
+        "Ctrl+1\tProject",
+        "Ctrl+2\tEditor",
+        "Ctrl+3\tInspect",
+        "Esc\tlukk palette"
+    ]
+}
+
+funksjon studio_v2_ui_snarvei_forste() -> tekst {
+    returner "Ctrl+O\tåpne"
+}
+
+funksjon studio_v2_ui_snarveier_status() -> tekst {
+    returner "klar"
+}
+
+funksjon studio_v2_ui_seksjon_tittel(navn: tekst) -> tekst {
+    returner "[" + navn + "]"
+}
+
+funksjon studio_v2_ui_panel_overskrift(navn: tekst, undertittel: tekst) -> tekst {
+    hvis undertittel == "" da {
+        returner "=== " + navn + " ==="
+    }
+    returner "=== " + navn + " === " + undertittel
+}
+
+funksjon studio_v2_ui_panel_ikon_overskrift(ikon: tekst, navn: tekst, undertittel: tekst) -> tekst {
+    la grunn: tekst = ikon + " " + navn
+    hvis undertittel == "" da {
+        returner "=== " + grunn + " ==="
+    }
+    returner "=== " + grunn + " === " + undertittel
+}
+
+funksjon studio_v2_ui_panel_status_overskrift(ikon: tekst, navn: tekst, undertittel: tekst, status_navn: tekst, status_verdi: tekst) -> tekst {
+    hvis undertittel == "" da {
+        returner studio_v2_ui_panel_ikon_overskrift(ikon, navn, "") + " " + studio_v2_ui_status_chip(status_navn, status_verdi)
+    }
+    returner studio_v2_ui_panel_ikon_overskrift(ikon, navn, undertittel) + " " + studio_v2_ui_status_chip(status_navn, status_verdi)
+}
+
+funksjon studio_v2_ui_deloverskrift(navn: tekst) -> tekst {
+    returner "--- " + navn + " ---"
+}
+
+funksjon studio_v2_ui_status_chip(navn: tekst, verdi: tekst) -> tekst {
+    returner navn + ": " + verdi
+}
+
+funksjon studio_v2_ui_aktiv_chip(navn: tekst, verdi: tekst) -> tekst {
+    returner "▶ " + navn + ": " + verdi
+}
+
+funksjon studio_v2_ui_session_tom() -> liste_tekst {
+    returner []
+}
+
+funksjon studio_v2_ui_session_fra_workspace(rot: tekst, aktiv_fil: tekst) -> liste_tekst {
+    returner [
+        "rot\t" + rot,
+        "aktiv_fil\t" + aktiv_fil,
+        "tema\t" + studio_v2_ui_tema_standard(),
+        "keymap\t" + studio_v2_ui_keymap_standard(),
+        "runtimevalg\t" + studio_v2_ui_runtimevalg_run(),
+        "search_query\t"
+    ]
+}
+
+funksjon studio_v2_ui_session_restore(session: liste_tekst) -> tekst {
+    hvis lengde(session) > 0 da {
+        returner "restaurert"
+    }
+    returner "tom"
+}
+
+funksjon studio_v2_ui_session_status(session: liste_tekst) -> tekst {
+    hvis lengde(session) > 0 da {
+        returner "klar"
+    }
+    returner "tom"
+}
+
+funksjon studio_v2_ui_tomt_favoritt() -> tekst {
+    returner "· favorite · (ingen)"
+}
+
+funksjon studio_v2_ui_tomt_apne_filer() -> tekst {
+    returner "· open · (ingen)"
+}
+
+funksjon studio_v2_ui_tomt_recent() -> tekst {
+    returner "· recent · (ingen)"
+}
+
+funksjon studio_v2_ui_tomt_split() -> tekst {
+    returner "Split view er tom"
+}
+
+funksjon studio_v2_ui_tomt_sok() -> tekst {
+    returner "Søk: tom"
+}
+
+funksjon studio_v2_ui_tomt_testfiler() -> tekst {
+    returner "Ingen testfiler funnet"
+}
+
+funksjon studio_v2_ui_tomt_stdout() -> tekst {
+    returner "Ingen stdout"
+}
+
+funksjon studio_v2_ui_tomt_stderr() -> tekst {
+    returner "Ingen stderr"
+}

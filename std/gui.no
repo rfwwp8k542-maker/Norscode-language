@@ -1,0 +1,125 @@
+# Norscode std.gui shim for Studio v2.
+
+funksjon vindu(tittel: tekst) -> heltall {
+    returner gui_vindu(tittel)
+}
+
+funksjon panel(forelder: heltall) -> heltall {
+    returner gui_panel(forelder)
+}
+
+funksjon rad(forelder: heltall) -> heltall {
+    returner gui_rad(forelder)
+}
+
+funksjon tekst(forelder: heltall, innhold: tekst) -> heltall {
+    returner gui_tekst(forelder, innhold)
+}
+
+funksjon tekstfelt(forelder: heltall, plassholder: tekst) -> heltall {
+    returner gui_tekstfelt(forelder, plassholder)
+}
+
+funksjon editor(forelder: heltall, innhold: tekst) -> heltall {
+    returner gui_editor(forelder, innhold)
+}
+
+funksjon liste(forelder: heltall) -> heltall {
+    returner gui_liste(forelder)
+}
+
+funksjon knapp(forelder: heltall, tekstverdi: tekst) -> heltall {
+    returner gui_knapp(forelder, tekstverdi)
+}
+
+funksjon etikett(forelder: heltall, tekstverdi: tekst) -> heltall {
+    returner gui_etikett(forelder, tekstverdi)
+}
+
+funksjon tekstboks(forelder: heltall, tekstverdi: tekst) -> heltall {
+    returner gui_tekstboks(forelder, tekstverdi)
+}
+
+funksjon editor_hopp_til(widget_id: heltall, linje: heltall) -> heltall {
+    returner gui_editor_hopp_til(widget_id, linje)
+}
+
+funksjon editor_cursor(widget_id: heltall) -> liste_tekst {
+    returner gui_editor_cursor(widget_id)
+}
+
+funksjon editor_erstatt_fra_til(widget_id: heltall, start_linje: heltall, start_kolonne: heltall, slutt_linje: heltall, slutt_kolonne: heltall, erstatt: tekst) -> heltall {
+    returner gui_editor_erstatt_fra_til(widget_id, start_linje, start_kolonne, slutt_linje, slutt_kolonne, erstatt)
+}
+
+funksjon liste_legg_til(widget_id: heltall, innhold: tekst) -> heltall {
+    returner gui_liste_legg_til(widget_id, innhold)
+}
+
+funksjon liste_tom(widget_id: heltall) -> heltall {
+    returner gui_liste_tom(widget_id)
+}
+
+funksjon liste_antall(widget_id: heltall) -> heltall {
+    returner gui_liste_antall(widget_id)
+}
+
+funksjon liste_hent(widget_id: heltall, indeks: heltall) -> tekst {
+    returner gui_liste_hent(widget_id, indeks)
+}
+
+funksjon liste_fjern(widget_id: heltall, indeks: heltall) -> heltall {
+    returner gui_liste_fjern(widget_id, indeks)
+}
+
+funksjon liste_valgt(widget_id: heltall) -> tekst {
+    returner gui_liste_valgt(widget_id)
+}
+
+funksjon liste_velg(widget_id: heltall, indeks: heltall) -> heltall {
+    returner gui_liste_velg(widget_id, indeks)
+}
+
+funksjon på_klikk(widget_id: heltall, callback: tekst) -> heltall {
+    returner gui_på_klikk(widget_id, callback)
+}
+
+funksjon på_endring(widget_id: heltall, callback: tekst) -> heltall {
+    returner gui_på_endring(widget_id, callback)
+}
+
+funksjon på_tast(widget_id: heltall, tast: tekst, callback: tekst) -> heltall {
+    returner gui_på_tast(widget_id, tast, callback)
+}
+
+funksjon trykk(widget_id: heltall) -> heltall {
+    returner gui_trykk(widget_id)
+}
+
+funksjon trykk_tast(widget_id: heltall, tast: tekst) -> heltall {
+    returner gui_trykk_tast(widget_id, tast)
+}
+
+funksjon foresatt(widget_id: heltall) -> heltall {
+    returner gui_foresatt(widget_id)
+}
+
+funksjon barn(widget_id: heltall, indeks: heltall) -> heltall {
+    returner gui_barn(widget_id, indeks)
+}
+
+funksjon sett_tekst(widget_id: heltall, tekstverdi: tekst) -> heltall {
+    returner gui_sett_tekst(widget_id, tekstverdi)
+}
+
+funksjon hent_tekst(widget_id: heltall) -> tekst {
+    returner gui_hent_tekst(widget_id)
+}
+
+funksjon vis(widget_id: heltall) -> heltall {
+    returner gui_vis(widget_id)
+}
+
+funksjon lukk(widget_id: heltall) -> heltall {
+    returner gui_lukk(widget_id)
+}

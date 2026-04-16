@@ -1,0 +1,7 @@
+bruk selfhost.compiler som sh
+funksjon start() -> heltall {
+  la tokens_dis: liste_tekst = ["PUSH", "3", "PUSH", "4", "ADD", "HALT"]
+  la dis: tekst = sh.disasm_fra_tokens(tokens_dis)
+  skriv(dis)
+  returner 0
+}

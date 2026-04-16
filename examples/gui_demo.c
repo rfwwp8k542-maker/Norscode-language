@@ -1,0 +1,461 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+
+typedef struct { int *data; int len; int cap; } nl_list_int;
+typedef struct { char **data; int len; int cap; } nl_list_text;
+
+static nl_list_int *nl_list_int_new(void) {
+    nl_list_int *l = (nl_list_int *)malloc(sizeof(nl_list_int));
+    if (!l) { perror("malloc"); exit(1); }
+    l->len = 0;
+    l->cap = 8;
+    l->data = (int *)malloc(sizeof(int) * l->cap);
+    if (!l->data) { perror("malloc"); exit(1); }
+    return l;
+}
+
+static nl_list_text *nl_list_text_new(void) {
+    nl_list_text *l = (nl_list_text *)malloc(sizeof(nl_list_text));
+    if (!l) { perror("malloc"); exit(1); }
+    l->len = 0;
+    l->cap = 8;
+    l->data = (char **)malloc(sizeof(char *) * l->cap);
+    if (!l->data) { perror("malloc"); exit(1); }
+    return l;
+}
+
+static void nl_list_int_ensure(nl_list_int *l, int need) {
+    if (need <= l->cap) { return; }
+    while (l->cap < need) { l->cap *= 2; }
+    l->data = (int *)realloc(l->data, sizeof(int) * l->cap);
+    if (!l->data) { perror("realloc"); exit(1); }
+}
+
+static void nl_list_text_ensure(nl_list_text *l, int need) {
+    if (need <= l->cap) { return; }
+    while (l->cap < need) { l->cap *= 2; }
+    l->data = (char **)realloc(l->data, sizeof(char *) * l->cap);
+    if (!l->data) { perror("realloc"); exit(1); }
+}
+
+static int nl_list_int_len(nl_list_int *l) { return l ? l->len : 0; }
+static int nl_list_text_len(nl_list_text *l) { return l ? l->len : 0; }
+
+static int nl_list_int_push(nl_list_int *l, int v) {
+    nl_list_int_ensure(l, l->len + 1);
+    l->data[l->len++] = v;
+    return l->len;
+}
+
+static int nl_list_text_push(nl_list_text *l, char *v) {
+    nl_list_text_ensure(l, l->len + 1);
+    l->data[l->len++] = v;
+    return l->len;
+}
+
+static int nl_list_int_pop(nl_list_int *l) {
+    if (!l || l->len == 0) { return 0; }
+    int v = l->data[l->len - 1];
+    l->len -= 1;
+    return v;
+}
+
+static char *nl_list_text_pop(nl_list_text *l) {
+    if (!l || l->len == 0) { return ""; }
+    char *v = l->data[l->len - 1];
+    l->len -= 1;
+    return v;
+}
+
+static int nl_list_int_remove(nl_list_int *l, int idx) {
+    if (!l || idx < 0 || idx >= l->len) { return nl_list_int_len(l); }
+    for (int i = idx; i < l->len - 1; i++) { l->data[i] = l->data[i + 1]; }
+    l->len -= 1;
+    return l->len;
+}
+
+static int nl_list_text_remove(nl_list_text *l, int idx) {
+    if (!l || idx < 0 || idx >= l->len) { return nl_list_text_len(l); }
+    for (int i = idx; i < l->len - 1; i++) { l->data[i] = l->data[i + 1]; }
+    l->len -= 1;
+    return l->len;
+}
+
+static int nl_list_int_set(nl_list_int *l, int idx, int v) {
+    if (!l || idx < 0 || idx >= l->len) { return nl_list_int_len(l); }
+    l->data[idx] = v;
+    return l->len;
+}
+
+static int nl_list_text_set(nl_list_text *l, int idx, char *v) {
+    if (!l || idx < 0 || idx >= l->len) { return nl_list_text_len(l); }
+    l->data[idx] = v;
+    return l->len;
+}
+
+static char *nl_strdup(const char *s) {
+    if (!s) { s = ""; }
+    size_t n = strlen(s) + 1;
+    char *out = (char *)malloc(n);
+    if (!out) { perror("malloc"); exit(1); }
+    memcpy(out, s, n);
+    return out;
+}
+
+static int nl_streq(const char *a, const char *b) {
+    if (!a) { a = ""; }
+    if (!b) { b = ""; }
+    return strcmp(a, b) == 0;
+}
+
+static char *nl_concat(const char *a, const char *b) {
+    if (!a) { a = ""; }
+    if (!b) { b = ""; }
+    size_t al = strlen(a);
+    size_t bl = strlen(b);
+    char *out = (char *)malloc(al + bl + 1);
+    if (!out) { perror("malloc"); exit(1); }
+    memcpy(out, a, al);
+    memcpy(out + al, b, bl);
+    out[al + bl] = '\0';
+    return out;
+}
+
+static char *nl_int_to_text(int value) {
+    char buffer[32];
+    snprintf(buffer, sizeof(buffer), "%d", value);
+    return nl_strdup(buffer);
+}
+
+static nl_list_text *nl_split_words(const char *s) {
+    nl_list_text *out = nl_list_text_new();
+    char *copy = nl_strdup(s ? s : "");
+    char *tok = strtok(copy, " \t\r\n");
+    while (tok) {
+        nl_list_text_push(out, nl_strdup(tok));
+        tok = strtok(NULL, " \t\r\n");
+    }
+    return out;
+}
+
+static nl_list_text *nl_tokenize_simple(const char *s) {
+    nl_list_text *out = nl_list_text_new();
+    if (!s) { return out; }
+    char token[256];
+    int tlen = 0;
+    int in_comment = 0;
+    for (const char *p = s; ; ++p) {
+        char c = *p;
+        if (c == '\0') {
+            if (tlen > 0) { token[tlen] = '\0'; nl_list_text_push(out, nl_strdup(token)); }
+            break;
+        }
+        if (in_comment) {
+            if (c == '\n') { in_comment = 0; }
+            continue;
+        }
+        if (c == '#') {
+            if (tlen > 0) { token[tlen] = '\0'; nl_list_text_push(out, nl_strdup(token)); tlen = 0; }
+            in_comment = 1;
+            continue;
+        }
+        if (isalnum((unsigned char)c) || c == '_' || c == '-' || (unsigned char)c >= 128) {
+            if (tlen < 255) { token[tlen++] = c; }
+            continue;
+        }
+        if (tlen > 0) {
+            token[tlen] = '\0';
+            nl_list_text_push(out, nl_strdup(token));
+            tlen = 0;
+        }
+    }
+    return out;
+}
+
+static nl_list_text *nl_tokenize_expression(const char *s) {
+    nl_list_text *out = nl_list_text_new();
+    if (!s) { return out; }
+    int in_comment = 0;
+    for (const char *p = s; *p; ) {
+        char c = *p;
+        if (in_comment) {
+            if (c == '\n') { in_comment = 0; }
+            p++;
+            continue;
+        }
+        if (c == '#') { in_comment = 1; p++; continue; }
+        if (isspace((unsigned char)c)) { p++; continue; }
+        if (isdigit((unsigned char)c)) {
+            char token[256];
+            int tlen = 0;
+            while (*p && isdigit((unsigned char)*p)) {
+                if (tlen < 255) { token[tlen++] = *p; }
+                p++;
+            }
+            token[tlen] = '\0';
+            nl_list_text_push(out, nl_strdup(token));
+            continue;
+        }
+        if (isalpha((unsigned char)c) || c == '_' || (unsigned char)c >= 128) {
+            char token[256];
+            int tlen = 0;
+            while (*p && (isalnum((unsigned char)*p) || *p == '_' || (unsigned char)*p >= 128)) {
+                if (tlen < 255) { token[tlen++] = *p; }
+                p++;
+            }
+            token[tlen] = '\0';
+            nl_list_text_push(out, nl_strdup(token));
+            continue;
+        }
+        if ((c == '&' && p[1] == '&') || (c == '|' && p[1] == '|') || (c == '=' && p[1] == '=') ||
+            (c == '!' && p[1] == '=') || (c == '<' && p[1] == '=') || (c == '>' && p[1] == '=') ||
+            (c == '+' && p[1] == '=') || (c == '-' && p[1] == '=') || (c == '*' && p[1] == '=') ||
+            (c == '/' && p[1] == '=') || (c == '%' && p[1] == '=')) {
+            char token[3];
+            token[0] = c;
+            token[1] = p[1];
+            token[2] = '\0';
+            nl_list_text_push(out, nl_strdup(token));
+            p += 2;
+            continue;
+        }
+        if (c == '(' || c == ')' || c == '+' || c == '-' || c == '*' || c == '/' || c == '%' || c == '<' || c == '>' || c == '=' || c == ';') {
+            char token[2];
+            token[0] = c;
+            token[1] = '\0';
+            nl_list_text_push(out, nl_strdup(token));
+            p++;
+            continue;
+        }
+        char unknown[2];
+        unknown[0] = c;
+        unknown[1] = '\0';
+        nl_list_text_push(out, nl_strdup(unknown));
+        p++;
+    }
+    return out;
+}
+
+static char *nl_bool_to_text(int value) {
+    return nl_strdup(value ? "sann" : "usann");
+}
+
+static int nl_text_to_int(const char *s) {
+    if (!s) { return 0; }
+    return (int)strtol(s, NULL, 10);
+}
+
+static int nl_assert(int cond) {
+    if (!cond) {
+        printf("assert failed\n");
+        exit(1);
+    }
+    return 0;
+}
+
+static int nl_assert_eq_int(int a, int b) {
+    if (a != b) {
+        printf("assert_eq failed: %d != %d\n", a, b);
+        exit(1);
+    }
+    return 0;
+}
+
+static int nl_assert_ne_int(int a, int b) {
+    if (a == b) {
+        printf("assert_ne failed: %d == %d\n", a, b);
+        exit(1);
+    }
+    return 0;
+}
+
+static int nl_assert_eq_text(const char *a, const char *b) {
+    if (!nl_streq(a, b)) {
+        printf("assert_eq failed: \"%s\" != \"%s\"\n", a ? a : "", b ? b : "");
+        exit(1);
+    }
+    return 0;
+}
+
+static int nl_assert_ne_text(const char *a, const char *b) {
+    if (nl_streq(a, b)) {
+        printf("assert_ne failed: \"%s\" == \"%s\"\n", a ? a : "", b ? b : "");
+        exit(1);
+    }
+    return 0;
+}
+
+static void nl_print_text(const char *s) {
+    printf("%s\n", s ? s : "");
+}
+
+typedef struct { int kind; int parent; char *text; int visible; } nl_gui_object;
+static nl_gui_object *nl_gui_objects = NULL;
+static int nl_gui_count = 0;
+static int nl_gui_cap = 0;
+
+static void nl_gui_ensure(int need) {
+    if (need <= nl_gui_cap) { return; }
+    if (nl_gui_cap == 0) { nl_gui_cap = 8; }
+    while (nl_gui_cap < need) { nl_gui_cap *= 2; }
+    nl_gui_objects = (nl_gui_object *)realloc(nl_gui_objects, sizeof(nl_gui_object) * nl_gui_cap);
+    if (!nl_gui_objects) { perror("realloc"); exit(1); }
+}
+
+static int nl_gui_create(int kind, int parent, const char *text) {
+    nl_gui_ensure(nl_gui_count + 1);
+    nl_gui_objects[nl_gui_count].kind = kind;
+    nl_gui_objects[nl_gui_count].parent = parent;
+    nl_gui_objects[nl_gui_count].text = nl_strdup(text ? text : "");
+    nl_gui_objects[nl_gui_count].visible = 0;
+    nl_gui_count += 1;
+    return nl_gui_count;
+}
+
+static nl_gui_object *nl_gui_get(int id) {
+    if (id <= 0 || id > nl_gui_count) { return NULL; }
+    return &nl_gui_objects[id - 1];
+}
+
+static int nl_gui_vindu(const char *title) {
+    return nl_gui_create(1, 0, title);
+}
+
+static int nl_gui_knapp(int parent, const char *label) {
+    return nl_gui_create(2, parent, label);
+}
+
+static int nl_gui_etikett(int parent, const char *label) {
+    return nl_gui_create(3, parent, label);
+}
+
+static int nl_gui_tekstfelt(int parent, const char *initial) {
+    return nl_gui_create(4, parent, initial);
+}
+
+static int nl_gui_sett_tekst(int id, const char *text) {
+    nl_gui_object *obj = nl_gui_get(id);
+    if (!obj) { return 0; }
+    free(obj->text);
+    obj->text = nl_strdup(text ? text : "");
+    return id;
+}
+
+static char *nl_gui_hent_tekst(int id) {
+    nl_gui_object *obj = nl_gui_get(id);
+    if (!obj || !obj->text) { return nl_strdup(""); }
+    return nl_strdup(obj->text);
+}
+
+static int nl_gui_vis(int id) {
+    nl_gui_object *obj = nl_gui_get(id);
+    if (!obj) { return 0; }
+    obj->visible = 1;
+    return id;
+}
+
+static int nl_gui_lukk(int id) {
+    nl_gui_object *obj = nl_gui_get(id);
+    if (!obj) { return 0; }
+    obj->visible = 0;
+    return id;
+}
+
+int std__gui__vindu(char * tittel) {
+    return nl_gui_vindu(tittel);
+    return 0;
+}
+
+int std__gui__knapp(int foresatt, char * tekstverdi) {
+    return nl_gui_knapp(foresatt, tekstverdi);
+    return 0;
+}
+
+int std__gui__etikett(int foresatt, char * tekstverdi) {
+    return nl_gui_etikett(foresatt, tekstverdi);
+    return 0;
+}
+
+int std__gui__tekstfelt(int foresatt, char * starttekst) {
+    return nl_gui_tekstfelt(foresatt, starttekst);
+    return 0;
+}
+
+int std__gui__sett_tekst(int widget_id, char * tekstverdi) {
+    return nl_gui_sett_tekst(widget_id, tekstverdi);
+    return 0;
+}
+
+char * std__gui__hent_tekst(int widget_id) {
+    return nl_gui_hent_tekst(widget_id);
+    return "";
+}
+
+int std__gui__vis(int vindu_id) {
+    return nl_gui_vis(vindu_id);
+    return 0;
+}
+
+int std__gui__lukk(int vindu_id) {
+    return nl_gui_lukk(vindu_id);
+    return 0;
+}
+
+char * std__tekst__hilsen(char * navn) {
+    return nl_concat("Hei ", navn);
+    return "";
+}
+
+char * std__tekst__rop(char * melding) {
+    return nl_concat(melding, "!");
+    return "";
+}
+
+char * std__tekst__omgitt_av_klammer(char * tekstverdi) {
+    return nl_concat(nl_concat("[", tekstverdi), "]");
+    return "";
+}
+
+char * std__tekst__ja_nei(int verdi) {
+    if (verdi) {
+        return "ja";
+    }
+    return "nei";
+    return "";
+}
+
+char * std__tekst__tall_til_tekst(int x) {
+    return nl_int_to_text(x);
+    return "";
+}
+
+char * std__tekst__bool_til_tekst(int x) {
+    return nl_bool_to_text(x);
+    return "";
+}
+
+int start() {
+    int vindu_id = std__gui__vindu("Norscode Studio Demo");
+    int tittel_id = std__gui__etikett(vindu_id, "Hei fra Norscode");
+    int input_id = std__gui__tekstfelt(vindu_id, "Skriv her");
+    int knapp_id = std__gui__knapp(vindu_id, "Kjør");
+    nl_print_text("GUI-demo klar");
+    nl_print_text(std__tekst__hilsen("Norscode"));
+    nl_print_text(nl_int_to_text(vindu_id));
+    nl_print_text(nl_int_to_text(tittel_id));
+    nl_print_text(nl_int_to_text(input_id));
+    nl_print_text(nl_int_to_text(knapp_id));
+    nl_print_text(std__gui__hent_tekst(input_id));
+    std__gui__sett_tekst(input_id, "Oppdatert tekst");
+    nl_print_text(std__gui__hent_tekst(input_id));
+    std__gui__vis(vindu_id);
+    std__gui__lukk(vindu_id);
+    return 0;
+    return 0;
+}
+
+int main(void) {
+    return start();
+}

@@ -1,0 +1,60 @@
+bruk std.gui som gui
+funksjon legg_til_punkt(knapp_id: heltall) -> heltall {
+    la panel_id: heltall = gui.foresatt(knapp_id)
+    la input_id: heltall = gui.barn(panel_id, 1)
+    la liste_id: heltall = gui.barn(panel_id, 3)
+    la status_id: heltall = gui.barn(panel_id, 4)
+    la tekstverdi: tekst = gui.hent_tekst(input_id)
+
+    hvis tekstverdi != "" da {
+        gui.liste_legg_til(liste_id, tekstverdi)
+        gui.sett_tekst(input_id, "")
+        gui.sett_tekst(status_id, "Punkt lagt til")
+    } ellers {
+        gui.sett_tekst(status_id, "Skriv noe først")
+    }
+
+    returner knapp_id
+}
+
+funksjon oppdater_status(widget_id: heltall) -> heltall {
+    la panel_id: heltall = gui.foresatt(widget_id)
+    la status_id: heltall = gui.barn(panel_id, 4)
+    la tekstverdi: tekst = gui.hent_tekst(widget_id)
+
+    hvis tekstverdi != "" da {
+        gui.sett_tekst(status_id, "Skriver: " + tekstverdi)
+    } ellers {
+        gui.sett_tekst(status_id, "Tomt felt")
+    }
+
+    returner widget_id
+}
+
+funksjon start() -> heltall {
+    la vindu_id: heltall = gui.vindu("Norscode Todo")
+    la panel_id: heltall = gui.panel(vindu_id)
+    la tittel_id: heltall = gui.tekst(panel_id, "Norscode Todo")
+    la input_id: heltall = gui.tekstboks(panel_id, "")
+    la knapp_id: heltall = gui.knapp(panel_id, "Legg til")
+    la liste_id: heltall = gui.liste(panel_id)
+    la status_id: heltall = gui.tekst(panel_id, "Klar")
+
+    gui.på_klikk(knapp_id, "legg_til_punkt")
+    gui.på_endring(input_id, "oppdater_status")
+
+    gui.trykk(knapp_id)
+    gui.sett_tekst(input_id, "Kjøp melk")
+    gui.trykk(knapp_id)
+    gui.vis(vindu_id)
+
+    skriv(tekst_fra_heltall(vindu_id))
+    skriv(tekst_fra_heltall(panel_id))
+    skriv(tekst_fra_heltall(tittel_id))
+    skriv(tekst_fra_heltall(input_id))
+    skriv(tekst_fra_heltall(knapp_id))
+    skriv(tekst_fra_heltall(liste_id))
+    skriv(gui.hent_tekst(status_id))
+
+    returner 0
+}

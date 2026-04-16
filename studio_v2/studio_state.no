@@ -1,0 +1,1172 @@
+# Studio v2 workspace foundation.
+
+funksjon studio_v2_state_tittel() -> tekst {
+    returner "Norscode Studio v2"
+}
+
+funksjon studio_v2_state_session_fil(rot: tekst) -> tekst {
+    returner rot + "/.norscode/studio_v2.session"
+}
+
+funksjon studio_v2_state_session_tom() -> liste_tekst {
+    returner []
+}
+
+funksjon studio_v2_state_session_les(rot: tekst) -> liste_tekst {
+    la sti: tekst = studio_v2_state_session_fil(rot)
+    hvis ikke fil_eksisterer(sti) da {
+        returner studio_v2_state_session_tom()
+    }
+    returner del_linjer(les_fil(sti))
+}
+
+funksjon studio_v2_state_session_verdi(session: liste_tekst, nøkkel: tekst) -> tekst {
+    la indeks: heltall = 0
+    mens (indeks < lengde(session)) {
+        la deler: liste_tekst = tekst_del_på(session[indeks], "\t")
+        hvis lengde(deler) >= 2 og deler[0] == nøkkel da {
+            returner deler[1]
+        }
+        indeks = indeks + 1
+    }
+    returner ""
+}
+
+funksjon studio_v2_state_session_recent_prosjekter(session: liste_tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la indeks: heltall = 0
+    mens (indeks < lengde(session)) {
+        la deler: liste_tekst = tekst_del_på(session[indeks], "\t")
+        hvis lengde(deler) >= 2 og deler[0] == "recent_project" da {
+            legg_til(resultat, deler[1])
+        }
+        indeks = indeks + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_state_session_apne_filer(session: liste_tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la indeks: heltall = 0
+    mens (indeks < lengde(session)) {
+        la deler: liste_tekst = tekst_del_på(session[indeks], "\t")
+        hvis lengde(deler) >= 2 og deler[0] == "open_file" da {
+            legg_til(resultat, deler[1])
+        }
+        indeks = indeks + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_state_session_aktiv_tab(session: liste_tekst) -> tekst {
+    returner studio_v2_state_session_verdi(session, "aktiv_tab")
+}
+
+funksjon studio_v2_state_session_split_fokus(session: liste_tekst) -> tekst {
+    la verdi: tekst = studio_v2_state_session_verdi(session, "split_fokus")
+    hvis verdi != "" da {
+        returner verdi
+    }
+    returner "høyre"
+}
+
+funksjon studio_v2_state_session_tool_window(session: liste_tekst) -> tekst {
+    la verdi: tekst = studio_v2_state_session_verdi(session, "tool_window")
+    hvis verdi != "" da {
+        returner verdi
+    }
+    returner "Project"
+}
+
+funksjon studio_v2_state_session_tema(session: liste_tekst) -> tekst {
+    la verdi: tekst = studio_v2_state_session_verdi(session, "tema")
+    hvis verdi != "" da {
+        returner verdi
+    }
+    returner "mørk"
+}
+
+funksjon studio_v2_state_session_keymap(session: liste_tekst) -> tekst {
+    la verdi: tekst = studio_v2_state_session_verdi(session, "keymap")
+    hvis verdi != "" da {
+        returner verdi
+    }
+    returner "standard"
+}
+
+funksjon studio_v2_state_session_runtimevalg(session: liste_tekst) -> tekst {
+    la verdi: tekst = studio_v2_state_session_verdi(session, "runtimevalg")
+    hvis verdi != "" da {
+        returner verdi
+    }
+    returner "run"
+}
+
+funksjon studio_v2_state_session_favoritter(session: liste_tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la indeks: heltall = 0
+    mens (indeks < lengde(session)) {
+        la deler: liste_tekst = tekst_del_på(session[indeks], "\t")
+        hvis lengde(deler) >= 2 og deler[0] == "favorite_file" da {
+            legg_til(resultat, deler[1])
+        }
+        indeks = indeks + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_state_session_run_config(session: liste_tekst) -> tekst {
+    la verdi: tekst = studio_v2_state_session_verdi(session, "run_config")
+    hvis verdi != "" da {
+        returner verdi
+    }
+    returner "run"
+}
+
+funksjon studio_v2_state_session_search_query(session: liste_tekst) -> tekst {
+    returner studio_v2_state_session_verdi(session, "search_query")
+}
+
+funksjon studio_v2_state_session_symbol_cache(session: liste_tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la indeks: heltall = 0
+    mens (indeks < lengde(session)) {
+        la linje: tekst = session[indeks]
+        la ren: tekst = tekst_trim(linje)
+        hvis tekst_starter_med(ren, "symbol_cache\t") da {
+            legg_til(resultat, tekst_slice(ren, 13, tekst_lengde(ren)))
+        }
+        indeks = indeks + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_state_session_symbol_cache_oppdatert(session: liste_tekst, cache: liste_tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la indeks: heltall = 0
+    mens (indeks < lengde(session)) {
+        la linje: tekst = session[indeks]
+        la ren: tekst = tekst_trim(linje)
+        hvis ikke tekst_starter_med(ren, "symbol_cache\t") da {
+            legg_til(resultat, linje)
+        }
+        indeks = indeks + 1
+    }
+    la cache_indeks: heltall = 0
+    mens (cache_indeks < lengde(cache)) {
+        legg_til(resultat, "symbol_cache\t" + cache[cache_indeks])
+        cache_indeks = cache_indeks + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_state_session_symbol_cache_skriv_med_tilstand(rot: tekst, cache: liste_tekst) -> heltall {
+    la session: liste_tekst = studio_v2_state_session_les(rot)
+    la innhold: tekst = studio_v2_state_session_linjene_til_tekst(studio_v2_state_session_symbol_cache_oppdatert(session, cache))
+    returner skriv_fil(studio_v2_state_session_fil(rot), innhold)
+}
+
+funksjon studio_v2_state_session_project_tree_anchor(session: liste_tekst) -> tekst {
+    returner studio_v2_state_session_verdi(session, "project_tree_anchor")
+}
+
+funksjon studio_v2_state_session_project_tree_anchor_oppdatert(session: liste_tekst, anker: tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la indeks: heltall = 0
+    mens (indeks < lengde(session)) {
+        la linje: tekst = session[indeks]
+        la ren: tekst = tekst_trim(linje)
+        hvis ikke tekst_starter_med(ren, "project_tree_anchor\t") da {
+            legg_til(resultat, linje)
+        }
+        indeks = indeks + 1
+    }
+    hvis anker != "" da {
+        legg_til(resultat, "project_tree_anchor\t" + anker)
+    }
+    returner resultat
+}
+
+funksjon studio_v2_state_session_project_tree_anchor_skriv_med_tilstand(rot: tekst, anker: tekst) -> heltall {
+    la session: liste_tekst = studio_v2_state_session_les(rot)
+    la innhold: tekst = studio_v2_state_session_linjene_til_tekst(studio_v2_state_session_project_tree_anchor_oppdatert(session, anker))
+    returner skriv_fil(studio_v2_state_session_fil(rot), innhold)
+}
+
+funksjon studio_v2_state_session_run_profile_tom() -> liste_tekst {
+    returner []
+}
+
+funksjon studio_v2_state_session_run_profile_oppføring(navn: tekst, felt: tekst, verdi: tekst) -> tekst {
+    returner "run_profile\t" + navn + "\t" + felt + "\t" + verdi
+}
+
+funksjon studio_v2_state_session_run_profiles(session: liste_tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la indeks: heltall = 0
+    mens (indeks < lengde(session)) {
+        la linje: tekst = session[indeks]
+        la ren: tekst = tekst_trim(linje)
+        hvis tekst_starter_med(ren, "run_profile\t") da {
+            legg_til(resultat, ren)
+        }
+        indeks = indeks + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_state_session_run_profile_finn(session: liste_tekst, navn: tekst, felt: tekst) -> tekst {
+    la oppføringer: liste_tekst = studio_v2_state_session_run_profiles(session)
+    la indeks: heltall = 0
+    mens (indeks < lengde(oppføringer)) {
+        la oppføring: tekst = oppføringer[indeks]
+        la deler: liste_tekst = tekst_del_på(oppføring, "\t")
+        hvis lengde(deler) >= 4 og deler[0] == "run_profile" og deler[1] == navn og deler[2] == felt da {
+            returner deler[3]
+        }
+        indeks = indeks + 1
+    }
+    returner ""
+}
+
+funksjon studio_v2_state_session_run_profile_args(session: liste_tekst, navn: tekst) -> tekst {
+    returner studio_v2_state_session_run_profile_finn(session, navn, "args")
+}
+
+funksjon studio_v2_state_session_run_profile_cwd(session: liste_tekst, navn: tekst, rot: tekst) -> tekst {
+    la verdi: tekst = studio_v2_state_session_run_profile_finn(session, navn, "cwd")
+    hvis verdi != "" da {
+        returner verdi
+    }
+    hvis rot != "" da {
+        returner rot
+    }
+    returner "."
+}
+
+funksjon studio_v2_state_session_run_profile_env(session: liste_tekst, navn: tekst) -> tekst {
+    returner studio_v2_state_session_run_profile_finn(session, navn, "env")
+}
+
+funksjon studio_v2_state_session_run_profile_sammendrag(session: liste_tekst, navn: tekst, rot: tekst) -> tekst {
+    returner "args=" + studio_v2_state_session_run_profile_args(session, navn) + " · cwd=" + studio_v2_state_session_run_profile_cwd(session, navn, rot) + " · env=" + studio_v2_state_session_run_profile_env(session, navn)
+}
+
+funksjon studio_v2_state_session_run_profiles_oppdatert(session: liste_tekst, navn: tekst, args: tekst, cwd: tekst, env: tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la oppføringer: liste_tekst = studio_v2_state_session_run_profiles(session)
+    la i: heltall = 0
+    mens (i < lengde(oppføringer)) {
+        la oppføring: tekst = oppføringer[i]
+        la deler: liste_tekst = tekst_del_på(oppføring, "\t")
+        hvis lengde(deler) >= 4 og deler[1] == navn da {
+        } ellers {
+            legg_til(resultat, oppføring)
+        }
+        i = i + 1
+    }
+    hvis navn != "" da {
+        legg_til(resultat, studio_v2_state_session_run_profile_oppføring(navn, "args", args))
+        legg_til(resultat, studio_v2_state_session_run_profile_oppføring(navn, "cwd", cwd))
+        legg_til(resultat, studio_v2_state_session_run_profile_oppføring(navn, "env", env))
+    }
+    returner resultat
+}
+
+funksjon studio_v2_state_session_run_profile_session_oppdatert(session: liste_tekst, navn: tekst, args: tekst, cwd: tekst, env: tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la run_profiles: liste_tekst = studio_v2_state_session_run_profiles_oppdatert(session, navn, args, cwd, env)
+    la indeks: heltall = 0
+    mens (indeks < lengde(session)) {
+        la linje: tekst = session[indeks]
+        la ren: tekst = tekst_trim(linje)
+        hvis ikke tekst_starter_med(ren, "run_profile\t") da {
+            legg_til(resultat, linje)
+        }
+        indeks = indeks + 1
+    }
+    la i: heltall = 0
+    mens (i < lengde(run_profiles)) {
+        legg_til(resultat, run_profiles[i])
+        i = i + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_state_session_run_profile_skriv_med_tilstand(rot: tekst, navn: tekst, args: tekst, cwd: tekst, env: tekst) -> heltall {
+    la session: liste_tekst = studio_v2_state_session_les(rot)
+    la innhold: tekst = studio_v2_state_session_linjene_til_tekst(studio_v2_state_session_run_profile_session_oppdatert(session, navn, args, cwd, env))
+    returner skriv_fil(studio_v2_state_session_fil(rot), innhold)
+}
+
+funksjon studio_v2_state_session_innstillinger(session: liste_tekst) -> liste_tekst {
+    returner [
+        studio_v2_state_session_tema(session),
+        studio_v2_state_session_keymap(session),
+        studio_v2_state_session_runtimevalg(session)
+    ]
+}
+
+funksjon studio_v2_state_session_innstillinger_oppdatert(session: liste_tekst, tema: tekst, keymap: tekst, runtimevalg: tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la indeks: heltall = 0
+    mens (indeks < lengde(session)) {
+        la linje: tekst = session[indeks]
+        la ren: tekst = tekst_trim(linje)
+        hvis ikke tekst_starter_med(ren, "tema\t") og ikke tekst_starter_med(ren, "keymap\t") og ikke tekst_starter_med(ren, "runtimevalg\t") da {
+            legg_til(resultat, linje)
+        }
+        indeks = indeks + 1
+    }
+    legg_til(resultat, "tema\t" + tema)
+    legg_til(resultat, "keymap\t" + keymap)
+    legg_til(resultat, "runtimevalg\t" + runtimevalg)
+    returner resultat
+}
+
+funksjon studio_v2_state_session_innstillinger_skriv_med_tilstand(rot: tekst, tema: tekst, keymap: tekst, runtimevalg: tekst) -> heltall {
+    la session: liste_tekst = studio_v2_state_session_les(rot)
+    la innhold: tekst = studio_v2_state_session_linjene_til_tekst(studio_v2_state_session_innstillinger_oppdatert(session, tema, keymap, runtimevalg))
+    returner skriv_fil(studio_v2_state_session_fil(rot), innhold)
+}
+
+funksjon studio_v2_state_session_tema_skriv_med_tilstand(rot: tekst, tema: tekst) -> heltall {
+    la session: liste_tekst = studio_v2_state_session_les(rot)
+    returner studio_v2_state_session_innstillinger_skriv_med_tilstand(rot, tema, studio_v2_state_session_keymap(session), studio_v2_state_session_runtimevalg(session))
+}
+
+funksjon studio_v2_state_session_keymap_skriv_med_tilstand(rot: tekst, keymap: tekst) -> heltall {
+    la session: liste_tekst = studio_v2_state_session_les(rot)
+    returner studio_v2_state_session_innstillinger_skriv_med_tilstand(rot, studio_v2_state_session_tema(session), keymap, studio_v2_state_session_runtimevalg(session))
+}
+
+funksjon studio_v2_state_session_runtimevalg_skriv_med_tilstand(rot: tekst, runtimevalg: tekst) -> heltall {
+    la session: liste_tekst = studio_v2_state_session_les(rot)
+    returner studio_v2_state_session_innstillinger_skriv_med_tilstand(rot, studio_v2_state_session_tema(session), studio_v2_state_session_keymap(session), runtimevalg)
+}
+
+funksjon studio_v2_state_session_palette_open(session: liste_tekst) -> bool {
+    hvis studio_v2_state_session_verdi(session, "palette_open") == "åpen" da {
+        returner sann
+    }
+    returner usann
+}
+
+funksjon studio_v2_state_session_palette_status(session: liste_tekst) -> tekst {
+    hvis studio_v2_state_session_palette_open(session) da {
+        returner "åpen"
+    }
+    returner "lukket"
+}
+
+funksjon studio_v2_state_session_sist_navigasjon(session: liste_tekst) -> tekst {
+    returner studio_v2_state_session_verdi(session, "sist_navigasjon")
+}
+
+funksjon studio_v2_state_session_tree_fold(session: liste_tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la indeks: heltall = 0
+    mens (indeks < lengde(session)) {
+        la deler: liste_tekst = tekst_del_på(session[indeks], "\t")
+        hvis lengde(deler) >= 2 og deler[0] == "tree_fold" da {
+            legg_til(resultat, deler[1])
+        }
+        indeks = indeks + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_state_session_breakpoints(session: liste_tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la indeks: heltall = 0
+    mens (indeks < lengde(session)) {
+        la deler: liste_tekst = tekst_del_på(session[indeks], "\t")
+        hvis lengde(deler) >= 3 og deler[0] == "breakpoint" da {
+            legg_til(resultat, deler[1] + "\t" + deler[2])
+        }
+        indeks = indeks + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_state_session_breakpoints_for_fil(session: liste_tekst, fil: tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la breakpoints: liste_tekst = studio_v2_state_session_breakpoints(session)
+    la indeks: heltall = 0
+    mens (indeks < lengde(breakpoints)) {
+        la deler: liste_tekst = tekst_del_på(breakpoints[indeks], "\t")
+        hvis lengde(deler) >= 2 og deler[0] == fil da {
+            legg_til(resultat, deler[1])
+        }
+        indeks = indeks + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_state_session_output_tom() -> liste_tekst {
+    returner []
+}
+
+funksjon studio_v2_state_session_output_oppføring(nøkkel: tekst, verdi: tekst) -> tekst {
+    returner "output_" + nøkkel + "\t" + verdi
+}
+
+funksjon studio_v2_state_session_output(session: liste_tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la indeks: heltall = 0
+    mens (indeks < lengde(session)) {
+        la linje: tekst = session[indeks]
+        la ren: tekst = tekst_trim(linje)
+        hvis tekst_starter_med(ren, "output_") da {
+            legg_til(resultat, ren)
+        }
+        indeks = indeks + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_state_session_output_verdi(session: liste_tekst, nøkkel: tekst) -> tekst {
+    la oppføringer: liste_tekst = studio_v2_state_session_output(session)
+    la indeks: heltall = 0
+    mens (indeks < lengde(oppføringer)) {
+        la oppføring: tekst = oppføringer[indeks]
+        la deler: liste_tekst = tekst_del_på(oppføring, "\t")
+        hvis lengde(deler) >= 2 og deler[0] == nøkkel da {
+            returner deler[1]
+        }
+        indeks = indeks + 1
+    }
+    returner ""
+}
+
+funksjon studio_v2_state_session_output_config(session: liste_tekst) -> tekst {
+    returner studio_v2_state_session_output_verdi(session, "output_config")
+}
+
+funksjon studio_v2_state_session_output_command(session: liste_tekst) -> tekst {
+    returner studio_v2_state_session_output_verdi(session, "output_command")
+}
+
+funksjon studio_v2_state_session_output_code(session: liste_tekst) -> tekst {
+    returner studio_v2_state_session_output_verdi(session, "output_code")
+}
+
+funksjon studio_v2_state_session_output_stdout(session: liste_tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la oppføringer: liste_tekst = studio_v2_state_session_output(session)
+    la indeks: heltall = 0
+    mens (indeks < lengde(oppføringer)) {
+        la oppføring: tekst = oppføringer[indeks]
+        la deler: liste_tekst = tekst_del_på(oppføring, "\t")
+        hvis lengde(deler) >= 2 og deler[0] == "output_stdout" da {
+            legg_til(resultat, deler[1])
+        }
+        indeks = indeks + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_state_session_output_stderr(session: liste_tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la oppføringer: liste_tekst = studio_v2_state_session_output(session)
+    la indeks: heltall = 0
+    mens (indeks < lengde(oppføringer)) {
+        la oppføring: tekst = oppføringer[indeks]
+        la deler: liste_tekst = tekst_del_på(oppføring, "\t")
+        hvis lengde(deler) >= 2 og deler[0] == "output_stderr" da {
+            legg_til(resultat, deler[1])
+        }
+        indeks = indeks + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_state_session_output_status(session: liste_tekst) -> tekst {
+    hvis studio_v2_state_session_output_command(session) == "" og lengde(studio_v2_state_session_output_stdout(session)) == 0 og lengde(studio_v2_state_session_output_stderr(session)) == 0 da {
+        returner "tom"
+    }
+    returner "klar"
+}
+
+funksjon studio_v2_state_session_output_sammendrag(session: liste_tekst) -> tekst {
+    la config: tekst = studio_v2_state_session_output_config(session)
+    la kommando: tekst = studio_v2_state_session_output_command(session)
+    la kode: tekst = studio_v2_state_session_output_code(session)
+    hvis config == "" da {
+        config = "run"
+    }
+    hvis kommando == "" da {
+        kommando = "(ingen)"
+    }
+    hvis kode == "" da {
+        kode = "ukjent"
+    }
+    returner "Config: " + config + " · Command: " + kommando + " · Code: " + kode + " · Stdout: " + tekst_fra_heltall(lengde(studio_v2_state_session_output_stdout(session))) + " · Stderr: " + tekst_fra_heltall(lengde(studio_v2_state_session_output_stderr(session)))
+}
+
+funksjon studio_v2_state_session_test_history(session: liste_tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la indeks: heltall = 0
+    mens (indeks < lengde(session)) {
+        la linje: tekst = session[indeks]
+        la ren: tekst = tekst_trim(linje)
+        hvis tekst_starter_med(ren, "test_history\t") da {
+            la deler: liste_tekst = tekst_del_på(ren, "\t")
+            hvis lengde(deler) >= 2 da {
+                legg_til(resultat, deler[1])
+            }
+        }
+        indeks = indeks + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_state_session_test_history_siste(session: liste_tekst) -> tekst {
+    la historikk: liste_tekst = studio_v2_state_session_test_history(session)
+    hvis lengde(historikk) > 0 da {
+        returner historikk[lengde(historikk) - 1]
+    }
+    returner ""
+}
+
+funksjon studio_v2_state_session_test_history_oppdatert(session: liste_tekst, historie: tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la historikk: liste_tekst = studio_v2_state_session_test_history(session)
+    hvis historie != "" da {
+        legg_til(historikk, historie)
+    }
+    la indeks: heltall = 0
+    mens (indeks < lengde(session)) {
+        la linje: tekst = session[indeks]
+        la ren: tekst = tekst_trim(linje)
+        hvis ikke tekst_starter_med(ren, "test_history\t") da {
+            legg_til(resultat, linje)
+        }
+        indeks = indeks + 1
+    }
+    la start: heltall = 0
+    hvis lengde(historikk) > 5 da {
+        start = lengde(historikk) - 5
+    }
+    la historikk_indeks: heltall = start
+    mens (historikk_indeks < lengde(historikk)) {
+        legg_til(resultat, "test_history\t" + historikk[historikk_indeks])
+        historikk_indeks = historikk_indeks + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_state_session_test_history_skriv_med_tilstand(rot: tekst, historie: tekst) -> heltall {
+    la session: liste_tekst = studio_v2_state_session_les(rot)
+    la innhold: tekst = studio_v2_state_session_linjene_til_tekst(studio_v2_state_session_test_history_oppdatert(session, historie))
+    returner skriv_fil(studio_v2_state_session_fil(rot), innhold)
+}
+
+funksjon studio_v2_state_session_output_oppdatert(session: liste_tekst, config: tekst, kommando: tekst, kode: tekst, stdout: liste_tekst, stderr: liste_tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la indeks: heltall = 0
+    mens (indeks < lengde(session)) {
+        la linje: tekst = session[indeks]
+        la ren: tekst = tekst_trim(linje)
+        hvis ikke tekst_starter_med(ren, "output_") da {
+            legg_til(resultat, linje)
+        }
+        indeks = indeks + 1
+    }
+    hvis config != "" da {
+        legg_til(resultat, studio_v2_state_session_output_oppføring("config", config))
+    }
+    hvis kommando != "" da {
+        legg_til(resultat, studio_v2_state_session_output_oppføring("command", kommando))
+    }
+    hvis kode != "" da {
+        legg_til(resultat, studio_v2_state_session_output_oppføring("code", kode))
+    }
+    la stdout_indeks: heltall = 0
+    mens (stdout_indeks < lengde(stdout)) {
+        hvis stdout[stdout_indeks] != "" da {
+            legg_til(resultat, studio_v2_state_session_output_oppføring("stdout", stdout[stdout_indeks]))
+        }
+        stdout_indeks = stdout_indeks + 1
+    }
+    la stderr_indeks: heltall = 0
+    mens (stderr_indeks < lengde(stderr)) {
+        hvis stderr[stderr_indeks] != "" da {
+            legg_til(resultat, studio_v2_state_session_output_oppføring("stderr", stderr[stderr_indeks]))
+        }
+        stderr_indeks = stderr_indeks + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_state_session_output_skriv_med_tilstand(rot: tekst, config: tekst, kommando: tekst, kode: tekst, stdout: liste_tekst, stderr: liste_tekst) -> heltall {
+    la session: liste_tekst = studio_v2_state_session_les(rot)
+    la innhold: tekst = studio_v2_state_session_linjene_til_tekst(studio_v2_state_session_output_oppdatert(session, config, kommando, kode, stdout, stderr))
+    returner skriv_fil(studio_v2_state_session_fil(rot), innhold)
+}
+
+funksjon studio_v2_state_session_debug_tom() -> liste_tekst {
+    returner []
+}
+
+funksjon studio_v2_state_session_debug_oppføring(nøkkel: tekst, verdi: tekst) -> tekst {
+    returner nøkkel + "\t" + verdi
+}
+
+funksjon studio_v2_state_session_debug(session: liste_tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la indeks: heltall = 0
+    mens (indeks < lengde(session)) {
+        la linje: tekst = session[indeks]
+        la ren: tekst = tekst_trim(linje)
+        hvis ikke tekst_starter_med(ren, "debug_config\t") og ikke tekst_starter_med(ren, "debug_mode\t") og ikke tekst_starter_med(ren, "debug_action\t") og ikke tekst_starter_med(ren, "debug_line\t") da {
+            legg_til(resultat, linje)
+        }
+        indeks = indeks + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_state_session_debug_config(session: liste_tekst) -> tekst {
+    la verdi: tekst = studio_v2_state_session_debug_verdi(session, "debug_config")
+    hvis verdi != "" da {
+        returner verdi
+    }
+    la fallback: tekst = studio_v2_state_session_run_config(session)
+    hvis fallback != "" da {
+        returner fallback
+    }
+    returner "run"
+}
+
+funksjon studio_v2_state_session_debug_oppdatert(session: liste_tekst, debug_config: tekst, debug_mode: tekst, debug_action: tekst, debug_linje: heltall) -> liste_tekst {
+    la resultat: liste_tekst = studio_v2_state_session_debug(session)
+    legg_til(resultat, studio_v2_state_session_debug_oppføring("debug_config", debug_config))
+    legg_til(resultat, studio_v2_state_session_debug_oppføring("debug_mode", debug_mode))
+    legg_til(resultat, studio_v2_state_session_debug_oppføring("debug_action", debug_action))
+    legg_til(resultat, studio_v2_state_session_debug_oppføring("debug_line", tekst_fra_heltall(debug_linje)))
+    returner resultat
+}
+
+funksjon studio_v2_state_session_debug_skriv_med_tilstand(rot: tekst, debug_config: tekst, debug_mode: tekst, debug_action: tekst, debug_linje: heltall) -> heltall {
+    la session: liste_tekst = studio_v2_state_session_les(rot)
+    la innhold: tekst = studio_v2_state_session_linjene_til_tekst(studio_v2_state_session_debug_oppdatert(session, debug_config, debug_mode, debug_action, debug_linje))
+    returner skriv_fil(studio_v2_state_session_fil(rot), innhold)
+}
+
+funksjon studio_v2_state_session_debug_verdi(session: liste_tekst, nøkkel: tekst) -> tekst {
+    la indeks: heltall = 0
+    mens (indeks < lengde(session)) {
+        la deler: liste_tekst = tekst_del_på(session[indeks], "\t")
+        hvis lengde(deler) >= 2 og deler[0] == nøkkel da {
+            returner deler[1]
+        }
+        indeks = indeks + 1
+    }
+    returner ""
+}
+
+funksjon studio_v2_state_session_debug_status(session: liste_tekst) -> tekst {
+    la verdi: tekst = studio_v2_state_session_debug_verdi(session, "debug_mode")
+    hvis verdi != "" da {
+        returner verdi
+    }
+    returner "paused"
+}
+
+funksjon studio_v2_state_session_debug_handling(session: liste_tekst) -> tekst {
+    la verdi: tekst = studio_v2_state_session_debug_verdi(session, "debug_action")
+    hvis verdi != "" da {
+        returner verdi
+    }
+    returner "resume"
+}
+
+funksjon studio_v2_state_session_debug_linje(session: liste_tekst) -> heltall {
+    la verdi: tekst = studio_v2_state_session_debug_verdi(session, "debug_line")
+    hvis verdi != "" da {
+        returner heltall_fra_tekst(verdi)
+    }
+    returner 1
+}
+
+funksjon studio_v2_state_session_breakpoint_oppføring(fil: tekst, linje: heltall) -> tekst {
+    returner "breakpoint\t" + fil + "\t" + tekst_fra_heltall(linje)
+}
+
+funksjon studio_v2_state_session_breakpoints_oppdatert(session: liste_tekst, fil: tekst, linje: heltall) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la breakpoints: liste_tekst = studio_v2_state_session_breakpoints(session)
+    la mål: tekst = fil + "\t" + tekst_fra_heltall(linje)
+    la funnet: bool = usann
+    la indeks: heltall = 0
+    mens (indeks < lengde(breakpoints)) {
+        la kandidat: tekst = breakpoints[indeks]
+        hvis kandidat == mål da {
+            funnet = sann
+        } ellers {
+            legg_til(resultat, "breakpoint\t" + kandidat)
+        }
+        indeks = indeks + 1
+    }
+    hvis ikke funnet og fil != "" og linje > 0 da {
+        legg_til(resultat, studio_v2_state_session_breakpoint_oppføring(fil, linje))
+    }
+    returner resultat
+}
+
+funksjon studio_v2_state_session_tree_fold_satt(session: liste_tekst, fold_navn: tekst) -> bool {
+    la foldet: liste_tekst = studio_v2_state_session_tree_fold(session)
+    la indeks: heltall = 0
+    mens (indeks < lengde(foldet)) {
+        hvis foldet[indeks] == fold_navn da {
+            returner sann
+        }
+        indeks = indeks + 1
+    }
+    returner usann
+}
+
+funksjon studio_v2_state_session_tree_fold_oppdatert(session: liste_tekst, fold_navn: tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la foldet: liste_tekst = studio_v2_state_session_tree_fold(session)
+    la funnet: bool = usann
+    la indeks: heltall = 0
+    mens (indeks < lengde(foldet)) {
+        la kandidat: tekst = foldet[indeks]
+        hvis kandidat == fold_navn da {
+            funnet = sann
+        } ellers {
+            legg_til(resultat, kandidat)
+        }
+        indeks = indeks + 1
+    }
+    hvis ikke funnet og fold_navn != "" da {
+        legg_til(resultat, fold_navn)
+    }
+    returner resultat
+}
+
+funksjon studio_v2_state_session_recent_prosjekter_oppdatert(rot: tekst, session: liste_tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la eksisterende: liste_tekst = studio_v2_state_session_recent_prosjekter(session)
+    legg_til(resultat, rot)
+    la i: heltall = 0
+    mens (i < lengde(eksisterende)) {
+        la kandidat: tekst = eksisterende[i]
+        la funnet: bool = usann
+        la j: heltall = 0
+        mens (j < lengde(resultat) og ikke funnet) {
+            hvis resultat[j] == kandidat da {
+                funnet = sann
+            }
+            j = j + 1
+        }
+        hvis kandidat != "" og ikke funnet og lengde(resultat) < 5 da {
+            legg_til(resultat, kandidat)
+        }
+        i = i + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_state_session_apne_filer_oppdatert(aktiv_fil: tekst, session: liste_tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la eksisterende: liste_tekst = studio_v2_state_session_apne_filer(session)
+    hvis aktiv_fil != "" da {
+        legg_til(resultat, aktiv_fil)
+    }
+    la i: heltall = 0
+    mens (i < lengde(eksisterende)) {
+        la kandidat: tekst = eksisterende[i]
+        la funnet: bool = usann
+        la j: heltall = 0
+        mens (j < lengde(resultat) og ikke funnet) {
+            hvis resultat[j] == kandidat da {
+                funnet = sann
+            }
+            j = j + 1
+        }
+        hvis kandidat != "" og ikke funnet og lengde(resultat) < 5 da {
+            legg_til(resultat, kandidat)
+        }
+        i = i + 1
+    }
+    la har_state: bool = usann
+    la har_editor: bool = usann
+    la j: heltall = 0
+    mens (j < lengde(resultat)) {
+        hvis resultat[j] == "studio_v2/studio_state.no" da {
+            har_state = sann
+        }
+        hvis resultat[j] == "studio_v2/editor.no" da {
+            har_editor = sann
+        }
+        j = j + 1
+    }
+    hvis ikke har_state og lengde(resultat) < 5 da {
+        legg_til(resultat, "studio_v2/studio_state.no")
+    }
+    hvis ikke har_editor og lengde(resultat) < 5 da {
+        legg_til(resultat, "studio_v2/editor.no")
+    }
+    returner resultat
+}
+
+funksjon studio_v2_state_session_linjene_til_tekst(linjer: liste_tekst) -> tekst {
+    la resultat: tekst = ""
+    la indeks: heltall = 0
+    mens (indeks < lengde(linjer)) {
+        resultat = resultat + linjer[indeks]
+        hvis indeks + 1 < lengde(linjer) da {
+            resultat = resultat + "\n"
+        }
+        indeks = indeks + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_state_session_tekst(rot: tekst, aktiv_fil: tekst, aktiv_tab: tekst, split_fokus: tekst, tool_window: tekst, run_config: tekst, tema: tekst, keymap: tekst, runtimevalg: tekst, palette_open: tekst, sist_navigasjon: tekst, search_query: tekst, project_tree_anchor: tekst, favoritter: liste_tekst, tree_fold: liste_tekst, breakpoints: liste_tekst, output: liste_tekst, run_profiles: liste_tekst, recent_prosjekter: liste_tekst, apne_filer: liste_tekst) -> tekst {
+    la linjer: liste_tekst = []
+    legg_til(linjer, "workspace\t" + rot)
+    legg_til(linjer, "aktiv_fil\t" + aktiv_fil)
+    legg_til(linjer, "aktiv_tab\t" + aktiv_tab)
+    legg_til(linjer, "split_fokus\t" + split_fokus)
+    legg_til(linjer, "tool_window\t" + tool_window)
+    legg_til(linjer, "run_config\t" + run_config)
+    legg_til(linjer, "tema\t" + tema)
+    legg_til(linjer, "keymap\t" + keymap)
+    legg_til(linjer, "runtimevalg\t" + runtimevalg)
+    legg_til(linjer, "palette_open\t" + palette_open)
+    legg_til(linjer, "sist_navigasjon\t" + sist_navigasjon)
+    legg_til(linjer, "search_query\t" + search_query)
+    legg_til(linjer, "project_tree_anchor\t" + project_tree_anchor)
+    legg_til(linjer, "recent_count\t" + tekst_fra_heltall(lengde(recent_prosjekter)))
+    legg_til(linjer, "open_count\t" + tekst_fra_heltall(lengde(apne_filer)))
+    la fold_indeks: heltall = 0
+    mens (fold_indeks < lengde(tree_fold)) {
+        legg_til(linjer, "tree_fold\t" + tree_fold[fold_indeks])
+        fold_indeks = fold_indeks + 1
+    }
+    la breakpoint_indeks: heltall = 0
+    mens (breakpoint_indeks < lengde(breakpoints)) {
+        legg_til(linjer, breakpoints[breakpoint_indeks])
+        breakpoint_indeks = breakpoint_indeks + 1
+    }
+    la output_indeks: heltall = 0
+    mens (output_indeks < lengde(output)) {
+        legg_til(linjer, output[output_indeks])
+        output_indeks = output_indeks + 1
+    }
+    la favoritt_indeks: heltall = 0
+    mens (favoritt_indeks < lengde(favoritter)) {
+        legg_til(linjer, "favorite_file\t" + favoritter[favoritt_indeks])
+        favoritt_indeks = favoritt_indeks + 1
+    }
+    la run_profile_indeks: heltall = 0
+    mens (run_profile_indeks < lengde(run_profiles)) {
+        legg_til(linjer, run_profiles[run_profile_indeks])
+        run_profile_indeks = run_profile_indeks + 1
+    }
+    la indeks: heltall = 0
+    mens (indeks < lengde(recent_prosjekter)) {
+        legg_til(linjer, "recent_project\t" + recent_prosjekter[indeks])
+        indeks = indeks + 1
+    }
+    indeks = 0
+    mens (indeks < lengde(apne_filer)) {
+        legg_til(linjer, "open_file\t" + apne_filer[indeks])
+        indeks = indeks + 1
+    }
+    returner studio_v2_state_session_linjene_til_tekst(linjer)
+}
+
+funksjon studio_v2_state_session_lagre_med_tilstand(rot: tekst, aktiv_fil: tekst, aktiv_tab: tekst, split_fokus: tekst, tool_window: tekst, run_config: tekst, palette_open: tekst, sist_navigasjon: tekst, tree_fold: liste_tekst) -> heltall {
+    la eksisterende: liste_tekst = studio_v2_state_session_les(rot)
+    la recent_prosjekter: liste_tekst = studio_v2_state_session_recent_prosjekter_oppdatert(rot, eksisterende)
+    la apne_filer: liste_tekst = studio_v2_state_session_apne_filer_oppdatert(aktiv_fil, eksisterende)
+    la breakpoints: liste_tekst = studio_v2_state_session_breakpoints(eksisterende)
+    la output: liste_tekst = studio_v2_state_session_output(eksisterende)
+    la run_profiles: liste_tekst = studio_v2_state_session_run_profiles(eksisterende)
+    la tema: tekst = studio_v2_state_session_tema(eksisterende)
+    la keymap: tekst = studio_v2_state_session_keymap(eksisterende)
+    la runtimevalg: tekst = studio_v2_state_session_runtimevalg(eksisterende)
+    la search_query: tekst = studio_v2_state_session_search_query(eksisterende)
+    la project_tree_anchor: tekst = studio_v2_state_session_project_tree_anchor(eksisterende)
+    la favoritter: liste_tekst = studio_v2_state_session_favoritter(eksisterende)
+    la debug_config: tekst = studio_v2_state_session_debug_config(eksisterende)
+    la debug_mode: tekst = studio_v2_state_session_debug_status(eksisterende)
+    la debug_action: tekst = studio_v2_state_session_debug_handling(eksisterende)
+    la debug_linje: heltall = studio_v2_state_session_debug_linje(eksisterende)
+    la base: tekst = studio_v2_state_session_tekst(rot, aktiv_fil, aktiv_tab, split_fokus, tool_window, run_config, tema, keymap, runtimevalg, palette_open, sist_navigasjon, search_query, project_tree_anchor, favoritter, tree_fold, breakpoints, output, run_profiles, recent_prosjekter, apne_filer)
+    la innhold: tekst = studio_v2_state_session_linjene_til_tekst(studio_v2_state_session_debug_oppdatert(del_linjer(base), debug_config, debug_mode, debug_action, debug_linje))
+    returner skriv_fil(studio_v2_state_session_fil(rot), innhold)
+}
+
+funksjon studio_v2_state_session_lagre_med_tilstand_og_breakpoints(rot: tekst, aktiv_fil: tekst, aktiv_tab: tekst, split_fokus: tekst, tool_window: tekst, run_config: tekst, palette_open: tekst, sist_navigasjon: tekst, tree_fold: liste_tekst, breakpoints: liste_tekst) -> heltall {
+    la eksisterende: liste_tekst = studio_v2_state_session_les(rot)
+    la recent_prosjekter: liste_tekst = studio_v2_state_session_recent_prosjekter_oppdatert(rot, eksisterende)
+    la apne_filer: liste_tekst = studio_v2_state_session_apne_filer_oppdatert(aktiv_fil, eksisterende)
+    la output: liste_tekst = studio_v2_state_session_output(eksisterende)
+    la run_profiles: liste_tekst = studio_v2_state_session_run_profiles(eksisterende)
+    la tema: tekst = studio_v2_state_session_tema(eksisterende)
+    la keymap: tekst = studio_v2_state_session_keymap(eksisterende)
+    la runtimevalg: tekst = studio_v2_state_session_runtimevalg(eksisterende)
+    la search_query: tekst = studio_v2_state_session_search_query(eksisterende)
+    la project_tree_anchor: tekst = studio_v2_state_session_project_tree_anchor(eksisterende)
+    la favoritter: liste_tekst = studio_v2_state_session_favoritter(eksisterende)
+    la debug_config: tekst = studio_v2_state_session_debug_config(eksisterende)
+    la debug_mode: tekst = studio_v2_state_session_debug_status(eksisterende)
+    la debug_action: tekst = studio_v2_state_session_debug_handling(eksisterende)
+    la debug_linje: heltall = studio_v2_state_session_debug_linje(eksisterende)
+    la base: tekst = studio_v2_state_session_tekst(rot, aktiv_fil, aktiv_tab, split_fokus, tool_window, run_config, tema, keymap, runtimevalg, palette_open, sist_navigasjon, search_query, project_tree_anchor, favoritter, tree_fold, breakpoints, output, run_profiles, recent_prosjekter, apne_filer)
+    la innhold: tekst = studio_v2_state_session_linjene_til_tekst(studio_v2_state_session_debug_oppdatert(del_linjer(base), debug_config, debug_mode, debug_action, debug_linje))
+    returner skriv_fil(studio_v2_state_session_fil(rot), innhold)
+}
+
+funksjon studio_v2_state_session_lagre(rot: tekst, aktiv_fil: tekst) -> heltall {
+    returner studio_v2_state_session_lagre_med_tilstand(rot, aktiv_fil, aktiv_fil, "høyre", "Project", "run", "lukket", aktiv_fil, [])
+}
+
+funksjon studio_v2_state_session_search_query_oppdatert(session: liste_tekst, query: tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la indeks: heltall = 0
+    mens (indeks < lengde(session)) {
+        la linje: tekst = session[indeks]
+        la ren: tekst = tekst_trim(linje)
+        hvis ikke tekst_starter_med(ren, "search_query\t") da {
+            legg_til(resultat, linje)
+        }
+        indeks = indeks + 1
+    }
+    legg_til(resultat, "search_query\t" + query)
+    returner resultat
+}
+
+funksjon studio_v2_state_session_search_query_skriv_med_tilstand(rot: tekst, query: tekst) -> heltall {
+    la session: liste_tekst = studio_v2_state_session_les(rot)
+    la innhold: tekst = studio_v2_state_session_linjene_til_tekst(studio_v2_state_session_search_query_oppdatert(session, query))
+    returner skriv_fil(studio_v2_state_session_fil(rot), innhold)
+}
+
+funksjon studio_v2_state_session_favoritter_oppdatert(session: liste_tekst, favoritt: tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la eksisterende: liste_tekst = studio_v2_state_session_favoritter(session)
+    la funnet: bool = usann
+    la i: heltall = 0
+    mens (i < lengde(eksisterende)) {
+        hvis eksisterende[i] == favoritt da {
+            funnet = sann
+        } ellers {
+            legg_til(resultat, eksisterende[i])
+        }
+        i = i + 1
+    }
+    hvis favoritt != "" og ikke funnet da {
+        legg_til(resultat, favoritt)
+    }
+    hvis lengde(resultat) > 5 da {
+        la trimmet: liste_tekst = []
+        la start: heltall = lengde(resultat) - 5
+        la indeks: heltall = start
+        mens (indeks < lengde(resultat)) {
+            legg_til(trimmet, resultat[indeks])
+            indeks = indeks + 1
+        }
+        returner trimmet
+    }
+    returner resultat
+}
+
+funksjon studio_v2_state_session_favoritter_skriv_med_tilstand(rot: tekst, favoritt: tekst) -> heltall {
+    la session: liste_tekst = studio_v2_state_session_les(rot)
+    la oppdatert: liste_tekst = studio_v2_state_session_favoritter_oppdatert(session, favoritt)
+    la resultat: liste_tekst = []
+    la indeks: heltall = 0
+    mens (indeks < lengde(session)) {
+        la linje: tekst = session[indeks]
+        la ren: tekst = tekst_trim(linje)
+        hvis ikke tekst_starter_med(ren, "favorite_file\t") da {
+            legg_til(resultat, linje)
+        }
+        indeks = indeks + 1
+    }
+    la i: heltall = 0
+    mens (i < lengde(oppdatert)) {
+        legg_til(resultat, "favorite_file\t" + oppdatert[i])
+        i = i + 1
+    }
+    returner skriv_fil(studio_v2_state_session_fil(rot), studio_v2_state_session_linjene_til_tekst(resultat))
+}
+
+funksjon studio_v2_state_session_breakpoint_toggle(rot: tekst, fil: tekst, linje: heltall) -> heltall {
+    la session: liste_tekst = studio_v2_state_session_les(rot)
+    la aktiv_fil: tekst = studio_v2_state_session_aktiv_fil(session)
+    hvis aktiv_fil == "" da {
+        aktiv_fil = fil
+    }
+    la aktiv_tab: tekst = studio_v2_state_session_aktiv_tab(session)
+    hvis aktiv_tab == "" da {
+        aktiv_tab = aktiv_fil
+    }
+    la split_fokus: tekst = studio_v2_state_session_split_fokus(session)
+    la tool_window: tekst = studio_v2_state_session_tool_window(session)
+    la run_config: tekst = studio_v2_state_session_run_config(session)
+    la palette_open: tekst = studio_v2_state_session_palette_status(session)
+    la sist_navigasjon: tekst = studio_v2_state_session_sist_navigasjon(session)
+    la tree_fold: liste_tekst = studio_v2_state_session_tree_fold(session)
+    la breakpoints: liste_tekst = studio_v2_state_session_breakpoints_oppdatert(session, fil, linje)
+    returner studio_v2_state_session_lagre_med_tilstand_og_breakpoints(rot, aktiv_fil, aktiv_tab, split_fokus, tool_window, run_config, palette_open, sist_navigasjon, tree_fold, breakpoints)
+}
+
+funksjon studio_v2_state_session_workspace(session: liste_tekst) -> tekst {
+    returner studio_v2_state_session_verdi(session, "workspace")
+}
+
+funksjon studio_v2_state_session_aktiv_fil(session: liste_tekst) -> tekst {
+    returner studio_v2_state_session_verdi(session, "aktiv_fil")
+}
+
+funksjon studio_v2_state_session_recent_for_workspace(rot: tekst) -> liste_tekst {
+    la session: liste_tekst = studio_v2_state_session_les(rot)
+    returner studio_v2_state_session_recent_prosjekter_oppdatert(rot, session)
+}
+
+funksjon studio_v2_state_session_status_for_workspace(rot: tekst) -> tekst {
+    hvis lengde(studio_v2_state_session_les(rot)) > 0 da {
+        returner "klar"
+    }
+    returner "tom"
+}
+
+funksjon studio_v2_state_session_status(rot: tekst) -> tekst {
+    hvis lengde(studio_v2_state_session_les(rot)) > 0 da {
+        returner "klar"
+    }
+    returner "tom"
+}
+
+funksjon studio_v2_state_rot(args: liste_tekst) -> tekst {
+    la indeks: heltall = 0
+    mens (indeks < lengde(args)) {
+        hvis ikke tekst_starter_med(args[indeks], "--") da {
+            returner args[indeks]
+        }
+        indeks = indeks + 1
+    }
+    la session: liste_tekst = studio_v2_state_session_les(".")
+    la workspace_rot: tekst = studio_v2_state_session_workspace(session)
+    hvis workspace_rot != "" da {
+        returner workspace_rot
+    }
+    returner "."
+}
+
+funksjon studio_v2_state_filsti(rot: tekst, sti_relativ: tekst) -> tekst {
+    returner rot + "/" + sti_relativ
+}
+
+funksjon studio_v2_state_fil_innhold(rot: tekst, sti_relativ: tekst) -> tekst {
+    la kandidater: liste_tekst = [
+        studio_v2_state_filsti(rot, sti_relativ),
+        sti_relativ,
+        "../" + sti_relativ,
+        "../../" + sti_relativ
+    ]
+    la indeks: heltall = 0
+    mens (indeks < lengde(kandidater)) {
+        hvis fil_eksisterer(kandidater[indeks]) da {
+            returner les_fil(kandidater[indeks])
+        }
+        indeks = indeks + 1
+    }
+    returner ""
+}
+
+funksjon studio_v2_state_aktiv_fil(rot: tekst) -> tekst {
+    la session: liste_tekst = studio_v2_state_session_les(rot)
+    la aktiv_fil: tekst = studio_v2_state_session_aktiv_fil(session)
+    hvis aktiv_fil != "" og fil_eksisterer(studio_v2_state_filsti(rot, aktiv_fil)) da {
+        returner aktiv_fil
+    }
+    la åpne_filer: liste_tekst = studio_v2_state_session_apne_filer(session)
+    la indeks: heltall = 0
+    mens (indeks < lengde(åpne_filer)) {
+        la kandidat: tekst = åpne_filer[indeks]
+        hvis kandidat != "" og fil_eksisterer(studio_v2_state_filsti(rot, kandidat)) da {
+            returner kandidat
+        }
+        indeks = indeks + 1
+    }
+    la workspace_filer: liste_tekst = studio_v2_state_workspace_filer(rot)
+    hvis lengde(workspace_filer) > 0 da {
+        returner workspace_filer[0]
+    }
+    returner ""
+}
+
+funksjon studio_v2_state_apne_filer(rot: tekst, aktiv_fil: tekst) -> liste_tekst {
+    la session: liste_tekst = studio_v2_state_session_les(rot)
+    la resultat: liste_tekst = studio_v2_state_session_apne_filer_oppdatert(aktiv_fil, session)
+    hvis lengde(resultat) == 0 da {
+        hvis aktiv_fil != "" da {
+            legg_til(resultat, aktiv_fil)
+        }
+        legg_til(resultat, "studio_v2/studio_state.no")
+        legg_til(resultat, "studio_v2/editor.no")
+    }
+    returner resultat
+}
+
+funksjon studio_v2_state_workspace_filer(rot: tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la kataloger: liste_tekst = ["studio_v2", "std", "examples"]
+    la katalog_indeks: heltall = 0
+    mens (katalog_indeks < lengde(kataloger)) {
+        la kandidater: liste_tekst = [rot + "/" + kataloger[katalog_indeks], kataloger[katalog_indeks], "../" + kataloger[katalog_indeks], "../../" + kataloger[katalog_indeks]]
+        la kandidat_indeks: heltall = 0
+        mens (kandidat_indeks < lengde(kandidater)) {
+            la filer: liste_tekst = liste_filer_tre(kandidater[kandidat_indeks])
+            hvis lengde(filer) > 0 da {
+                la fil_indeks: heltall = 0
+                mens (fil_indeks < lengde(filer)) {
+                    legg_til(resultat, filer[fil_indeks])
+                    fil_indeks = fil_indeks + 1
+                }
+                bryt
+            }
+            kandidat_indeks = kandidat_indeks + 1
+        }
+        la fil_indeks: heltall = 0
+        katalog_indeks = katalog_indeks + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_state_workspace_filer_status(filer: liste_tekst) -> tekst {
+    hvis lengde(filer) > 20 da {
+        returner "hurtig-delvis"
+    }
+    hvis lengde(filer) > 0 da {
+        returner "hurtig"
+    }
+    returner "tom"
+}
+
+funksjon studio_v2_state_test_filer(rot: tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la filer: liste_tekst = studio_v2_state_workspace_filer(rot)
+    la indeks: heltall = 0
+    mens (indeks < lengde(filer)) {
+        la kandidat: tekst = filer[indeks]
+        hvis tekst_inneholder(kandidat, "/tests/test_") og tekst_slutter_med(kandidat, ".no") da {
+            legg_til(resultat, kandidat)
+        }
+        indeks = indeks + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_state_status() -> tekst {
+    returner "foundation"
+}
