@@ -1,7 +1,7 @@
 PYTHON ?= python3
 PIP ?= $(PYTHON) -m pip
 
-.PHONY: install install-dev test run check build ci
+.PHONY: install install-dev test run check build ci binary studio site serve-site
 
 install:
 	$(PIP) install -e .
@@ -24,3 +24,15 @@ build:
 
 ci:
 	$(PYTHON) main.py ci --check-names
+
+binary:
+	$(PYTHON) scripts/build-standalone.py
+
+studio:
+	$(PYTHON) studio.py
+
+site:
+	bash scripts/build-site.sh
+
+serve-site:
+	bash scripts/serve-site.sh

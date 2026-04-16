@@ -1,0 +1,21 @@
+bruk std.tekst som t
+
+funksjon start() -> heltall {
+    assert(tekst_starter_med("Feil: noe gikk galt", "Feil:"))
+    assert_ne(tekst_starter_med("Hei verden", "Feil:"), sann)
+    assert(tekst_inneholder("Hei verden", "ver"))
+    assert_ne(tekst_inneholder("Hei verden", "zzz"), sann)
+    assert_eq(tekst_erstatt("Hei verden", "verden", "Norscode"), "Hei Norscode")
+    assert_eq(tekst_slice("Hei verden", 0, 3), "Hei")
+    assert_eq(tekst_slice("Hei verden", 4, 10), "verden")
+    assert_eq(tekst_lengde("Hei verden"), 10)
+    assert_eq(lengde(del_linjer("linje 1\nlinje 2")), 2)
+    assert_eq(lengde(del_linjer("")), 1)
+    assert_eq(t.erstatt_ord_i_tekst("start startx start", "start", "sett"), "sett startx sett")
+    assert(t.tekst_er_ordtegn("a"))
+    assert(t.tekst_er_ordtegn("_"))
+    assert_ne(t.tekst_er_ordtegn("-"), sann)
+
+    skriv("test_text_prefix OK")
+    returner 0
+}

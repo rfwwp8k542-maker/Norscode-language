@@ -1,0 +1,233 @@
+{
+  "format": "norscode-ast-v1",
+  "alias_map": {},
+  "imports": [],
+  "functions": [
+    {
+      "name": "start",
+      "module_name": "__main__",
+      "return_type": "heltall",
+      "params": [],
+      "body": {
+        "type": "Block",
+        "statements": [
+          {
+            "type": "VarDeclare",
+            "name": "sum",
+            "var_type": null,
+            "expr": {
+              "type": "Number",
+              "value": 0
+            }
+          },
+          {
+            "type": "VarDeclare",
+            "name": "tall",
+            "var_type": null,
+            "expr": {
+              "type": "ListLiteral",
+              "items": [
+                {
+                  "type": "Number",
+                  "value": 1
+                },
+                {
+                  "type": "Number",
+                  "value": 2
+                },
+                {
+                  "type": "Number",
+                  "value": 3
+                }
+              ]
+            }
+          },
+          {
+            "type": "VarDeclare",
+            "name": "__sh_iter_1",
+            "var_type": null,
+            "expr": {
+              "type": "VarAccess",
+              "name": "tall"
+            }
+          },
+          {
+            "type": "VarDeclare",
+            "name": "__sh_index_2",
+            "var_type": null,
+            "expr": {
+              "type": "Number",
+              "value": 0
+            }
+          },
+          {
+            "type": "While",
+            "condition": {
+              "type": "BinOp",
+              "op": "LT",
+              "left": {
+                "type": "VarAccess",
+                "name": "__sh_index_2"
+              },
+              "right": {
+                "type": "Call",
+                "name": "lengde",
+                "args": [
+                  {
+                    "type": "VarAccess",
+                    "name": "__sh_iter_1"
+                  }
+                ]
+              }
+            },
+            "body": {
+              "type": "Block",
+              "statements": [
+                {
+                  "type": "VarDeclare",
+                  "name": "x",
+                  "var_type": null,
+                  "expr": {
+                    "type": "Index",
+                    "list_expr": {
+                      "type": "VarAccess",
+                      "name": "__sh_iter_1"
+                    },
+                    "index_expr": {
+                      "type": "VarAccess",
+                      "name": "__sh_index_2"
+                    }
+                  }
+                },
+                {
+                  "type": "VarSet",
+                  "name": "sum",
+                  "expr": {
+                    "type": "BinOp",
+                    "op": "PLUS",
+                    "left": {
+                      "type": "VarAccess",
+                      "name": "sum"
+                    },
+                    "right": {
+                      "type": "VarAccess",
+                      "name": "x"
+                    }
+                  }
+                },
+                {
+                  "type": "VarSet",
+                  "name": "__sh_index_2",
+                  "expr": {
+                    "type": "BinOp",
+                    "op": "PLUS",
+                    "left": {
+                      "type": "VarAccess",
+                      "name": "__sh_index_2"
+                    },
+                    "right": {
+                      "type": "Number",
+                      "value": 1
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "type": "If",
+            "condition": {
+              "type": "BinOp",
+              "op": "EQ",
+              "left": {
+                "type": "VarAccess",
+                "name": "sum"
+              },
+              "right": {
+                "type": "Number",
+                "value": 6
+              }
+            },
+            "then_block": {
+              "type": "Block",
+              "statements": [
+                {
+                  "type": "VarDeclare",
+                  "name": "bonus",
+                  "var_type": null,
+                  "expr": {
+                    "type": "Number",
+                    "value": 4
+                  }
+                }
+              ]
+            },
+            "elif_blocks": [],
+            "else_block": {
+              "type": "Block",
+              "statements": [
+                {
+                  "type": "VarDeclare",
+                  "name": "bonus",
+                  "var_type": null,
+                  "expr": {
+                    "type": "Number",
+                    "value": 0
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "type": "If",
+            "condition": {
+              "type": "BinOp",
+              "op": "EQ",
+              "left": {
+                "type": "VarAccess",
+                "name": "bonus"
+              },
+              "right": {
+                "type": "Number",
+                "value": 4
+              }
+            },
+            "then_block": {
+              "type": "Block",
+              "statements": [
+                {
+                  "type": "Return",
+                  "expr": {
+                    "type": "BinOp",
+                    "op": "PLUS",
+                    "left": {
+                      "type": "VarAccess",
+                      "name": "sum"
+                    },
+                    "right": {
+                      "type": "VarAccess",
+                      "name": "bonus"
+                    }
+                  }
+                }
+              ]
+            },
+            "elif_blocks": [],
+            "else_block": {
+              "type": "Block",
+              "statements": [
+                {
+                  "type": "Return",
+                  "expr": {
+                    "type": "Number",
+                    "value": 0
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

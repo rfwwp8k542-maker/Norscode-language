@@ -1,0 +1,45 @@
+bruk std.gui som gui
+
+funksjon knapp_trykket(widget_id: heltall) -> heltall {
+    gui.sett_tekst(widget_id, "Trykket")
+    returner widget_id
+}
+
+funksjon tekst_endret(widget_id: heltall) -> heltall {
+    skriv(gui.hent_tekst(widget_id))
+    returner widget_id
+}
+
+test "gui standardbibliotek" {
+    la vindu_id: heltall = gui.vindu("Hovedvindu")
+    la panel_id: heltall = gui.panel(vindu_id)
+    la overskrift_id: heltall = gui.tekst(panel_id, "Hovedvindu")
+    la knapp_id: heltall = gui.knapp(panel_id, "Trykk")
+    la tekst_id: heltall = gui.tekstboks(panel_id, "Hei")
+    la liste_id: heltall = gui.liste(panel_id)
+
+    assert_eq(gui.på_klikk(knapp_id, "knapp_trykket"), knapp_id)
+    assert_eq(gui.på_endring(tekst_id, "tekst_endret"), tekst_id)
+    assert_eq(gui.foresatt(knapp_id), panel_id)
+    assert_eq(gui.barn(panel_id, 0), overskrift_id)
+    assert_eq(gui.barn(panel_id, 1), knapp_id)
+    assert_eq(gui.barn(panel_id, 2), tekst_id)
+    assert_eq(gui.barn(panel_id, 3), liste_id)
+    assert_eq(gui.hent_tekst(tekst_id), "Hei")
+    assert_eq(gui.trykk(knapp_id), knapp_id)
+    assert_eq(gui.hent_tekst(knapp_id), "Trykket")
+    assert_eq(gui.sett_tekst(tekst_id, "Verden"), tekst_id)
+    assert_eq(gui.hent_tekst(tekst_id), "Verden")
+    assert_eq(gui.liste_legg_til(liste_id, "En"), liste_id)
+    assert_eq(gui.liste_legg_til(liste_id, "To"), liste_id)
+    assert_eq(gui.liste_tom(liste_id), liste_id)
+    assert_eq(gui.sett_tekst(overskrift_id, "Oppdatert"), overskrift_id)
+    assert_eq(gui.vis(vindu_id), vindu_id)
+    assert_eq(gui.lukk(vindu_id), vindu_id)
+    assert(panel_id > 0)
+    assert(knapp_id > 0)
+}
+
+funksjon start() -> heltall {
+    returner 0
+}

@@ -1,0 +1,26 @@
+bruk std.gui som gui
+
+test "studio hjelpere" {
+    la testfil: tekst = "build/studio-helper.no"
+    la kilde: tekst = "funksjon start() -> heltall { skriv(\"Hei fra Studio\") returner 0 }"
+    la vindu_id: heltall = gui.vindu("Studio test")
+    la liste_id: heltall = gui.liste(vindu_id)
+
+    assert_eq(skriv_fil(testfil, kilde), 1)
+    assert(fil_eksisterer(testfil))
+    assert_eq(les_fil(testfil), kilde)
+    assert(lengde(liste_filer_tre(".")) > 0)
+    la editor_id: heltall = gui.editor(vindu_id, "linje 1\nlinje 2\nlinje 3")
+    assert_eq(gui.editor_hopp_til(editor_id, 2), editor_id)
+    assert_eq(gui.hent_tekst(editor_id), "linje 1\nlinje 2\nlinje 3")
+    gui.liste_legg_til(liste_id, "studio.no")
+    gui.liste_legg_til(liste_id, "examples/todo_app.no")
+    assert_eq(gui.liste_antall(liste_id), 2)
+    assert_eq(gui.liste_velg(liste_id, 1), liste_id)
+    assert_eq(gui.liste_valgt(liste_id), "examples/todo_app.no")
+    assert_eq(kjor_kilde(kilde), "Hei fra Studio\n")
+}
+
+funksjon start() -> heltall {
+    returner 0
+}

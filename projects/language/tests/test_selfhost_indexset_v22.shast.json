@@ -1,0 +1,186 @@
+{
+  "format": "norscode-ast-v1",
+  "alias_map": {},
+  "imports": [],
+  "functions": [
+    {
+      "name": "start",
+      "module_name": "__main__",
+      "return_type": "heltall",
+      "params": [],
+      "body": {
+        "type": "Block",
+        "statements": [
+          {
+            "type": "VarDeclare",
+            "name": "tall",
+            "var_type": null,
+            "expr": {
+              "type": "ListLiteral",
+              "items": [
+                {
+                  "type": "Number",
+                  "value": 1
+                },
+                {
+                  "type": "Number",
+                  "value": 2
+                },
+                {
+                  "type": "Number",
+                  "value": 3
+                }
+              ]
+            }
+          },
+          {
+            "type": "IndexSet",
+            "target_name": "tall",
+            "index_expr": {
+              "type": "Number",
+              "value": 1
+            },
+            "value_expr": {
+              "type": "Number",
+              "value": 7
+            }
+          },
+          {
+            "type": "IndexSet",
+            "target_name": "tall",
+            "index_expr": {
+              "type": "Number",
+              "value": 2
+            },
+            "value_expr": {
+              "type": "BinOp",
+              "op": "PLUS",
+              "left": {
+                "type": "Index",
+                "list_expr": {
+                  "type": "VarAccess",
+                  "name": "tall"
+                },
+                "index_expr": {
+                  "type": "Number",
+                  "value": 2
+                }
+              },
+              "right": {
+                "type": "Number",
+                "value": 5
+              }
+            }
+          },
+          {
+            "type": "ExprStmt",
+            "expr": {
+              "type": "Call",
+              "name": "skriv",
+              "args": [
+                {
+                  "type": "Call",
+                  "name": "tekst_fra_heltall",
+                  "args": [
+                    {
+                      "type": "Index",
+                      "list_expr": {
+                        "type": "VarAccess",
+                        "name": "tall"
+                      },
+                      "index_expr": {
+                        "type": "Number",
+                        "value": 0
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "type": "ExprStmt",
+            "expr": {
+              "type": "Call",
+              "name": "skriv",
+              "args": [
+                {
+                  "type": "Call",
+                  "name": "tekst_fra_heltall",
+                  "args": [
+                    {
+                      "type": "Index",
+                      "list_expr": {
+                        "type": "VarAccess",
+                        "name": "tall"
+                      },
+                      "index_expr": {
+                        "type": "Number",
+                        "value": 1
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "type": "ExprStmt",
+            "expr": {
+              "type": "Call",
+              "name": "skriv",
+              "args": [
+                {
+                  "type": "Call",
+                  "name": "tekst_fra_heltall",
+                  "args": [
+                    {
+                      "type": "Index",
+                      "list_expr": {
+                        "type": "VarAccess",
+                        "name": "tall"
+                      },
+                      "index_expr": {
+                        "type": "Number",
+                        "value": 2
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "type": "Return",
+            "expr": {
+              "type": "BinOp",
+              "op": "PLUS",
+              "left": {
+                "type": "Index",
+                "list_expr": {
+                  "type": "VarAccess",
+                  "name": "tall"
+                },
+                "index_expr": {
+                  "type": "Number",
+                  "value": 1
+                }
+              },
+              "right": {
+                "type": "Index",
+                "list_expr": {
+                  "type": "VarAccess",
+                  "name": "tall"
+                },
+                "index_expr": {
+                  "type": "Number",
+                  "value": 2
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

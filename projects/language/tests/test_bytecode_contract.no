@@ -1,0 +1,35 @@
+bruk selfhost.compiler som sh
+
+funksjon start() -> heltall {
+    assert_eq(sh.instruksjon_til_c("PUSH", 42), "stack[sp++] = 42;")
+    assert_eq(sh.instruksjon_til_c("POP", 0), "sp = sp - 1;")
+    assert_eq(sh.instruksjon_til_c("DUP", 0), "stack[sp] = stack[sp-1]; sp = sp + 1;")
+    assert_eq(sh.instruksjon_til_c("SWAP", 0), "tmp = stack[sp-1]; stack[sp-1] = stack[sp-2]; stack[sp-2] = tmp;")
+    assert_eq(sh.instruksjon_til_c("OVER", 0), "stack[sp] = stack[sp-2]; sp = sp + 1;")
+    assert_eq(sh.instruksjon_til_c("ADD", 0), "stack[sp-2] = stack[sp-2] + stack[sp-1]; sp = sp - 1;")
+    assert_eq(sh.instruksjon_til_c("SUB", 0), "stack[sp-2] = stack[sp-2] - stack[sp-1]; sp = sp - 1;")
+    assert_eq(sh.instruksjon_til_c("MUL", 0), "stack[sp-2] = stack[sp-2] * stack[sp-1]; sp = sp - 1;")
+    assert_eq(sh.instruksjon_til_c("DIV", 0), "stack[sp-2] = stack[sp-2] / stack[sp-1]; sp = sp - 1;")
+    assert_eq(sh.instruksjon_til_c("MOD", 0), "stack[sp-2] = stack[sp-2] % stack[sp-1]; sp = sp - 1;")
+    assert_eq(sh.instruksjon_til_c("EQ", 0), "stack[sp-2] = (stack[sp-2] == stack[sp-1]); sp = sp - 1;")
+    assert_eq(sh.instruksjon_til_c("GT", 0), "stack[sp-2] = (stack[sp-2] > stack[sp-1]); sp = sp - 1;")
+    assert_eq(sh.instruksjon_til_c("LT", 0), "stack[sp-2] = (stack[sp-2] < stack[sp-1]); sp = sp - 1;")
+    assert_eq(sh.instruksjon_til_c("AND", 0), "stack[sp-2] = (stack[sp-2] && stack[sp-1]); sp = sp - 1;")
+    assert_eq(sh.instruksjon_til_c("OR", 0), "stack[sp-2] = (stack[sp-2] || stack[sp-1]); sp = sp - 1;")
+    assert_eq(sh.instruksjon_til_c("NOT", 0), "stack[sp-1] = !stack[sp-1];")
+    assert_eq(sh.instruksjon_til_c("JMP", 7), "goto L7;")
+    assert_eq(sh.instruksjon_til_c("JZ", 7), "if (stack[sp-1] == 0) goto L7;")
+    assert_eq(sh.instruksjon_til_c("CALL", 7), "ret_stack[rsp++] = 0; goto L7;")
+    assert_eq(sh.instruksjon_til_c("RET", 0), "goto *labels[0];")
+    assert_eq(sh.instruksjon_til_c("STORE", 3), "mem[3] = stack[sp-1]; sp = sp - 1;")
+    assert_eq(sh.instruksjon_til_c("LOAD", 3), "stack[sp++] = mem[3];")
+    assert_eq(sh.instruksjon_til_c("PRINT", 0), "printf(\"%d\\n\", stack[sp-1]);")
+    assert_eq(sh.instruksjon_til_c("HALT", 0), "return 0;")
+
+    la ops_dis: liste_tekst = ["PUSH", "PUSH", "ADD", "PRINT", "HALT"]
+    la verdier_dis: liste_heltall = [2, 3, 0, 0, 0]
+    la program: tekst = sh.disasm_program(ops_dis, verdier_dis)
+    assert_eq(program, "0: PUSH 2\n1: PUSH 3\n2: ADD\n3: PRINT\n4: HALT\n")
+
+    returner 0
+}

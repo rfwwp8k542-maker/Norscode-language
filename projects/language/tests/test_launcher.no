@@ -1,0 +1,25 @@
+test "launcher kjør kommando" {
+    la kommando: liste_tekst = []
+    legg_til(kommando, "python3")
+    legg_til(kommando, "-c")
+    legg_til(kommando, "import sys; sys.exit(0)")
+    assert_eq(kjør_kommando(kommando), 0)
+}
+
+test "launcher argv" {
+    la kommando: liste_tekst = []
+    legg_til(kommando, "python3")
+    legg_til(kommando, "-m")
+    legg_til(kommando, "norscode")
+    legg_til(kommando, "run")
+    legg_til(kommando, "--engine")
+    legg_til(kommando, "python")
+    legg_til(kommando, "tests/test_launcher_argv_probe.no")
+    legg_til(kommando, "alpha")
+    legg_til(kommando, "beta")
+    assert_eq(kjør_kommando(kommando), 0)
+}
+
+funksjon start() -> heltall {
+    returner 0
+}

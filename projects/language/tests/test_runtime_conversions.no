@@ -1,0 +1,8 @@
+funksjon start() -> heltall {
+    assert_eq(tekst_fra_heltall(-12), "-12")
+    assert_eq(tekst_fra_bool(usann), "usann")
+    assert_eq(heltall_fra_tekst("  -12 "), -12)
+    assert_eq(heltall_fra_tekst("ikke et tall"), 0)
+    assert_eq(tekst_lengde(tekst_fra_heltall(0)), 1)
+    returner 0
+}

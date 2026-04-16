@@ -1,0 +1,11 @@
+funksjon start() -> heltall {
+    la rot: tekst = "build/runtime_files_roundtrip"
+    la filsti: tekst = rot + "/empty.no"
+
+    assert_eq(skriv_fil(filsti, ""), 1)
+    assert(fil_eksisterer(filsti))
+    assert_eq(les_fil(filsti), "")
+    assert(lengde(liste_filer(rot)) >= 1)
+    assert(lengde(liste_filer_tre(rot)) >= 1)
+    returner 0
+}

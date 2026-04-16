@@ -1,0 +1,75 @@
+bruk std.gui som gui
+
+funksjon knapp_trykket(widget_id: heltall) -> heltall {
+    gui.sett_tekst(widget_id, "Trykket")
+    returner widget_id
+}
+
+funksjon tekst_endret(widget_id: heltall) -> heltall {
+    gui.sett_tekst(widget_id, "Endret")
+    returner widget_id
+}
+
+funksjon tast_handler(widget_id: heltall) -> heltall {
+    gui.sett_tekst(widget_id, "Tast")
+    returner widget_id
+}
+
+test "runtime std.gui" {
+    la vindu_id: heltall = gui.vindu("Hovedvindu")
+    la panel_id: heltall = gui.panel(vindu_id)
+    la overskrift_id: heltall = gui.tekst(panel_id, "Hovedvindu")
+    la knapp_id: heltall = gui.knapp(panel_id, "Trykk")
+    la tekst_id: heltall = gui.tekstboks(panel_id, "Hei")
+    la editor_id: heltall = gui.editor(panel_id, "linje 1\nlinje 2")
+    la liste_id: heltall = gui.liste(panel_id)
+    la filer_tre: liste_tekst = gui.liste_filer_tre(".")
+
+    assert_eq(gui.foresatt(knapp_id), panel_id)
+    assert_eq(gui.barn(panel_id, 0), overskrift_id)
+    assert_eq(gui.barn(panel_id, 1), knapp_id)
+    assert_eq(gui.barn(panel_id, 2), tekst_id)
+    assert_eq(gui.barn(panel_id, 3), editor_id)
+    assert_eq(gui.barn(panel_id, 4), liste_id)
+    assert_eq(gui.hent_tekst(tekst_id), "Hei")
+    assert_eq(gui.editor_cursor(editor_id)[0], "1")
+    assert_eq(gui.editor_cursor(editor_id)[1], "1")
+    assert_eq(gui.på_klikk(knapp_id, "knapp_trykket"), knapp_id)
+    assert_eq(gui.trykk(knapp_id), knapp_id)
+    assert_eq(gui.hent_tekst(knapp_id), "Trykket")
+    assert_eq(gui.på_endring(tekst_id, "tekst_endret"), tekst_id)
+    assert_eq(gui.sett_tekst(tekst_id, "Verden"), tekst_id)
+    assert_eq(gui.hent_tekst(tekst_id), "Endret")
+    assert_eq(gui.på_tast(editor_id, "Tab", "tast_handler"), editor_id)
+    assert_eq(gui.trykk_tast(editor_id, "Tab"), editor_id)
+    assert_eq(gui.hent_tekst(editor_id), "Tast")
+    assert_eq(gui.editor_hopp_til(editor_id, 2), editor_id)
+    assert_eq(gui.editor_cursor(editor_id)[0], "2")
+    assert_eq(gui.editor_erstatt_fra_til(editor_id, 1, 1, 1, 4, "Ny"), editor_id)
+    assert_eq(gui.hent_tekst(editor_id), "Ny 1\nlinje 2")
+    assert_eq(gui.editor_cursor(editor_id)[0], "1")
+    assert_eq(gui.editor_cursor(editor_id)[1], "3")
+    assert_eq(gui.liste_legg_til(liste_id, "En"), liste_id)
+    assert_eq(gui.liste_legg_til(liste_id, "To"), liste_id)
+    assert_eq(gui.liste_antall(liste_id), 2)
+    assert_eq(gui.liste_hent(liste_id, 0), "En")
+    assert_eq(gui.liste_hent(liste_id, 1), "To")
+    assert_eq(gui.liste_velg(liste_id, 1), liste_id)
+    assert_eq(gui.liste_valgt(liste_id), "To")
+    assert_eq(gui.liste_velg(liste_id, 99), liste_id)
+    assert_eq(gui.liste_valgt(liste_id), "")
+    assert_eq(gui.liste_fjern(liste_id, 0), liste_id)
+    assert_eq(gui.liste_antall(liste_id), 1)
+    assert_eq(gui.liste_hent(liste_id, 0), "To")
+    assert(lengde(filer_tre) > 0)
+    assert_eq(gui.liste_tom(liste_id), liste_id)
+    assert_eq(gui.liste_valgt(liste_id), "")
+    assert_eq(gui.vis(vindu_id), vindu_id)
+    assert_eq(gui.lukk(vindu_id), vindu_id)
+    assert(panel_id > 0)
+    assert(knapp_id > 0)
+}
+
+funksjon start() -> heltall {
+    returner 0
+}

@@ -1,0 +1,99 @@
+bruk std.web som web
+bruk std.liste som liste
+
+funksjon todo_schema() -> liste_tekst {
+    la schema: liste_tekst = web.schema_tom()
+    web.schema_felt_tekst(schema, "title", sann, "", "Kjøp melk", "", "")
+    web.schema_felt_bool(schema, "done", usann, "usann", "usann", "", "")
+    returner schema
+}
+
+funksjon todo_finn_indeks(todos: liste_tekst, id: heltall) -> heltall {
+    la mål_id: tekst = tekst_fra_heltall(id)
+    la i: heltall = 0
+    mens (i < lengde(todos)) {
+        la deler: liste_tekst = tekst_del_på(todos[i], "|")
+        hvis lengde(deler) >= 1 og deler[0] == mål_id da {
+            returner i
+        }
+        i = i + 1
+    }
+    returner -1
+}
+
+funksjon todo_til_json(oppføring: tekst) -> tekst {
+    la deler: liste_tekst = tekst_del_på(oppføring, "|")
+    returner "{\"id\":" + deler[0] + ",\"title\":\"" + deler[1] + "\",\"done\":" + deler[2] + "}"
+}
+
+funksjon todo_liste_til_json(todos: liste_tekst) -> tekst {
+    la json: tekst = "["
+    la i: heltall = 0
+    mens (i < lengde(todos)) {
+        hvis i > 0 da {
+            json = json + ","
+        }
+        json = json + todo_til_json(todos[i])
+        i = i + 1
+    }
+    returner json + "]"
+}
+
+funksjon todo_opprett(todos: liste_tekst, tittel: tekst) -> tekst {
+    la feil: tekst = web.schema_valider_felt(todo_schema(), "title", tittel)
+    hvis feil != "" da {
+        returner web.http_typed_input_feil_respons("body", "title", "ikke tom", tittel)
+    }
+    la id: heltall = lengde(todos) + 1
+    liste.legg_til_tekst(todos, tekst_fra_heltall(id) + "|" + tittel + "|false")
+    returner web.http_json_respons(todo_liste_til_json(todos))
+}
+
+funksjon todo_marker_fullfort(todos: liste_tekst, id: heltall) -> tekst {
+    la indeks: heltall = todo_finn_indeks(todos, id)
+    hvis indeks < 0 da {
+        returner web.http_respons_tekst(404, web.http_content_type_json(), "{\"detail\":\"ikke funnet\"}")
+    }
+    la gammel: tekst = todos[indeks]
+    la deler: liste_tekst = tekst_del_på(gammel, "|")
+    liste.erstatt_verdi_tekst(todos, gammel, deler[0] + "|" + deler[1] + "|true")
+    returner web.http_json_respons(todo_liste_til_json(todos))
+}
+
+funksjon todo_slett(todos: liste_tekst, id: heltall) -> tekst {
+    la indeks: heltall = todo_finn_indeks(todos, id)
+    hvis indeks < 0 da {
+        returner web.http_respons_tekst(404, web.http_content_type_json(), "{\"detail\":\"ikke funnet\"}")
+    }
+    liste.fjern_tekst(todos, indeks)
+    returner web.http_json_respons(todo_liste_til_json(todos))
+}
+
+funksjon todo_openapi() -> tekst {
+    la api: liste_tekst = web.openapi_tom()
+    web.openapi_info_registrer(api, "title", "CRUD Todo API")
+    web.openapi_info_registrer(api, "version", "1.0.0")
+    web.openapi_rute_registrer(api, "GET", "/todos", "List todos", "Lister alle oppgaver", "todos", "TodoList")
+    web.openapi_rute_registrer(api, "POST", "/todos", "Create todo", "Oppretter en oppgave", "todos", "TodoList")
+    web.openapi_rute_registrer(api, "PATCH", "/todos/{id}/done", "Mark done", "Markerer en oppgave som fullført", "todos", "TodoList")
+    web.openapi_rute_registrer(api, "DELETE", "/todos/{id}", "Delete todo", "Sletter en oppgave", "todos", "TodoList")
+    returner web.openapi_json(api)
+}
+
+test "crud sample example" {
+    la todos: liste_tekst = []
+    la opprettet: tekst = todo_opprett(todos, "Skriv web-eksempler")
+    assert(tekst_inneholder(opprettet, "\"title\":\"Skriv web-eksempler\""))
+    assert(tekst_inneholder(todo_openapi(), "\"/todos\""))
+    la fullført: tekst = todo_marker_fullfort(todos, 1)
+    assert(tekst_inneholder(fullført, "\"done\":true"))
+    la slettet: tekst = todo_slett(todos, 1)
+    assert(tekst_inneholder(slettet, "[]"))
+    la feil: tekst = todo_opprett(todos, "")
+    assert(tekst_inneholder(feil, "\"field\":\"title\""))
+}
+
+funksjon start() -> heltall {
+    skriv("CRUD-eksempelet er klart")
+    returner 0
+}

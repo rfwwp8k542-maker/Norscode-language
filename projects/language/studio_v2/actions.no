@@ -1,0 +1,208 @@
+# Studio v2 command surface.
+
+funksjon studio_v2_actions_tom() -> liste_tekst {
+    returner []
+}
+
+funksjon studio_v2_actions_palett() -> liste_tekst {
+    returner ["run", "check", "test", "debug", "runtime-ci", "Teknisk feilsokingsguide"]
+}
+
+funksjon studio_v2_actions_run_konfigurasjoner() -> liste_tekst {
+    returner [
+        "run\tKjør aktiv fil",
+        "check\tSjekk aktiv fil",
+        "test\tKjør testene",
+        "debug\tUndersøk runtime",
+        "runtime-ci\tKjør runtime CI"
+    ]
+}
+
+funksjon studio_v2_actions_terminal(rot: tekst, fil: tekst, aktiv_config: tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    legg_til(resultat, "$ " + studio_v2_actions_kommando_tekst(studio_v2_actions_kommando_for_navn(rot, fil, aktiv_config)))
+    legg_til(resultat, "$ " + studio_v2_actions_kommando_tekst(studio_v2_actions_kommando_check(rot, fil)))
+    legg_til(resultat, "$ " + studio_v2_actions_kommando_tekst(studio_v2_actions_kommando_test(rot, fil)))
+    legg_til(resultat, "$ " + studio_v2_actions_kommando_debug_tekst(rot, fil, aktiv_config))
+    legg_til(resultat, "$ " + studio_v2_actions_kommando_tekst(studio_v2_actions_kommando_runtime_ci(rot)))
+    returner resultat
+}
+
+funksjon studio_v2_actions_terminal_status(rot: tekst) -> tekst {
+    hvis rot == "" da {
+        returner "tom"
+    }
+    returner "klar"
+}
+
+funksjon studio_v2_actions_status(rot: tekst) -> tekst {
+    hvis rot == "" da {
+        returner "tom"
+    }
+    returner "klar"
+}
+
+funksjon studio_v2_actions_kommando_tom() -> liste_tekst {
+    returner []
+}
+
+funksjon studio_v2_actions_kommando_fil(rot: tekst) -> tekst {
+    la prosjekt_rot: tekst = studio_v2_actions_kommando_arbeidskatalog(rot)
+    la kandidater: liste_tekst = []
+    hvis prosjekt_rot != "" da {
+        legg_til(kandidater, prosjekt_rot + "/../../dist/norscode")
+        legg_til(kandidater, prosjekt_rot + "/../dist/norscode")
+        legg_til(kandidater, prosjekt_rot + "/dist/norscode")
+        legg_til(kandidater, prosjekt_rot + "/../../../dist/norscode")
+        legg_til(kandidater, prosjekt_rot + "/../../../../dist/norscode")
+    }
+    legg_til(kandidater, "./dist/norscode")
+    legg_til(kandidater, "dist/norscode")
+    legg_til(kandidater, "../dist/norscode")
+    legg_til(kandidater, "norscode")
+    la indeks: heltall = 0
+    mens (indeks < lengde(kandidater)) {
+        hvis fil_eksisterer(kandidater[indeks]) da {
+            returner kandidater[indeks]
+        }
+        indeks = indeks + 1
+    }
+    returner "norscode"
+}
+
+funksjon studio_v2_actions_kommando_run(rot: tekst, fil: tekst) -> liste_tekst {
+    returner [studio_v2_actions_kommando_fil(rot), "run", fil]
+}
+
+funksjon studio_v2_actions_kommando_check(rot: tekst, fil: tekst) -> liste_tekst {
+    returner [studio_v2_actions_kommando_fil(rot), "check", fil]
+}
+
+funksjon studio_v2_actions_kommando_test(rot: tekst, fil: tekst) -> liste_tekst {
+    hvis fil != "" og tekst_inneholder(fil, "tests/test_") og tekst_slutter_med(fil, ".no") da {
+        returner [studio_v2_actions_kommando_fil(rot), "test", fil]
+    }
+    returner [studio_v2_actions_kommando_fil(rot), "test"]
+}
+
+funksjon studio_v2_actions_kommando_debug(rot: tekst, fil: tekst) -> liste_tekst {
+    returner [studio_v2_actions_kommando_fil(rot), "runtime-status"]
+}
+
+funksjon studio_v2_actions_kommando_debug_tekst(rot: tekst, fil: tekst, aktiv_config: tekst) -> tekst {
+    returner studio_v2_actions_kommando_tekst(studio_v2_actions_kommando_debug(rot, fil)) + " [config=" + aktiv_config + "]"
+}
+
+funksjon studio_v2_actions_kommando_runtime_ci(rot: tekst) -> liste_tekst {
+    returner [studio_v2_actions_kommando_fil(rot), "runtime-ci", "--json"]
+}
+
+funksjon studio_v2_actions_kommando_args_for_navn(rot: tekst, navn: tekst) -> tekst {
+    hvis navn == "runtime-ci" da {
+        returner "--json"
+    }
+    returner ""
+}
+
+funksjon studio_v2_actions_kommando_arbeidskatalog(rot: tekst) -> tekst {
+    hvis rot == "" da {
+        returner "."
+    }
+    hvis ikke tekst_inneholder(rot, "/") da {
+        returner rot
+    }
+    la komponenter: liste_tekst = tekst_del_på(rot, "/")
+    la antall: heltall = lengde(komponenter)
+    hvis antall <= 1 da {
+        returner rot
+    }
+    la arbeidskatalog: tekst = ""
+    la indeks: heltall = 0
+    mens (indeks < antall - 1) {
+        la del: tekst = komponenter[indeks]
+        hvis del == "" da {
+            hvis arbeidskatalog == "" da {
+                arbeidskatalog = "/"
+            }
+        } ellers hvis arbeidskatalog == "" da {
+            arbeidskatalog = del
+        } ellers hvis arbeidskatalog == "/" da {
+            arbeidskatalog = arbeidskatalog + del
+        } ellers {
+            arbeidskatalog = arbeidskatalog + "/" + del
+        }
+        indeks = indeks + 1
+    }
+    hvis arbeidskatalog == "" da {
+        returner rot
+    }
+    returner arbeidskatalog
+}
+
+funksjon studio_v2_actions_kommando_for_navn(rot: tekst, fil: tekst, navn: tekst) -> liste_tekst {
+    hvis navn == "run" da {
+        returner studio_v2_actions_kommando_run(rot, fil)
+    }
+    hvis navn == "check" da {
+        returner studio_v2_actions_kommando_check(rot, fil)
+    }
+    hvis navn == "test" da {
+        returner studio_v2_actions_kommando_test(rot, fil)
+    }
+    hvis navn == "debug" da {
+        returner studio_v2_actions_kommando_debug(rot, fil)
+    }
+    hvis navn == "runtime-ci" da {
+        returner studio_v2_actions_kommando_runtime_ci(rot)
+    }
+    returner studio_v2_actions_kommando_tom()
+}
+
+funksjon studio_v2_actions_kommando_tekst(kommando: liste_tekst) -> tekst {
+    la resultat: tekst = ""
+    la indeks: heltall = 0
+    mens (indeks < lengde(kommando)) {
+        resultat = resultat + kommando[indeks]
+        hvis indeks + 1 < lengde(kommando) da {
+            resultat = resultat + " "
+        }
+        indeks = indeks + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_actions_kommando_status(kode: heltall) -> tekst {
+    hvis kode == 0 da {
+        returner "ok"
+    }
+    returner "feil (kode " + tekst_fra_heltall(kode) + ")"
+}
+
+funksjon studio_v2_actions_kjor(kommando: liste_tekst) -> heltall {
+    hvis lengde(kommando) == 0 da {
+        returner 1
+    }
+    la kommando0: tekst = kommando[0]
+    hvis kommando0 == "norscode" da {
+        returner kjør_kommando(["sh", "-lc", studio_v2_actions_kommando_tekst(kommando)])
+    }
+    hvis ikke tekst_inneholder(kommando0, "/") da {
+        hvis ikke fil_eksisterer(kommando0) da {
+            returner kjør_kommando(["sh", "-lc", studio_v2_actions_kommando_tekst(kommando)])
+        }
+    } ellers {
+        hvis ikke fil_eksisterer(kommando0) da {
+            returner kjør_kommando(["sh", "-lc", studio_v2_actions_kommando_tekst(kommando)])
+        }
+    }
+    returner kjør_kommando(kommando)
+}
+
+funksjon studio_v2_actions_trygg_kjor(rot: tekst, fil: tekst, navn: tekst) -> tekst {
+    la kommando: liste_tekst = studio_v2_actions_kommando_for_navn(rot, fil, navn)
+    hvis lengde(kommando) == 0 da {
+        returner "Feil: ukjent kommando " + navn
+    }
+    la kode: heltall = studio_v2_actions_kjor(kommando)
+    returner studio_v2_actions_kommando_tekst(kommando) + " -> " + studio_v2_actions_kommando_status(kode)
+}

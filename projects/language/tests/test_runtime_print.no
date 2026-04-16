@@ -1,0 +1,5 @@
+funksjon start() -> heltall {
+    skriv("runtime skriv")
+    assert_eq(tekst_lengde("hei"), 3)
+    returner 0
+}

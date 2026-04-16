@@ -1,0 +1,12 @@
+bruk std.math som math
+
+funksjon start() -> heltall {
+    assert_eq(math.pluss(10, 20), 30)
+    assert_eq(math.minus(50, 8), 42)
+    assert_eq(math.maks(3, 7), 7)
+    assert_eq(math.min(3, 7), 3)
+    assert_eq(math.absolutt(-9), 9)
+    assert_eq(math.del(8, 0), 0)
+    assert_eq(math.del(9, 3), 3)
+    returner 0
+}

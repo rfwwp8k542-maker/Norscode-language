@@ -1,0 +1,9 @@
+bruk std.io som io
+
+funksjon start() -> heltall {
+    assert_eq(io.prompt("Skriv noe"), "")
+    assert_eq(io.skriv_linje("hei"), "hei")
+    assert_eq(io.skriv_tall(7), 7)
+    assert_eq(io.skriv_boolsk(sann), sann)
+    returner 0
+}

@@ -1,0 +1,6 @@
+funksjon start() -> heltall {
+    la kommando: liste_tekst = ["python3", "-c", "import sys; sys.exit(0)"]
+    assert_eq(kjør_kommando(kommando), 0)
+    assert_eq(kjør_kommando([]), 1)
+    returner 0
+}

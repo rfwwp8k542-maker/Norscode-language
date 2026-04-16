@@ -1,0 +1,1436 @@
+# Web-standardbibliotek for Bootstrap, CSS, Sass og en enkel HTTP-kjerne
+
+funksjon http_status_tekst(kode: heltall) -> tekst {
+    hvis kode == 200 da {
+        returner "OK"
+    } ellers hvis kode == 201 da {
+        returner "Created"
+    } ellers hvis kode == 202 da {
+        returner "Accepted"
+    } ellers hvis kode == 204 da {
+        returner "No Content"
+    } ellers hvis kode == 301 da {
+        returner "Moved Permanently"
+    } ellers hvis kode == 302 da {
+        returner "Found"
+    } ellers hvis kode == 400 da {
+        returner "Bad Request"
+    } ellers hvis kode == 401 da {
+        returner "Unauthorized"
+    } ellers hvis kode == 403 da {
+        returner "Forbidden"
+    } ellers hvis kode == 404 da {
+        returner "Not Found"
+    } ellers hvis kode == 405 da {
+        returner "Method Not Allowed"
+    } ellers hvis kode == 409 da {
+        returner "Conflict"
+    } ellers hvis kode == 415 da {
+        returner "Unsupported Media Type"
+    } ellers hvis kode == 422 da {
+        returner "Unprocessable Content"
+    } ellers hvis kode == 500 da {
+        returner "Internal Server Error"
+    } ellers hvis kode == 502 da {
+        returner "Bad Gateway"
+    }
+    returner "Unknown Status"
+}
+
+funksjon http_statuslinje(kode: heltall) -> tekst {
+    la status: tekst = ""
+    hvis kode == 200 da {
+        status = "OK"
+    } ellers hvis kode == 201 da {
+        status = "Created"
+    } ellers hvis kode == 202 da {
+        status = "Accepted"
+    } ellers hvis kode == 204 da {
+        status = "No Content"
+    } ellers hvis kode == 301 da {
+        status = "Moved Permanently"
+    } ellers hvis kode == 302 da {
+        status = "Found"
+    } ellers hvis kode == 400 da {
+        status = "Bad Request"
+    } ellers hvis kode == 401 da {
+        status = "Unauthorized"
+    } ellers hvis kode == 403 da {
+        status = "Forbidden"
+    } ellers hvis kode == 404 da {
+        status = "Not Found"
+    } ellers hvis kode == 405 da {
+        status = "Method Not Allowed"
+    } ellers hvis kode == 409 da {
+        status = "Conflict"
+    } ellers hvis kode == 415 da {
+        status = "Unsupported Media Type"
+    } ellers hvis kode == 422 da {
+        status = "Unprocessable Content"
+    } ellers hvis kode == 500 da {
+        status = "Internal Server Error"
+    } ellers hvis kode == 502 da {
+        status = "Bad Gateway"
+    } ellers {
+        status = "Unknown Status"
+    }
+    returner "HTTP/1.1 " + tekst_fra_heltall(kode) + " " + status
+}
+
+funksjon http_header_tekst(navn: tekst, verdi: tekst) -> tekst {
+    returner navn + ": " + verdi
+}
+
+funksjon http_content_type_html() -> tekst {
+    returner "text/html; charset=utf-8"
+}
+
+funksjon http_content_type_json() -> tekst {
+    returner "application/json; charset=utf-8"
+}
+
+funksjon http_content_type_text() -> tekst {
+    returner "text/plain; charset=utf-8"
+}
+
+funksjon http_respons_tekst(kode: heltall, content_type: tekst, body: tekst) -> tekst {
+    la status: tekst = ""
+    hvis kode == 200 da {
+        status = "OK"
+    } ellers hvis kode == 201 da {
+        status = "Created"
+    } ellers hvis kode == 202 da {
+        status = "Accepted"
+    } ellers hvis kode == 204 da {
+        status = "No Content"
+    } ellers hvis kode == 301 da {
+        status = "Moved Permanently"
+    } ellers hvis kode == 302 da {
+        status = "Found"
+    } ellers hvis kode == 400 da {
+        status = "Bad Request"
+    } ellers hvis kode == 401 da {
+        status = "Unauthorized"
+    } ellers hvis kode == 403 da {
+        status = "Forbidden"
+    } ellers hvis kode == 404 da {
+        status = "Not Found"
+    } ellers hvis kode == 405 da {
+        status = "Method Not Allowed"
+    } ellers hvis kode == 409 da {
+        status = "Conflict"
+    } ellers hvis kode == 415 da {
+        status = "Unsupported Media Type"
+    } ellers hvis kode == 422 da {
+        status = "Unprocessable Content"
+    } ellers hvis kode == 500 da {
+        status = "Internal Server Error"
+    } ellers hvis kode == 502 da {
+        status = "Bad Gateway"
+    } ellers {
+        status = "Unknown Status"
+    }
+    la respons: tekst = "HTTP/1.1 " + tekst_fra_heltall(kode) + " " + status + "\r\n"
+    respons = respons + "Content-Type: " + content_type + "\r\n"
+    respons = respons + "Content-Length: " + tekst_fra_heltall(tekst_lengde(body)) + "\r\n"
+    respons = respons + "\r\n"
+    returner respons + body
+}
+
+funksjon http_json_respons(body: tekst) -> tekst {
+    la respons: tekst = "HTTP/1.1 200 OK\r\n"
+    respons = respons + "Content-Type: " + http_content_type_json() + "\r\n"
+    respons = respons + "Content-Length: " + tekst_fra_heltall(tekst_lengde(body)) + "\r\n"
+    respons = respons + "\r\n"
+    returner respons + body
+}
+
+funksjon http_html_respons(body: tekst) -> tekst {
+    la respons: tekst = "HTTP/1.1 200 OK\r\n"
+    respons = respons + "Content-Type: " + http_content_type_html() + "\r\n"
+    respons = respons + "Content-Length: " + tekst_fra_heltall(tekst_lengde(body)) + "\r\n"
+    respons = respons + "\r\n"
+    returner respons + body
+}
+
+funksjon http_tekst_respons(body: tekst) -> tekst {
+    la respons: tekst = "HTTP/1.1 200 OK\r\n"
+    respons = respons + "Content-Type: " + http_content_type_text() + "\r\n"
+    respons = respons + "Content-Length: " + tekst_fra_heltall(tekst_lengde(body)) + "\r\n"
+    respons = respons + "\r\n"
+    returner respons + body
+}
+
+funksjon http_omdirigering_respons(lokasjon: tekst) -> tekst {
+    la respons: tekst = "HTTP/1.1 302 Found\r\n"
+    respons = respons + "Location: " + lokasjon + "\r\n"
+    respons = respons + "Content-Type: " + http_content_type_text() + "\r\n"
+    respons = respons + "Content-Length: 0\r\n"
+    respons = respons + "\r\n"
+    returner respons
+}
+
+funksjon http_request_tekst(method: tekst, path: tekst, host: tekst, content_type: tekst, body: tekst) -> tekst {
+    la request: tekst = method + " " + path + " HTTP/1.1\r\n"
+    request = request + "Host: " + host + "\r\n"
+    request = request + "Content-Type: " + content_type + "\r\n"
+    request = request + "Content-Length: " + tekst_fra_heltall(tekst_lengde(body)) + "\r\n"
+    request = request + "\r\n"
+    returner request + body
+}
+
+funksjon http_server_start(ruter: liste_tekst, host: tekst, port: heltall) -> heltall {
+    returner web_server_start(ruter, host, port)
+}
+
+funksjon router_tom() -> liste_tekst {
+    returner []
+}
+
+funksjon router_registrer(ruter: liste_tekst, metode: tekst, mønster: tekst, navn: tekst) -> heltall {
+    legg_til(ruter, metode + "\t" + mønster + "\t" + navn)
+    returner lengde(ruter)
+}
+
+funksjon router_path_match(mønster: tekst, sti: tekst) -> bool {
+    la mønster_deler: liste_tekst = tekst_del_på(mønster, "/")
+    la sti_deler: liste_tekst = tekst_del_på(sti, "/")
+    la mønster_segmenter: liste_tekst = []
+    la sti_segmenter: liste_tekst = []
+    la i: heltall = 0
+    mens (i < lengde(mønster_deler)) {
+        hvis mønster_deler[i] != "" da {
+            legg_til(mønster_segmenter, mønster_deler[i])
+        }
+        i = i + 1
+    }
+    i = 0
+    mens (i < lengde(sti_deler)) {
+        hvis sti_deler[i] != "" da {
+            legg_til(sti_segmenter, sti_deler[i])
+        }
+        i = i + 1
+    }
+    hvis lengde(mønster_segmenter) != lengde(sti_segmenter) da {
+        returner usann
+    }
+    i = 0
+    mens (i < lengde(mønster_segmenter)) {
+        la mønster_segment: tekst = mønster_segmenter[i]
+        la sti_segment: tekst = sti_segmenter[i]
+        hvis ikke (tekst_starter_med(mønster_segment, "{") og tekst_slutter_med(mønster_segment, "}")) og mønster_segment != sti_segment da {
+            returner usann
+        }
+        i = i + 1
+    }
+    returner sann
+}
+
+funksjon router_path_param(mønster: tekst, sti: tekst, navn: tekst) -> tekst {
+    la mønster_deler: liste_tekst = tekst_del_på(mønster, "/")
+    la sti_deler: liste_tekst = tekst_del_på(sti, "/")
+    la mønster_segmenter: liste_tekst = []
+    la sti_segmenter: liste_tekst = []
+    la i: heltall = 0
+    mens (i < lengde(mønster_deler)) {
+        hvis mønster_deler[i] != "" da {
+            legg_til(mønster_segmenter, mønster_deler[i])
+        }
+        i = i + 1
+    }
+    i = 0
+    mens (i < lengde(sti_deler)) {
+        hvis sti_deler[i] != "" da {
+            legg_til(sti_segmenter, sti_deler[i])
+        }
+        i = i + 1
+    }
+    hvis lengde(mønster_segmenter) != lengde(sti_segmenter) da {
+        returner ""
+    }
+    i = 0
+    mens (i < lengde(mønster_segmenter)) {
+        la mønster_segment: tekst = mønster_segmenter[i]
+        la sti_segment: tekst = sti_segmenter[i]
+        hvis tekst_starter_med(mønster_segment, "{") og tekst_slutter_med(mønster_segment, "}") da {
+            la segment_navn: tekst = tekst_slice(mønster_segment, 1, tekst_lengde(mønster_segment) - 1)
+            hvis segment_navn == navn da {
+                returner sti_segment
+            }
+        }
+        i = i + 1
+    }
+    returner ""
+}
+
+funksjon router_query_param(query: tekst, navn: tekst) -> tekst {
+    la ren_query: tekst = query
+    hvis tekst_starter_med(ren_query, "?") da {
+        ren_query = tekst_slice(ren_query, 1, tekst_lengde(ren_query))
+    }
+    la deler: liste_tekst = tekst_del_på(ren_query, "&")
+    la i: heltall = 0
+    mens (i < lengde(deler)) {
+        la par: tekst = deler[i]
+        hvis par != "" da {
+            la par_deler: liste_tekst = tekst_del_på(par, "=")
+            hvis lengde(par_deler) >= 1 og par_deler[0] == navn da {
+                hvis lengde(par_deler) >= 2 da {
+                    returner par_deler[1]
+                }
+                returner ""
+            }
+        }
+        i = i + 1
+    }
+    returner ""
+}
+
+funksjon router_join_path(prefix: tekst, sti: tekst) -> tekst {
+    hvis prefix == "" da {
+        returner sti
+    }
+    hvis sti == "" da {
+        returner prefix
+    }
+    la prefix_slutter_med_skråstrek: bool = tekst_slutter_med(prefix, "/")
+    la sti_starter_med_skråstrek: bool = tekst_starter_med(sti, "/")
+    hvis prefix_slutter_med_skråstrek og sti_starter_med_skråstrek da {
+        returner prefix + tekst_slice(sti, 1, tekst_lengde(sti))
+    }
+    hvis prefix_slutter_med_skråstrek eller sti_starter_med_skråstrek da {
+        returner prefix + sti
+    }
+    returner prefix + "/" + sti
+}
+
+funksjon router_match_rute(ruter: liste_tekst, metode: tekst, sti: tekst) -> tekst {
+    la i: heltall = 0
+    mens (i < lengde(ruter)) {
+        la rute: tekst = ruter[i]
+        la deler: liste_tekst = tekst_del_på(rute, "\t")
+        hvis lengde(deler) >= 3 og deler[0] == metode da {
+            la mønster_deler: liste_tekst = tekst_del_på(deler[1], "/")
+            la sti_deler: liste_tekst = tekst_del_på(sti, "/")
+            la mønster_segmenter: liste_tekst = []
+            la sti_segmenter: liste_tekst = []
+            la j: heltall = 0
+            mens (j < lengde(mønster_deler)) {
+                hvis mønster_deler[j] != "" da {
+                    legg_til(mønster_segmenter, mønster_deler[j])
+                }
+                j = j + 1
+            }
+            j = 0
+            mens (j < lengde(sti_deler)) {
+                hvis sti_deler[j] != "" da {
+                    legg_til(sti_segmenter, sti_deler[j])
+                }
+                j = j + 1
+            }
+            hvis lengde(mønster_segmenter) == lengde(sti_segmenter) da {
+                la match: bool = sann
+                j = 0
+                mens (j < lengde(mønster_segmenter)) {
+                    la mønster_segment: tekst = mønster_segmenter[j]
+                    la sti_segment: tekst = sti_segmenter[j]
+                    hvis ikke (tekst_starter_med(mønster_segment, "{") og tekst_slutter_med(mønster_segment, "}")) og mønster_segment != sti_segment da {
+                        match = usann
+                    }
+                    j = j + 1
+                }
+                hvis match da {
+                    returner deler[2]
+                }
+            }
+        }
+        i = i + 1
+    }
+    returner ""
+}
+
+funksjon http_query_felt_tekst(query: tekst, navn: tekst) -> tekst {
+    la ren_query: tekst = query
+    hvis tekst_starter_med(ren_query, "?") da {
+        ren_query = tekst_slice(ren_query, 1, tekst_lengde(ren_query))
+    }
+    la deler: liste_tekst = tekst_del_på(ren_query, "&")
+    la i: heltall = 0
+    mens (i < lengde(deler)) {
+        la par: tekst = tekst_trim(deler[i])
+        hvis par != "" da {
+            la par_deler: liste_tekst = tekst_del_på(par, "=")
+            hvis lengde(par_deler) >= 1 og tekst_trim(par_deler[0]) == navn da {
+                hvis lengde(par_deler) >= 2 da {
+                    returner tekst_trim(par_deler[1])
+                }
+                returner ""
+            }
+        }
+        i = i + 1
+    }
+    returner ""
+}
+
+funksjon http_query_felt_heltall(query: tekst, navn: tekst) -> heltall {
+    la ren_query: tekst = query
+    hvis tekst_starter_med(ren_query, "?") da {
+        ren_query = tekst_slice(ren_query, 1, tekst_lengde(ren_query))
+    }
+    la deler: liste_tekst = tekst_del_på(ren_query, "&")
+    la i: heltall = 0
+    mens (i < lengde(deler)) {
+        la par: tekst = tekst_trim(deler[i])
+        hvis par != "" da {
+            la par_deler: liste_tekst = tekst_del_på(par, "=")
+            hvis lengde(par_deler) >= 1 og tekst_trim(par_deler[0]) == navn da {
+                hvis lengde(par_deler) >= 2 da {
+                    la verdi: tekst = tekst_trim(par_deler[1])
+                    hvis tekst_starter_med(verdi, "\"") og tekst_slutter_med(verdi, "\"") da {
+                        verdi = tekst_slice(verdi, 1, tekst_lengde(verdi) - 1)
+                    }
+                    returner heltall_fra_tekst(verdi)
+                }
+                returner 0
+            }
+        }
+        i = i + 1
+    }
+    returner 0
+}
+
+funksjon http_query_felt_bool(query: tekst, navn: tekst) -> bool {
+    la ren_query: tekst = query
+    hvis tekst_starter_med(ren_query, "?") da {
+        ren_query = tekst_slice(ren_query, 1, tekst_lengde(ren_query))
+    }
+    la deler: liste_tekst = tekst_del_på(ren_query, "&")
+    la i: heltall = 0
+    mens (i < lengde(deler)) {
+        la par: tekst = tekst_trim(deler[i])
+        hvis par != "" da {
+            la par_deler: liste_tekst = tekst_del_på(par, "=")
+            hvis lengde(par_deler) >= 1 og tekst_trim(par_deler[0]) == navn da {
+                hvis lengde(par_deler) >= 2 da {
+                    la verdi: tekst = tekst_til_små(tekst_trim(par_deler[1]))
+                    hvis tekst_starter_med(verdi, "\"") og tekst_slutter_med(verdi, "\"") da {
+                        verdi = tekst_slice(verdi, 1, tekst_lengde(verdi) - 1)
+                    }
+                    hvis verdi == "sann" eller verdi == "true" eller verdi == "1" eller verdi == "ja" da {
+                        returner sann
+                    }
+                }
+                returner usann
+            }
+        }
+        i = i + 1
+    }
+    returner usann
+}
+
+funksjon http_path_felt_tekst(mønster: tekst, sti: tekst, navn: tekst) -> tekst {
+    la mønster_deler: liste_tekst = tekst_del_på(mønster, "/")
+    la sti_deler: liste_tekst = tekst_del_på(sti, "/")
+    la mønster_segmenter: liste_tekst = []
+    la sti_segmenter: liste_tekst = []
+    la i: heltall = 0
+    mens (i < lengde(mønster_deler)) {
+        hvis mønster_deler[i] != "" da {
+            legg_til(mønster_segmenter, mønster_deler[i])
+        }
+        i = i + 1
+    }
+    i = 0
+    mens (i < lengde(sti_deler)) {
+        hvis sti_deler[i] != "" da {
+            legg_til(sti_segmenter, sti_deler[i])
+        }
+        i = i + 1
+    }
+    hvis lengde(mønster_segmenter) != lengde(sti_segmenter) da {
+        returner ""
+    }
+    i = 0
+    mens (i < lengde(mønster_segmenter)) {
+        la mønster_segment: tekst = mønster_segmenter[i]
+        la sti_segment: tekst = sti_segmenter[i]
+        hvis tekst_starter_med(mønster_segment, "{") og tekst_slutter_med(mønster_segment, "}") da {
+            la segment_navn: tekst = tekst_slice(mønster_segment, 1, tekst_lengde(mønster_segment) - 1)
+            hvis segment_navn == navn da {
+                returner sti_segment
+            }
+        }
+        i = i + 1
+    }
+    returner ""
+}
+
+funksjon http_path_felt_heltall(mønster: tekst, sti: tekst, navn: tekst) -> heltall {
+    la mønster_deler: liste_tekst = tekst_del_på(mønster, "/")
+    la sti_deler: liste_tekst = tekst_del_på(sti, "/")
+    la mønster_segmenter: liste_tekst = []
+    la sti_segmenter: liste_tekst = []
+    la i: heltall = 0
+    mens (i < lengde(mønster_deler)) {
+        hvis mønster_deler[i] != "" da {
+            legg_til(mønster_segmenter, mønster_deler[i])
+        }
+        i = i + 1
+    }
+    i = 0
+    mens (i < lengde(sti_deler)) {
+        hvis sti_deler[i] != "" da {
+            legg_til(sti_segmenter, sti_deler[i])
+        }
+        i = i + 1
+    }
+    hvis lengde(mønster_segmenter) != lengde(sti_segmenter) da {
+        returner 0
+    }
+    i = 0
+    mens (i < lengde(mønster_segmenter)) {
+        la mønster_segment: tekst = mønster_segmenter[i]
+        la sti_segment: tekst = sti_segmenter[i]
+        hvis tekst_starter_med(mønster_segment, "{") og tekst_slutter_med(mønster_segment, "}") da {
+            la segment_navn: tekst = tekst_slice(mønster_segment, 1, tekst_lengde(mønster_segment) - 1)
+            hvis segment_navn == navn da {
+                returner heltall_fra_tekst(sti_segment)
+            }
+        }
+        i = i + 1
+    }
+    returner 0
+}
+
+funksjon http_path_felt_bool(mønster: tekst, sti: tekst, navn: tekst) -> bool {
+    la mønster_deler: liste_tekst = tekst_del_på(mønster, "/")
+    la sti_deler: liste_tekst = tekst_del_på(sti, "/")
+    la mønster_segmenter: liste_tekst = []
+    la sti_segmenter: liste_tekst = []
+    la i: heltall = 0
+    mens (i < lengde(mønster_deler)) {
+        hvis mønster_deler[i] != "" da {
+            legg_til(mønster_segmenter, mønster_deler[i])
+        }
+        i = i + 1
+    }
+    i = 0
+    mens (i < lengde(sti_deler)) {
+        hvis sti_deler[i] != "" da {
+            legg_til(sti_segmenter, sti_deler[i])
+        }
+        i = i + 1
+    }
+    hvis lengde(mønster_segmenter) != lengde(sti_segmenter) da {
+        returner usann
+    }
+    i = 0
+    mens (i < lengde(mønster_segmenter)) {
+        la mønster_segment: tekst = mønster_segmenter[i]
+        la sti_segment: tekst = sti_segmenter[i]
+        hvis tekst_starter_med(mønster_segment, "{") og tekst_slutter_med(mønster_segment, "}") da {
+            la segment_navn: tekst = tekst_slice(mønster_segment, 1, tekst_lengde(mønster_segment) - 1)
+            hvis segment_navn == navn da {
+                la verdi: tekst = tekst_til_små(sti_segment)
+                hvis verdi == "sann" eller verdi == "true" eller verdi == "1" eller verdi == "ja" da {
+                    returner sann
+                }
+                returner usann
+            }
+        }
+        i = i + 1
+    }
+    returner usann
+}
+
+funksjon http_body_json_felt_tekst(body: tekst, navn: tekst) -> tekst {
+    la ren_body: tekst = tekst_trim(body)
+    hvis ikke (tekst_starter_med(ren_body, "{") og tekst_slutter_med(ren_body, "}")) da {
+        returner ""
+    }
+    la innhold: tekst = tekst_slice(ren_body, 1, tekst_lengde(ren_body) - 1)
+    la deler: liste_tekst = tekst_del_på(innhold, ",")
+    la i: heltall = 0
+    mens (i < lengde(deler)) {
+        la par: tekst = tekst_trim(deler[i])
+        hvis par != "" da {
+            la par_deler: liste_tekst = tekst_del_på(par, ":")
+            hvis lengde(par_deler) >= 2 da {
+                la nøkkel: tekst = tekst_trim(par_deler[0])
+                la verdi: tekst = tekst_trim(par_deler[1])
+                hvis tekst_starter_med(nøkkel, "\"") og tekst_slutter_med(nøkkel, "\"") da {
+                    nøkkel = tekst_slice(nøkkel, 1, tekst_lengde(nøkkel) - 1)
+                }
+                hvis nøkkel == navn da {
+                    hvis tekst_starter_med(verdi, "\"") og tekst_slutter_med(verdi, "\"") da {
+                        returner tekst_slice(verdi, 1, tekst_lengde(verdi) - 1)
+                    }
+                    returner verdi
+                }
+            }
+        }
+        i = i + 1
+    }
+    returner ""
+}
+
+funksjon http_body_json_felt_heltall(body: tekst, navn: tekst) -> heltall {
+    la ren_body: tekst = tekst_trim(body)
+    hvis ikke (tekst_starter_med(ren_body, "{") og tekst_slutter_med(ren_body, "}")) da {
+        returner 0
+    }
+    la innhold: tekst = tekst_slice(ren_body, 1, tekst_lengde(ren_body) - 1)
+    la deler: liste_tekst = tekst_del_på(innhold, ",")
+    la i: heltall = 0
+    mens (i < lengde(deler)) {
+        la par: tekst = tekst_trim(deler[i])
+        hvis par != "" da {
+            la par_deler: liste_tekst = tekst_del_på(par, ":")
+            hvis lengde(par_deler) >= 2 da {
+                la nøkkel: tekst = tekst_trim(par_deler[0])
+                la verdi: tekst = tekst_trim(par_deler[1])
+                hvis tekst_starter_med(nøkkel, "\"") og tekst_slutter_med(nøkkel, "\"") da {
+                    nøkkel = tekst_slice(nøkkel, 1, tekst_lengde(nøkkel) - 1)
+                }
+                hvis nøkkel == navn da {
+                    hvis tekst_starter_med(verdi, "\"") og tekst_slutter_med(verdi, "\"") da {
+                        verdi = tekst_slice(verdi, 1, tekst_lengde(verdi) - 1)
+                    }
+                    returner heltall_fra_tekst(verdi)
+                }
+            }
+        }
+        i = i + 1
+    }
+    returner 0
+}
+
+funksjon http_body_json_felt_bool(body: tekst, navn: tekst) -> bool {
+    la ren_body: tekst = tekst_trim(body)
+    hvis ikke (tekst_starter_med(ren_body, "{") og tekst_slutter_med(ren_body, "}")) da {
+        returner usann
+    }
+    la innhold: tekst = tekst_slice(ren_body, 1, tekst_lengde(ren_body) - 1)
+    la deler: liste_tekst = tekst_del_på(innhold, ",")
+    la i: heltall = 0
+    mens (i < lengde(deler)) {
+        la par: tekst = tekst_trim(deler[i])
+        hvis par != "" da {
+            la par_deler: liste_tekst = tekst_del_på(par, ":")
+            hvis lengde(par_deler) >= 2 da {
+                la nøkkel: tekst = tekst_trim(par_deler[0])
+                la verdi: tekst = tekst_til_små(tekst_trim(par_deler[1]))
+                hvis tekst_starter_med(nøkkel, "\"") og tekst_slutter_med(nøkkel, "\"") da {
+                    nøkkel = tekst_slice(nøkkel, 1, tekst_lengde(nøkkel) - 1)
+                }
+                hvis nøkkel == navn da {
+                    hvis tekst_starter_med(verdi, "\"") og tekst_slutter_med(verdi, "\"") da {
+                        verdi = tekst_slice(verdi, 1, tekst_lengde(verdi) - 1)
+                    }
+                    hvis verdi == "sann" eller verdi == "true" eller verdi == "1" eller verdi == "ja" da {
+                        returner sann
+                    }
+                    returner usann
+                }
+            }
+        }
+        i = i + 1
+    }
+    returner usann
+}
+
+funksjon http_body_text_felt_tekst(body: tekst, navn: tekst) -> tekst {
+    la linjer: liste_tekst = tekst_del_på(body, "\n")
+    la i: heltall = 0
+    mens (i < lengde(linjer)) {
+        la linje: tekst = tekst_trim(linjer[i])
+        hvis tekst_slutter_med(linje, "\r") da {
+            linje = tekst_slice(linje, 0, tekst_lengde(linje) - 1)
+        }
+        hvis tekst_starter_med(linje, navn + "=") da {
+            returner tekst_slice(linje, tekst_lengde(navn) + 1, tekst_lengde(linje))
+        }
+        i = i + 1
+    }
+    returner ""
+}
+
+funksjon http_typed_input_feil_respons(kilde: tekst, navn: tekst, forventet: tekst, verdi: tekst) -> tekst {
+    la body: tekst = "{\"detail\":[{\"source\":\"" + kilde + "\",\"field\":\"" + navn + "\",\"expected\":\"" + forventet + "\",\"received\":\"" + verdi + "\"}]}"
+    la respons: tekst = "HTTP/1.1 422 Unprocessable Content\r\n"
+    respons = respons + "Content-Type: application/json; charset=utf-8\r\n"
+    respons = respons + "Content-Length: " + tekst_fra_heltall(tekst_lengde(body)) + "\r\n"
+    respons = respons + "\r\n"
+    returner respons + body
+}
+
+funksjon schema_tom() -> liste_tekst {
+    returner []
+}
+
+funksjon schema_felt_tekst(schema: liste_tekst, navn: tekst, påkrevd: bool, standard: tekst, eksempel: tekst, verdier: tekst, barn_schema: tekst) -> heltall {
+    legg_til(schema, navn + "\ttekst\t" + tekst_fra_bool(påkrevd) + "\t" + standard + "\t" + eksempel + "\t" + verdier + "\t" + barn_schema)
+    returner lengde(schema)
+}
+
+funksjon schema_felt_heltall(schema: liste_tekst, navn: tekst, påkrevd: bool, standard: tekst, eksempel: tekst, verdier: tekst, barn_schema: tekst) -> heltall {
+    legg_til(schema, navn + "\theltall\t" + tekst_fra_bool(påkrevd) + "\t" + standard + "\t" + eksempel + "\t" + verdier + "\t" + barn_schema)
+    returner lengde(schema)
+}
+
+funksjon schema_felt_bool(schema: liste_tekst, navn: tekst, påkrevd: bool, standard: tekst, eksempel: tekst, verdier: tekst, barn_schema: tekst) -> heltall {
+    legg_til(schema, navn + "\tbool\t" + tekst_fra_bool(påkrevd) + "\t" + standard + "\t" + eksempel + "\t" + verdier + "\t" + barn_schema)
+    returner lengde(schema)
+}
+
+funksjon schema_felt_objekt(schema: liste_tekst, navn: tekst, påkrevd: bool, standard: tekst, eksempel: tekst, barn_schema: tekst) -> heltall {
+    legg_til(schema, navn + "\tobjekt\t" + tekst_fra_bool(påkrevd) + "\t" + standard + "\t" + eksempel + "\t\t" + barn_schema)
+    returner lengde(schema)
+}
+
+funksjon schema_felt_liste(schema: liste_tekst, navn: tekst, element_type: tekst, påkrevd: bool, standard: tekst, eksempel: tekst, verdier: tekst, barn_schema: tekst) -> heltall {
+    legg_til(schema, navn + "\tliste_" + element_type + "\t" + tekst_fra_bool(påkrevd) + "\t" + standard + "\t" + eksempel + "\t" + verdier + "\t" + barn_schema)
+    returner lengde(schema)
+}
+
+funksjon schema_felt_antall(schema: liste_tekst) -> heltall {
+    returner lengde(schema)
+}
+
+funksjon schema_felt_navn(schema: liste_tekst, indeks: heltall) -> tekst {
+    hvis indeks < 0 eller indeks >= lengde(schema) da {
+        returner ""
+    }
+    la deler: liste_tekst = tekst_del_på(schema[indeks], "\t")
+    hvis lengde(deler) >= 1 da {
+        returner deler[0]
+    }
+    returner ""
+}
+
+funksjon schema_felt_type(schema: liste_tekst, indeks: heltall) -> tekst {
+    hvis indeks < 0 eller indeks >= lengde(schema) da {
+        returner ""
+    }
+    la deler: liste_tekst = tekst_del_på(schema[indeks], "\t")
+    hvis lengde(deler) >= 2 da {
+        returner deler[1]
+    }
+    returner ""
+}
+
+funksjon schema_felt_påkrevd(schema: liste_tekst, indeks: heltall) -> bool {
+    hvis indeks < 0 eller indeks >= lengde(schema) da {
+        returner usann
+    }
+    la deler: liste_tekst = tekst_del_på(schema[indeks], "\t")
+    hvis lengde(deler) >= 3 da {
+        returner deler[2] == "sann"
+    }
+    returner usann
+}
+
+funksjon schema_felt_standard(schema: liste_tekst, indeks: heltall) -> tekst {
+    hvis indeks < 0 eller indeks >= lengde(schema) da {
+        returner ""
+    }
+    la deler: liste_tekst = tekst_del_på(schema[indeks], "\t")
+    hvis lengde(deler) >= 4 da {
+        returner deler[3]
+    }
+    returner ""
+}
+
+funksjon schema_felt_eksempel(schema: liste_tekst, indeks: heltall) -> tekst {
+    hvis indeks < 0 eller indeks >= lengde(schema) da {
+        returner ""
+    }
+    la deler: liste_tekst = tekst_del_på(schema[indeks], "\t")
+    hvis lengde(deler) >= 5 da {
+        returner deler[4]
+    }
+    returner ""
+}
+
+funksjon schema_felt_verdier(schema: liste_tekst, indeks: heltall) -> tekst {
+    hvis indeks < 0 eller indeks >= lengde(schema) da {
+        returner ""
+    }
+    la deler: liste_tekst = tekst_del_på(schema[indeks], "\t")
+    hvis lengde(deler) >= 6 da {
+        returner deler[5]
+    }
+    returner ""
+}
+
+funksjon schema_felt_barn_schema(schema: liste_tekst, indeks: heltall) -> tekst {
+    hvis indeks < 0 eller indeks >= lengde(schema) da {
+        returner ""
+    }
+    la deler: liste_tekst = tekst_del_på(schema[indeks], "\t")
+    hvis lengde(deler) >= 7 da {
+        returner deler[6]
+    }
+    returner ""
+}
+
+funksjon schema_felt_indeks(schema: liste_tekst, navn: tekst) -> heltall {
+    la i: heltall = 0
+    mens (i < lengde(schema)) {
+        la deler: liste_tekst = tekst_del_på(schema[i], "\t")
+        hvis lengde(deler) >= 1 og deler[0] == navn da {
+            returner i
+        }
+        i = i + 1
+    }
+    returner -1
+}
+
+funksjon schema_verdi_er_heltall(verdi: tekst) -> bool {
+    la ren: tekst = tekst_trim(verdi)
+    hvis ren == "" da {
+        returner usann
+    }
+    returner tekst_fra_heltall(heltall_fra_tekst(ren)) == ren
+}
+
+funksjon schema_verdi_er_bool(verdi: tekst) -> bool {
+    la ren: tekst = tekst_til_små(tekst_trim(verdi))
+    hvis ren == "sann" eller ren == "usann" eller ren == "true" eller ren == "false" eller ren == "1" eller ren == "0" eller ren == "ja" eller ren == "nei" da {
+        returner sann
+    }
+    returner usann
+}
+
+funksjon schema_verdi_type_ok(type: tekst, verdi: tekst) -> bool {
+    hvis type == "tekst" da {
+        returner sann
+    }
+    hvis type == "heltall" da {
+        returner schema_verdi_er_heltall(verdi)
+    }
+    hvis type == "bool" da {
+        returner schema_verdi_er_bool(verdi)
+    }
+    hvis type == "objekt" da {
+        la ren: tekst = tekst_trim(verdi)
+        returner tekst_starter_med(ren, "{") og tekst_slutter_med(ren, "}")
+    }
+    hvis tekst_starter_med(type, "liste_") da {
+        la ren: tekst = tekst_trim(verdi)
+        returner tekst_starter_med(ren, "[") og tekst_slutter_med(ren, "]")
+    }
+    returner sann
+}
+
+funksjon schema_enum_inneholder(verdier: tekst, verdi: tekst) -> bool {
+    hvis verdier == "" da {
+        returner sann
+    }
+    la alternativer: liste_tekst = tekst_del_på(verdier, "|")
+    la i: heltall = 0
+    mens (i < lengde(alternativer)) {
+        hvis tekst_trim(alternativer[i]) == verdi da {
+            returner sann
+        }
+        i = i + 1
+    }
+    returner usann
+}
+
+funksjon schema_valider_felt(schema: liste_tekst, navn: tekst, verdi: tekst) -> tekst {
+    la i: heltall = 0
+    mens (i < lengde(schema)) {
+        la deler: liste_tekst = tekst_del_på(schema[i], "\t")
+        hvis lengde(deler) >= 1 og deler[0] == navn da {
+            la type: tekst = ""
+            la påkrevd: bool = usann
+            la verdier: tekst = ""
+            hvis lengde(deler) >= 2 da {
+                type = deler[1]
+            }
+            hvis lengde(deler) >= 3 da {
+                påkrevd = deler[2] == "sann"
+            }
+            hvis lengde(deler) >= 6 da {
+                verdier = deler[5]
+            }
+            la ren: tekst = tekst_trim(verdi)
+            hvis ren == "" og ikke påkrevd da {
+                returner ""
+            }
+            la feil: tekst = ""
+            hvis påkrevd og ren == "" da {
+                feil = type
+            }
+            hvis type == "heltall" da {
+                hvis tekst_fra_heltall(heltall_fra_tekst(ren)) != ren da {
+                    feil = "heltall"
+                }
+            } ellers hvis type == "bool" da {
+                la verdi_bool: tekst = tekst_til_små(ren)
+                hvis ikke (verdi_bool == "sann" eller verdi_bool == "usann" eller verdi_bool == "true" eller verdi_bool == "false" eller verdi_bool == "1" eller verdi_bool == "0" eller verdi_bool == "ja" eller verdi_bool == "nei") da {
+                    feil = "bool"
+                }
+            } ellers hvis type == "objekt" da {
+                hvis ikke (tekst_starter_med(ren, "{") og tekst_slutter_med(ren, "}")) da {
+                    feil = "objekt"
+                }
+            } ellers hvis tekst_starter_med(type, "liste_") da {
+                hvis ikke (tekst_starter_med(ren, "[") og tekst_slutter_med(ren, "]")) da {
+                    feil = type
+                }
+            }
+            hvis verdier != "" da {
+                la alternativer: liste_tekst = tekst_del_på(verdier, "|")
+                la funnet: bool = usann
+                la j: heltall = 0
+                mens (j < lengde(alternativer)) {
+                    hvis tekst_trim(alternativer[j]) == ren da {
+                        funnet = sann
+                    }
+                    j = j + 1
+                }
+                hvis ikke funnet da {
+                    feil = "en av: " + verdier
+                }
+            }
+            hvis feil != "" da {
+                la body: tekst = "{\"detail\":[{\"source\":\"schema\",\"field\":\"" + navn + "\",\"expected\":\"" + feil + "\",\"received\":\"" + verdi + "\"}]}"
+                la respons: tekst = "HTTP/1.1 422 Unprocessable Content\r\n"
+                respons = respons + "Content-Type: application/json; charset=utf-8\r\n"
+                respons = respons + "Content-Length: " + tekst_fra_heltall(tekst_lengde(body)) + "\r\n"
+                respons = respons + "\r\n"
+                returner respons + body
+            }
+            returner ""
+        }
+        i = i + 1
+    }
+    la body: tekst = "{\"detail\":[{\"source\":\"schema\",\"field\":\"" + navn + "\",\"expected\":\"kjent felt\",\"received\":\"" + verdi + "\"}]}"
+    la respons: tekst = "HTTP/1.1 422 Unprocessable Content\r\n"
+    respons = respons + "Content-Type: application/json; charset=utf-8\r\n"
+    respons = respons + "Content-Length: " + tekst_fra_heltall(tekst_lengde(body)) + "\r\n"
+    respons = respons + "\r\n"
+    returner respons + body
+}
+
+funksjon schema_beskrivelse(schema: liste_tekst) -> tekst {
+    la resultat: tekst = ""
+    la i: heltall = 0
+    mens (i < lengde(schema)) {
+        la deler: liste_tekst = tekst_del_på(schema[i], "\t")
+        la navn: tekst = ""
+        la type: tekst = ""
+        la påkrevd: bool = usann
+        la standard: tekst = ""
+        la eksempel: tekst = ""
+        la verdier: tekst = ""
+        la barn: tekst = ""
+        hvis lengde(deler) >= 1 da {
+            navn = deler[0]
+        }
+        hvis lengde(deler) >= 2 da {
+            type = deler[1]
+        }
+        hvis lengde(deler) >= 3 da {
+            påkrevd = deler[2] == "sann"
+        }
+        hvis lengde(deler) >= 4 da {
+            standard = deler[3]
+        }
+        hvis lengde(deler) >= 5 da {
+            eksempel = deler[4]
+        }
+        hvis lengde(deler) >= 6 da {
+            verdier = deler[5]
+        }
+        hvis lengde(deler) >= 7 da {
+            barn = deler[6]
+        }
+        la linje: tekst = navn + ": " + type
+        hvis påkrevd da {
+            linje = linje + " (påkrevd)"
+        }
+        hvis standard != "" da {
+            linje = linje + " standard=" + standard
+        }
+        hvis eksempel != "" da {
+            linje = linje + " eksempel=" + eksempel
+        }
+        hvis verdier != "" da {
+            linje = linje + " enum=" + verdier
+        }
+        hvis barn != "" da {
+            linje = linje + " barn=" + barn
+        }
+        hvis resultat != "" da {
+            resultat = resultat + "\n"
+        }
+        resultat = resultat + linje
+        i = i + 1
+    }
+    returner resultat
+}
+
+funksjon schema_sammendrag(schema: liste_tekst) -> tekst {
+    returner "schema(" + tekst_fra_heltall(lengde(schema)) + " felt)"
+}
+
+funksjon bootstrap_html(tittel: tekst, overskrift: tekst, ingress: tekst, knappetekst: tekst) -> tekst {
+    returner "<!doctype html>\n<html lang=\"no\">\n<head>\n    <meta charset=\"utf-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n    <title>" + tittel + "</title>\n    <link href=\"https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css\" rel=\"stylesheet\">\n    <link rel=\"stylesheet\" href=\"styles.css\">\n</head>\n<body class=\"bg-light\">\n    <main class=\"container py-5\">\n        <section class=\"card shadow border-0 rounded-4 p-5 bg-white\">\n            <h1 class=\"display-5 fw-bold\">" + overskrift + "</h1>\n            <p class=\"lead\">" + ingress + "</p>\n            <button class=\"btn btn-primary\">" + knappetekst + "</button>\n        </section>\n    </main>\n</body>\n</html>\n"
+}
+
+funksjon css_startmal() -> tekst {
+    returner "body {\n    margin: 0;\n    font-family: system-ui, sans-serif;\n    background: #f8fafc;\n    color: #0f172a;\n}\n\nmain {\n    max-width: 960px;\n    margin: 0 auto;\n    padding: 48px 24px;\n}\n\n.card {\n    border: 0;\n    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.15);\n}\n"
+}
+
+funksjon sass_startmal() -> tekst {
+    returner "$bg: #0f172a;\n$panel: #111827;\n$accent: #60a5fa;\n\nbody {\n    margin: 0;\n    font-family: system-ui, sans-serif;\n    background: $bg;\n    color: #e2e8f0;\n}\n\nmain {\n    max-width: 960px;\n    margin: 0 auto;\n    padding: 48px 24px;\n}\n\n.card {\n    background: $panel;\n    border-radius: 24px;\n    padding: 32px;\n    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.25);\n\n    button {\n        background: $accent;\n        border: 0;\n        border-radius: 999px;\n        color: $bg;\n        padding: 12px 18px;\n        font-weight: 700;\n    }\n}\n"
+}
+
+funksjon sass_til_css_tekst(kilde: tekst) -> tekst {
+    returner sass_til_css(kilde)
+}
+
+funksjon css_trim(tekstverdi: tekst) -> tekst {
+    returner tekst_trim(tekstverdi)
+}
+
+funksjon di_tom() -> liste_tekst {
+    returner []
+}
+
+funksjon di_kontekst_tom() -> liste_tekst {
+    returner []
+}
+
+funksjon di_hooks_tom() -> liste_tekst {
+    returner []
+}
+
+funksjon di_registrer_tjeneste(tjenester: liste_tekst, navn: tekst, verdi: tekst) -> heltall {
+    la indeks: heltall = -1
+    la i: heltall = 0
+    mens (i < lengde(tjenester)) {
+        la deler: liste_tekst = tekst_del_på(tjenester[i], "\t")
+        hvis lengde(deler) >= 1 og deler[0] == navn da {
+            indeks = i
+        }
+        i = i + 1
+    }
+    la oppføring: tekst = navn + "\t" + verdi
+    hvis indeks >= 0 da {
+        tjenester[indeks] = oppføring
+        returner lengde(tjenester)
+    }
+    legg_til(tjenester, oppføring)
+    returner lengde(tjenester)
+}
+
+funksjon di_registrer_overstyring(overstyringer: liste_tekst, navn: tekst, verdi: tekst) -> heltall {
+    la indeks: heltall = -1
+    la i: heltall = 0
+    mens (i < lengde(overstyringer)) {
+        la deler: liste_tekst = tekst_del_på(overstyringer[i], "\t")
+        hvis lengde(deler) >= 1 og deler[0] == navn da {
+            indeks = i
+        }
+        i = i + 1
+    }
+    la oppføring: tekst = navn + "\t" + verdi
+    hvis indeks >= 0 da {
+        overstyringer[indeks] = oppføring
+        returner lengde(overstyringer)
+    }
+    legg_til(overstyringer, oppføring)
+    returner lengde(overstyringer)
+}
+
+funksjon di_kontekst_sett(kontekst: liste_tekst, navn: tekst, verdi: tekst) -> heltall {
+    la indeks: heltall = -1
+    la i: heltall = 0
+    mens (i < lengde(kontekst)) {
+        la deler: liste_tekst = tekst_del_på(kontekst[i], "\t")
+        hvis lengde(deler) >= 1 og deler[0] == navn da {
+            indeks = i
+        }
+        i = i + 1
+    }
+    la oppføring: tekst = navn + "\t" + verdi
+    hvis indeks >= 0 da {
+        kontekst[indeks] = oppføring
+        returner lengde(kontekst)
+    }
+    legg_til(kontekst, oppføring)
+    returner lengde(kontekst)
+}
+
+funksjon di_kontekst_hent(kontekst: liste_tekst, navn: tekst) -> tekst {
+    la i: heltall = 0
+    mens (i < lengde(kontekst)) {
+        la deler: liste_tekst = tekst_del_på(kontekst[i], "\t")
+        hvis lengde(deler) >= 1 og deler[0] == navn da {
+            hvis lengde(deler) >= 2 da {
+                returner deler[1]
+            }
+            returner ""
+        }
+        i = i + 1
+    }
+    returner ""
+}
+
+funksjon di_resolver(tjenester: liste_tekst, overstyringer: liste_tekst, navn: tekst, standard: tekst) -> tekst {
+    la i: heltall = 0
+    mens (i < lengde(overstyringer)) {
+        la deler: liste_tekst = tekst_del_på(overstyringer[i], "\t")
+        hvis lengde(deler) >= 1 og deler[0] == navn da {
+            hvis lengde(deler) >= 2 da {
+                returner deler[1]
+            }
+            returner ""
+        }
+        i = i + 1
+    }
+    i = 0
+    mens (i < lengde(tjenester)) {
+        la deler: liste_tekst = tekst_del_på(tjenester[i], "\t")
+        hvis lengde(deler) >= 1 og deler[0] == navn da {
+            hvis lengde(deler) >= 2 da {
+                returner deler[1]
+            }
+            returner ""
+        }
+        i = i + 1
+    }
+    returner standard
+}
+
+funksjon di_hook_registrer(hooks: liste_tekst, fase: tekst, navn: tekst) -> heltall {
+    legg_til(hooks, fase + "\t" + navn)
+    returner lengde(hooks)
+}
+
+funksjon di_startup_hook_registrer(hooks: liste_tekst, navn: tekst) -> heltall {
+    returner di_hook_registrer(hooks, "startup", navn)
+}
+
+funksjon di_shutdown_hook_registrer(hooks: liste_tekst, navn: tekst) -> heltall {
+    returner di_hook_registrer(hooks, "shutdown", navn)
+}
+
+funksjon middleware_tom() -> liste_tekst {
+    returner []
+}
+
+funksjon middleware_registrer(middleware: liste_tekst, fase: tekst, navn: tekst, verdi: tekst) -> heltall {
+    legg_til(middleware, fase + "\t" + navn + "\t" + verdi)
+    returner lengde(middleware)
+}
+
+funksjon http_cors_respons_tekst(kode: heltall, content_type: tekst, body: tekst, origin: tekst, metoder: tekst, headere: tekst) -> tekst {
+    la respons: tekst = "HTTP/1.1 " + tekst_fra_heltall(kode) + " " + http_status_tekst(kode) + "\r\n"
+    respons = respons + "Content-Type: " + content_type + "\r\n"
+    respons = respons + "Content-Length: " + tekst_fra_heltall(tekst_lengde(body)) + "\r\n"
+    hvis origin != "" da {
+        respons = respons + "Access-Control-Allow-Origin: " + origin + "\r\n"
+    }
+    hvis metoder != "" da {
+        respons = respons + "Access-Control-Allow-Methods: " + metoder + "\r\n"
+    }
+    hvis headere != "" da {
+        respons = respons + "Access-Control-Allow-Headers: " + headere + "\r\n"
+    }
+    respons = respons + "\r\n"
+    returner respons + body
+}
+
+funksjon openapi_tom() -> liste_tekst {
+    returner []
+}
+
+funksjon openapi_info_registrer(openapi: liste_tekst, nøkkel: tekst, verdi: tekst) -> heltall {
+    legg_til(openapi, "info\t" + nøkkel + "\t" + verdi)
+    returner lengde(openapi)
+}
+
+funksjon openapi_schema_registrer(openapi: liste_tekst, navn: tekst, type: tekst, eksempel: tekst) -> heltall {
+    legg_til(openapi, "schema\t" + navn + "\t" + type + "\t" + eksempel)
+    returner lengde(openapi)
+}
+
+funksjon openapi_rute_registrer(openapi: liste_tekst, metode: tekst, sti: tekst, sammendrag: tekst, beskrivelse: tekst, tags: tekst, respons_schema: tekst) -> heltall {
+    legg_til(openapi, "route\t" + metode + "\t" + sti + "\t" + sammendrag + "\t" + beskrivelse + "\t" + tags + "\t" + respons_schema)
+    returner lengde(openapi)
+}
+
+funksjon openapi_json(openapi: liste_tekst) -> tekst {
+    la tittel: tekst = ""
+    la versjon: tekst = ""
+    la beskrivelse: tekst = ""
+    la ruter: liste_tekst = []
+    la skjemaer: liste_tekst = []
+    la i: heltall = 0
+    mens (i < lengde(openapi)) {
+        la deler: liste_tekst = tekst_del_på(openapi[i], "\t")
+        hvis lengde(deler) >= 3 og deler[0] == "info" da {
+            hvis deler[1] == "title" da {
+                tittel = deler[2]
+            } ellers hvis deler[1] == "version" da {
+                versjon = deler[2]
+            } ellers hvis deler[1] == "description" da {
+                beskrivelse = deler[2]
+            }
+        } ellers hvis lengde(deler) >= 7 og deler[0] == "route" da {
+            la tags_json: tekst = "["
+            la tagger: liste_tekst = tekst_del_på(deler[5], "|")
+            la j: heltall = 0
+            mens (j < lengde(tagger)) {
+                hvis j > 0 da {
+                    tags_json = tags_json + ","
+                }
+                tags_json = tags_json + "\"" + tagger[j] + "\""
+                j = j + 1
+            }
+            tags_json = tags_json + "]"
+            legg_til(ruter, "{\"method\":\"" + deler[1] + "\",\"path\":\"" + deler[2] + "\",\"summary\":\"" + deler[3] + "\",\"description\":\"" + deler[4] + "\",\"tags\":" + tags_json + ",\"response_code\":200,\"response_schema\":\"" + deler[6] + "\"}")
+        } ellers hvis lengde(deler) >= 4 og deler[0] == "schema" da {
+            legg_til(skjemaer, "{\"name\":\"" + deler[1] + "\",\"type\":\"" + deler[2] + "\",\"example\":\"" + deler[3] + "\"}")
+        }
+        i = i + 1
+    }
+    la resultat: tekst = "{\"openapi\":\"3.0.3\",\"info\":{\"title\":\"" + tittel + "\",\"version\":\"" + versjon + "\",\"description\":\"" + beskrivelse + "\"},\"routes\":["
+    i = 0
+    mens (i < lengde(ruter)) {
+        hvis i > 0 da {
+            resultat = resultat + ","
+        }
+        resultat = resultat + ruter[i]
+        i = i + 1
+    }
+    resultat = resultat + "],\"schemas\":["
+    i = 0
+    mens (i < lengde(skjemaer)) {
+        hvis i > 0 da {
+            resultat = resultat + ","
+        }
+        resultat = resultat + skjemaer[i]
+        i = i + 1
+    }
+    resultat = resultat + "]}"
+    returner resultat
+}
+
+funksjon openapi_docs_html(tittel: tekst, openapi_url: tekst) -> tekst {
+    returner "<!doctype html><html lang=\"no\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><title>" + tittel + "</title></head><body><main><h1>" + tittel + "</h1><p>OpenAPI JSON: <a href=\"" + openapi_url + "\">" + openapi_url + "</a></p></main></body></html>"
+}
+
+funksjon openapi_json_respons(openapi: liste_tekst) -> tekst {
+    returner http_json_respons(openapi_json(openapi))
+}
+
+funksjon openapi_docs_respons(tittel: tekst, openapi_url: tekst) -> tekst {
+    returner http_html_respons(openapi_docs_html(tittel, openapi_url))
+}
+
+funksjon testklient_tom() -> liste_tekst {
+    returner []
+}
+
+funksjon testklient_fixture_registrer(testklient: liste_tekst, metode: tekst, sti: tekst, statuskode: heltall, content_type: tekst, body: tekst) -> heltall {
+    legg_til(testklient, "fixture\t" + metode + "\t" + sti + "\t" + tekst_fra_heltall(statuskode) + "\t" + content_type + "\t" + body)
+    returner lengde(testklient)
+}
+
+funksjon testklient_auth_overstyring_sett(testklient: liste_tekst, navn: tekst, verdi: tekst) -> heltall {
+    la indeks: heltall = -1
+    la i: heltall = 0
+    mens (i < lengde(testklient)) {
+        la deler: liste_tekst = tekst_del_på(testklient[i], "\t")
+        hvis lengde(deler) >= 1 og deler[0] == "auth" og lengde(deler) >= 2 og deler[1] == navn da {
+            indeks = i
+        }
+        i = i + 1
+    }
+    la oppføring: tekst = "auth\t" + navn + "\t" + verdi
+    hvis indeks >= 0 da {
+        testklient[indeks] = oppføring
+        returner lengde(testklient)
+    }
+    legg_til(testklient, oppføring)
+    returner lengde(testklient)
+}
+
+funksjon testklient_auth_overstyring_hent(testklient: liste_tekst, navn: tekst) -> tekst {
+    la i: heltall = 0
+    mens (i < lengde(testklient)) {
+        la deler: liste_tekst = tekst_del_på(testklient[i], "\t")
+        hvis lengde(deler) >= 3 og deler[0] == "auth" og deler[1] == navn da {
+            returner deler[2]
+        }
+        i = i + 1
+    }
+    returner ""
+}
+
+funksjon testklient_send(testklient: liste_tekst, metode: tekst, sti: tekst) -> tekst {
+    la i: heltall = 0
+    mens (i < lengde(testklient)) {
+        la deler: liste_tekst = tekst_del_på(testklient[i], "\t")
+        hvis lengde(deler) >= 6 og deler[0] == "fixture" og deler[1] == metode og router_path_match(deler[2], sti) da {
+            returner http_respons_tekst(heltall_fra_tekst(deler[3]), deler[4], deler[5])
+        }
+        i = i + 1
+    }
+    returner http_respons_tekst(404, http_content_type_text(), "Not Found")
+}
+
+funksjon testklient_respons_statuskode(respons: tekst) -> heltall {
+    la linjer: liste_tekst = tekst_del_på(respons, "\r\n")
+    hvis lengde(linjer) >= 1 da {
+        la deler: liste_tekst = tekst_del_på(linjer[0], " ")
+        hvis lengde(deler) >= 2 da {
+            returner heltall_fra_tekst(deler[1])
+        }
+    }
+    returner 0
+}
+
+funksjon testklient_respons_header(respons: tekst, navn: tekst) -> tekst {
+    la linjer: liste_tekst = tekst_del_på(respons, "\r\n")
+    la i: heltall = 1
+    mens (i < lengde(linjer)) {
+        la linje: tekst = linjer[i]
+        hvis linje == "" da {
+            returner ""
+        }
+        la deler: liste_tekst = tekst_del_på(linje, ": ")
+        hvis lengde(deler) >= 2 og deler[0] == navn da {
+            returner deler[1]
+        }
+        i = i + 1
+    }
+    returner ""
+}
+
+funksjon testklient_respons_body(respons: tekst) -> tekst {
+    la deler: liste_tekst = tekst_del_på(respons, "\r\n\r\n")
+    hvis lengde(deler) >= 2 da {
+        returner deler[1]
+    }
+    returner ""
+}
+
+funksjon testklient_rute_snapshot_json(testklient: liste_tekst) -> tekst {
+    la resultat: tekst = "["
+    la først: bool = sann
+    la i: heltall = 0
+    mens (i < lengde(testklient)) {
+        la deler: liste_tekst = tekst_del_på(testklient[i], "\t")
+        hvis lengde(deler) >= 6 og deler[0] == "fixture" da {
+            hvis ikke først da {
+                resultat = resultat + ","
+            }
+            først = usann
+            resultat = resultat + "{\"method\":\"" + deler[1] + "\",\"path\":\"" + deler[2] + "\",\"status\":" + deler[3] + ",\"content_type\":\"" + deler[4] + "\"}"
+        }
+        i = i + 1
+    }
+    resultat = resultat + "]"
+    returner resultat
+}
+
+funksjon security_auth_header_bearer(token: tekst) -> tekst {
+    returner "Bearer " + token
+}
+
+funksjon security_bearer_token_fra_header(header: tekst) -> tekst {
+    la ren: tekst = tekst_trim(header)
+    hvis tekst_starter_med(ren, "Bearer ") da {
+        returner tekst_slice(ren, 7, tekst_lengde(ren))
+    }
+    returner ""
+}
+
+funksjon security_session_tom() -> liste_tekst {
+    returner []
+}
+
+funksjon security_session_sett(sessioner: liste_tekst, navn: tekst, verdi: tekst) -> heltall {
+    la indeks: heltall = -1
+    la i: heltall = 0
+    mens (i < lengde(sessioner)) {
+        la deler: liste_tekst = tekst_del_på(sessioner[i], "\t")
+        hvis lengde(deler) >= 1 og deler[0] == navn da {
+            indeks = i
+        }
+        i = i + 1
+    }
+    la oppføring: tekst = navn + "\t" + verdi
+    hvis indeks >= 0 da {
+        sessioner[indeks] = oppføring
+        returner lengde(sessioner)
+    }
+    legg_til(sessioner, oppføring)
+    returner lengde(sessioner)
+}
+
+funksjon security_session_hent(sessioner: liste_tekst, navn: tekst) -> tekst {
+    la i: heltall = 0
+    mens (i < lengde(sessioner)) {
+        la deler: liste_tekst = tekst_del_på(sessioner[i], "\t")
+        hvis lengde(deler) >= 2 og deler[0] == navn da {
+            returner deler[1]
+        }
+        i = i + 1
+    }
+    returner ""
+}
+
+funksjon security_rate_limit_tom() -> liste_tekst {
+    returner []
+}
+
+funksjon security_rate_limit_registrer(rate_limits: liste_tekst, navn: tekst, maks_antall: heltall, vindu_sekunder: heltall) -> heltall {
+    la indeks: heltall = -1
+    la i: heltall = 0
+    mens (i < lengde(rate_limits)) {
+        la deler: liste_tekst = tekst_del_på(rate_limits[i], "\t")
+        hvis lengde(deler) >= 1 og deler[0] == navn da {
+            indeks = i
+        }
+        i = i + 1
+    }
+    la oppføring: tekst = navn + "\t" + tekst_fra_heltall(maks_antall) + "\t" + tekst_fra_heltall(vindu_sekunder)
+    hvis indeks >= 0 da {
+        rate_limits[indeks] = oppføring
+        returner lengde(rate_limits)
+    }
+    legg_til(rate_limits, oppføring)
+    returner lengde(rate_limits)
+}
+
+funksjon security_rate_limit_maks(rate_limits: liste_tekst, navn: tekst) -> heltall {
+    la i: heltall = 0
+    mens (i < lengde(rate_limits)) {
+        la deler: liste_tekst = tekst_del_på(rate_limits[i], "\t")
+        hvis lengde(deler) >= 2 og deler[0] == navn da {
+            returner heltall_fra_tekst(deler[1])
+        }
+        i = i + 1
+    }
+    returner 0
+}
+
+funksjon security_rate_limit_tillatt(rate_limits: liste_tekst, navn: tekst, forsøk: heltall) -> bool {
+    la maks_antall: heltall = security_rate_limit_maks(rate_limits, navn)
+    hvis maks_antall <= 0 da {
+        returner sann
+    }
+    returner forsøk < maks_antall
+}
+
+funksjon security_cors_csrf_guide() -> tekst {
+    returner "Bruk CORS for å begrense hvilke origin-er som kan kalle API-et, og legg inn CSRF-beskyttelse for state-changing requests når du bruker cookies eller sessioner."
+}

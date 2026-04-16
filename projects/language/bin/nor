@@ -1,0 +1,13 @@
+#!/usr/bin/env sh
+set -eu
+
+ROOT_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
+BINARY="$ROOT_DIR/dist/norscode"
+
+if [ ! -x "$BINARY" ]; then
+    echo "Norscode binary not found at: $BINARY" >&2
+    echo "Denne workspace-kopien mangler også build-wrapperen som README viser til." >&2
+    exit 1
+fi
+
+exec "$BINARY" "$@"

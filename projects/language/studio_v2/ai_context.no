@@ -1,0 +1,65 @@
+# Studio v2 AI context foundation.
+
+funksjon studio_v2_ai_kontekst_tom() -> liste_tekst {
+    returner []
+}
+
+funksjon studio_v2_ai_kontekst_fra_prosjekt(prosjektnavn: tekst, rot: tekst) -> liste_tekst {
+    returner [
+        "prosjekt\t" + prosjektnavn,
+        "rot\t" + rot
+    ]
+}
+
+funksjon studio_v2_ai_kontekst_fra_fil(sti: tekst, innhold: tekst) -> liste_tekst {
+    returner [
+        "fil\t" + sti,
+        "linjer\t" + tekst_fra_heltall(lengde(del_linjer(innhold)))
+    ]
+}
+
+funksjon studio_v2_ai_kontekst_fra_diagnostikk(diagnostikk: liste_tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la i: heltall = 0
+    mens (i < lengde(diagnostikk)) {
+        legg_til(resultat, "diagnostikk\t" + diagnostikk[i])
+        i = i + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_ai_kontekst_fra_valg(sti: tekst, innhold: tekst, startlinje: heltall, sluttlinje: heltall) -> liste_tekst {
+    la resultat: liste_tekst = studio_v2_ai_kontekst_fra_fil(sti, innhold)
+    legg_til(resultat, "utvalg\t" + tekst_fra_heltall(startlinje) + "-" + tekst_fra_heltall(sluttlinje))
+    returner resultat
+}
+
+funksjon studio_v2_ai_kontekst_sammendrag(prosjektnavn: tekst, rot: tekst, sti: tekst, innhold: tekst, diagnostikk: liste_tekst) -> liste_tekst {
+    la resultat: liste_tekst = studio_v2_ai_kontekst_fra_prosjekt(prosjektnavn, rot)
+    la filkontekst: liste_tekst = studio_v2_ai_kontekst_fra_fil(sti, innhold)
+    la di: liste_tekst = studio_v2_ai_kontekst_fra_diagnostikk(diagnostikk)
+    legg_til(resultat, "aktiv_fil\t" + sti)
+    legg_til(resultat, "åpne_filer\t3")
+    la i: heltall = 0
+    mens (i < lengde(filkontekst)) {
+        legg_til(resultat, filkontekst[i])
+        i = i + 1
+    }
+    i = 0
+    mens (i < lengde(di)) {
+        legg_til(resultat, di[i])
+        i = i + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_ai_kontekst_antall(kontekst: liste_tekst) -> heltall {
+    returner lengde(kontekst)
+}
+
+funksjon studio_v2_ai_kontekst_forste(kontekst: liste_tekst) -> tekst {
+    hvis lengde(kontekst) > 0 da {
+        returner kontekst[0]
+    }
+    returner ""
+}

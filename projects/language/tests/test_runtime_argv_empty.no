@@ -1,0 +1,8 @@
+test "argv uten argumenter" {
+    la args: liste_tekst = argv()
+    assert_eq(lengde(args), 0)
+}
+
+funksjon start() -> heltall {
+    returner 0
+}

@@ -1,0 +1,3304 @@
+bruk std.gui som gui
+bruk studio_v2.studio_state som workspace
+bruk studio_v2.project som project
+bruk studio_v2.editor som editor
+bruk studio_v2.symbol som symbol
+bruk studio_v2.actions som actions
+bruk studio_v2.diagnostics som diagnostics
+bruk studio_v2.ui som ui
+
+funksjon studio_v2_gui_liste_fyll(widget_id: heltall, elementer: liste_tekst) -> heltall {
+    hvis widget_id <= 0 da {
+        returner widget_id
+    }
+    la indeks: heltall = 0
+    mens (indeks < lengde(elementer)) {
+        gui.liste_legg_til(widget_id, elementer[indeks])
+        indeks = indeks + 1
+    }
+    returner widget_id
+}
+
+funksjon studio_v2_gui_liste_tøm(widget_id: heltall) -> heltall {
+    hvis widget_id <= 0 da {
+        returner widget_id
+    }
+    gui.liste_tom(widget_id)
+    returner widget_id
+}
+
+funksjon studio_v2_gui_liste_sett(widget_id: heltall, elementer: liste_tekst) -> heltall {
+    hvis widget_id <= 0 da {
+        returner widget_id
+    }
+    la valgt: tekst = gui.liste_valgt(widget_id)
+    studio_v2_gui_liste_tøm(widget_id)
+    studio_v2_gui_liste_fyll(widget_id, elementer)
+    hvis lengde(elementer) > 0 da {
+        la valgt_indeks: heltall = studio_v2_gui_liste_indeks_fra_valgt(elementer, valgt)
+        hvis valgt_indeks < 0 da {
+            valgt_indeks = 0
+        }
+        gui.liste_velg(widget_id, valgt_indeks)
+    }
+    returner widget_id
+}
+
+funksjon studio_v2_gui_liste_indeks_fra_valgt(elementer: liste_tekst, valgt: tekst) -> heltall {
+    la indeks: heltall = 0
+    mens (indeks < lengde(elementer)) {
+        hvis elementer[indeks] == valgt da {
+            returner indeks
+        }
+        indeks = indeks + 1
+    }
+    returner -1
+}
+
+funksjon studio_v2_gui_liste_foresatt_indeks(indeks: heltall, antall: heltall, delta: heltall) -> heltall {
+    hvis antall <= 0 da {
+        returner -1
+    }
+    la resultat: heltall = indeks
+    hvis resultat < 0 da {
+        hvis delta < 0 da {
+            returner antall - 1
+        }
+        returner 0
+    }
+    resultat = resultat + delta
+    hvis resultat < 0 da {
+        returner antall - 1
+    }
+    hvis resultat >= antall da {
+        returner 0
+    }
+    returner resultat
+}
+
+funksjon studio_v2_gui_liste_valgt_indeks(widget_id: heltall) -> heltall {
+    la valgt: tekst = gui.liste_valgt(widget_id)
+    la antall: heltall = gui.liste_antall(widget_id)
+    la indeks: heltall = 0
+    mens (indeks < antall) {
+        hvis gui.liste_hent(widget_id, indeks) == valgt da {
+            returner indeks
+        }
+        indeks = indeks + 1
+    }
+    returner -1
+}
+
+funksjon studio_v2_gui_liste_velg_relativ(widget_id: heltall, delta: heltall) -> heltall {
+    hvis widget_id <= 0 da {
+        returner widget_id
+    }
+    la antall: heltall = gui.liste_antall(widget_id)
+    la indeks: heltall = studio_v2_gui_liste_valgt_indeks(widget_id)
+    la ny_indeks: heltall = studio_v2_gui_liste_foresatt_indeks(indeks, antall, delta)
+    hvis ny_indeks >= 0 da {
+        gui.liste_velg(widget_id, ny_indeks)
+    }
+    returner widget_id
+}
+
+funksjon studio_v2_gui_sett_tekst_sikkert(widget_id: heltall, tekst_verdi: tekst) -> heltall {
+    hvis widget_id <= 0 da {
+        returner widget_id
+    }
+    gui.sett_tekst(widget_id, tekst_verdi)
+    returner widget_id
+}
+
+funksjon studio_v2_gui_markert_valgt_sikkert(widget_id: heltall) -> tekst {
+    hvis widget_id <= 0 da {
+        returner ""
+    }
+    la valgt: tekst = gui.hent_tekst(widget_id)
+    hvis valgt != "" da {
+        returner valgt
+    }
+    returner gui.liste_valgt(widget_id)
+}
+
+funksjon studio_v2_gui_liste_velg_neste(widget_id: heltall) -> heltall {
+    returner studio_v2_gui_liste_velg_relativ(widget_id, 1)
+}
+
+funksjon studio_v2_gui_liste_velg_forrige(widget_id: heltall) -> heltall {
+    returner studio_v2_gui_liste_velg_relativ(widget_id, -1)
+}
+
+funksjon studio_v2_gui_logg_fil(widget_id: heltall) -> heltall {
+    la valgt: tekst = studio_v2_gui_prosjekt_tre_valg(gui.liste_valgt(widget_id))
+    hvis valgt != "" da {
+        la rot: tekst = workspace.studio_v2_state_rot(argv())
+        workspace.studio_v2_state_session_project_tree_anchor_skriv_med_tilstand(rot, valgt)
+    }
+    skriv("Fil valgt: " + valgt)
+    returner widget_id
+}
+
+funksjon studio_v2_gui_logg_kommando(widget_id: heltall) -> heltall {
+    skriv("Kommando valgt: " + studio_v2_gui_markert_valg(gui.liste_valgt(widget_id)))
+    returner widget_id
+}
+
+funksjon studio_v2_gui_logg_diagnostikk(widget_id: heltall) -> heltall {
+    skriv("Diagnostikk valgt: " + studio_v2_gui_markert_valg(gui.liste_valgt(widget_id)))
+    returner widget_id
+}
+
+funksjon studio_v2_gui_logg_ai(widget_id: heltall) -> heltall {
+    skriv("AI valgt: " + studio_v2_gui_markert_valg(gui.liste_valgt(widget_id)))
+    returner widget_id
+}
+
+funksjon studio_v2_gui_logg_rename(widget_id: heltall) -> heltall {
+    skriv("Rename preview valgt: " + studio_v2_gui_markert_valg(gui.liste_valgt(widget_id)))
+    returner widget_id
+}
+
+funksjon studio_v2_gui_breakpoint_linjenummer(tekstverdi: tekst) -> heltall {
+    la ren: tekst = studio_v2_gui_markert_valg(tekstverdi)
+    hvis tekst_starter_med(ren, "● ") da {
+        ren = tekst_erstatt(ren, "● ", "")
+    } ellers hvis tekst_starter_med(ren, "· ") da {
+        ren = tekst_erstatt(ren, "· ", "")
+    }
+    la deler: liste_tekst = tekst_del_på(ren, ":")
+    hvis lengde(deler) > 0 da {
+        returner heltall_fra_tekst(tekst_trim(deler[0]))
+    }
+    returner 0
+}
+
+funksjon studio_v2_gui_oppdater_breakpoint(widget_id: heltall) -> heltall {
+    la høyre: heltall = gui.foresatt(widget_id)
+    la rot: tekst = workspace.studio_v2_state_rot(argv())
+    la session_data: liste_tekst = workspace.studio_v2_state_session_les(rot)
+    la aktiv_fil: tekst = workspace.studio_v2_state_aktiv_fil(rot)
+    la valgt: tekst = studio_v2_gui_markert_valg(gui.liste_valgt(widget_id))
+    la linje_nummer: heltall = studio_v2_gui_breakpoint_linjenummer(valgt)
+    hvis linje_nummer > 0 da {
+        workspace.studio_v2_state_session_breakpoint_toggle(rot, aktiv_fil, linje_nummer)
+        workspace.studio_v2_state_session_debug_skriv_med_tilstand(rot, workspace.studio_v2_state_session_run_config(session_data), "paused", "breakpoint", linje_nummer)
+    }
+    returner widget_id
+}
+
+funksjon studio_v2_gui_debug_oppdater_fra_handling(widget_id: heltall, handling: tekst) -> heltall {
+    la rot: tekst = workspace.studio_v2_state_rot(argv())
+    la session_data: liste_tekst = workspace.studio_v2_state_session_les(rot)
+    la aktiv_fil: tekst = workspace.studio_v2_state_aktiv_fil(rot)
+    hvis aktiv_fil == "" da {
+        aktiv_fil = workspace.studio_v2_state_session_aktiv_fil(session_data)
+    }
+    la buffer: liste_tekst = editor.studio_v2_editor_åpne(workspace.studio_v2_state_fil_innhold(rot, aktiv_fil))
+    la breakpoints: liste_tekst = workspace.studio_v2_state_session_breakpoints_for_fil(session_data, aktiv_fil)
+    la debug_linje: heltall = workspace.studio_v2_state_session_debug_linje(session_data)
+    hvis debug_linje < 1 da {
+        debug_linje = 1
+    }
+    la debug_modus: tekst = "paused"
+    hvis handling == "step_over" da {
+        debug_linje = editor.studio_v2_editor_debug_step_over(buffer, debug_linje)
+    } ellers hvis handling == "step_into" da {
+        debug_linje = editor.studio_v2_editor_debug_step_into(buffer, debug_linje)
+    } ellers hvis handling == "step_out" da {
+        debug_linje = editor.studio_v2_editor_debug_step_out(buffer, debug_linje)
+    } ellers hvis handling == "resume" da {
+        debug_linje = editor.studio_v2_editor_debug_resume(buffer, breakpoints, debug_linje)
+        debug_modus = "running"
+    }
+    hvis debug_linje < 1 da {
+        debug_linje = 1
+    }
+    workspace.studio_v2_state_session_debug_skriv_med_tilstand(rot, workspace.studio_v2_state_session_debug_config(session_data), debug_modus, handling, debug_linje)
+    returner widget_id
+}
+
+funksjon studio_v2_gui_debug_step_over(widget_id: heltall) -> heltall {
+    returner studio_v2_gui_debug_oppdater_fra_handling(widget_id, "step_over")
+}
+
+funksjon studio_v2_gui_debug_step_into(widget_id: heltall) -> heltall {
+    returner studio_v2_gui_debug_oppdater_fra_handling(widget_id, "step_into")
+}
+
+funksjon studio_v2_gui_debug_step_out(widget_id: heltall) -> heltall {
+    returner studio_v2_gui_debug_oppdater_fra_handling(widget_id, "step_out")
+}
+
+funksjon studio_v2_gui_debug_resume(widget_id: heltall) -> heltall {
+    returner studio_v2_gui_debug_oppdater_fra_handling(widget_id, "resume")
+}
+
+funksjon studio_v2_gui_oppdater_rename_forhåndsvisning(widget_id: heltall) -> heltall {
+    la høyre: heltall = gui.foresatt(widget_id)
+    la rename_status: heltall = gui.barn(høyre, 18)
+    la rename_liste: heltall = gui.barn(høyre, 19)
+    la rename_preview_status: heltall = gui.barn(høyre, 27)
+    la rename_from: heltall = gui.barn(høyre, 23)
+    la rename_to: heltall = gui.barn(høyre, 25)
+    la rot: tekst = workspace.studio_v2_state_rot(argv())
+    la gammelt: tekst = gui.hent_tekst(rename_from)
+    la nytt: tekst = gui.hent_tekst(rename_to)
+    la workspace_filer: liste_tekst = workspace.studio_v2_state_workspace_filer(rot)
+    la preview: liste_tekst = symbol.studio_v2_symbol_rename_preview_fra_filer(workspace_filer, gammelt, nytt)
+    gui.sett_tekst(rename_status, ui.studio_v2_ui_deloverskrift("Navigation") + " " + ui.studio_v2_ui_status_chip("Rename", tekst_fra_heltall(lengde(preview))))
+    gui.sett_tekst(rename_preview_status, ui.studio_v2_ui_status_chip("Preview", tekst_fra_heltall(lengde(preview))) + " · " + ui.studio_v2_ui_rename_apply_hint())
+    studio_v2_gui_liste_sett(rename_liste, studio_v2_gui_begrens_liste(studio_v2_gui_rename_linje(preview), 6))
+    returner widget_id
+}
+
+funksjon studio_v2_gui_oppdater_rename_appliser(widget_id: heltall) -> heltall {
+    la høyre: heltall = gui.foresatt(widget_id)
+    la rename_status: heltall = gui.barn(høyre, 18)
+    la rename_liste: heltall = gui.barn(høyre, 19)
+    la rename_preview_status: heltall = gui.barn(høyre, 27)
+    la rename_from: heltall = gui.barn(høyre, 23)
+    la rename_to: heltall = gui.barn(høyre, 25)
+    la rot: tekst = workspace.studio_v2_state_rot(argv())
+    la gammelt: tekst = gui.hent_tekst(rename_from)
+    la nytt: tekst = gui.hent_tekst(rename_to)
+    la rename_status_nytt: tekst = symbol.studio_v2_symbol_rename_status(rot, gammelt, nytt)
+    hvis rename_status_nytt != "klar" da {
+        la konflikt: tekst = symbol.studio_v2_symbol_rename_konflikt_fra_indeks(symbol.studio_v2_symbol_indeks_fra_workspace(rot), gammelt, nytt)
+        la konflikt_tekst: tekst = rename_status_nytt
+        hvis konflikt != "" da {
+            konflikt_tekst = konflikt_tekst + " · " + symbol.studio_v2_symbol_oppføring_sted(konflikt)
+        }
+        gui.sett_tekst(rename_status, ui.studio_v2_ui_status_chip("Rename", konflikt_tekst))
+        gui.sett_tekst(rename_preview_status, ui.studio_v2_ui_status_chip("Preview", "blokert") + " · " + ui.studio_v2_ui_rename_apply_hint())
+        returner widget_id
+    }
+    hvis gammelt == "" eller nytt == "" da {
+        gui.sett_tekst(rename_status, ui.studio_v2_ui_status_chip("Rename", "fyll inn begge felt"))
+        gui.sett_tekst(rename_preview_status, ui.studio_v2_ui_status_chip("Preview", "tom") + " · " + ui.studio_v2_ui_rename_apply_hint())
+        returner widget_id
+    }
+    la workspace_filer: liste_tekst = workspace.studio_v2_state_workspace_filer(rot)
+    la preview: liste_tekst = symbol.studio_v2_symbol_rename_preview_fra_filer(workspace_filer, gammelt, nytt)
+    gui.sett_tekst(rename_status, ui.studio_v2_ui_status_chip("Rename", tekst_fra_heltall(lengde(preview))))
+    gui.sett_tekst(rename_preview_status, ui.studio_v2_ui_status_chip("Preview", tekst_fra_heltall(lengde(preview))) + " · " + ui.studio_v2_ui_rename_apply_hint())
+    studio_v2_gui_liste_sett(rename_liste, studio_v2_gui_begrens_liste(studio_v2_gui_rename_linje(preview), 6))
+    la antall: heltall = symbol.studio_v2_symbol_rename_appliser_filer(rot, workspace_filer, gammelt, nytt)
+    gui.sett_tekst(rename_status, ui.studio_v2_ui_status_chip("Applied", tekst_fra_heltall(antall)) + " · " + ui.studio_v2_ui_rename_apply_hint())
+    gui.sett_tekst(rename_preview_status, ui.studio_v2_ui_status_chip("Preview", tekst_fra_heltall(lengde(preview))) + " · " + ui.studio_v2_ui_rename_apply_hint())
+    studio_v2_gui_liste_sett(rename_liste, studio_v2_gui_begrens_liste(studio_v2_gui_rename_linje(preview), 6))
+    la rot_panel: heltall = studio_v2_gui_steg_opp(widget_id, 2)
+    la midten: heltall = studio_v2_gui_hovedrad_midten_widget(rot_panel)
+    la aktiv_fil: tekst = workspace.studio_v2_state_aktiv_fil(rot)
+    studio_v2_gui_oppdater_editor(midten, rot, aktiv_fil, 1)
+    returner widget_id
+}
+
+funksjon studio_v2_gui_logg_sok(widget_id: heltall) -> heltall {
+    la rot: tekst = workspace.studio_v2_state_rot(argv())
+    la query: tekst = gui.hent_tekst(widget_id)
+    workspace.studio_v2_state_session_search_query_skriv_med_tilstand(rot, query)
+    skriv("Søk: " + query)
+    returner widget_id
+}
+
+funksjon studio_v2_gui_steg_opp(widget_id: heltall, trinn: heltall) -> heltall {
+    la teller: heltall = 0
+    mens (teller < trinn og widget_id > 0) {
+        widget_id = gui.foresatt(widget_id)
+        teller = teller + 1
+    }
+    returner widget_id
+}
+
+funksjon studio_v2_gui_trekk_ut_deler(oppføring: tekst) -> liste_tekst {
+    returner tekst_del_på(oppføring, "\t")
+}
+
+funksjon studio_v2_gui_trekk_ut_fil(oppføring: tekst) -> tekst {
+    la deler: liste_tekst = studio_v2_gui_trekk_ut_deler(oppføring)
+    hvis lengde(deler) > 0 da {
+        returner deler[0]
+    }
+    returner ""
+}
+
+funksjon studio_v2_gui_trekk_ut_linje(oppføring: tekst) -> heltall {
+    la deler: liste_tekst = studio_v2_gui_trekk_ut_deler(oppføring)
+    hvis lengde(deler) > 1 da {
+        returner heltall_fra_tekst(deler[1])
+    }
+    returner 0
+}
+
+funksjon studio_v2_gui_trekk_ut_kolonne(oppføring: tekst) -> heltall {
+    la deler: liste_tekst = studio_v2_gui_trekk_ut_deler(oppføring)
+    hvis lengde(deler) > 6 da {
+        returner heltall_fra_tekst(deler[6])
+    }
+    returner 0
+}
+
+funksjon studio_v2_gui_trekk_ut_melding(oppføring: tekst) -> tekst {
+    la deler: liste_tekst = studio_v2_gui_trekk_ut_deler(oppføring)
+    hvis lengde(deler) > 3 da {
+        returner deler[3]
+    }
+    returner ""
+}
+
+funksjon studio_v2_gui_tab_valg(tab: tekst) -> tekst {
+    hvis tekst_starter_med(tab, "● ") da {
+        returner tekst_erstatt(tab, "● ", "")
+    }
+    hvis tekst_starter_med(tab, "▶ ") da {
+        returner tekst_erstatt(tab, "▶ ", "")
+    }
+    hvis tekst_starter_med(tab, "· ") da {
+        returner tekst_erstatt(tab, "· ", "")
+    }
+    returner tab
+}
+
+funksjon studio_v2_gui_tab_linje(tabs: liste_tekst, aktiv_tab: tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la indeks: heltall = 0
+    mens (indeks < lengde(tabs)) {
+        la tab: tekst = tabs[indeks]
+        hvis tab == aktiv_tab da {
+            legg_til(resultat, "▶ " + tab)
+        } ellers {
+            legg_til(resultat, "· " + tab)
+        }
+        indeks = indeks + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_gui_fil_linje(filer: liste_tekst, aktiv_fil: tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la indeks: heltall = 0
+    mens (indeks < lengde(filer)) {
+        la fil: tekst = filer[indeks]
+        hvis fil == aktiv_fil da {
+            legg_til(resultat, "▶ " + fil)
+        } ellers {
+            legg_til(resultat, "· " + fil)
+        }
+        indeks = indeks + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_gui_prosjekt_linje(prosjekter: liste_tekst, aktiv_prosjekt: tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la indeks: heltall = 0
+    mens (indeks < lengde(prosjekter)) {
+        la prosjekt: tekst = prosjekter[indeks]
+        hvis prosjekt == aktiv_prosjekt da {
+            legg_til(resultat, "▶ " + prosjekt)
+        } ellers {
+            legg_til(resultat, "· " + prosjekt)
+        }
+        indeks = indeks + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_gui_recent_linje(prosjekter: liste_tekst, aktiv_prosjekt: tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la indeks: heltall = 0
+    mens (indeks < lengde(prosjekter)) {
+        la prosjekt: tekst = prosjekter[indeks]
+        hvis prosjekt == aktiv_prosjekt da {
+            legg_til(resultat, "★ " + prosjekt)
+        } ellers {
+            legg_til(resultat, "· " + prosjekt)
+        }
+        indeks = indeks + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_gui_prosjekt_tre_mappe(sti: tekst) -> tekst {
+    la deler: liste_tekst = tekst_del_på(sti, "/")
+    hvis lengde(deler) > 1 da {
+        la mappe: tekst = ""
+        la indeks: heltall = 0
+        mens (indeks + 1 < lengde(deler)) {
+            hvis mappe != "" da {
+                mappe = mappe + "/"
+            }
+            mappe = mappe + deler[indeks]
+            indeks = indeks + 1
+        }
+        returner mappe + "/"
+    }
+    returner "."
+}
+
+funksjon studio_v2_gui_prosjekt_tre_nivå(sti: tekst) -> heltall {
+    la mappe: tekst = studio_v2_gui_prosjekt_tre_mappe(sti)
+    hvis mappe == "." da {
+        returner 0
+    }
+    la nivå: heltall = 0
+    la indeks: heltall = 0
+    mens (indeks < tekst_lengde(mappe)) {
+        hvis tekst_slice(mappe, indeks, indeks + 1) == "/" da {
+            nivå = nivå + 1
+        }
+        indeks = indeks + 1
+    }
+    returner nivå
+}
+
+funksjon studio_v2_gui_prosjekt_tre_indent(nivå: heltall) -> tekst {
+    la resultat: tekst = ""
+    la indeks: heltall = 0
+    mens (indeks < nivå) {
+        resultat = resultat + "  "
+        indeks = indeks + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_gui_prosjekt_tre_er_foldet(tree_fold: liste_tekst, mappe: tekst) -> bool {
+    la indeks: heltall = 0
+    mens (indeks < lengde(tree_fold)) {
+        hvis tree_fold[indeks] == mappe da {
+            returner sann
+        }
+        indeks = indeks + 1
+    }
+    returner usann
+}
+
+funksjon studio_v2_gui_prosjekt_tre_antall_foldet(tree_fold: liste_tekst) -> heltall {
+    returner lengde(tree_fold)
+}
+
+funksjon studio_v2_gui_prosjekt_tre_mappe_valg(tekstverdi: tekst) -> tekst {
+    la ren: tekst = studio_v2_gui_markert_valg(tekstverdi)
+    mens (tekst_starter_med(ren, "  ")) {
+        ren = tekst_slice(ren, 2, tekst_lengde(ren))
+    }
+    hvis tekst_starter_med(ren, "▸ ") eller tekst_starter_med(ren, "▾ ") da {
+        returner tekst_erstatt(tekst_erstatt(ren, "▸ ", ""), "▾ ", "")
+    }
+    returner ""
+}
+
+funksjon studio_v2_gui_prosjekt_tre(filer: liste_tekst, aktiv_fil: tekst, tree_fold: liste_tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la gjeldende_mappe: tekst = ""
+    la indeks: heltall = 0
+    mens (indeks < lengde(filer)) {
+        la fil: tekst = filer[indeks]
+        la mappe: tekst = studio_v2_gui_prosjekt_tre_mappe(fil)
+        la nivå: heltall = studio_v2_gui_prosjekt_tre_nivå(fil)
+        la innrykk: tekst = studio_v2_gui_prosjekt_tre_indent(nivå)
+        hvis mappe != gjeldende_mappe da {
+            gjeldende_mappe = mappe
+            hvis studio_v2_gui_prosjekt_tre_er_foldet(tree_fold, mappe) da {
+                legg_til(resultat, innrykk + "▸ " + mappe)
+            } ellers {
+                legg_til(resultat, innrykk + "▾ " + mappe)
+            }
+        }
+        hvis ikke studio_v2_gui_prosjekt_tre_er_foldet(tree_fold, mappe) da {
+            hvis fil == aktiv_fil da {
+                legg_til(resultat, innrykk + "  ▶ " + fil)
+            } ellers {
+                legg_til(resultat, innrykk + "  · " + fil)
+            }
+        }
+        indeks = indeks + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_gui_prosjekt_tre_valg(tekstverdi: tekst) -> tekst {
+    la ren: tekst = studio_v2_gui_markert_valg(tekstverdi)
+    hvis tekst_starter_med(ren, "  ") da {
+        mens (tekst_starter_med(ren, "  ")) {
+            ren = tekst_slice(ren, 2, tekst_lengde(ren))
+        }
+    }
+    hvis tekst_starter_med(ren, "▸ ") eller tekst_starter_med(ren, "▾ ") da {
+        returner studio_v2_gui_prosjekt_tre_mappe_valg(ren)
+    }
+    returner ren
+}
+
+funksjon studio_v2_gui_prosjekt_aktiv_node(rot: tekst, session: liste_tekst, aktiv_fil: tekst) -> tekst {
+    la prosjekt_anker: tekst = workspace.studio_v2_state_session_project_tree_anchor(session)
+    hvis prosjekt_anker != "" da {
+        la filer: liste_tekst = workspace.studio_v2_state_workspace_filer(rot)
+        la indeks: heltall = 0
+        mens (indeks < lengde(filer)) {
+            hvis filer[indeks] == prosjekt_anker da {
+                returner prosjekt_anker
+            }
+            indeks = indeks + 1
+        }
+    }
+    la sist_navigasjon: tekst = workspace.studio_v2_state_session_sist_navigasjon(session)
+    hvis sist_navigasjon != "" da {
+        la filer: liste_tekst = workspace.studio_v2_state_workspace_filer(rot)
+        la indeks: heltall = 0
+        mens (indeks < lengde(filer)) {
+            hvis filer[indeks] == sist_navigasjon da {
+                returner sist_navigasjon
+            }
+            indeks = indeks + 1
+        }
+    }
+    returner aktiv_fil
+}
+
+funksjon studio_v2_gui_fokus_tekst(fokus: tekst) -> tekst {
+    returner "Focus: " + fokus
+}
+
+funksjon studio_v2_gui_fokus_etikett(fokus: tekst) -> tekst {
+    hvis fokus == ui.studio_v2_ui_label_project() da {
+        returner ui.studio_v2_ui_label_project()
+    }
+    hvis fokus == ui.studio_v2_ui_label_editor() da {
+        returner ui.studio_v2_ui_label_editor()
+    }
+    hvis fokus == ui.studio_v2_ui_label_inspect() da {
+        returner ui.studio_v2_ui_label_inspect()
+    }
+    returner ui.studio_v2_ui_label_editor()
+}
+
+funksjon studio_v2_gui_tool_window_etikett(tool_window: tekst) -> tekst {
+    hvis tool_window == "Problems" da {
+        returner "Problems"
+    }
+    hvis tool_window == "References" da {
+        returner "References"
+    }
+    hvis tool_window == "Structure" da {
+        returner "Structure"
+    }
+    hvis tool_window == "Terminal" da {
+        returner "Terminal"
+    }
+    hvis tool_window == ui.studio_v2_ui_label_project() da {
+        returner ui.studio_v2_ui_label_project()
+    }
+    hvis tool_window == ui.studio_v2_ui_label_editor() da {
+        returner ui.studio_v2_ui_label_editor()
+    }
+    hvis tool_window == ui.studio_v2_ui_label_inspect() da {
+        returner ui.studio_v2_ui_label_inspect()
+    }
+    returner "none"
+}
+
+funksjon studio_v2_gui_tool_window_tekst(tool_window: tekst) -> tekst {
+    returner "Tool window: " + studio_v2_gui_tool_window_etikett(tool_window)
+}
+
+funksjon studio_v2_gui_fokus_knapp_tekst(navn: tekst, aktivt: tekst) -> tekst {
+    hvis navn == aktivt da {
+        returner "▶ " + navn
+    }
+    returner "· " + navn
+}
+
+funksjon studio_v2_gui_kompakt_visning(workspace_filer: liste_tekst, recent_projects: liste_tekst, diagnose: liste_tekst, referanser: liste_tekst, tabs: liste_tekst) -> bool {
+    hvis lengde(workspace_filer) > 12 da {
+        returner sann
+    }
+    hvis lengde(recent_projects) > 4 da {
+        returner sann
+    }
+    hvis lengde(diagnose) > 6 da {
+        returner sann
+    }
+    hvis lengde(referanser) > 6 da {
+        returner sann
+    }
+    hvis lengde(tabs) > 5 da {
+        returner sann
+    }
+    returner usann
+}
+
+funksjon studio_v2_gui_prosjekt_tre_maks_fra_filer(workspace_filer: liste_tekst) -> heltall {
+    hvis lengde(workspace_filer) > 12 da {
+        returner 4
+    }
+    returner 6
+}
+
+funksjon studio_v2_gui_fokus_status_widget(widget_id: heltall) -> heltall {
+    hvis widget_id <= 0 da {
+        returner 0
+    }
+    la rad: heltall = gui.foresatt(widget_id)
+    hvis rad <= 0 da {
+        returner 0
+    }
+    returner gui.barn(rad, 3)
+}
+
+funksjon studio_v2_gui_hovedrad_widget(widget_id: heltall) -> heltall {
+    returner gui.barn(widget_id, 8)
+}
+
+funksjon studio_v2_gui_hovedrad_venstre_widget(widget_id: heltall) -> heltall {
+    la hovedrad: heltall = studio_v2_gui_hovedrad_widget(widget_id)
+    returner gui.barn(hovedrad, 1)
+}
+
+funksjon studio_v2_gui_hovedrad_midten_widget(widget_id: heltall) -> heltall {
+    la hovedrad: heltall = studio_v2_gui_hovedrad_widget(widget_id)
+    returner gui.barn(hovedrad, 2)
+}
+
+funksjon studio_v2_gui_hovedrad_høyre_widget(widget_id: heltall) -> heltall {
+    la hovedrad: heltall = studio_v2_gui_hovedrad_widget(widget_id)
+    returner gui.barn(hovedrad, 3)
+}
+
+funksjon studio_v2_gui_rot_fokusrad_widget(widget_id: heltall) -> heltall {
+    returner gui.barn(widget_id, 9)
+}
+
+funksjon studio_v2_gui_rot_palette_widget(widget_id: heltall) -> heltall {
+    returner gui.barn(widget_id, 5)
+}
+
+funksjon studio_v2_gui_sok_status_widget(widget_id: heltall) -> heltall {
+    returner gui.barn(widget_id, 3)
+}
+
+funksjon studio_v2_gui_sok_liste_widget(widget_id: heltall) -> heltall {
+    returner gui.barn(widget_id, 4)
+}
+
+funksjon studio_v2_gui_venstre_aktiv_tekst_widget(widget_id: heltall) -> heltall {
+    returner gui.barn(widget_id, 2)
+}
+
+funksjon studio_v2_gui_venstre_filer_liste_widget(widget_id: heltall) -> heltall {
+    returner gui.barn(widget_id, 3)
+}
+
+funksjon studio_v2_gui_midten_tabs_liste_widget(widget_id: heltall) -> heltall {
+    returner gui.barn(widget_id, 2)
+}
+
+funksjon studio_v2_gui_midten_editor_widget(widget_id: heltall) -> heltall {
+    returner gui.barn(widget_id, 6)
+}
+
+funksjon studio_v2_gui_session_lagre_tool_window(rot: tekst, tool_window: tekst) -> heltall {
+    la session_data: liste_tekst = workspace.studio_v2_state_session_les(rot)
+    la aktiv_fil: tekst = workspace.studio_v2_state_aktiv_fil(rot)
+    la aktiv_tab: tekst = workspace.studio_v2_state_session_aktiv_tab(session_data)
+    hvis aktiv_tab == "" da {
+        aktiv_tab = aktiv_fil
+    }
+    la split_fokus: tekst = workspace.studio_v2_state_session_split_fokus(session_data)
+    la run_config: tekst = workspace.studio_v2_state_session_run_config(session_data)
+    la palette_open: tekst = workspace.studio_v2_state_session_palette_status(session_data)
+    la sist_navigasjon: tekst = workspace.studio_v2_state_session_sist_navigasjon(session_data)
+    la tree_fold: liste_tekst = workspace.studio_v2_state_session_tree_fold(session_data)
+    returner workspace.studio_v2_state_session_lagre_med_tilstand(rot, aktiv_fil, aktiv_tab, split_fokus, tool_window, run_config, palette_open, sist_navigasjon, tree_fold)
+}
+
+funksjon studio_v2_gui_session_lagre_fokus(rot: tekst, fokus: tekst) -> heltall {
+    la session_data: liste_tekst = workspace.studio_v2_state_session_les(rot)
+    la aktiv_fil: tekst = workspace.studio_v2_state_aktiv_fil(rot)
+    la aktiv_tab: tekst = workspace.studio_v2_state_session_aktiv_tab(session_data)
+    hvis aktiv_tab == "" da {
+        aktiv_tab = aktiv_fil
+    }
+    la tool_window: tekst = workspace.studio_v2_state_session_tool_window(session_data)
+    la run_config: tekst = workspace.studio_v2_state_session_run_config(session_data)
+    la palette_open: tekst = workspace.studio_v2_state_session_palette_status(session_data)
+    la sist_navigasjon: tekst = workspace.studio_v2_state_session_sist_navigasjon(session_data)
+    la tree_fold: liste_tekst = workspace.studio_v2_state_session_tree_fold(session_data)
+    returner workspace.studio_v2_state_session_lagre_med_tilstand(rot, aktiv_fil, aktiv_tab, fokus, tool_window, run_config, palette_open, sist_navigasjon, tree_fold)
+}
+
+funksjon studio_v2_gui_fokus_neste(fokus: tekst) -> tekst {
+    la normalisert_fokus: tekst = studio_v2_gui_fokus_etikett(fokus)
+    hvis normalisert_fokus == ui.studio_v2_ui_label_project() da {
+        returner ui.studio_v2_ui_label_editor()
+    }
+    hvis normalisert_fokus == ui.studio_v2_ui_label_editor() da {
+        returner ui.studio_v2_ui_label_inspect()
+    }
+    returner ui.studio_v2_ui_label_project()
+}
+
+funksjon studio_v2_gui_fokus_forrige(fokus: tekst) -> tekst {
+    la normalisert_fokus: tekst = studio_v2_gui_fokus_etikett(fokus)
+    hvis normalisert_fokus == ui.studio_v2_ui_label_project() da {
+        returner ui.studio_v2_ui_label_inspect()
+    }
+    hvis normalisert_fokus == ui.studio_v2_ui_label_editor() da {
+        returner ui.studio_v2_ui_label_project()
+    }
+    returner ui.studio_v2_ui_label_editor()
+}
+
+funksjon studio_v2_gui_tool_window_neste(tool_window: tekst) -> tekst {
+    la normalisert_tool_window: tekst = studio_v2_gui_tool_window_etikett(tool_window)
+    hvis normalisert_tool_window == "Problems" da {
+        returner "References"
+    }
+    hvis normalisert_tool_window == "References" da {
+        returner "Structure"
+    }
+    hvis normalisert_tool_window == "Structure" da {
+        returner "Terminal"
+    }
+    returner "Problems"
+}
+
+funksjon studio_v2_gui_tool_window_forrige(tool_window: tekst) -> tekst {
+    la normalisert_tool_window: tekst = studio_v2_gui_tool_window_etikett(tool_window)
+    hvis normalisert_tool_window == "Problems" da {
+        returner "Terminal"
+    }
+    hvis normalisert_tool_window == "References" da {
+        returner "Problems"
+    }
+    hvis normalisert_tool_window == "Structure" da {
+        returner "References"
+    }
+    returner "Structure"
+}
+
+funksjon studio_v2_gui_fokus_sett(widget_id: heltall, fokus: tekst) -> heltall {
+    la status_widget: heltall = studio_v2_gui_fokus_status_widget(widget_id)
+    hvis status_widget > 0 da {
+        gui.sett_tekst(status_widget, studio_v2_gui_fokus_tekst(studio_v2_gui_fokus_etikett(fokus)))
+    }
+    studio_v2_gui_session_lagre_fokus(workspace.studio_v2_state_rot(argv()), fokus)
+    returner widget_id
+}
+
+funksjon studio_v2_gui_fokus_project(widget_id: heltall) -> heltall {
+    returner studio_v2_gui_fokus_sett(widget_id, ui.studio_v2_ui_label_project())
+}
+
+funksjon studio_v2_gui_fokus_editor(widget_id: heltall) -> heltall {
+    returner studio_v2_gui_fokus_sett(widget_id, ui.studio_v2_ui_label_editor())
+}
+
+funksjon studio_v2_gui_fokus_inspect(widget_id: heltall) -> heltall {
+    returner studio_v2_gui_fokus_sett(widget_id, ui.studio_v2_ui_label_inspect())
+}
+
+funksjon studio_v2_gui_tool_window_status_widget(widget_id: heltall) -> heltall {
+    hvis widget_id <= 0 da {
+        returner 0
+    }
+    la rad: heltall = gui.foresatt(widget_id)
+    hvis rad <= 0 da {
+        returner 0
+    }
+    returner gui.barn(rad, 4)
+}
+
+funksjon studio_v2_gui_tool_window_sett(widget_id: heltall, tool_window: tekst) -> heltall {
+    la status_widget: heltall = studio_v2_gui_tool_window_status_widget(widget_id)
+    hvis status_widget > 0 da {
+        gui.sett_tekst(status_widget, studio_v2_gui_tool_window_tekst(tool_window))
+    }
+    studio_v2_gui_session_lagre_tool_window(workspace.studio_v2_state_rot(argv()), tool_window)
+    returner widget_id
+}
+
+funksjon studio_v2_gui_tool_window_sett_fra_rot(widget_id: heltall, tool_window: tekst) -> heltall {
+    la rot: tekst = workspace.studio_v2_state_rot(argv())
+    la session_data: liste_tekst = workspace.studio_v2_state_session_les(rot)
+    la aktiv_fil: tekst = workspace.studio_v2_state_aktiv_fil(rot)
+    la aktiv_tab: tekst = workspace.studio_v2_state_session_aktiv_tab(session_data)
+    hvis aktiv_tab == "" da {
+        aktiv_tab = aktiv_fil
+    }
+    la split_fokus: tekst = workspace.studio_v2_state_session_split_fokus(session_data)
+    la run_config: tekst = workspace.studio_v2_state_session_run_config(session_data)
+    la palette_open: tekst = workspace.studio_v2_state_session_palette_status(session_data)
+    la sist_navigasjon: tekst = workspace.studio_v2_state_session_sist_navigasjon(session_data)
+    la tree_fold: liste_tekst = workspace.studio_v2_state_session_tree_fold(session_data)
+    returner workspace.studio_v2_state_session_lagre_med_tilstand(rot, aktiv_fil, aktiv_tab, split_fokus, tool_window, run_config, palette_open, sist_navigasjon, tree_fold)
+}
+
+funksjon studio_v2_gui_fokus_neste_rot(widget_id: heltall) -> heltall {
+    la rot: tekst = workspace.studio_v2_state_rot(argv())
+    la session_data: liste_tekst = workspace.studio_v2_state_session_les(rot)
+    la fokus: tekst = workspace.studio_v2_state_session_split_fokus(session_data)
+    hvis fokus == "" da {
+        fokus = "høyre"
+    }
+    returner studio_v2_gui_fokus_sett_fra_rot(widget_id, studio_v2_gui_fokus_neste(fokus))
+}
+
+funksjon studio_v2_gui_fokus_forrige_rot(widget_id: heltall) -> heltall {
+    la rot: tekst = workspace.studio_v2_state_rot(argv())
+    la session_data: liste_tekst = workspace.studio_v2_state_session_les(rot)
+    la fokus: tekst = workspace.studio_v2_state_session_split_fokus(session_data)
+    hvis fokus == "" da {
+        fokus = "høyre"
+    }
+    returner studio_v2_gui_fokus_sett_fra_rot(widget_id, studio_v2_gui_fokus_forrige(fokus))
+}
+
+funksjon studio_v2_gui_tool_window_neste_rot(widget_id: heltall) -> heltall {
+    la rot: tekst = workspace.studio_v2_state_rot(argv())
+    la session_data: liste_tekst = workspace.studio_v2_state_session_les(rot)
+    la tool_window: tekst = studio_v2_gui_tool_window_etikett(workspace.studio_v2_state_session_tool_window(session_data))
+    returner studio_v2_gui_tool_window_sett_fra_rot(widget_id, studio_v2_gui_tool_window_neste(tool_window))
+}
+
+funksjon studio_v2_gui_tool_window_forrige_rot(widget_id: heltall) -> heltall {
+    la rot: tekst = workspace.studio_v2_state_rot(argv())
+    la session_data: liste_tekst = workspace.studio_v2_state_session_les(rot)
+    la tool_window: tekst = studio_v2_gui_tool_window_etikett(workspace.studio_v2_state_session_tool_window(session_data))
+    returner studio_v2_gui_tool_window_sett_fra_rot(widget_id, studio_v2_gui_tool_window_forrige(tool_window))
+}
+
+funksjon studio_v2_gui_tool_window_snarvei_problems(widget_id: heltall) -> heltall {
+    returner studio_v2_gui_tool_window_sett_fra_rot(widget_id, "Problems")
+}
+
+funksjon studio_v2_gui_tool_window_snarvei_references(widget_id: heltall) -> heltall {
+    returner studio_v2_gui_tool_window_sett_fra_rot(widget_id, "References")
+}
+
+funksjon studio_v2_gui_tool_window_snarvei_structure(widget_id: heltall) -> heltall {
+    returner studio_v2_gui_tool_window_sett_fra_rot(widget_id, "Structure")
+}
+
+funksjon studio_v2_gui_tool_window_snarvei_terminal(widget_id: heltall) -> heltall {
+    returner studio_v2_gui_tool_window_sett_fra_rot(widget_id, "Terminal")
+}
+
+funksjon studio_v2_gui_tool_window_problems(widget_id: heltall) -> heltall {
+    returner studio_v2_gui_tool_window_sett(widget_id, "Problems")
+}
+
+funksjon studio_v2_gui_tool_window_references(widget_id: heltall) -> heltall {
+    returner studio_v2_gui_tool_window_sett(widget_id, "References")
+}
+
+funksjon studio_v2_gui_tool_window_terminal(widget_id: heltall) -> heltall {
+    returner studio_v2_gui_tool_window_sett(widget_id, "Terminal")
+}
+
+funksjon studio_v2_gui_tool_window_structure(widget_id: heltall) -> heltall {
+    returner studio_v2_gui_tool_window_sett(widget_id, "Structure")
+}
+
+funksjon studio_v2_gui_recent_valg(tekstverdi: tekst) -> tekst {
+    hvis tekst_starter_med(tekstverdi, "★ ") da {
+        returner tekst_erstatt(tekstverdi, "★ ", "")
+    }
+    returner studio_v2_gui_markert_valg(tekstverdi)
+}
+
+funksjon studio_v2_gui_recent_tab_antall(prosjekt: tekst) -> heltall {
+    la session_data: liste_tekst = workspace.studio_v2_state_session_les(prosjekt)
+    returner lengde(workspace.studio_v2_state_session_apne_filer(session_data))
+}
+
+funksjon studio_v2_gui_recent_linje_med_status(prosjekter: liste_tekst, aktiv_prosjekt: tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la indeks: heltall = 0
+    mens (indeks < lengde(prosjekter)) {
+        la prosjekt: tekst = prosjekter[indeks]
+        la markør: tekst = "· "
+        hvis prosjekt == aktiv_prosjekt da {
+            markør = "★ "
+        }
+        la status: tekst = workspace.studio_v2_state_session_status_for_workspace(prosjekt)
+        la tab_antall: heltall = studio_v2_gui_recent_tab_antall(prosjekt)
+        legg_til(resultat, markør + prosjekt + " · session " + status + " · tabs " + tekst_fra_heltall(tab_antall))
+        indeks = indeks + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_gui_prosjekt_favoritt_linje(favoritter: liste_tekst, aktiv_fil: tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la indeks: heltall = 0
+    mens (indeks < lengde(favoritter)) {
+        la fil: tekst = favoritter[indeks]
+        hvis fil == aktiv_fil da {
+            legg_til(resultat, "★ favorite · " + fil)
+        } ellers {
+            legg_til(resultat, "· favorite · " + fil)
+        }
+        indeks = indeks + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_gui_prosjekt_quickaccess_linje(favoritter: liste_tekst, åpne_filer: liste_tekst, recent_projects: liste_tekst, aktiv_fil: tekst, aktiv_workspace: tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    legg_til(resultat, "[Favorites]")
+    hvis lengde(favoritter) == 0 da {
+        legg_til(resultat, ui.studio_v2_ui_tomt_favoritt())
+    } ellers {
+        la favoritter_linje: liste_tekst = studio_v2_gui_prosjekt_favoritt_linje(favoritter, aktiv_fil)
+        la indeks: heltall = 0
+        mens (indeks < lengde(favoritter_linje)) {
+            legg_til(resultat, favoritter_linje[indeks])
+            indeks = indeks + 1
+        }
+    }
+    legg_til(resultat, "[Open Files]")
+    hvis lengde(åpne_filer) == 0 da {
+        legg_til(resultat, ui.studio_v2_ui_tomt_apne_filer())
+    } ellers {
+        la åpne_linje: liste_tekst = studio_v2_gui_fil_linje(åpne_filer, aktiv_fil)
+        la indeks2: heltall = 0
+        mens (indeks2 < lengde(åpne_linje)) {
+            legg_til(resultat, åpne_linje[indeks2])
+            indeks2 = indeks2 + 1
+        }
+    }
+    legg_til(resultat, "[Recent Workspaces]")
+    hvis lengde(recent_projects) == 0 da {
+        legg_til(resultat, ui.studio_v2_ui_tomt_recent())
+    } ellers {
+        la recent_linje: liste_tekst = studio_v2_gui_recent_linje(recent_projects, aktiv_workspace)
+        la indeks3: heltall = 0
+        mens (indeks3 < lengde(recent_linje)) {
+            legg_til(resultat, recent_linje[indeks3])
+            indeks3 = indeks3 + 1
+        }
+    }
+    returner resultat
+}
+
+funksjon studio_v2_gui_prosjekt_quickaccess_type(tekstverdi: tekst) -> tekst {
+    la ren: tekst = studio_v2_gui_markert_valg(tekstverdi)
+    hvis tekst_starter_med(ren, "favorite · ") da {
+        returner "favorite"
+    }
+    hvis tekst_starter_med(ren, "open · ") da {
+        returner "open"
+    }
+    hvis tekst_starter_med(ren, "recent · ") da {
+        returner "recent"
+    }
+    returner ""
+}
+
+funksjon studio_v2_gui_prosjekt_quickaccess_valg(tekstverdi: tekst) -> tekst {
+    la ren: tekst = studio_v2_gui_markert_valg(tekstverdi)
+    hvis tekst_starter_med(ren, "favorite · ") da {
+        returner tekst_erstatt(ren, "favorite · ", "")
+    }
+    hvis tekst_starter_med(ren, "open · ") da {
+        returner tekst_erstatt(ren, "open · ", "")
+    }
+    hvis tekst_starter_med(ren, "recent · ") da {
+        returner tekst_erstatt(ren, "recent · ", "")
+    }
+    returner ""
+}
+
+funksjon studio_v2_gui_prosjekt_quickaccess_status(widget_id: heltall) -> heltall {
+    la panel: heltall = gui.foresatt(widget_id)
+    returner gui.barn(panel, 22)
+}
+
+funksjon studio_v2_gui_oppdater_prosjekt_quickaccess(widget_id: heltall) -> heltall {
+    la valgt: tekst = gui.liste_valgt(widget_id)
+    la type: tekst = studio_v2_gui_prosjekt_quickaccess_type(valgt)
+    la verdi: tekst = studio_v2_gui_prosjekt_quickaccess_valg(valgt)
+    hvis type == "" eller verdi == "" da {
+        returner widget_id
+    }
+    la rot: tekst = workspace.studio_v2_state_rot(argv())
+    la session_data: liste_tekst = workspace.studio_v2_state_session_les(rot)
+    la rot_panel: heltall = studio_v2_gui_steg_opp(widget_id, 2)
+    la venstre_panel: heltall = studio_v2_gui_hovedrad_venstre_widget(rot_panel)
+    la midten: heltall = studio_v2_gui_hovedrad_midten_widget(rot_panel)
+    la filer_liste: heltall = studio_v2_gui_venstre_filer_liste_widget(venstre_panel)
+    la aktiv_tekst: heltall = studio_v2_gui_venstre_aktiv_tekst_widget(venstre_panel)
+    la tree_fold: liste_tekst = workspace.studio_v2_state_session_tree_fold(session_data)
+    la workspace_filer: liste_tekst = workspace.studio_v2_state_workspace_filer(rot)
+    hvis type == "recent" da {
+        la session_restore: liste_tekst = workspace.studio_v2_state_session_les(verdi)
+        la aktiv_fil_restore: tekst = workspace.studio_v2_state_aktiv_fil(verdi)
+        la aktiv_tab_restore: tekst = workspace.studio_v2_state_session_aktiv_tab(session_restore)
+        hvis aktiv_tab_restore == "" da {
+            aktiv_tab_restore = aktiv_fil_restore
+        }
+        la split_fokus_restore: tekst = workspace.studio_v2_state_session_split_fokus(session_restore)
+        la tool_window_restore: tekst = workspace.studio_v2_state_session_tool_window(session_restore)
+        la run_config_restore: tekst = workspace.studio_v2_state_session_run_config(session_restore)
+        la palette_open_restore: tekst = workspace.studio_v2_state_session_palette_status(session_restore)
+        la sist_navigasjon_restore: tekst = workspace.studio_v2_state_session_sist_navigasjon(session_restore)
+        la tree_fold_restore: liste_tekst = workspace.studio_v2_state_session_tree_fold(session_restore)
+        workspace.studio_v2_state_session_project_tree_anchor_skriv_med_tilstand(verdi, workspace.studio_v2_state_session_project_tree_anchor(session_restore))
+        workspace.studio_v2_state_session_lagre_med_tilstand(verdi, aktiv_fil_restore, aktiv_tab_restore, split_fokus_restore, tool_window_restore, run_config_restore, palette_open_restore, sist_navigasjon_restore, tree_fold_restore)
+        gui.sett_tekst(aktiv_tekst, ui.studio_v2_ui_status_chip("Aktiv", aktiv_fil_restore))
+        studio_v2_gui_liste_sett(filer_liste, studio_v2_gui_begrens_liste_med_anker(studio_v2_gui_prosjekt_tre(workspace.studio_v2_state_workspace_filer(verdi), aktiv_fil_restore, tree_fold_restore), studio_v2_gui_prosjekt_tre_maks_fra_filer(workspace.studio_v2_state_workspace_filer(verdi)), aktiv_fil_restore))
+        studio_v2_gui_oppdater_editor(midten, verdi, aktiv_fil_restore, 1)
+        returner widget_id
+    }
+    hvis type == "favorite" eller type == "open" da {
+        workspace.studio_v2_state_session_project_tree_anchor_skriv_med_tilstand(rot, verdi)
+        la apne_filer: liste_tekst = workspace.studio_v2_state_apne_filer(rot, verdi)
+        la tabs: liste_tekst = editor.studio_v2_editor_tabs_fra_apne_filer(apne_filer)
+        la aktiv_tab: tekst = editor.studio_v2_editor_tab_nåværende(tabs, verdi)
+        hvis aktiv_tab == "" da {
+            aktiv_tab = verdi
+        }
+        workspace.studio_v2_state_session_lagre_med_tilstand(rot, verdi, aktiv_tab, workspace.studio_v2_state_session_split_fokus(session_data), workspace.studio_v2_state_session_tool_window(session_data), workspace.studio_v2_state_session_run_config(session_data), workspace.studio_v2_state_session_palette_status(session_data), verdi, tree_fold)
+        gui.sett_tekst(aktiv_tekst, ui.studio_v2_ui_status_chip("Aktiv", verdi))
+        studio_v2_gui_liste_sett(filer_liste, studio_v2_gui_begrens_liste_med_anker(studio_v2_gui_prosjekt_tre(workspace_filer, verdi, tree_fold), studio_v2_gui_prosjekt_tre_maks_fra_filer(workspace_filer), verdi))
+        studio_v2_gui_oppdater_editor(midten, rot, verdi, 1)
+        returner widget_id
+    }
+    returner widget_id
+}
+
+funksjon studio_v2_gui_oppdater_prosjekt_favoritt_toggle(widget_id: heltall) -> heltall {
+    la rot: tekst = workspace.studio_v2_state_rot(argv())
+    la session_data: liste_tekst = workspace.studio_v2_state_session_les(rot)
+    la aktiv_fil: tekst = workspace.studio_v2_state_aktiv_fil(rot)
+    hvis aktiv_fil == "" da {
+        aktiv_fil = workspace.studio_v2_state_session_aktiv_fil(session_data)
+    }
+    hvis aktiv_fil == "" da {
+        returner widget_id
+    }
+    workspace.studio_v2_state_session_favoritter_skriv_med_tilstand(rot, aktiv_fil)
+    la status_widget: heltall = studio_v2_gui_prosjekt_quickaccess_status(widget_id)
+    la session_oppdatert: liste_tekst = workspace.studio_v2_state_session_les(rot)
+    gui.sett_tekst(status_widget, ui.studio_v2_ui_status_chip("Favorites", tekst_fra_heltall(lengde(workspace.studio_v2_state_session_favoritter(session_oppdatert)))) + " · " + ui.studio_v2_ui_status_chip("Open", tekst_fra_heltall(lengde(workspace.studio_v2_state_apne_filer(rot, aktiv_fil)))) + " · " + ui.studio_v2_ui_status_chip("Recent", tekst_fra_heltall(lengde(workspace.studio_v2_state_session_recent_for_workspace(rot)))))
+    returner widget_id
+}
+
+funksjon studio_v2_gui_velkomst_recent_status_widget(widget_id: heltall) -> heltall {
+    la panel: heltall = gui.foresatt(widget_id)
+    returner gui.barn(panel, 11)
+}
+
+funksjon studio_v2_gui_velkomst_recent_valgt_tekst(valgt: tekst) -> tekst {
+    returner "Selected recent workspace: " + valgt
+}
+
+funksjon studio_v2_gui_velkomst_recent_åpnet_tekst(valgt: tekst) -> tekst {
+    returner "Opened recent workspace: " + valgt
+}
+
+funksjon studio_v2_gui_velkomst_recent_liste_widget(widget_id: heltall) -> heltall {
+    la panel: heltall = gui.foresatt(widget_id)
+    returner gui.barn(panel, 13)
+}
+
+funksjon studio_v2_gui_oppdater_velkomst_recent(widget_id: heltall) -> heltall {
+    la valgt: tekst = studio_v2_gui_recent_valg(gui.liste_valgt(widget_id))
+    hvis valgt == "" da {
+        returner widget_id
+    }
+    la status_widget: heltall = studio_v2_gui_velkomst_recent_status_widget(widget_id)
+    gui.sett_tekst(status_widget, studio_v2_gui_velkomst_recent_valgt_tekst(valgt))
+    returner widget_id
+}
+
+funksjon studio_v2_gui_oppdater_velkomst_recent_restore(widget_id: heltall) -> heltall {
+    la recent_liste: heltall = studio_v2_gui_velkomst_recent_liste_widget(widget_id)
+    la valgt: tekst = studio_v2_gui_recent_valg(gui.liste_valgt(recent_liste))
+    hvis valgt == "" da {
+        returner widget_id
+    }
+    la session_data: liste_tekst = workspace.studio_v2_state_session_les(valgt)
+    la aktiv_fil: tekst = workspace.studio_v2_state_aktiv_fil(valgt)
+    la aktiv_tab: tekst = workspace.studio_v2_state_session_aktiv_tab(session_data)
+    hvis aktiv_tab == "" da {
+        aktiv_tab = aktiv_fil
+    }
+    la split_fokus: tekst = workspace.studio_v2_state_session_split_fokus(session_data)
+    la tool_window: tekst = workspace.studio_v2_state_session_tool_window(session_data)
+    la run_config: tekst = workspace.studio_v2_state_session_run_config(session_data)
+    la palette_open: tekst = workspace.studio_v2_state_session_palette_status(session_data)
+    la sist_navigasjon: tekst = workspace.studio_v2_state_session_sist_navigasjon(session_data)
+    la tree_fold: liste_tekst = workspace.studio_v2_state_session_tree_fold(session_data)
+    workspace.studio_v2_state_session_lagre_med_tilstand(valgt, aktiv_fil, aktiv_tab, split_fokus, tool_window, run_config, palette_open, sist_navigasjon, tree_fold)
+    la status_widget: heltall = studio_v2_gui_velkomst_recent_status_widget(recent_liste)
+    gui.sett_tekst(status_widget, studio_v2_gui_velkomst_recent_åpnet_tekst(valgt))
+    returner widget_id
+}
+
+funksjon studio_v2_gui_fokus_sett_fra_rot(widget_id: heltall, fokus: tekst) -> heltall {
+    la fokus_rad: heltall = studio_v2_gui_rot_fokusrad_widget(widget_id)
+    hvis fokus_rad > 0 da {
+        la status_widget: heltall = gui.barn(fokus_rad, 4)
+        hvis status_widget > 0 da {
+            gui.sett_tekst(status_widget, studio_v2_gui_fokus_tekst(studio_v2_gui_fokus_etikett(fokus)))
+        }
+    }
+    la rot: tekst = workspace.studio_v2_state_rot(argv())
+    la session_data: liste_tekst = workspace.studio_v2_state_session_les(rot)
+    la aktiv_fil: tekst = workspace.studio_v2_state_aktiv_fil(rot)
+    la aktiv_tab: tekst = workspace.studio_v2_state_session_aktiv_tab(session_data)
+    hvis aktiv_tab == "" da {
+        aktiv_tab = aktiv_fil
+    }
+    la split_fokus: tekst = workspace.studio_v2_state_session_split_fokus(session_data)
+    la run_config: tekst = workspace.studio_v2_state_session_run_config(session_data)
+    la palette_open: tekst = workspace.studio_v2_state_session_palette_status(session_data)
+    la sist_navigasjon: tekst = workspace.studio_v2_state_session_sist_navigasjon(session_data)
+    la tree_fold: liste_tekst = workspace.studio_v2_state_session_tree_fold(session_data)
+    studio_v2_gui_session_lagre_fokus(rot, fokus)
+    returner widget_id
+}
+
+funksjon studio_v2_gui_snarvei_project(widget_id: heltall) -> heltall {
+    returner studio_v2_gui_fokus_sett_fra_rot(widget_id, ui.studio_v2_ui_label_project())
+}
+
+funksjon studio_v2_gui_snarvei_editor(widget_id: heltall) -> heltall {
+    returner studio_v2_gui_fokus_sett_fra_rot(widget_id, ui.studio_v2_ui_label_editor())
+}
+
+funksjon studio_v2_gui_snarvei_inspect(widget_id: heltall) -> heltall {
+    returner studio_v2_gui_fokus_sett_fra_rot(widget_id, ui.studio_v2_ui_label_inspect())
+}
+
+funksjon studio_v2_gui_snarvei_palette(widget_id: heltall) -> heltall {
+    la palette_panel: heltall = studio_v2_gui_rot_palette_widget(widget_id)
+    hvis palette_panel == 0 da {
+        returner widget_id
+    }
+    la knapp_widget: heltall = gui.barn(palette_panel, 2)
+    hvis knapp_widget == 0 da {
+        returner widget_id
+    }
+    returner studio_v2_gui_toggle_palette(knapp_widget)
+}
+
+funksjon studio_v2_gui_snarvei_lukk_palette(widget_id: heltall) -> heltall {
+    la rot: tekst = workspace.studio_v2_state_rot(argv())
+    la session_data: liste_tekst = workspace.studio_v2_state_session_les(rot)
+    la aktiv_fil: tekst = workspace.studio_v2_state_aktiv_fil(rot)
+    la aktiv_tab: tekst = workspace.studio_v2_state_session_aktiv_tab(session_data)
+    hvis aktiv_tab == "" da {
+        aktiv_tab = aktiv_fil
+    }
+    la split_fokus: tekst = workspace.studio_v2_state_session_split_fokus(session_data)
+    la tool_window: tekst = workspace.studio_v2_state_session_tool_window(session_data)
+    la run_config: tekst = workspace.studio_v2_state_session_run_config(session_data)
+    la sist_navigasjon: tekst = workspace.studio_v2_state_session_sist_navigasjon(session_data)
+    la tree_fold: liste_tekst = workspace.studio_v2_state_session_tree_fold(session_data)
+    workspace.studio_v2_state_session_lagre_med_tilstand(rot, aktiv_fil, aktiv_tab, split_fokus, tool_window, run_config, "lukket", sist_navigasjon, tree_fold)
+    returner widget_id
+}
+
+funksjon studio_v2_gui_markert_valg(tekstverdi: tekst) -> tekst {
+    hvis tekst_starter_med(tekstverdi, "⛔ ") da {
+        returner tekst_erstatt(tekstverdi, "⛔ ", "")
+    }
+    hvis tekst_starter_med(tekstverdi, "⚠ ") da {
+        returner tekst_erstatt(tekstverdi, "⚠ ", "")
+    }
+    hvis tekst_starter_med(tekstverdi, "ℹ ") da {
+        returner tekst_erstatt(tekstverdi, "ℹ ", "")
+    }
+    hvis tekst_starter_med(tekstverdi, "▶ ") da {
+        returner tekst_erstatt(tekstverdi, "▶ ", "")
+    }
+    hvis tekst_starter_med(tekstverdi, "· ") da {
+        returner tekst_erstatt(tekstverdi, "· ", "")
+    }
+    hvis tekst_starter_med(tekstverdi, "● ") da {
+        returner tekst_erstatt(tekstverdi, "● ", "")
+    }
+    hvis tekst_starter_med(tekstverdi, "★ ") da {
+        returner tekst_erstatt(tekstverdi, "★ ", "")
+    }
+    returner tekstverdi
+}
+
+funksjon studio_v2_gui_diagnostikk_detalj(oppføring: tekst) -> tekst {
+    la ren: tekst = studio_v2_gui_markert_valg(oppføring)
+    la deler: liste_tekst = tekst_del_på(ren, "\t")
+    la slag: tekst = ""
+    la fil: tekst = ""
+    la linje: heltall = 0
+    la melding: tekst = ""
+    hvis lengde(deler) > 0 da {
+        slag = deler[0]
+    }
+    hvis lengde(deler) > 1 da {
+        fil = deler[1]
+    }
+    hvis lengde(deler) > 2 da {
+        linje = heltall_fra_tekst(deler[2])
+    }
+    hvis lengde(deler) > 3 da {
+        melding = deler[3]
+    }
+    la severity: tekst = diagnostics.studio_v2_diagnostics_alvorlighet_fra_slag(slag)
+    la sted: tekst = fil
+    hvis linje > 0 da {
+        sted = sted + ":" + tekst_fra_heltall(linje)
+    }
+    la kolonne_detalj: tekst = ""
+    la kolonne_deler: liste_tekst = tekst_del_på(melding, "@kolonne ")
+    hvis lengde(kolonne_deler) > 1 da {
+        kolonne_detalj = kolonne_deler[1]
+    }
+    hvis kolonne_detalj != "" da {
+        sted = sted + ":" + kolonne_detalj
+    }
+    hvis severity != "unknown" da {
+        returner severity + " · " + sted + " · " + melding
+    }
+    returner sted + " · " + melding
+}
+
+funksjon studio_v2_gui_prosjekt_tre_linje_er_fil(linje: tekst) -> bool {
+    la ren: tekst = studio_v2_gui_markert_valg(linje)
+    returner tekst_starter_med(ren, "  ")
+}
+
+funksjon studio_v2_gui_sok_status(query: tekst, forslag: tekst) -> tekst {
+    la tittel: tekst = ui.studio_v2_ui_label_search_everywhere()
+    hvis query == "" da {
+        returner tittel + ": skriv for å hoppe"
+    }
+    hvis forslag == "" da {
+        returner tittel + ": ingen treff for " + query
+    }
+    la filsti: tekst = studio_v2_gui_trekk_ut_fil(forslag)
+    la linje: heltall = studio_v2_gui_trekk_ut_linje(forslag)
+    la kolonne: heltall = studio_v2_gui_trekk_ut_kolonne(forslag)
+    hvis filsti == "" da {
+        returner tittel + ": " + forslag
+    }
+    hvis kolonne > 0 da {
+        returner tittel + ": " + filsti + ":" + tekst_fra_heltall(linje) + ":" + tekst_fra_heltall(kolonne)
+    }
+    returner tittel + ": " + filsti + ":" + tekst_fra_heltall(linje)
+}
+
+funksjon studio_v2_gui_sok_resultat_type(oppføring: tekst) -> tekst {
+    hvis tekst_starter_med(oppføring, "★ recent · ") da {
+        returner "recent"
+    }
+    hvis tekst_starter_med(oppføring, "· file · ") da {
+        returner "file"
+    }
+    hvis tekst_starter_med(oppføring, "· command · ") da {
+        returner "command"
+    }
+    hvis tekst_starter_med(oppføring, "· symbol · ") da {
+        returner "symbol"
+    }
+    returner "other"
+}
+
+funksjon studio_v2_gui_sok_resultat_verdi(oppføring: tekst) -> tekst {
+    hvis tekst_starter_med(oppføring, "★ recent · ") da {
+        returner tekst_erstatt(oppføring, "★ recent · ", "")
+    }
+    hvis tekst_starter_med(oppføring, "· file · ") da {
+        returner tekst_erstatt(oppføring, "· file · ", "")
+    }
+    hvis tekst_starter_med(oppføring, "· command · ") da {
+        returner tekst_erstatt(oppføring, "· command · ", "")
+    }
+    hvis tekst_starter_med(oppføring, "· symbol · ") da {
+        returner tekst_erstatt(oppføring, "· symbol · ", "")
+    }
+    returner oppføring
+}
+
+funksjon studio_v2_gui_sok_resultat_finn(resultater: liste_tekst, oppføring: tekst) -> bool {
+    la indeks: heltall = 0
+    mens (indeks < lengde(resultater)) {
+        hvis resultater[indeks] == oppføring da {
+            returner sann
+        }
+        indeks = indeks + 1
+    }
+    returner usann
+}
+
+funksjon studio_v2_gui_sok_resultat_score(oppføring: tekst, query: tekst) -> heltall {
+    la verdi: tekst = studio_v2_gui_sok_resultat_verdi(oppføring)
+    hvis studio_v2_gui_sok_resultat_type(oppføring) == "recent" da {
+        hvis tekst_starter_med(verdi, query) da {
+            returner 0
+        }
+        returner 1
+    }
+    hvis studio_v2_gui_sok_resultat_type(oppføring) == "file" da {
+        hvis tekst_starter_med(verdi, query) da {
+            returner 10
+        }
+        returner 11
+    }
+    hvis studio_v2_gui_sok_resultat_type(oppføring) == "command" da {
+        hvis tekst_starter_med(verdi, query) da {
+            returner 12
+        }
+        returner 13
+    }
+    hvis studio_v2_gui_sok_resultat_type(oppføring) == "symbol" da {
+        returner 20
+    }
+    returner 30
+}
+
+funksjon studio_v2_gui_sok_resultat_sett(resultater: liste_tekst, oppføring: tekst, query: tekst) -> liste_tekst {
+    hvis oppføring == "" eller studio_v2_gui_sok_resultat_finn(resultater, oppføring) da {
+        returner resultater
+    }
+    la score: heltall = studio_v2_gui_sok_resultat_score(oppføring, query)
+    la resultat: liste_tekst = []
+    la lagt_til: bool = usann
+    la indeks: heltall = 0
+    mens (indeks < lengde(resultater)) {
+        la gjeldende: tekst = resultater[indeks]
+        la gjeldende_score: heltall = studio_v2_gui_sok_resultat_score(gjeldende, query)
+        hvis ikke lagt_til og score < gjeldende_score da {
+            legg_til(resultat, oppføring)
+            lagt_til = sann
+        }
+        legg_til(resultat, gjeldende)
+        indeks = indeks + 1
+    }
+    hvis ikke lagt_til da {
+        legg_til(resultat, oppføring)
+    }
+    returner resultat
+}
+
+funksjon studio_v2_gui_sok_resultat_sammendrag(resultater: liste_tekst) -> tekst {
+    la recent: heltall = 0
+    la filer: heltall = 0
+    la kommandoer: heltall = 0
+    la symboler: heltall = 0
+    la indeks: heltall = 0
+    mens (indeks < lengde(resultater)) {
+        la type: tekst = studio_v2_gui_sok_resultat_type(resultater[indeks])
+        hvis type == "recent" da {
+            recent = recent + 1
+        } ellers hvis type == "file" da {
+            filer = filer + 1
+        } ellers hvis type == "command" da {
+            kommandoer = kommandoer + 1
+        } ellers hvis type == "symbol" da {
+            symboler = symboler + 1
+        }
+        indeks = indeks + 1
+    }
+    returner "Recent: " + tekst_fra_heltall(recent) + " · Files: " + tekst_fra_heltall(filer) + " · Commands: " + tekst_fra_heltall(kommandoer) + " · Symbols: " + tekst_fra_heltall(symboler)
+}
+
+funksjon studio_v2_gui_sok_resultater(rot: tekst, query: tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    hvis query == "" da {
+        returner resultat
+    }
+    la recent_projects: liste_tekst = workspace.studio_v2_state_session_recent_for_workspace(rot)
+    la i: heltall = 0
+    mens (i < lengde(recent_projects)) {
+        la prosjekt: tekst = recent_projects[i]
+        hvis tekst_inneholder(prosjekt, query) da {
+            resultat = studio_v2_gui_sok_resultat_sett(resultat, "★ recent · " + prosjekt, query)
+        }
+        i = i + 1
+    }
+    la workspace_filer: liste_tekst = workspace.studio_v2_state_workspace_filer(rot)
+    i = 0
+    mens (i < lengde(workspace_filer)) {
+        la sti: tekst = workspace_filer[i]
+        hvis tekst_inneholder(sti, query) da {
+            resultat = studio_v2_gui_sok_resultat_sett(resultat, "· file · " + sti, query)
+        }
+        i = i + 1
+    }
+    la kommandoer: liste_tekst = actions.studio_v2_actions_palett()
+    i = 0
+    mens (i < lengde(kommandoer)) {
+        la kommando: tekst = kommandoer[i]
+        hvis tekst_inneholder(kommando, query) da {
+            resultat = studio_v2_gui_sok_resultat_sett(resultat, "· command · " + kommando, query)
+        }
+        i = i + 1
+    }
+    la symbol_treff: tekst = symbol.studio_v2_symbol_navigasjon_forslag(rot, query)
+    hvis symbol_treff != "" da {
+        la filsti: tekst = studio_v2_gui_trekk_ut_fil(symbol_treff)
+        la linje: heltall = studio_v2_gui_trekk_ut_linje(symbol_treff)
+        la kolonne: heltall = studio_v2_gui_trekk_ut_kolonne(symbol_treff)
+        hvis filsti == "" da {
+            filsti = symbol_treff
+            linje = 1
+        }
+        hvis kolonne > 0 da {
+            resultat = studio_v2_gui_sok_resultat_sett(resultat, "· symbol · " + filsti + ":" + tekst_fra_heltall(linje) + ":" + tekst_fra_heltall(kolonne), query)
+        } ellers {
+            resultat = studio_v2_gui_sok_resultat_sett(resultat, "· symbol · " + filsti + ":" + tekst_fra_heltall(linje), query)
+        }
+    }
+    returner resultat
+}
+
+funksjon studio_v2_gui_sok_resultat_valg(tekstverdi: tekst) -> tekst {
+    la ren: tekst = studio_v2_gui_markert_valg(tekstverdi)
+    hvis tekst_starter_med(ren, "★ recent · ") da {
+        returner tekst_erstatt(ren, "★ recent · ", "")
+    }
+    hvis tekst_starter_med(ren, "· file · ") da {
+        returner tekst_erstatt(ren, "· file · ", "")
+    }
+    hvis tekst_starter_med(ren, "· command · ") da {
+        returner tekst_erstatt(ren, "· command · ", "")
+    }
+    hvis tekst_starter_med(ren, "· symbol · ") da {
+        la symbol_del: tekst = tekst_erstatt(ren, "· symbol · ", "")
+        la symbol_deler: liste_tekst = tekst_del_på(symbol_del, ":")
+        hvis lengde(symbol_deler) >= 2 da {
+            la resultat: tekst = symbol_deler[0] + "\t" + symbol_deler[1]
+            hvis lengde(symbol_deler) >= 3 da {
+                resultat = resultat + "\t" + symbol_deler[2]
+            }
+            returner resultat
+        }
+        returner symbol_del
+    }
+    returner ren
+}
+
+funksjon studio_v2_gui_sok_resultat_linje(resultater: liste_tekst) -> liste_tekst {
+    returner resultater
+}
+
+funksjon studio_v2_gui_sok_tom_visning(query: tekst) -> tekst {
+    la tittel: tekst = ui.studio_v2_ui_label_search_everywhere()
+    hvis query == "" da {
+        returner tittel + ": skriv for å hoppe"
+    }
+    returner tittel + ": ingen treff for " + query
+}
+
+funksjon studio_v2_gui_oppdater_sok_resultat(widget_id: heltall) -> heltall {
+    la query_felt: heltall = widget_id
+    la søk_panel: heltall = gui.foresatt(query_felt)
+    la resultat_widget: heltall = studio_v2_gui_sok_status_widget(søk_panel)
+    la resultat_liste: heltall = studio_v2_gui_sok_liste_widget(søk_panel)
+    la rot: tekst = workspace.studio_v2_state_rot(argv())
+    la query: tekst = gui.hent_tekst(query_felt)
+    workspace.studio_v2_state_session_search_query_skriv_med_tilstand(rot, query)
+    la resultater: liste_tekst = studio_v2_gui_sok_resultater(rot, query)
+    hvis query == "" da {
+        gui.sett_tekst(resultat_widget, studio_v2_gui_sok_tom_visning(query))
+        studio_v2_gui_liste_sett(resultat_liste, [])
+    } ellers hvis lengde(resultater) > 0 da {
+        gui.sett_tekst(resultat_widget, studio_v2_gui_sok_status(query, studio_v2_gui_sok_resultat_valg(resultater[0])) + " · " + studio_v2_gui_sok_resultat_sammendrag(resultater))
+        studio_v2_gui_liste_sett(resultat_liste, studio_v2_gui_sok_resultat_linje(resultater))
+        gui.liste_velg(resultat_liste, 0)
+    } ellers {
+        gui.sett_tekst(resultat_widget, studio_v2_gui_sok_tom_visning(query))
+        studio_v2_gui_liste_sett(resultat_liste, [])
+    }
+    returner widget_id
+}
+
+funksjon studio_v2_gui_oppdater_sok_navigasjon(widget_id: heltall) -> heltall {
+    la valgt_resultat: tekst = gui.liste_valgt(widget_id)
+    la valgt_type: tekst = studio_v2_gui_sok_resultat_type(valgt_resultat)
+    la valgt: tekst = studio_v2_gui_sok_resultat_valg(valgt_resultat)
+    hvis valgt == "" da {
+        returner widget_id
+    }
+    la søk_panel: heltall = gui.foresatt(widget_id)
+    la query_felt: heltall = gui.barn(søk_panel, 1)
+    la resultat_text: heltall = studio_v2_gui_sok_status_widget(søk_panel)
+    la resultat_liste: heltall = studio_v2_gui_sok_liste_widget(søk_panel)
+    la query: tekst = gui.hent_tekst(query_felt)
+    workspace.studio_v2_state_session_search_query_skriv_med_tilstand(workspace.studio_v2_state_rot(argv()), query)
+    la resultater: liste_tekst = studio_v2_gui_sok_resultater(workspace.studio_v2_state_rot(argv()), query)
+    gui.sett_tekst(resultat_text, studio_v2_gui_sok_status(query, valgt) + " · " + studio_v2_gui_sok_resultat_sammendrag(resultater))
+    studio_v2_gui_liste_sett(resultat_liste, studio_v2_gui_sok_resultat_linje(resultater))
+    hvis valgt_type == "command" da {
+        la rot: tekst = workspace.studio_v2_state_rot(argv())
+        la kommando_resultat: tekst = studio_v2_gui_kjor_handling_rot(rot, valgt)
+        gui.sett_tekst(resultat_text, studio_v2_gui_sok_status(query, valgt) + " · " + kommando_resultat)
+        skriv(kommando_resultat)
+        returner widget_id
+    }
+    la rot_panel: heltall = studio_v2_gui_steg_opp(widget_id, 2)
+    la midten: heltall = studio_v2_gui_hovedrad_midten_widget(rot_panel)
+    la venstre_panel: heltall = studio_v2_gui_hovedrad_venstre_widget(rot_panel)
+    la filer_liste: heltall = studio_v2_gui_venstre_filer_liste_widget(venstre_panel)
+    la aktiv_tekst: heltall = studio_v2_gui_venstre_aktiv_tekst_widget(venstre_panel)
+    la rot: tekst = workspace.studio_v2_state_rot(argv())
+    la session_data: liste_tekst = workspace.studio_v2_state_session_les(rot)
+    la tree_fold: liste_tekst = workspace.studio_v2_state_session_tree_fold(session_data)
+    la valgt_resultat: tekst = gui.liste_valgt(widget_id)
+    la filsti: tekst = studio_v2_gui_sok_resultat_valg(valgt_resultat)
+    la linje: heltall = studio_v2_gui_trekk_ut_linje(filsti)
+    la resultater: liste_tekst = studio_v2_gui_sok_resultater(rot, query)
+    hvis linje <= 0 da {
+        linje = 1
+    }
+    hvis filsti == "" da {
+        returner widget_id
+    }
+    la workspace_filer: liste_tekst = workspace.studio_v2_state_workspace_filer(rot)
+    la apne_filer: liste_tekst = workspace.studio_v2_state_apne_filer(rot, filsti)
+    la tabs: liste_tekst = editor.studio_v2_editor_tabs_fra_apne_filer(apne_filer)
+    studio_v2_gui_liste_sett(filer_liste, studio_v2_gui_begrens_liste_med_anker(studio_v2_gui_prosjekt_tre(workspace_filer, filsti, tree_fold), studio_v2_gui_prosjekt_tre_maks_fra_filer(workspace_filer), filsti))
+    gui.sett_tekst(aktiv_tekst, ui.studio_v2_ui_status_chip("Aktiv", filsti))
+    studio_v2_gui_liste_sett(studio_v2_gui_midten_tabs_liste_widget(midten), studio_v2_gui_tab_linje(tabs, filsti))
+    workspace.studio_v2_state_session_lagre_med_tilstand(rot, filsti, filsti, workspace.studio_v2_state_session_split_fokus(session_data), workspace.studio_v2_state_session_tool_window(session_data), workspace.studio_v2_state_session_run_config(session_data), workspace.studio_v2_state_session_palette_status(session_data), filsti, tree_fold)
+    studio_v2_gui_oppdater_editor(midten, rot, filsti, linje)
+    returner widget_id
+}
+
+funksjon studio_v2_gui_midten_fra_widget(widget_id: heltall) -> heltall {
+    la rot_panel: heltall = studio_v2_gui_steg_opp(widget_id, 2)
+    returner studio_v2_gui_hovedrad_midten_widget(rot_panel)
+}
+
+funksjon studio_v2_gui_oppdater_editor(midten: heltall, rot: tekst, filsti: tekst, linje: heltall) -> heltall {
+    la aktiv_fil_tekst: heltall = gui.barn(midten, 1)
+    la tabs_tekst: heltall = gui.barn(midten, 2)
+    la aktiv_tab_tekst: heltall = gui.barn(midten, 3)
+    la status_tekst: heltall = gui.barn(midten, 4)
+    la sok_tekst: heltall = gui.barn(midten, 5)
+    la symbol_tekst: heltall = gui.barn(midten, 6)
+    la session_tekst: heltall = gui.barn(midten, 7)
+    la editor_widget: heltall = gui.barn(midten, 8)
+    la split_status_tekst: heltall = gui.barn(midten, 9)
+    la split_liste: heltall = gui.barn(midten, 10)
+    la session_data: liste_tekst = workspace.studio_v2_state_session_les(rot)
+    la split_fokus: tekst = workspace.studio_v2_state_session_split_fokus(session_data)
+    la apne_filer: liste_tekst = workspace.studio_v2_state_apne_filer(rot, filsti)
+    la tabs: liste_tekst = editor.studio_v2_editor_tabs_fra_apne_filer(apne_filer)
+    la aktiv_tab: tekst = editor.studio_v2_editor_tab_nåværende(tabs, filsti)
+    la neste_tab: tekst = editor.studio_v2_editor_tab_neste(tabs, filsti)
+    la forrige_tab: tekst = editor.studio_v2_editor_tab_forrige(tabs, filsti)
+    la split_mål: tekst = studio_v2_gui_split_mål(tabs, aktiv_tab, split_fokus)
+    la innhold: tekst = workspace.studio_v2_state_fil_innhold(rot, filsti)
+    la buffer: liste_tekst = editor.studio_v2_editor_åpne(innhold)
+    la symbol_info: tekst = editor.studio_v2_editor_hurtiginfo_fra_aktiv_linje(rot, buffer, linje)
+    gui.sett_tekst(aktiv_fil_tekst, "Aktiv fil: " + filsti)
+    gui.sett_tekst(tabs_tekst, "Tabs: " + tekst_fra_heltall(lengde(tabs)) + " · Split: " + editor.studio_v2_editor_split_status(tabs))
+    gui.sett_tekst(aktiv_tab_tekst, "Aktiv/Neste/Forrige: " + aktiv_tab + " · " + neste_tab + " · " + forrige_tab)
+    gui.sett_tekst(status_tekst, ui.studio_v2_ui_status_chip("Buffer", tekst_fra_heltall(editor.studio_v2_editor_buffer_antall_linje(buffer))) + " · " + ui.studio_v2_ui_status_chip("Line", tekst_fra_heltall(linje)))
+    gui.sett_tekst(sok_tekst, "Søk/erstatt: " + editor.studio_v2_editor_sok_status(buffer, "returner") + " / " + editor.studio_v2_editor_erstatt_status(buffer, "returner"))
+    hvis symbol_info != "" da {
+        gui.sett_tekst(symbol_tekst, "Symbol/referanse: " + symbol.studio_v2_symbol_navigasjon_forslag(rot, filsti) + " · " + symbol_info)
+    } ellers {
+        gui.sett_tekst(symbol_tekst, "Symbol/referanse: " + symbol.studio_v2_symbol_navigasjon_forslag(rot, filsti))
+    }
+    gui.sett_tekst(session_tekst, "Sist navigasjon: " + filsti + " · rot: " + rot)
+    gui.sett_tekst(editor_widget, innhold)
+    gui.sett_tekst(split_status_tekst, ui.studio_v2_ui_status_chip("Target", split_mål) + " · " + ui.studio_v2_ui_status_chip("Focus", split_fokus))
+    hvis split_mål != "" og split_mål != filsti da {
+        la split_innhold: tekst = workspace.studio_v2_state_fil_innhold(rot, split_mål)
+        studio_v2_gui_liste_sett(split_liste, studio_v2_gui_begrens_liste(editor.studio_v2_editor_åpne(split_innhold), 5))
+    } ellers {
+        studio_v2_gui_liste_sett(split_liste, [ui.studio_v2_ui_tomt_split()])
+    }
+    hvis linje > 0 da {
+        gui.editor_hopp_til(editor_widget, linje)
+    }
+    returner editor_widget
+}
+
+funksjon studio_v2_gui_oppdater_sok(widget_id: heltall) -> heltall {
+    la query: tekst = gui.hent_tekst(widget_id)
+    la søk_panel: heltall = gui.foresatt(widget_id)
+    la resultat_tekst: heltall = studio_v2_gui_sok_status_widget(søk_panel)
+    la rot_panel: heltall = studio_v2_gui_steg_opp(widget_id, 2)
+    la midten: heltall = studio_v2_gui_hovedrad_midten_widget(rot_panel)
+    la venstre_panel: heltall = studio_v2_gui_hovedrad_venstre_widget(rot_panel)
+    la filer_liste: heltall = studio_v2_gui_venstre_filer_liste_widget(venstre_panel)
+    la aktiv_tekst: heltall = studio_v2_gui_venstre_aktiv_tekst_widget(venstre_panel)
+    workspace.studio_v2_state_session_search_query_skriv_med_tilstand(workspace.studio_v2_state_rot(argv()), query)
+    hvis query == "" da {
+        gui.sett_tekst(resultat_tekst, ui.studio_v2_ui_tomt_sok())
+        returner widget_id
+    }
+    la rot: tekst = workspace.studio_v2_state_rot(argv())
+    la forslag: tekst = symbol.studio_v2_symbol_navigasjon_forslag(rot, query)
+    hvis forslag == "" da {
+        gui.sett_tekst(resultat_tekst, studio_v2_gui_sok_status(query, forslag))
+        returner widget_id
+    }
+    la filsti: tekst = studio_v2_gui_trekk_ut_fil(forslag)
+    la linje: heltall = studio_v2_gui_trekk_ut_linje(forslag)
+    hvis filsti == "" da {
+        filsti = forslag
+        linje = 1
+    }
+    gui.sett_tekst(resultat_tekst, studio_v2_gui_sok_status(query, forslag))
+    la session_data: liste_tekst = workspace.studio_v2_state_session_les(rot)
+    la tree_fold: liste_tekst = workspace.studio_v2_state_session_tree_fold(session_data)
+    la apne_filer_resultat: liste_tekst = workspace.studio_v2_state_apne_filer(rot, filsti)
+    la tabs_resultat: liste_tekst = editor.studio_v2_editor_tabs_fra_apne_filer(apne_filer_resultat)
+    studio_v2_gui_liste_sett(filer_liste, studio_v2_gui_begrens_liste_med_anker(studio_v2_gui_prosjekt_tre(workspace.studio_v2_state_workspace_filer(rot), filsti, tree_fold), studio_v2_gui_prosjekt_tre_maks_fra_filer(workspace.studio_v2_state_workspace_filer(rot)), filsti))
+    gui.sett_tekst(aktiv_tekst, ui.studio_v2_ui_status_chip("Aktiv", filsti))
+    studio_v2_gui_liste_sett(studio_v2_gui_midten_tabs_liste_widget(midten), studio_v2_gui_tab_linje(tabs_resultat, filsti))
+    workspace.studio_v2_state_session_lagre_med_tilstand(rot, filsti, filsti, workspace.studio_v2_state_session_split_fokus(session_data), workspace.studio_v2_state_session_tool_window(session_data), workspace.studio_v2_state_session_run_config(session_data), workspace.studio_v2_state_session_palette_status(session_data), workspace.studio_v2_state_session_sist_navigasjon(session_data), tree_fold)
+    studio_v2_gui_oppdater_editor(midten, rot, filsti, linje)
+    returner widget_id
+}
+
+funksjon studio_v2_gui_oppdater_filvalg(widget_id: heltall) -> heltall {
+    la venstre_panel: heltall = gui.foresatt(widget_id)
+    la filer_liste: heltall = studio_v2_gui_venstre_filer_liste_widget(venstre_panel)
+    la aktiv_tekst: heltall = studio_v2_gui_venstre_aktiv_tekst_widget(venstre_panel)
+    la detalj_tekst: heltall = gui.barn(venstre_panel, 4)
+    la rot_panel: heltall = studio_v2_gui_steg_opp(widget_id, 2)
+    la midten: heltall = studio_v2_gui_hovedrad_midten_widget(rot_panel)
+    la rot: tekst = workspace.studio_v2_state_rot(argv())
+    la session_data: liste_tekst = workspace.studio_v2_state_session_les(rot)
+    la tree_fold: liste_tekst = workspace.studio_v2_state_session_tree_fold(session_data)
+    la valgt_mappe: tekst = studio_v2_gui_prosjekt_tre_mappe_valg(gui.liste_valgt(widget_id))
+    hvis valgt_mappe != "" da {
+        la ny_tree_fold: liste_tekst = workspace.studio_v2_state_session_tree_fold_oppdatert(session_data, valgt_mappe)
+        la aktiv_fil: tekst = workspace.studio_v2_state_aktiv_fil(rot)
+        la aktiv_tab: tekst = workspace.studio_v2_state_session_aktiv_tab(session_data)
+        hvis aktiv_tab == "" da {
+            aktiv_tab = aktiv_fil
+        }
+        la split_fokus: tekst = workspace.studio_v2_state_session_split_fokus(session_data)
+        la tool_window: tekst = workspace.studio_v2_state_session_tool_window(session_data)
+        la sist_navigasjon: tekst = workspace.studio_v2_state_session_sist_navigasjon(session_data)
+        la workspace_filer_toggle: liste_tekst = workspace.studio_v2_state_workspace_filer(rot)
+        workspace.studio_v2_state_session_project_tree_anchor_skriv_med_tilstand(rot, valgt_mappe)
+        workspace.studio_v2_state_session_lagre_med_tilstand(rot, aktiv_fil, aktiv_tab, split_fokus, tool_window, workspace.studio_v2_state_session_run_config(session_data), workspace.studio_v2_state_session_palette_status(session_data), valgt_mappe, ny_tree_fold)
+        studio_v2_gui_liste_sett(filer_liste, studio_v2_gui_begrens_liste_med_anker(studio_v2_gui_prosjekt_tre(workspace_filer_toggle, aktiv_fil, ny_tree_fold), studio_v2_gui_prosjekt_tre_maks_fra_filer(workspace_filer_toggle), aktiv_fil))
+        gui.sett_tekst(aktiv_tekst, ui.studio_v2_ui_status_chip("Aktiv", aktiv_fil))
+        gui.sett_tekst(detalj_tekst, "Mappevalg: " + valgt_mappe)
+        returner widget_id
+    }
+    la valgt_fil: tekst = studio_v2_gui_prosjekt_tre_valg(gui.liste_valgt(widget_id))
+    hvis valgt_fil == "" da {
+        returner widget_id
+    }
+    la session_data: liste_tekst = workspace.studio_v2_state_session_les(rot)
+    la tree_fold: liste_tekst = workspace.studio_v2_state_session_tree_fold(session_data)
+    la workspace_filer: liste_tekst = workspace.studio_v2_state_workspace_filer(rot)
+    la apne_filer: liste_tekst = workspace.studio_v2_state_apne_filer(rot, valgt_fil)
+    la tabs: liste_tekst = editor.studio_v2_editor_tabs_fra_apne_filer(apne_filer)
+    la aktiv_tab: tekst = editor.studio_v2_editor_tab_nåværende(tabs, valgt_fil)
+    workspace.studio_v2_state_session_project_tree_anchor_skriv_med_tilstand(rot, valgt_fil)
+    studio_v2_gui_liste_sett(filer_liste, studio_v2_gui_begrens_liste_med_anker(studio_v2_gui_prosjekt_tre(workspace_filer, valgt_fil, tree_fold), studio_v2_gui_prosjekt_tre_maks_fra_filer(workspace_filer), valgt_fil))
+    gui.sett_tekst(aktiv_tekst, ui.studio_v2_ui_status_chip("Aktiv", valgt_fil))
+    gui.sett_tekst(detalj_tekst, "Filvalg: " + valgt_fil)
+    studio_v2_gui_liste_sett(studio_v2_gui_midten_tabs_liste_widget(midten), studio_v2_gui_tab_linje(tabs, aktiv_tab))
+    workspace.studio_v2_state_session_lagre_med_tilstand(rot, valgt_fil, aktiv_tab, workspace.studio_v2_state_session_split_fokus(session_data), workspace.studio_v2_state_session_tool_window(session_data), workspace.studio_v2_state_session_run_config(session_data), workspace.studio_v2_state_session_palette_status(session_data), valgt_fil, tree_fold)
+    studio_v2_gui_oppdater_editor(midten, rot, valgt_fil, 1)
+    returner widget_id
+}
+
+funksjon studio_v2_gui_oppdater_referansevalg(widget_id: heltall) -> heltall {
+    la valgt_referanse: tekst = studio_v2_gui_markert_valg(gui.liste_valgt(widget_id))
+    hvis valgt_referanse == "" da {
+        returner widget_id
+    }
+    la høyre_panel: heltall = gui.foresatt(widget_id)
+    la detalj_tekst: heltall = gui.barn(høyre_panel, 16)
+    la filsti: tekst = symbol.studio_v2_symbol_oppføring_fil(valgt_referanse)
+    la linje: heltall = symbol.studio_v2_symbol_oppføring_linje(valgt_referanse)
+    la kolonne: heltall = symbol.studio_v2_symbol_oppføring_kolonne(valgt_referanse)
+    la rot_panel: heltall = studio_v2_gui_steg_opp(widget_id, 2)
+    la midten: heltall = studio_v2_gui_hovedrad_midten_widget(rot_panel)
+    la rot: tekst = workspace.studio_v2_state_rot(argv())
+    la session_data: liste_tekst = workspace.studio_v2_state_session_les(rot)
+    la tree_fold: liste_tekst = workspace.studio_v2_state_session_tree_fold(session_data)
+    la workspace_filer: liste_tekst = workspace.studio_v2_state_workspace_filer(rot)
+    la apne_filer: liste_tekst = workspace.studio_v2_state_apne_filer(rot, filsti)
+    la tabs: liste_tekst = editor.studio_v2_editor_tabs_fra_apne_filer(apne_filer)
+    la aktiv_tab: tekst = editor.studio_v2_editor_tab_nåværende(tabs, filsti)
+    la venstre_panel: heltall = studio_v2_gui_hovedrad_venstre_widget(rot_panel)
+    la filer_liste: heltall = studio_v2_gui_venstre_filer_liste_widget(venstre_panel)
+    la aktiv_tekst: heltall = studio_v2_gui_venstre_aktiv_tekst_widget(venstre_panel)
+    hvis kolonne > 0 da {
+        gui.sett_tekst(detalj_tekst, "Referansevalg: " + filsti + ":" + tekst_fra_heltall(linje) + ":" + tekst_fra_heltall(kolonne))
+    } ellers {
+        gui.sett_tekst(detalj_tekst, "Referansevalg: " + filsti + ":" + tekst_fra_heltall(linje))
+    }
+    studio_v2_gui_liste_sett(filer_liste, studio_v2_gui_begrens_liste_med_anker(studio_v2_gui_prosjekt_tre(workspace_filer, filsti, tree_fold), studio_v2_gui_prosjekt_tre_maks_fra_filer(workspace_filer), filsti))
+    gui.sett_tekst(aktiv_tekst, ui.studio_v2_ui_status_chip("Aktiv", filsti))
+    studio_v2_gui_liste_sett(studio_v2_gui_midten_tabs_liste_widget(midten), studio_v2_gui_tab_linje(tabs, aktiv_tab))
+    hvis filsti != "" da {
+        workspace.studio_v2_state_session_project_tree_anchor_skriv_med_tilstand(rot, filsti)
+        workspace.studio_v2_state_session_lagre_med_tilstand(rot, filsti, aktiv_tab, workspace.studio_v2_state_session_split_fokus(session_data), workspace.studio_v2_state_session_tool_window(session_data), workspace.studio_v2_state_session_run_config(session_data), workspace.studio_v2_state_session_palette_status(session_data), filsti, tree_fold)
+        studio_v2_gui_oppdater_editor(midten, rot, filsti, linje)
+    }
+    returner widget_id
+}
+
+funksjon studio_v2_gui_oppdater_diagnostikkvalg(widget_id: heltall) -> heltall {
+    la valgt_diagnostikk: tekst = studio_v2_gui_markert_valg(gui.liste_valgt(widget_id))
+    hvis valgt_diagnostikk == "" da {
+        returner widget_id
+    }
+    skriv("Diagnostikk valgt: " + valgt_diagnostikk)
+    la høyre_panel: heltall = gui.foresatt(widget_id)
+    la detalj_tekst: heltall = gui.barn(høyre_panel, 10)
+    la filsti: tekst = studio_v2_gui_trekk_ut_fil(valgt_diagnostikk)
+    la linje: heltall = studio_v2_gui_trekk_ut_linje(valgt_diagnostikk)
+    la melding: tekst = studio_v2_gui_trekk_ut_melding(valgt_diagnostikk)
+    gui.sett_tekst(detalj_tekst, studio_v2_gui_diagnostikk_detalj(valgt_diagnostikk))
+    hvis filsti == "" da {
+        returner widget_id
+    }
+    hvis linje <= 0 da {
+        linje = 1
+    }
+    la rot_panel: heltall = studio_v2_gui_steg_opp(widget_id, 2)
+    la midten: heltall = studio_v2_gui_hovedrad_midten_widget(rot_panel)
+    la rot: tekst = workspace.studio_v2_state_rot(argv())
+    la session_data: liste_tekst = workspace.studio_v2_state_session_les(rot)
+    la tree_fold: liste_tekst = workspace.studio_v2_state_session_tree_fold(session_data)
+    la workspace_filer: liste_tekst = workspace.studio_v2_state_workspace_filer(rot)
+    la apne_filer: liste_tekst = workspace.studio_v2_state_apne_filer(rot, filsti)
+    la tabs: liste_tekst = editor.studio_v2_editor_tabs_fra_apne_filer(apne_filer)
+    la aktiv_tab: tekst = editor.studio_v2_editor_tab_nåværende(tabs, filsti)
+    la venstre_panel: heltall = studio_v2_gui_hovedrad_venstre_widget(rot_panel)
+    la filer_liste: heltall = studio_v2_gui_venstre_filer_liste_widget(venstre_panel)
+    la aktiv_tekst: heltall = studio_v2_gui_venstre_aktiv_tekst_widget(venstre_panel)
+    gui.sett_tekst(aktiv_tekst, ui.studio_v2_ui_status_chip("Aktiv", filsti))
+    studio_v2_gui_liste_sett(filer_liste, studio_v2_gui_begrens_liste_med_anker(studio_v2_gui_prosjekt_tre(workspace_filer, filsti, tree_fold), studio_v2_gui_prosjekt_tre_maks_fra_filer(workspace_filer), filsti))
+    studio_v2_gui_liste_sett(studio_v2_gui_midten_tabs_liste_widget(midten), studio_v2_gui_tab_linje(tabs, aktiv_tab))
+    workspace.studio_v2_state_session_lagre_med_tilstand(rot, filsti, aktiv_tab, workspace.studio_v2_state_session_split_fokus(session_data), workspace.studio_v2_state_session_tool_window(session_data), workspace.studio_v2_state_session_run_config(session_data), workspace.studio_v2_state_session_palette_status(session_data), filsti, tree_fold)
+    studio_v2_gui_oppdater_editor(midten, rot, filsti, linje)
+    returner widget_id
+}
+
+funksjon studio_v2_gui_referanse_linje(referanser: liste_tekst, valgt_referanse: tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la indeks: heltall = 0
+    mens (indeks < lengde(referanser)) {
+        la referanse: tekst = referanser[indeks]
+        hvis referanse == valgt_referanse da {
+            legg_til(resultat, "▶ " + referanse)
+        } ellers {
+            legg_til(resultat, "· " + referanse)
+        }
+        indeks = indeks + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_gui_rename_linje(preview: liste_tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la indeks: heltall = 0
+    mens (indeks < lengde(preview)) {
+        la linje: tekst = preview[indeks]
+        hvis indeks == 0 da {
+            legg_til(resultat, "▶ " + linje)
+        } ellers {
+            legg_til(resultat, "· " + linje)
+        }
+        indeks = indeks + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_gui_split_mål(tabs: liste_tekst, aktiv_tab: tekst, split_fokus: tekst) -> tekst {
+    returner editor.studio_v2_editor_split_fokus_valgt(tabs, aktiv_tab, split_fokus)
+}
+
+funksjon studio_v2_gui_begrens_liste(elementer: liste_tekst, maks: heltall) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la indeks: heltall = 0
+    mens (indeks < lengde(elementer) og indeks < maks) {
+        legg_til(resultat, elementer[indeks])
+        indeks = indeks + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_gui_begrens_liste_med_anker(elementer: liste_tekst, maks: heltall, anker: tekst) -> liste_tekst {
+    hvis lengde(elementer) <= maks eller maks <= 0 da {
+        returner studio_v2_gui_begrens_liste(elementer, maks)
+    }
+    la anker_indeks: heltall = 0
+    la funnet: bool = usann
+    la normalisert_anker: tekst = studio_v2_gui_markert_valg(anker)
+    la indeks: heltall = 0
+    mens (indeks < lengde(elementer)) {
+        la kandidat: tekst = studio_v2_gui_markert_valg(elementer[indeks])
+        hvis kandidat == normalisert_anker da {
+            anker_indeks = indeks
+            funnet = sann
+            bryt
+        }
+        indeks = indeks + 1
+    }
+    hvis ikke funnet da {
+        anker_indeks = 0
+    }
+    la start: heltall = anker_indeks - (maks / 2)
+    hvis start < 0 da {
+        start = 0
+    }
+    hvis start + maks > lengde(elementer) da {
+        start = lengde(elementer) - maks
+    }
+    hvis start < 0 da {
+        start = 0
+    }
+    la resultat: liste_tekst = []
+    la i: heltall = start
+    mens (i < lengde(elementer) og lengde(resultat) < maks) {
+        legg_til(resultat, elementer[i])
+        i = i + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_gui_diagnostikk_linjer(diagnose: liste_tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la indeks: heltall = 0
+    mens (indeks < lengde(diagnose)) {
+        la linje: tekst = diagnose[indeks]
+        la deler: liste_tekst = tekst_del_på(linje, "\t")
+        hvis lengde(deler) > 0 da {
+            la severity: tekst = diagnostics.studio_v2_diagnostics_alvorlighet_fra_slag(deler[0])
+            hvis severity == "error" da {
+                legg_til(resultat, "⛔ " + linje)
+            } ellers hvis severity == "warning" da {
+                legg_til(resultat, "⚠ " + linje)
+            } ellers hvis severity == "info" da {
+                legg_til(resultat, "ℹ " + linje)
+            } ellers {
+                legg_til(resultat, linje)
+            }
+        } ellers {
+            legg_til(resultat, linje)
+        }
+        indeks = indeks + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_gui_diagnostikk_tomtilstand(diagnose: liste_tekst) -> tekst {
+    hvis lengde(diagnose) == 0 da {
+        returner "No problems yet"
+    }
+    returner ui.studio_v2_ui_problems_hint()
+}
+
+funksjon studio_v2_gui_oppdater_tabvalg(widget_id: heltall) -> heltall {
+    la valgt_tab: tekst = studio_v2_gui_tab_valg(gui.liste_valgt(widget_id))
+    hvis valgt_tab == "" da {
+        returner widget_id
+    }
+    la rot_panel: heltall = studio_v2_gui_steg_opp(widget_id, 2)
+    la midten: heltall = studio_v2_gui_hovedrad_midten_widget(rot_panel)
+    la rot: tekst = workspace.studio_v2_state_rot(argv())
+    la session_data: liste_tekst = workspace.studio_v2_state_session_les(rot)
+    la tree_fold: liste_tekst = workspace.studio_v2_state_session_tree_fold(session_data)
+    la workspace_filer: liste_tekst = workspace.studio_v2_state_workspace_filer(rot)
+    la apne_filer: liste_tekst = workspace.studio_v2_state_apne_filer(rot, valgt_tab)
+    la tabs: liste_tekst = editor.studio_v2_editor_tabs_fra_apne_filer(apne_filer)
+    la venstre_panel: heltall = studio_v2_gui_hovedrad_venstre_widget(rot_panel)
+    la filer_liste: heltall = studio_v2_gui_venstre_filer_liste_widget(venstre_panel)
+    la aktiv_tekst: heltall = studio_v2_gui_venstre_aktiv_tekst_widget(venstre_panel)
+    studio_v2_gui_liste_sett(filer_liste, studio_v2_gui_begrens_liste_med_anker(studio_v2_gui_prosjekt_tre(workspace_filer, valgt_tab, tree_fold), studio_v2_gui_prosjekt_tre_maks_fra_filer(workspace_filer), valgt_tab))
+    gui.sett_tekst(aktiv_tekst, ui.studio_v2_ui_status_chip("Aktiv", valgt_tab))
+    studio_v2_gui_liste_sett(widget_id, studio_v2_gui_tab_linje(tabs, valgt_tab))
+    workspace.studio_v2_state_session_lagre_med_tilstand(rot, valgt_tab, valgt_tab, workspace.studio_v2_state_session_split_fokus(session_data), workspace.studio_v2_state_session_tool_window(session_data), workspace.studio_v2_state_session_run_config(session_data), workspace.studio_v2_state_session_palette_status(session_data), valgt_tab, tree_fold)
+    studio_v2_gui_oppdater_editor(midten, rot, valgt_tab, 1)
+    returner widget_id
+}
+
+funksjon studio_v2_gui_run_config_linje(configs: liste_tekst, aktiv_config: tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la indeks: heltall = 0
+    mens (indeks < lengde(configs)) {
+        la config: tekst = configs[indeks]
+        hvis config == aktiv_config da {
+            legg_til(resultat, "▶ " + config)
+        } ellers {
+            legg_til(resultat, "· " + config)
+        }
+        indeks = indeks + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_gui_run_config_valg(tekstverdi: tekst) -> tekst {
+    la ren: tekst = tekstverdi
+    hvis tekst_starter_med(ren, "▶ ") da {
+        ren = tekst_erstatt(ren, "▶ ", "")
+    }
+    hvis tekst_starter_med(ren, "· ") da {
+        ren = tekst_erstatt(ren, "· ", "")
+    }
+    la deler: liste_tekst = tekst_del_på(ren, "\t")
+    hvis lengde(deler) > 0 da {
+        returner deler[0]
+    }
+    returner ren
+}
+
+funksjon studio_v2_gui_palette_linje(configs: liste_tekst, aktiv_config: tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la indeks: heltall = 0
+    mens (indeks < lengde(configs)) {
+        la config: tekst = configs[indeks]
+        hvis config == aktiv_config da {
+            legg_til(resultat, "▶ " + config)
+        } ellers {
+            legg_til(resultat, "· " + config)
+        }
+        indeks = indeks + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_gui_palette_filtrert(configs: liste_tekst, query: tekst) -> liste_tekst {
+    hvis query == "" da {
+        returner configs
+    }
+    la resultat: liste_tekst = []
+    la indeks: heltall = 0
+    mens (indeks < lengde(configs)) {
+        la config: tekst = configs[indeks]
+        hvis tekst_inneholder(config, query) da {
+            legg_til(resultat, config)
+        }
+        indeks = indeks + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_gui_palette_kommandoer() -> liste_tekst {
+    returner [
+        ui.studio_v2_ui_label_project(),
+        ui.studio_v2_ui_label_editor(),
+        ui.studio_v2_ui_label_inspect(),
+        ui.studio_v2_ui_label_run(),
+        "Check",
+        "Test",
+        "Debug",
+        "CI",
+        ui.studio_v2_ui_label_troubleshooting_guide(),
+        "Close Palette"
+    ]
+}
+
+funksjon studio_v2_gui_palette_valg(tekstverdi: tekst) -> tekst {
+    hvis tekst_starter_med(tekstverdi, "▶ ") da {
+        returner tekst_erstatt(tekstverdi, "▶ ", "")
+    }
+    hvis tekst_starter_med(tekstverdi, "· ") da {
+        returner tekst_erstatt(tekstverdi, "· ", "")
+    }
+    returner tekstverdi
+}
+
+funksjon studio_v2_gui_palette_widget(widget_id: heltall, tekstverdi: tekst) -> heltall {
+    gui.sett_tekst(widget_id, tekstverdi)
+    returner widget_id
+}
+
+funksjon studio_v2_gui_troubleshooting_guide(rot: tekst, aktiv_fil: tekst, run_config: tekst) -> liste_tekst {
+    hvis run_config == "" da {
+        run_config = "run"
+    }
+    hvis aktiv_fil == "" da {
+        aktiv_fil = "<ingen aktiv fil>"
+    }
+    returner [
+        "Teknisk feilsokingsguide",
+        "Arbeidskontekst:",
+        "- Workspace: " + rot,
+        "- Aktiv fil: " + aktiv_fil,
+        "- Kjøring: " + run_config,
+        "- Opprettet: __dato__ / __tidspunkt__",
+        "",
+        "Steg 1 — Dokumentasjon av symptom",
+        "- Symptom: ",
+        "- Når oppstår dette (frekvens/steget): ",
+        "- Forventet oppførsel: ",
+        "- Faktisk oppførsel: ",
+        "",
+        "Steg 2 — Minimalt reproduksjonsscenario",
+        "- Beskriv reproduksjon i miniatyr: ",
+        "- Minimal input/data: ",
+        "- Reproduserbar i 1–2 kommandoer: ",
+        "",
+        "Steg 3 — Standarddiagnose",
+        "- Kjør: Run",
+        "- Kjør: Check",
+        "- Kjør: Test",
+        "- Noter output (stdout + stderr): ",
+        "",
+        "Steg 4 — Miljø- og kontekstsporing",
+        "- Runtime/versjon: ",
+        "- Branch/tag: ",
+        "- Nylig endret fil/commit: ",
+        "- Avvik fra siste fungerende versjon: ",
+        "",
+        "Steg 5 — Feilanalyse",
+        "- Feilmelding / stackspor: ",
+        "- Første tegn på feilen i koden: ",
+        "- Om mulig: identifiser minste endring som fikser: ",
+        "",
+        "Steg 6 — Isolasjon",
+        "- Gjenta uten sideeffekter: ",
+        "- Legg til midlertidig logging (hvis mulig): ",
+        "- Bekreft hvilken linje/tilstand som bryter: ",
+        "",
+        "Steg 7 — Varig løsning",
+        "- Permanent fix-forslag: ",
+        "- Endre kode / konfigurering: ",
+        "- Valider med Run/Check/Test på nytt: ",
+        "",
+        "Steg 8 — Oppsummering",
+        "- Årsak: ",
+        "- Fikser: ",
+        "- Nye/oppdaterte tester: ",
+        "- Løsningsstatus: ",
+        "Når ferdig: lim dette tilbake i kodekommentar, PR-beskrivelse eller teknisk logg."
+    ]
+}
+
+funksjon studio_v2_gui_generer_technical_guide(rot: tekst) -> tekst {
+    la session_data: liste_tekst = workspace.studio_v2_state_session_les(rot)
+    la aktiv_fil: tekst = workspace.studio_v2_state_aktiv_fil(rot)
+    la run_config: tekst = workspace.studio_v2_state_session_run_config(session_data)
+    la guide_linjer: liste_tekst = studio_v2_gui_troubleshooting_guide(rot, aktiv_fil, run_config)
+    workspace.studio_v2_state_session_output_skriv_med_tilstand(rot, "technical", "technical-guide", "0", guide_linjer, [])
+    returner "Teknisk feilsøking generert i Output"
+}
+
+funksjon studio_v2_gui_palette_panel_status(palette_panel: heltall, rot: tekst) -> heltall {
+    hvis palette_panel == 0 da {
+        returner 0
+    }
+    la session_data: liste_tekst = workspace.studio_v2_state_session_les(rot)
+    la status_widget: heltall = gui.barn(palette_panel, 1)
+    la knapp_widget: heltall = gui.barn(palette_panel, 2)
+    hvis status_widget == 0 eller knapp_widget == 0 da {
+        returner palette_panel
+    }
+    la palette_status: tekst = workspace.studio_v2_state_session_palette_status(session_data)
+    hvis palette_status == "åpen" da {
+        studio_v2_gui_sett_tekst_sikkert(knapp_widget, "Close Palette")
+        la query_widget: heltall = gui.barn(palette_panel, 3)
+        la liste_widget: heltall = gui.barn(palette_panel, 4)
+        hvis query_widget == 0 eller liste_widget == 0 da {
+            studio_v2_gui_sett_tekst_sikkert(status_widget, ui.studio_v2_ui_deloverskrift("Navigation") + " " + ui.studio_v2_ui_status_chip("State", palette_status) + " · " + ui.studio_v2_ui_status_chip("Query", "...") + " · " + ui.studio_v2_ui_status_chip("Count", "0"))
+            returner palette_panel
+        }
+        la query: tekst = gui.hent_tekst(query_widget)
+        la commands: liste_tekst = studio_v2_gui_palette_filtrert(studio_v2_gui_palette_kommandoer(), query)
+            studio_v2_gui_sett_tekst_sikkert(status_widget, ui.studio_v2_ui_deloverskrift("Navigation") + " " + ui.studio_v2_ui_status_chip("State", palette_status) + " · " + ui.studio_v2_ui_status_chip("Query", query) + " · " + ui.studio_v2_ui_status_chip("Count", tekst_fra_heltall(lengde(commands))))
+        studio_v2_gui_liste_sett(liste_widget, commands)
+    } ellers {
+        studio_v2_gui_sett_tekst_sikkert(knapp_widget, "Open Palette")
+        studio_v2_gui_sett_tekst_sikkert(status_widget, ui.studio_v2_ui_deloverskrift("Navigation") + " " + ui.studio_v2_ui_status_chip("State", palette_status) + " · " + ui.studio_v2_ui_status_chip("Query", "") + " · " + ui.studio_v2_ui_status_chip("Count", "0"))
+    }
+    returner palette_panel
+}
+
+funksjon studio_v2_gui_kjor_handling_rot(rot: tekst, navn: tekst) -> tekst {
+    hvis navn == "technical-guide" eller navn == ui.studio_v2_ui_label_troubleshooting_guide() da {
+        returner studio_v2_gui_generer_technical_guide(rot)
+    }
+    la aktiv_fil: tekst = workspace.studio_v2_state_aktiv_fil(rot)
+    la session_data: liste_tekst = workspace.studio_v2_state_session_les(rot)
+    la kommando_fil: tekst = actions.studio_v2_actions_kommando_fil(rot)
+    hvis navn == "test" da {
+        la test_filer: liste_tekst = workspace.studio_v2_state_test_filer(rot)
+        la test_koder: liste_tekst = []
+        la indeks: heltall = 0
+        mens (indeks < lengde(test_filer)) {
+            la test_fil: tekst = test_filer[indeks]
+            la test_kode: heltall = 2
+            hvis ikke studio_v2_gui_test_fil_skipes(test_fil) da {
+                la test_kommando: liste_tekst = [kommando_fil, "test", test_fil]
+                test_kode = actions.studio_v2_actions_kjor(test_kommando)
+            }
+            legg_til(test_koder, tekst_fra_heltall(test_kode))
+            indeks = indeks + 1
+        }
+        la stdout_linjer: liste_tekst = studio_v2_gui_test_resultat_linjer(test_filer, test_koder)
+        la stderr_linjer: liste_tekst = studio_v2_gui_test_feil_linjer(test_filer, test_koder)
+        la exit_code: tekst = "0"
+        hvis lengde(stderr_linjer) > 0 da {
+            exit_code = "1"
+        }
+        workspace.studio_v2_state_session_output_skriv_med_tilstand(rot, "test", actions.studio_v2_actions_kommando_tekst([kommando_fil, "test"]), exit_code, stdout_linjer, stderr_linjer)
+        la test_sammendrag: tekst = studio_v2_gui_test_sammendrag(rot, test_filer, test_koder)
+        workspace.studio_v2_state_session_test_history_skriv_med_tilstand(rot, test_sammendrag)
+        returner test_sammendrag
+    }
+    la resultat: tekst = actions.studio_v2_actions_trygg_kjor(rot, aktiv_fil, navn)
+    la run_config: tekst = workspace.studio_v2_state_session_run_config(session_data)
+    hvis run_config == "" da {
+        run_config = "run"
+    }
+    la kommando: liste_tekst = actions.studio_v2_actions_kommando_for_navn(rot, aktiv_fil, navn)
+    la stdout_linjer: liste_tekst = studio_v2_gui_output_stdout_linjer(rot, aktiv_fil, navn, session_data)
+    la stderr_linjer: liste_tekst = studio_v2_gui_output_stderr_linjer(resultat)
+    la exit_code: tekst = "1"
+    hvis tekst_inneholder(resultat, "-> ok") da {
+        exit_code = "0"
+    }
+    workspace.studio_v2_state_session_output_skriv_med_tilstand(rot, run_config, actions.studio_v2_actions_kommando_tekst(kommando), exit_code, stdout_linjer, stderr_linjer)
+    returner resultat
+}
+
+funksjon studio_v2_gui_toggle_palette(widget_id: heltall) -> heltall {
+    la rot_panel: heltall = gui.foresatt(widget_id)
+    la rot: tekst = workspace.studio_v2_state_rot(argv())
+    la session_data: liste_tekst = workspace.studio_v2_state_session_les(rot)
+    la aktiv_fil: tekst = workspace.studio_v2_state_aktiv_fil(rot)
+    la aktiv_tab: tekst = workspace.studio_v2_state_session_aktiv_tab(session_data)
+    la split_fokus: tekst = workspace.studio_v2_state_session_split_fokus(session_data)
+    la tool_window: tekst = workspace.studio_v2_state_session_tool_window(session_data)
+    la run_config: tekst = workspace.studio_v2_state_session_run_config(session_data)
+    la palette_open: tekst = workspace.studio_v2_state_session_palette_status(session_data)
+    la sist_navigasjon: tekst = workspace.studio_v2_state_session_sist_navigasjon(session_data)
+    la tree_fold: liste_tekst = workspace.studio_v2_state_session_tree_fold(session_data)
+    hvis palette_open == "åpen" da {
+        palette_open = "lukket"
+    } ellers {
+        palette_open = "åpen"
+    }
+    workspace.studio_v2_state_session_lagre_med_tilstand(rot, aktiv_fil, aktiv_tab, split_fokus, tool_window, run_config, palette_open, sist_navigasjon, tree_fold)
+    studio_v2_gui_palette_panel_status(rot_panel, rot)
+    returner widget_id
+}
+
+funksjon studio_v2_gui_palette_utfør(rot_panel: heltall, kommando: tekst) -> tekst {
+    la rot: tekst = workspace.studio_v2_state_rot(argv())
+    hvis kommando == ui.studio_v2_ui_label_project() da {
+        studio_v2_gui_snarvei_project(rot_panel)
+        returner "fokus Project"
+    }
+    hvis kommando == ui.studio_v2_ui_label_editor() da {
+        studio_v2_gui_snarvei_editor(rot_panel)
+        returner "fokus Editor"
+    }
+    hvis kommando == ui.studio_v2_ui_label_inspect() da {
+        studio_v2_gui_snarvei_inspect(rot_panel)
+        returner "fokus Inspect"
+    }
+    hvis kommando == ui.studio_v2_ui_label_run() da {
+        returner studio_v2_gui_kjor_handling_rot(rot, workspace.studio_v2_state_session_run_config(workspace.studio_v2_state_session_les(rot)))
+    }
+    hvis kommando == "Check" da {
+        returner studio_v2_gui_kjor_handling_rot(rot, "check")
+    }
+    hvis kommando == "Test" da {
+        returner studio_v2_gui_kjor_handling_rot(rot, "test")
+    }
+    hvis kommando == "Debug" da {
+        returner studio_v2_gui_kjor_handling_rot(rot, "debug")
+    }
+    hvis kommando == "CI" da {
+        returner studio_v2_gui_kjor_handling_rot(rot, "runtime-ci")
+    }
+    hvis kommando == ui.studio_v2_ui_label_troubleshooting_guide() da {
+        returner studio_v2_gui_kjor_handling_rot(rot, "technical-guide")
+    }
+    hvis kommando == "Close Palette" da {
+        studio_v2_gui_snarvei_lukk_palette(rot_panel)
+        returner "lukket"
+    }
+    returner "ukjent"
+}
+
+funksjon studio_v2_gui_oppdater_palette(widget_id: heltall) -> heltall {
+    la valgt_config: tekst = studio_v2_gui_palette_valg(studio_v2_gui_markert_valgt_sikkert(widget_id))
+    hvis valgt_config == "" da {
+        returner widget_id
+    }
+    la palette_panel: heltall = gui.foresatt(widget_id)
+    la rot_panel: heltall = gui.foresatt(palette_panel)
+    la rot: tekst = workspace.studio_v2_state_rot(argv())
+    la palette_resultat: tekst = studio_v2_gui_palette_utfør(rot_panel, valgt_config)
+    la session_data_ny: liste_tekst = workspace.studio_v2_state_session_les(rot)
+    la aktiv_fil: tekst = workspace.studio_v2_state_aktiv_fil(rot)
+    la aktiv_tab: tekst = workspace.studio_v2_state_session_aktiv_tab(session_data_ny)
+    la split_fokus: tekst = workspace.studio_v2_state_session_split_fokus(session_data_ny)
+    la tool_window: tekst = workspace.studio_v2_state_session_tool_window(session_data_ny)
+    la tree_fold: liste_tekst = workspace.studio_v2_state_session_tree_fold(session_data_ny)
+    workspace.studio_v2_state_session_lagre_med_tilstand(rot, aktiv_fil, aktiv_tab, split_fokus, tool_window, workspace.studio_v2_state_session_run_config(session_data_ny), "lukket", workspace.studio_v2_state_session_sist_navigasjon(session_data_ny), tree_fold)
+    skriv("Palette: " + palette_resultat)
+    studio_v2_gui_palette_panel_status(palette_panel, rot)
+    returner widget_id
+}
+
+funksjon studio_v2_gui_oppdater_palette_query(widget_id: heltall) -> heltall {
+    la palette_panel: heltall = gui.foresatt(widget_id)
+    la rot: tekst = workspace.studio_v2_state_rot(argv())
+    hvis palette_panel == 0 da {
+        returner widget_id
+    }
+    studio_v2_gui_palette_panel_status(palette_panel, rot)
+    la liste_widget: heltall = gui.barn(palette_panel, 4)
+    hvis liste_widget > 0 da {
+        hvis gui.liste_antall(liste_widget) > 0 da {
+            gui.liste_velg(liste_widget, 0)
+        }
+    }
+    returner widget_id
+}
+
+funksjon studio_v2_gui_oppdater_palette_fra_query(widget_id: heltall) -> heltall {
+    la palette_panel: heltall = gui.foresatt(widget_id)
+    la rot: tekst = workspace.studio_v2_state_rot(argv())
+    hvis palette_panel == 0 da {
+        returner widget_id
+    }
+    studio_v2_gui_palette_panel_status(palette_panel, rot)
+    la liste_widget: heltall = gui.barn(palette_panel, 4)
+    hvis liste_widget > 0 da {
+        hvis gui.liste_antall(liste_widget) > 0 da {
+            gui.liste_velg(liste_widget, 0)
+            returner studio_v2_gui_oppdater_palette(liste_widget)
+        }
+    }
+    returner widget_id
+}
+
+funksjon studio_v2_gui_oppdater_run_config(widget_id: heltall) -> heltall {
+    la valgt_config: tekst = studio_v2_gui_run_config_valg(studio_v2_gui_markert_valgt_sikkert(widget_id))
+    hvis valgt_config == "" da {
+        returner widget_id
+    }
+    la rot_panel: heltall = studio_v2_gui_steg_opp(widget_id, 1)
+    la run_config_tekst: heltall = gui.barn(rot_panel, 1)
+    la rot: tekst = workspace.studio_v2_state_rot(argv())
+    la session_data: liste_tekst = workspace.studio_v2_state_session_les(rot)
+    la aktiv_fil: tekst = workspace.studio_v2_state_aktiv_fil(rot)
+    la aktiv_tab: tekst = workspace.studio_v2_state_session_aktiv_tab(session_data)
+    la split_fokus: tekst = workspace.studio_v2_state_session_split_fokus(session_data)
+    la tool_window: tekst = workspace.studio_v2_state_session_tool_window(session_data)
+    la sist_navigasjon: tekst = workspace.studio_v2_state_session_sist_navigasjon(session_data)
+    la tree_fold: liste_tekst = workspace.studio_v2_state_session_tree_fold(session_data)
+    workspace.studio_v2_state_session_lagre_med_tilstand(rot, aktiv_fil, aktiv_tab, split_fokus, tool_window, valgt_config, workspace.studio_v2_state_session_palette_status(session_data), sist_navigasjon, tree_fold)
+    workspace.studio_v2_state_session_run_profile_skriv_med_tilstand(rot, valgt_config, workspace.studio_v2_state_session_run_profile_args(session_data, valgt_config), workspace.studio_v2_state_session_run_profile_cwd(session_data, valgt_config, rot), workspace.studio_v2_state_session_run_profile_env(session_data, valgt_config))
+    workspace.studio_v2_state_session_debug_skriv_med_tilstand(rot, valgt_config, workspace.studio_v2_state_session_debug_status(session_data), workspace.studio_v2_state_session_debug_handling(session_data), workspace.studio_v2_state_session_debug_linje(session_data))
+    studio_v2_gui_sett_tekst_sikkert(run_config_tekst, ui.studio_v2_ui_deloverskrift("Navigation") + " " + ui.studio_v2_ui_status_chip("Config", valgt_config) + " · " + ui.studio_v2_ui_status_chip("Target", aktiv_fil))
+    returner widget_id
+}
+
+funksjon studio_v2_gui_oppdater_snarvei(widget_id: heltall) -> heltall {
+    skriv("Snarvei valgt: " + gui.liste_valgt(widget_id))
+    returner widget_id
+}
+
+funksjon studio_v2_gui_output_stdout_linjer(rot: tekst, fil: tekst, navn: tekst, session_data: liste_tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la kommando: liste_tekst = actions.studio_v2_actions_kommando_for_navn(rot, fil, navn)
+    legg_til(resultat, "Command: " + actions.studio_v2_actions_kommando_tekst(kommando))
+    la run_config: tekst = workspace.studio_v2_state_session_run_config(session_data)
+    hvis run_config == "" da {
+        run_config = "run"
+    }
+    legg_til(resultat, "Config: " + run_config)
+    legg_til(resultat, "Target: " + fil)
+    legg_til(resultat, "Workdir: " + workspace.studio_v2_state_session_run_profile_cwd(session_data, run_config, rot))
+    legg_til(resultat, "Args: " + workspace.studio_v2_state_session_run_profile_args(session_data, run_config))
+    legg_til(resultat, "Env: " + workspace.studio_v2_state_session_run_profile_env(session_data, run_config))
+    returner resultat
+}
+
+funksjon studio_v2_gui_output_stderr_linjer(resultat: tekst) -> liste_tekst {
+    hvis tekst_inneholder(resultat, "-> ok") da {
+        returner []
+    }
+    returner [resultat]
+}
+
+funksjon studio_v2_gui_output_filtrer_linjer(linjer: liste_tekst, query: tekst) -> liste_tekst {
+    hvis query == "" da {
+        returner linjer
+    }
+    la resultat: liste_tekst = []
+    la indeks: heltall = 0
+    mens (indeks < lengde(linjer)) {
+        hvis tekst_inneholder(linjer[indeks], query) da {
+            legg_til(resultat, linjer[indeks])
+        }
+        indeks = indeks + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_gui_output_filter_status(query: tekst, stdout_antall: heltall, stderr_antall: heltall) -> tekst {
+    hvis query == "" da {
+        returner "Filter: none · Stdout: " + tekst_fra_heltall(stdout_antall) + " · Stderr: " + tekst_fra_heltall(stderr_antall)
+    }
+    returner "Filter: " + query + " · Stdout: " + tekst_fra_heltall(stdout_antall) + " · Stderr: " + tekst_fra_heltall(stderr_antall)
+}
+
+funksjon studio_v2_gui_test_resultat_linje(fil: tekst, kode: heltall) -> tekst {
+    hvis kode == 0 da {
+        returner "● " + fil + ":1 · ok"
+    }
+    hvis kode == 2 da {
+        returner "↷ " + fil + ":1 · skipped"
+    }
+    returner "⛔ " + fil + ":1 · " + actions.studio_v2_actions_kommando_status(kode)
+}
+
+funksjon studio_v2_gui_test_fil_skipes(fil: tekst) -> bool {
+    hvis tekst_inneholder(fil, "skip_") eller tekst_inneholder(fil, "disabled_") da {
+        returner sann
+    }
+    returner usann
+}
+
+funksjon studio_v2_gui_output_destinasjon_fra_oppføring(oppføring: tekst) -> liste_tekst {
+    la ren: tekst = studio_v2_gui_markert_valg(oppføring)
+    hvis tekst_starter_med(ren, "Feil: ") da {
+        ren = tekst_erstatt(ren, "Feil: ", "")
+    }
+    la deler: liste_tekst = tekst_del_på(ren, " · ")
+    la primær: tekst = ren
+    hvis lengde(deler) > 0 da {
+        primær = deler[0]
+    }
+    hvis tekst_starter_med(primær, "● ") da {
+        primær = tekst_erstatt(primær, "● ", "")
+    } ellers hvis tekst_starter_med(primær, "⛔ ") da {
+        primær = tekst_erstatt(primær, "⛔ ", "")
+    } ellers hvis tekst_starter_med(primær, "↷ ") da {
+        primær = tekst_erstatt(primær, "↷ ", "")
+    }
+    la fil: tekst = primær
+    la linje: tekst = "1"
+    la felt: liste_tekst = tekst_del_på(primær, ":")
+    hvis lengde(felt) >= 2 da {
+        fil = felt[0]
+        linje = felt[1]
+    }
+    returner [fil, linje]
+}
+
+funksjon studio_v2_gui_oppdater_output_navigasjon(widget_id: heltall) -> heltall {
+    la valgt: tekst = studio_v2_gui_markert_valgt_sikkert(widget_id)
+    la destinasjon: liste_tekst = studio_v2_gui_output_destinasjon_fra_oppføring(valgt)
+    hvis lengde(destinasjon) < 2 da {
+        returner widget_id
+    }
+    la fil: tekst = destinasjon[0]
+    la linje: heltall = heltall_fra_tekst(destinasjon[1])
+    hvis fil == "" da {
+        returner widget_id
+    }
+    hvis linje < 1 da {
+        linje = 1
+    }
+    la rot_panel: heltall = studio_v2_gui_steg_opp(widget_id, 3)
+    la midten: heltall = studio_v2_gui_hovedrad_midten_widget(rot_panel)
+    la rot: tekst = workspace.studio_v2_state_rot(argv())
+    la session_data: liste_tekst = workspace.studio_v2_state_session_les(rot)
+    workspace.studio_v2_state_session_lagre_med_tilstand(rot, fil, fil, workspace.studio_v2_state_session_split_fokus(session_data), workspace.studio_v2_state_session_tool_window(session_data), workspace.studio_v2_state_session_run_config(session_data), workspace.studio_v2_state_session_palette_status(session_data), fil, workspace.studio_v2_state_session_tree_fold(session_data))
+    studio_v2_gui_oppdater_editor(midten, rot, fil, linje)
+    returner widget_id
+}
+
+funksjon studio_v2_gui_test_resultat_linjer(filer: liste_tekst, koder: liste_tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la indeks: heltall = 0
+    mens (indeks < lengde(filer) og indeks < lengde(koder)) {
+        legg_til(resultat, studio_v2_gui_test_resultat_linje(filer[indeks], heltall_fra_tekst(koder[indeks])))
+        indeks = indeks + 1
+    }
+    hvis lengde(filer) == 0 da {
+        legg_til(resultat, ui.studio_v2_ui_tomt_testfiler())
+    }
+    returner resultat
+}
+
+funksjon studio_v2_gui_test_feil_linjer(filer: liste_tekst, koder: liste_tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la indeks: heltall = 0
+    mens (indeks < lengde(filer) og indeks < lengde(koder)) {
+        la kode: heltall = heltall_fra_tekst(koder[indeks])
+        hvis kode != 0 og kode != 2 da {
+            legg_til(resultat, "Feil: " + filer[indeks] + ":1 · " + actions.studio_v2_actions_kommando_status(kode))
+        }
+        indeks = indeks + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_gui_test_sammendrag(rot: tekst, filer: liste_tekst, koder: liste_tekst) -> tekst {
+    la test_kommando_tekst: tekst = actions.studio_v2_actions_kommando_tekst([actions.studio_v2_actions_kommando_fil(rot), "test"])
+    hvis lengde(filer) == 0 da {
+        returner test_kommando_tekst + " -> ingen testfiler"
+    }
+    la suksess: heltall = 0
+    la hoppet_over: heltall = 0
+    la feil: heltall = 0
+    la indeks: heltall = 0
+    mens (indeks < lengde(filer) og indeks < lengde(koder)) {
+        la kode: heltall = heltall_fra_tekst(koder[indeks])
+        hvis kode == 0 da {
+            suksess = suksess + 1
+        } ellers hvis kode == 2 da {
+            hoppet_over = hoppet_over + 1
+        } ellers {
+            feil = feil + 1
+        }
+        indeks = indeks + 1
+    }
+    hvis feil == 0 da {
+        hvis hoppet_over > 0 da {
+            returner test_kommando_tekst + " -> ok (" + tekst_fra_heltall(suksess) + "/" + tekst_fra_heltall(lengde(filer)) + ", skipped " + tekst_fra_heltall(hoppet_over) + ")"
+        }
+        returner test_kommando_tekst + " -> ok (" + tekst_fra_heltall(suksess) + "/" + tekst_fra_heltall(lengde(filer)) + ")"
+    }
+    hvis hoppet_over > 0 da {
+        returner test_kommando_tekst + " -> feil (kode 1, " + tekst_fra_heltall(suksess) + "/" + tekst_fra_heltall(lengde(filer)) + ", skipped " + tekst_fra_heltall(hoppet_over) + ")"
+    }
+    returner test_kommando_tekst + " -> feil (kode 1, " + tekst_fra_heltall(suksess) + "/" + tekst_fra_heltall(lengde(filer)) + ")"
+}
+
+funksjon studio_v2_gui_vcs_fil_fra_statuslinje(statuslinje: tekst) -> tekst {
+    la ren: tekst = studio_v2_gui_markert_valg(statuslinje)
+    hvis tekst_starter_med(ren, "?? ") eller tekst_starter_med(ren, "M  ") eller tekst_starter_med(ren, "A  ") eller tekst_starter_med(ren, "D  ") da {
+        returner tekst_slice(ren, 3, tekst_lengde(ren))
+    }
+    hvis tekst_starter_med(ren, "M ") eller tekst_starter_med(ren, "A ") eller tekst_starter_med(ren, "D ") da {
+        returner tekst_slice(ren, 2, tekst_lengde(ren))
+    }
+    returner ren
+}
+
+funksjon studio_v2_gui_vcs_status_linje(status: liste_tekst, aktiv_fil: tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la indeks: heltall = 0
+    mens (indeks < lengde(status)) {
+        la linje: tekst = status[indeks]
+        la fil: tekst = studio_v2_gui_vcs_fil_fra_statuslinje(linje)
+        hvis fil == aktiv_fil da {
+            legg_til(resultat, "▶ " + linje)
+        } ellers {
+            legg_til(resultat, "· " + linje)
+        }
+        indeks = indeks + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_gui_vcs_diff_linje(diff: liste_tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la indeks: heltall = 0
+    mens (indeks < lengde(diff)) {
+        legg_til(resultat, "· " + diff[indeks])
+        indeks = indeks + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_gui_vcs_commit_linje(commit: liste_tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la indeks: heltall = 0
+    mens (indeks < lengde(commit)) {
+        legg_til(resultat, "· " + commit[indeks])
+        indeks = indeks + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_gui_vcs_history_linje(history: liste_tekst) -> liste_tekst {
+    la resultat: liste_tekst = []
+    la indeks: heltall = 0
+    mens (indeks < lengde(history)) {
+        legg_til(resultat, "· " + history[indeks])
+        indeks = indeks + 1
+    }
+    returner resultat
+}
+
+funksjon studio_v2_gui_vcs_stage_aktiv(widget_id: heltall) -> heltall {
+    la rot: tekst = workspace.studio_v2_state_rot(argv())
+    la aktiv_fil: tekst = workspace.studio_v2_state_aktiv_fil(rot)
+    hvis aktiv_fil == "" da {
+        returner widget_id
+    }
+    project.studio_v2_prosjekt_vcs_stage(rot, aktiv_fil)
+    returner widget_id
+}
+
+funksjon studio_v2_gui_vcs_unstage_aktiv(widget_id: heltall) -> heltall {
+    la rot: tekst = workspace.studio_v2_state_rot(argv())
+    la aktiv_fil: tekst = workspace.studio_v2_state_aktiv_fil(rot)
+    hvis aktiv_fil == "" da {
+        returner widget_id
+    }
+    project.studio_v2_prosjekt_vcs_unstage(rot, aktiv_fil)
+    returner widget_id
+}
+
+funksjon studio_v2_gui_innstillinger_tema_valg(widget_id: heltall) -> heltall {
+    la rot: tekst = workspace.studio_v2_state_rot(argv())
+    la tema: tekst = studio_v2_gui_markert_valg(gui.liste_valgt(widget_id))
+    hvis tema == "" da {
+        returner widget_id
+    }
+    workspace.studio_v2_state_session_tema_skriv_med_tilstand(rot, tema)
+    returner widget_id
+}
+
+funksjon studio_v2_gui_innstillinger_keymap_valg(widget_id: heltall) -> heltall {
+    la rot: tekst = workspace.studio_v2_state_rot(argv())
+    la keymap: tekst = studio_v2_gui_markert_valg(gui.liste_valgt(widget_id))
+    hvis keymap == "" da {
+        returner widget_id
+    }
+    workspace.studio_v2_state_session_keymap_skriv_med_tilstand(rot, keymap)
+    returner widget_id
+}
+
+funksjon studio_v2_gui_innstillinger_runtimevalg_valg(widget_id: heltall) -> heltall {
+    la rot: tekst = workspace.studio_v2_state_rot(argv())
+    la runtimevalg: tekst = studio_v2_gui_markert_valg(gui.liste_valgt(widget_id))
+    hvis runtimevalg == "" da {
+        returner widget_id
+    }
+    workspace.studio_v2_state_session_runtimevalg_skriv_med_tilstand(rot, runtimevalg)
+    returner widget_id
+}
+
+funksjon studio_v2_gui_innstillinger_default(widget_id: heltall) -> heltall {
+    la rot: tekst = workspace.studio_v2_state_rot(argv())
+    workspace.studio_v2_state_session_innstillinger_skriv_med_tilstand(rot, ui.studio_v2_ui_tema_standard(), ui.studio_v2_ui_keymap_standard(), ui.studio_v2_ui_runtimevalg_run())
+    returner widget_id
+}
+
+funksjon studio_v2_gui_vcs_status_valg(widget_id: heltall) -> heltall {
+    la venstre_panel: heltall = gui.foresatt(widget_id)
+    la detaljer: heltall = gui.barn(venstre_panel, 4)
+    la rot_panel: heltall = studio_v2_gui_steg_opp(widget_id, 2)
+    la midten: heltall = studio_v2_gui_hovedrad_midten_widget(rot_panel)
+    la rot: tekst = workspace.studio_v2_state_rot(argv())
+    la valgt: tekst = gui.liste_valgt(widget_id)
+    la filsti: tekst = studio_v2_gui_vcs_fil_fra_statuslinje(valgt)
+    hvis filsti == "" da {
+        returner widget_id
+    }
+    la session_data: liste_tekst = workspace.studio_v2_state_session_les(rot)
+    la tree_fold: liste_tekst = workspace.studio_v2_state_session_tree_fold(session_data)
+    la workspace_filer: liste_tekst = workspace.studio_v2_state_workspace_filer(rot)
+    la apne_filer: liste_tekst = workspace.studio_v2_state_apne_filer(rot, filsti)
+    la tabs: liste_tekst = editor.studio_v2_editor_tabs_fra_apne_filer(apne_filer)
+    la aktiv_tab: tekst = editor.studio_v2_editor_tab_nåværende(tabs, filsti)
+    la linje: heltall = 1
+    gui.sett_tekst(detaljer, "VCS: " + filsti)
+    studio_v2_gui_liste_sett(studio_v2_gui_venstre_filer_liste_widget(venstre_panel), studio_v2_gui_begrens_liste_med_anker(studio_v2_gui_prosjekt_tre(workspace_filer, filsti, tree_fold), studio_v2_gui_prosjekt_tre_maks_fra_filer(workspace_filer), filsti))
+    studio_v2_gui_liste_sett(studio_v2_gui_midten_tabs_liste_widget(midten), studio_v2_gui_tab_linje(tabs, filsti))
+    workspace.studio_v2_state_session_lagre_med_tilstand(rot, filsti, aktiv_tab, workspace.studio_v2_state_session_split_fokus(session_data), workspace.studio_v2_state_session_tool_window(session_data), workspace.studio_v2_state_session_run_config(session_data), workspace.studio_v2_state_session_palette_status(session_data), filsti, tree_fold)
+    studio_v2_gui_oppdater_editor(midten, rot, filsti, linje)
+    returner widget_id
+}
+
+funksjon studio_v2_gui_output_panel_widget(widget_id: heltall) -> heltall {
+    la run_panel: heltall = studio_v2_gui_steg_opp(widget_id, 2)
+    returner gui.barn(run_panel, 11)
+}
+
+funksjon studio_v2_gui_output_panel_status(run_panel: heltall, rot: tekst) -> heltall {
+    hvis run_panel <= 0 da {
+        returner run_panel
+    }
+    la session_data: liste_tekst = workspace.studio_v2_state_session_les(rot)
+    la output_panel: heltall = gui.barn(run_panel, 11)
+    hvis output_panel <= 0 da {
+        returner run_panel
+    }
+    la output_summary_widget: heltall = gui.barn(output_panel, 1)
+    la output_query_widget: heltall = gui.barn(output_panel, 4)
+    la output_query_status_widget: heltall = gui.barn(output_panel, 5)
+    la output_stdout_widget: heltall = gui.barn(output_panel, 7)
+    la output_stderr_widget: heltall = gui.barn(output_panel, 9)
+    la stdout_linjer: liste_tekst = workspace.studio_v2_state_session_output_stdout(session_data)
+    la stderr_linjer: liste_tekst = workspace.studio_v2_state_session_output_stderr(session_data)
+    la output_config: tekst = workspace.studio_v2_state_session_output_config(session_data)
+    la test_history: tekst = workspace.studio_v2_state_session_test_history_siste(session_data)
+    la query: tekst = ""
+    hvis output_query_widget > 0 da {
+        query = gui.hent_tekst(output_query_widget)
+    }
+    la stdout_filtrert: liste_tekst = studio_v2_gui_output_filtrer_linjer(stdout_linjer, query)
+    la stderr_filtrert: liste_tekst = studio_v2_gui_output_filtrer_linjer(stderr_linjer, query)
+    hvis output_config == "" da {
+        output_config = workspace.studio_v2_state_session_run_config(session_data)
+    }
+    hvis output_config == "" da {
+        output_config = "run"
+    }
+    hvis lengde(stdout_filtrert) == 0 da {
+        stdout_filtrert = [ui.studio_v2_ui_tomt_stdout()]
+    }
+    hvis lengde(stderr_filtrert) == 0 da {
+        stderr_filtrert = [ui.studio_v2_ui_tomt_stderr()]
+    }
+    hvis test_history == "" da {
+        test_history = ui.studio_v2_ui_run_history_hint()
+    }
+    studio_v2_gui_sett_tekst_sikkert(output_summary_widget, ui.studio_v2_ui_status_chip("Config", output_config) + " · " + ui.studio_v2_ui_status_chip("Command", workspace.studio_v2_state_session_output_command(session_data)) + " · " + ui.studio_v2_ui_status_chip("History", test_history))
+    studio_v2_gui_sett_tekst_sikkert(output_query_status_widget, studio_v2_gui_output_filter_status(query, lengde(stdout_filtrert), lengde(stderr_filtrert)))
+    studio_v2_gui_liste_sett(output_stdout_widget, stdout_filtrert)
+    studio_v2_gui_liste_sett(output_stderr_widget, stderr_filtrert)
+    returner run_panel
+}
+
+funksjon studio_v2_gui_oppdater_output(widget_id: heltall) -> heltall {
+    la output_panel: heltall = gui.foresatt(widget_id)
+    hvis output_panel <= 0 da {
+        returner widget_id
+    }
+    la run_panel: heltall = gui.foresatt(output_panel)
+    hvis run_panel <= 0 da {
+        returner widget_id
+    }
+    la rot: tekst = workspace.studio_v2_state_rot(argv())
+    studio_v2_gui_output_panel_status(run_panel, rot)
+    returner widget_id
+}
+
+funksjon studio_v2_gui_kommando_status_widget(widget_id: heltall) -> heltall {
+    la run_panel: heltall = studio_v2_gui_steg_opp(widget_id, 2)
+    returner gui.barn(run_panel, 7)
+}
+
+funksjon studio_v2_gui_kommando_output_widget(widget_id: heltall) -> heltall {
+    la run_panel: heltall = studio_v2_gui_steg_opp(widget_id, 2)
+    returner gui.barn(run_panel, 8)
+}
+
+funksjon studio_v2_gui_kjor_handling_fra_knapp(widget_id: heltall, navn: tekst) -> heltall {
+    la rot: tekst = workspace.studio_v2_state_rot(argv())
+    la status_widget: heltall = studio_v2_gui_kommando_status_widget(widget_id)
+    la output_widget: heltall = studio_v2_gui_kommando_output_widget(widget_id)
+    la run_panel: heltall = studio_v2_gui_steg_opp(widget_id, 2)
+    la resultat: tekst = studio_v2_gui_kjor_handling_rot(rot, navn)
+    la session_data_ny: liste_tekst = workspace.studio_v2_state_session_les(rot)
+    studio_v2_gui_sett_tekst_sikkert(status_widget, "Kommando status: " + resultat)
+    studio_v2_gui_sett_tekst_sikkert(output_widget, "Output: " + workspace.studio_v2_state_session_output_sammendrag(session_data_ny))
+    studio_v2_gui_output_panel_status(run_panel, rot)
+    skriv(resultat)
+    returner widget_id
+}
+
+funksjon studio_v2_gui_kjor_handling_fra_liste(widget_id: heltall, navn: tekst) -> heltall {
+    la run_panel: heltall = gui.foresatt(widget_id)
+    la status_widget: heltall = gui.barn(run_panel, 7)
+    la output_widget: heltall = gui.barn(run_panel, 8)
+    la rot: tekst = workspace.studio_v2_state_rot(argv())
+    la resultat: tekst = studio_v2_gui_kjor_handling_rot(rot, navn)
+    la session_data_ny: liste_tekst = workspace.studio_v2_state_session_les(rot)
+    studio_v2_gui_sett_tekst_sikkert(status_widget, "Kommando status: " + resultat)
+    studio_v2_gui_sett_tekst_sikkert(output_widget, "Output: " + workspace.studio_v2_state_session_output_sammendrag(session_data_ny))
+    studio_v2_gui_output_panel_status(run_panel, rot)
+    skriv(resultat)
+    returner widget_id
+}
+
+funksjon studio_v2_gui_kjor_run_liste(widget_id: heltall) -> heltall {
+    la rot: tekst = workspace.studio_v2_state_rot(argv())
+    la session_data: liste_tekst = workspace.studio_v2_state_session_les(rot)
+    la run_config: tekst = workspace.studio_v2_state_session_run_config(session_data)
+    hvis run_config == "" da {
+        run_config = "run"
+    }
+    returner studio_v2_gui_kjor_handling_fra_liste(widget_id, run_config)
+}
+
+funksjon studio_v2_gui_kjor_run_knapp(widget_id: heltall) -> heltall {
+    la rot: tekst = workspace.studio_v2_state_rot(argv())
+    la session_data: liste_tekst = workspace.studio_v2_state_session_les(rot)
+    la run_config: tekst = workspace.studio_v2_state_session_run_config(session_data)
+    hvis run_config == "" da {
+        run_config = "run"
+    }
+    returner studio_v2_gui_kjor_handling_fra_knapp(widget_id, run_config)
+}
+
+funksjon studio_v2_gui_kjor_run_velkomst(widget_id: heltall) -> heltall {
+    la rot: tekst = workspace.studio_v2_state_rot(argv())
+    la session_data: liste_tekst = workspace.studio_v2_state_session_les(rot)
+    la run_config: tekst = workspace.studio_v2_state_session_run_config(session_data)
+    hvis run_config == "" da {
+        run_config = "run"
+    }
+    studio_v2_gui_kjor_handling_rot(rot, run_config)
+    returner widget_id
+}
+
+funksjon studio_v2_gui_kjor_check(widget_id: heltall) -> heltall {
+    returner studio_v2_gui_kjor_handling_fra_knapp(widget_id, "check")
+}
+
+funksjon studio_v2_gui_kjor_test(widget_id: heltall) -> heltall {
+    returner studio_v2_gui_kjor_handling_fra_knapp(widget_id, "test")
+}
+
+funksjon studio_v2_gui_kjor_runtime_ci(widget_id: heltall) -> heltall {
+    returner studio_v2_gui_kjor_handling_fra_knapp(widget_id, "runtime-ci")
+}
+
+funksjon studio_v2_gui_kjor_technical_guide(widget_id: heltall) -> heltall {
+    returner studio_v2_gui_kjor_handling_fra_knapp(widget_id, "technical-guide")
+}
+
+funksjon studio_v2_gui_kjor_debug(widget_id: heltall) -> heltall {
+    la rot: tekst = workspace.studio_v2_state_rot(argv())
+    la session_data: liste_tekst = workspace.studio_v2_state_session_les(rot)
+    la run_config: tekst = workspace.studio_v2_state_session_run_config(session_data)
+    hvis run_config == "" da {
+        run_config = "run"
+    }
+    workspace.studio_v2_state_session_debug_skriv_med_tilstand(rot, run_config, "paused", "debug", 1)
+    returner studio_v2_gui_kjor_handling_fra_knapp(widget_id, "debug")
+}
+
+funksjon start() -> heltall {
+    la args: liste_tekst = argv()
+    la rot: tekst = workspace.studio_v2_state_rot(args)
+    la workspace_filer: liste_tekst = workspace.studio_v2_state_workspace_filer(rot)
+    la aktiv_fil: tekst = workspace.studio_v2_state_aktiv_fil(rot)
+    la recent_projects: liste_tekst = workspace.studio_v2_state_session_recent_for_workspace(rot)
+    la session_data: liste_tekst = workspace.studio_v2_state_session_les(rot)
+    la aktiv_node: tekst = studio_v2_gui_prosjekt_aktiv_node(rot, session_data, aktiv_fil)
+    la aktiv_innhold: tekst = workspace.studio_v2_state_fil_innhold(rot, aktiv_fil)
+    la session_status: tekst = workspace.studio_v2_state_session_status(rot)
+    la session_aktiv_tab: tekst = workspace.studio_v2_state_session_aktiv_tab(session_data)
+    la session_split_fokus: tekst = workspace.studio_v2_state_session_split_fokus(session_data)
+    la session_tool_window: tekst = workspace.studio_v2_state_session_tool_window(session_data)
+    la session_run_config: tekst = workspace.studio_v2_state_session_run_config(session_data)
+    la session_tema: tekst = workspace.studio_v2_state_session_tema(session_data)
+    la session_keymap: tekst = workspace.studio_v2_state_session_keymap(session_data)
+    la session_runtimevalg: tekst = workspace.studio_v2_state_session_runtimevalg(session_data)
+    la session_palette_open: tekst = workspace.studio_v2_state_session_palette_status(session_data)
+    la session_sist_navigasjon: tekst = workspace.studio_v2_state_session_sist_navigasjon(session_data)
+    la session_search_query: tekst = workspace.studio_v2_state_session_search_query(session_data)
+    la session_tree_fold: liste_tekst = workspace.studio_v2_state_session_tree_fold(session_data)
+    la apne_filer: liste_tekst = workspace.studio_v2_state_apne_filer(rot, aktiv_fil)
+    la tabs: liste_tekst = editor.studio_v2_editor_tabs_fra_apne_filer(apne_filer)
+    la aktiv_tab: tekst = aktiv_fil
+    hvis session_sist_navigasjon != "" og editor.studio_v2_editor_tab_indeks(tabs, session_sist_navigasjon) >= 0 da {
+        aktiv_tab = session_sist_navigasjon
+    } ellers hvis session_aktiv_tab != "" og editor.studio_v2_editor_tab_indeks(tabs, session_aktiv_tab) >= 0 da {
+        aktiv_tab = session_aktiv_tab
+    } ellers hvis editor.studio_v2_editor_tab_indeks(tabs, aktiv_fil) >= 0 da {
+        aktiv_tab = aktiv_fil
+    } ellers hvis lengde(tabs) > 0 da {
+        aktiv_tab = tabs[0]
+    }
+    la neste_tab: tekst = editor.studio_v2_editor_tab_neste(tabs, aktiv_tab)
+    la forrige_tab: tekst = editor.studio_v2_editor_tab_forrige(tabs, aktiv_tab)
+    la høyre_fokus: tekst = session_split_fokus
+    hvis høyre_fokus == "" da {
+        høyre_fokus = "høyre"
+    }
+    workspace.studio_v2_state_session_lagre_med_tilstand(rot, aktiv_fil, aktiv_tab, høyre_fokus, session_tool_window, session_run_config, session_palette_open, session_sist_navigasjon, session_tree_fold)
+    la buffer: liste_tekst = editor.studio_v2_editor_åpne(aktiv_innhold)
+    la cursor: liste_tekst = editor.studio_v2_cursor_med_posisjon(1, 1)
+    la goto_linje_preview: liste_tekst = editor.studio_v2_editor_goto_linje(buffer, 2)
+    la symbol_def: tekst = editor.studio_v2_editor_goto_symbol(rot, "studio_v2")
+    la symbol_referanser: liste_tekst = editor.studio_v2_editor_referanser(rot, "studio_v2")
+    la symbol_referanse_valg: tekst = editor.studio_v2_editor_referanse_valg(rot, "studio_v2", 0)
+    la rename_preview: liste_tekst = editor.studio_v2_editor_rename_preview(rot, "studio_v2", "studio_v2_v2")
+    la session_breakpoints: liste_tekst = workspace.studio_v2_state_session_breakpoints_for_fil(session_data, aktiv_fil)
+    la kommandopalett: liste_tekst = actions.studio_v2_actions_palett()
+    la terminal_kommandoer: liste_tekst = actions.studio_v2_actions_terminal(rot, aktiv_fil, session_run_config)
+    la diagnose: liste_tekst = [
+        "workspace\tNorscode Studio v2\t" + rot,
+        "aktivitetsfil\t" + aktiv_fil,
+        "åpne_filer\t" + tekst_fra_heltall(lengde(apne_filer)),
+        "workspace_filer\t" + tekst_fra_heltall(lengde(workspace_filer)),
+        "recent_projects\t" + tekst_fra_heltall(lengde(recent_projects)),
+        "symboler\tklar",
+        "status\tklar",
+        "oppdatering\tinkrementell"
+    ]
+    la kompakt_visning: bool = studio_v2_gui_kompakt_visning(workspace_filer, recent_projects, diagnose, symbol_referanser, tabs)
+    la ui_tema: tekst = session_tema
+    skriv(ui.studio_v2_ui_shell())
+    skriv("Prosjekt: " + project.studio_v2_prosjektnavn() + " · Workspace: " + rot)
+    skriv("Aktiv fil: " + aktiv_fil + " · Tab: " + aktiv_tab + " · Fokus: " + høyre_fokus + " · Tool: " + session_tool_window)
+    skriv("Status: " + actions.studio_v2_actions_status(rot) + " · Diagnostikk: " + diagnostics.studio_v2_diagnostics_oppdater_status(rot))
+
+    la vindu_id: heltall = gui.vindu("Norscode Studio v2")
+    la rot_panel: heltall = gui.panel(vindu_id)
+    la header: heltall = gui.rad(rot_panel)
+    gui.tekst(header, ui.studio_v2_ui_logo_banner())
+    gui.tekst(header, ui.studio_v2_ui_logo_tagline() + " · " + ui.studio_v2_ui_seksjon_tittel("Norscode Studio v2"))
+    gui.tekst(header, ui.studio_v2_ui_brand_chip_linje())
+    gui.tekst(header, ui.studio_v2_ui_status_chip("Project", project.studio_v2_prosjektnavn()) + " · " + ui.studio_v2_ui_status_chip("Workspace", rot))
+    gui.tekst(header, ui.studio_v2_ui_status_chip("Session", session_status) + " · " + ui.studio_v2_ui_status_chip("Tabs", tekst_fra_heltall(lengde(tabs))) + " · " + ui.studio_v2_ui_status_chip("Tool", session_tool_window))
+    la velkomst_panel: heltall = gui.panel(rot_panel)
+    gui.tekst(velkomst_panel, ui.studio_v2_ui_panel_status_overskrift("✦", ui.studio_v2_ui_label_welcome(), "", "Open", tekst_fra_heltall(lengde(apne_filer))))
+    gui.tekst(velkomst_panel, ui.studio_v2_ui_logo_banner())
+    gui.tekst(velkomst_panel, ui.studio_v2_ui_brand_chip_linje())
+    gui.tekst(velkomst_panel, ui.studio_v2_ui_velkomst_undertittel(rot, session_status))
+    gui.tekst(velkomst_panel, ui.studio_v2_ui_velkomst_oversikt())
+    gui.tekst(velkomst_panel, ui.studio_v2_ui_status_chip("Actions", tekst_fra_heltall(lengde(ui.studio_v2_ui_velkomst_handlinger()))) + " · " + ui.studio_v2_ui_status_chip("Open", tekst_fra_heltall(lengde(apne_filer))))
+    la velkomst_handlinger: heltall = gui.rad(velkomst_panel)
+    la velkomst_project: heltall = gui.knapp(velkomst_handlinger, ui.studio_v2_ui_label_project())
+    la velkomst_editor: heltall = gui.knapp(velkomst_handlinger, ui.studio_v2_ui_label_editor())
+    la velkomst_inspect: heltall = gui.knapp(velkomst_handlinger, ui.studio_v2_ui_label_inspect())
+    la velkomst_palette: heltall = gui.knapp(velkomst_handlinger, ui.studio_v2_ui_label_palette())
+    la velkomst_run: heltall = gui.knapp(velkomst_handlinger, ui.studio_v2_ui_label_run())
+    gui.på_klikk(velkomst_project, "studio_v2_gui_snarvei_project")
+    gui.på_klikk(velkomst_editor, "studio_v2_gui_snarvei_editor")
+    gui.på_klikk(velkomst_inspect, "studio_v2_gui_snarvei_inspect")
+    gui.på_klikk(velkomst_palette, "studio_v2_gui_snarvei_palette")
+    gui.på_klikk(velkomst_run, "studio_v2_gui_kjor_run_velkomst")
+    gui.tekst(velkomst_panel, ui.studio_v2_ui_velkomst_recent_tittel())
+    gui.tekst(velkomst_panel, ui.studio_v2_ui_velkomst_recent_sammendrag(rot, lengde(recent_projects)))
+    gui.tekst(velkomst_panel, ui.studio_v2_ui_velkomst_recent_current(rot))
+    gui.tekst(velkomst_panel, ui.studio_v2_ui_velkomst_recent_hint())
+    la velkomst_recent_actions_tekst: tekst = ""
+    hvis ikke kompakt_visning da {
+        velkomst_recent_actions_tekst = ui.studio_v2_ui_velkomst_recent_actions()
+    }
+    gui.tekst(velkomst_panel, velkomst_recent_actions_tekst)
+    gui.tekst(velkomst_panel, ui.studio_v2_ui_status_chip("Restore target", rot) + " · " + ui.studio_v2_ui_status_chip("Ready", actions.studio_v2_actions_status(rot)))
+    la velkomst_recent_restore_status_tekst: tekst = ""
+    la velkomst_recent_shortcut_tekst: tekst = ""
+    hvis ikke kompakt_visning da {
+        velkomst_recent_restore_status_tekst = ui.studio_v2_ui_velkomst_recent_restore_status()
+        velkomst_recent_shortcut_tekst = ui.studio_v2_ui_velkomst_recent_shortcut()
+    }
+    gui.tekst(velkomst_panel, velkomst_recent_restore_status_tekst)
+    gui.tekst(velkomst_panel, velkomst_recent_shortcut_tekst)
+    la velkomst_recent_liste: heltall = gui.liste(velkomst_panel)
+    studio_v2_gui_liste_fyll(velkomst_recent_liste, studio_v2_gui_begrens_liste(studio_v2_gui_recent_linje_med_status(recent_projects, rot), 4))
+    gui.på_endring(velkomst_recent_liste, "studio_v2_gui_oppdater_velkomst_recent_restore")
+    gui.på_tast(velkomst_recent_liste, "enter", "studio_v2_gui_oppdater_velkomst_recent_restore")
+    la velkomst_recent_restore: heltall = gui.knapp(velkomst_panel, "Restore Selected Recent")
+    gui.på_klikk(velkomst_recent_restore, "studio_v2_gui_oppdater_velkomst_recent_restore")
+    la run_panel: heltall = gui.panel(rot_panel)
+    gui.tekst(run_panel, ui.studio_v2_ui_panel_status_overskrift("⚙", ui.studio_v2_ui_label_run(), "Configuration + actions", "Config", session_run_config))
+    gui.tekst(run_panel, ui.studio_v2_ui_brand_chip_linje())
+    la run_config_liste: heltall = gui.liste(run_panel)
+    studio_v2_gui_liste_fyll(run_config_liste, studio_v2_gui_run_config_linje(actions.studio_v2_actions_run_konfigurasjoner(), session_run_config))
+    gui.på_endring(run_config_liste, "studio_v2_gui_oppdater_run_config")
+    gui.på_tast(run_config_liste, "enter", "studio_v2_gui_kjor_run_liste")
+    gui.tekst(run_panel, ui.studio_v2_ui_status_chip("Target", aktiv_fil) + " · " + ui.studio_v2_ui_status_chip("Workdir", workspace.studio_v2_state_session_run_profile_cwd(session_data, session_run_config, rot)) + " · " + ui.studio_v2_ui_status_chip("Args", workspace.studio_v2_state_session_run_profile_args(session_data, session_run_config)) + " · " + ui.studio_v2_ui_status_chip("Env", workspace.studio_v2_state_session_run_profile_env(session_data, session_run_config)))
+    gui.tekst(run_panel, ui.studio_v2_ui_status_chip("Profile", workspace.studio_v2_state_session_run_profile_sammendrag(session_data, session_run_config, rot)))
+    la kommandolinje: heltall = gui.rad(run_panel)
+    la run_knapp: heltall = gui.knapp(kommandolinje, ui.studio_v2_ui_label_run())
+    la check_knapp: heltall = gui.knapp(kommandolinje, "Check")
+    la test_knapp: heltall = gui.knapp(kommandolinje, "Test")
+    la debug_knapp: heltall = gui.knapp(kommandolinje, "Debug")
+    la runtime_ci_knapp: heltall = gui.knapp(kommandolinje, "CI")
+    la guide_knapp: heltall = gui.knapp(kommandolinje, ui.studio_v2_ui_label_troubleshooting_guide())
+    gui.tekst(kommandolinje, ui.studio_v2_ui_status_chip("Run", actions.studio_v2_actions_status(rot)) + " · " + ui.studio_v2_ui_status_chip("Config", session_run_config) + " · " + ui.studio_v2_ui_status_chip("Tool", session_tool_window))
+    gui.på_klikk(run_knapp, "studio_v2_gui_kjor_run_knapp")
+    gui.på_klikk(check_knapp, "studio_v2_gui_kjor_check")
+    gui.på_klikk(test_knapp, "studio_v2_gui_kjor_test")
+    gui.på_klikk(debug_knapp, "studio_v2_gui_kjor_debug")
+    gui.på_klikk(runtime_ci_knapp, "studio_v2_gui_kjor_runtime_ci")
+    gui.på_klikk(guide_knapp, "studio_v2_gui_kjor_technical_guide")
+    gui.tekst(run_panel, ui.studio_v2_ui_run_status_hint())
+    gui.tekst(run_panel, ui.studio_v2_ui_run_output_hint())
+    gui.tekst(run_panel, ui.studio_v2_ui_run_suite_hint())
+    gui.tekst(run_panel, ui.studio_v2_ui_run_hint())
+    la output_panel: heltall = gui.panel(run_panel)
+    la output_config: tekst = workspace.studio_v2_state_session_output_config(session_data)
+    hvis output_config == "" da {
+        output_config = session_run_config
+    }
+    hvis output_config == "" da {
+        output_config = "run"
+    }
+    gui.tekst(output_panel, ui.studio_v2_ui_panel_status_overskrift("⇣", ui.studio_v2_ui_label_output(), "Run + Test", "State", workspace.studio_v2_state_session_output_status(session_data)))
+    gui.tekst(output_panel, ui.studio_v2_ui_status_chip("State", workspace.studio_v2_state_session_output_status(session_data)) + " · " + ui.studio_v2_ui_status_chip("Config", output_config) + " · " + ui.studio_v2_ui_status_chip("Code", workspace.studio_v2_state_session_output_code(session_data)))
+    gui.tekst(output_panel, workspace.studio_v2_state_session_output_sammendrag(session_data))
+    la output_query_felt: heltall = gui.tekstfelt(output_panel, "Filter output")
+    gui.på_endring(output_query_felt, "studio_v2_gui_oppdater_output")
+    gui.på_tast(output_query_felt, "enter", "studio_v2_gui_oppdater_output")
+    gui.tekst(output_panel, ui.studio_v2_ui_status_chip("Filter", "type to search stdout/stderr"))
+    gui.tekst(output_panel, ui.studio_v2_ui_output_stdout_tittel())
+    la output_stdout_list: heltall = gui.liste(output_panel)
+    studio_v2_gui_liste_fyll(output_stdout_list, workspace.studio_v2_state_session_output_stdout(session_data))
+    gui.på_endring(output_stdout_list, "studio_v2_gui_oppdater_output_navigasjon")
+    gui.på_tast(output_stdout_list, "enter", "studio_v2_gui_oppdater_output_navigasjon")
+    gui.tekst(output_panel, ui.studio_v2_ui_output_stderr_tittel())
+    la output_stderr_list: heltall = gui.liste(output_panel)
+    studio_v2_gui_liste_fyll(output_stderr_list, workspace.studio_v2_state_session_output_stderr(session_data))
+    gui.på_endring(output_stderr_list, "studio_v2_gui_oppdater_output_navigasjon")
+    gui.på_tast(output_stderr_list, "enter", "studio_v2_gui_oppdater_output_navigasjon")
+    gui.tekst(output_panel, ui.studio_v2_ui_output_hint())
+    la søk_panel: heltall = gui.panel(rot_panel)
+    la søk_felt: heltall = gui.tekstfelt(søk_panel, session_search_query)
+    gui.tekst(søk_panel, ui.studio_v2_ui_panel_status_overskrift("⌕", ui.studio_v2_ui_label_search_everywhere(), "", "Count", "0"))
+    la søk_resultat: heltall = gui.tekst(søk_panel, studio_v2_gui_sok_status("", ""))
+    la søk_resultater: heltall = gui.liste(søk_panel)
+    gui.på_endring(søk_felt, "studio_v2_gui_oppdater_sok_resultat")
+    gui.på_tast(søk_felt, "enter", "studio_v2_gui_oppdater_sok")
+    gui.på_tast(søk_felt, "tab", "studio_v2_gui_oppdater_sok_resultat")
+    gui.på_endring(søk_resultater, "studio_v2_gui_oppdater_sok_navigasjon")
+    gui.på_tast(søk_resultater, "enter", "studio_v2_gui_oppdater_sok_navigasjon")
+    gui.på_tast(søk_resultater, "tab", "studio_v2_gui_liste_velg_neste")
+    gui.på_tast(søk_resultater, "down", "studio_v2_gui_liste_velg_neste")
+    gui.på_tast(søk_resultater, "shift+tab", "studio_v2_gui_liste_velg_forrige")
+    gui.på_tast(søk_resultater, "up", "studio_v2_gui_liste_velg_forrige")
+    gui.tekst(søk_panel, ui.studio_v2_ui_search_hint())
+    gui.tekst(rot_panel, ui.studio_v2_ui_velkomst_spacer())
+    la hoved: heltall = gui.rad(rot_panel)
+    la stripe: heltall = gui.panel(hoved)
+    gui.tekst(stripe, "Tool")
+    gui.tekst(stripe, "P")
+    gui.tekst(stripe, "E")
+    gui.tekst(stripe, "R")
+    gui.tekst(stripe, "D")
+    gui.tekst(stripe, "|")
+    la fokus: heltall = gui.rad(rot_panel)
+    la aktiv_fokus: tekst = studio_v2_gui_fokus_etikett(høyre_fokus)
+    la fokus_project: heltall = gui.knapp(fokus, studio_v2_gui_fokus_knapp_tekst(ui.studio_v2_ui_label_project(), aktiv_fokus))
+    la fokus_editor: heltall = gui.knapp(fokus, studio_v2_gui_fokus_knapp_tekst(ui.studio_v2_ui_label_editor(), aktiv_fokus))
+    la fokus_inspect: heltall = gui.knapp(fokus, studio_v2_gui_fokus_knapp_tekst(ui.studio_v2_ui_label_inspect(), aktiv_fokus))
+    gui.tekst(fokus, studio_v2_gui_fokus_tekst(aktiv_fokus))
+    gui.tekst(fokus, ui.studio_v2_ui_fokus_hint())
+    gui.på_klikk(fokus_project, "studio_v2_gui_fokus_project")
+    gui.på_klikk(fokus_editor, "studio_v2_gui_fokus_editor")
+    gui.på_klikk(fokus_inspect, "studio_v2_gui_fokus_inspect")
+    gui.på_tast(fokus, "tab", "studio_v2_gui_fokus_neste_rot")
+    gui.på_tast(fokus, "shift+tab", "studio_v2_gui_fokus_forrige_rot")
+    gui.på_tast(rot_panel, "ctrl+1", "studio_v2_gui_snarvei_project")
+    gui.på_tast(rot_panel, "ctrl+2", "studio_v2_gui_snarvei_editor")
+    gui.på_tast(rot_panel, "ctrl+3", "studio_v2_gui_snarvei_inspect")
+    gui.på_tast(rot_panel, "ctrl+4", "studio_v2_gui_tool_window_snarvei_problems")
+    gui.på_tast(rot_panel, "ctrl+5", "studio_v2_gui_tool_window_snarvei_references")
+    gui.på_tast(rot_panel, "ctrl+6", "studio_v2_gui_tool_window_snarvei_structure")
+    gui.på_tast(rot_panel, "ctrl+7", "studio_v2_gui_tool_window_snarvei_terminal")
+    gui.på_tast(rot_panel, "ctrl+p", "studio_v2_gui_snarvei_palette")
+    gui.på_tast(rot_panel, "esc", "studio_v2_gui_snarvei_lukk_palette")
+    la venstre: heltall = gui.panel(hoved)
+    gui.tekst(venstre, ui.studio_v2_ui_panel_status_overskrift("▣", ui.studio_v2_ui_label_project(), "", "Files", tekst_fra_heltall(lengde(workspace_filer))))
+    gui.tekst(venstre, ui.studio_v2_ui_status_chip("Files", tekst_fra_heltall(lengde(workspace_filer))) + " · " + ui.studio_v2_ui_status_chip("Folders", tekst_fra_heltall(studio_v2_gui_prosjekt_tre_antall_foldet(session_tree_fold))))
+    la filer_liste: heltall = gui.liste(venstre)
+    studio_v2_gui_liste_fyll(filer_liste, studio_v2_gui_begrens_liste_med_anker(studio_v2_gui_prosjekt_tre(workspace_filer, aktiv_node, session_tree_fold), studio_v2_gui_prosjekt_tre_maks_fra_filer(workspace_filer), aktiv_node))
+    gui.på_endring(filer_liste, "studio_v2_gui_logg_fil")
+    gui.på_endring(filer_liste, "studio_v2_gui_oppdater_filvalg")
+    la fil_detalj: heltall = gui.tekst(venstre, ui.studio_v2_ui_deloverskrift("Content") + " Velg en fil for detaljer")
+    gui.tekst(venstre, ui.studio_v2_ui_project_hint())
+    la venstre_recent_tekst: tekst = ""
+    hvis ikke kompakt_visning da {
+        venstre_recent_tekst = ui.studio_v2_ui_status_chip("Recent", tekst_fra_heltall(lengde(recent_projects)))
+    }
+    gui.tekst(venstre, venstre_recent_tekst)
+    la nylige_prosjekter_liste: heltall = gui.liste(venstre)
+    studio_v2_gui_liste_fyll(nylige_prosjekter_liste, studio_v2_gui_begrens_liste(studio_v2_gui_recent_linje_med_status(recent_projects, rot), 3))
+    gui.på_tast(filer_liste, "enter", "studio_v2_gui_oppdater_filvalg")
+    la vcs_status: liste_tekst = project.studio_v2_prosjekt_vcs_status(rot)
+    la vcs_diff: liste_tekst = project.studio_v2_prosjekt_vcs_diff_stat(rot)
+    la vcs_branch: tekst = project.studio_v2_prosjekt_vcs_branch(rot)
+    la vcs_commit: liste_tekst = project.studio_v2_prosjekt_vcs_commit(rot)
+    la vcs_history: liste_tekst = project.studio_v2_prosjekt_vcs_history(rot)
+    gui.tekst(venstre, ui.studio_v2_ui_panel_status_overskrift("⎇", ui.studio_v2_ui_vcs_tittel(), "", "Changed", tekst_fra_heltall(lengde(vcs_status))))
+    gui.tekst(venstre, ui.studio_v2_ui_status_chip("Changed", tekst_fra_heltall(lengde(vcs_status))) + " · " + ui.studio_v2_ui_status_chip("Diff", tekst_fra_heltall(lengde(vcs_diff))) + " · " + ui.studio_v2_ui_status_chip("Branch", vcs_branch))
+    la vcs_status_liste: heltall = gui.liste(venstre)
+    studio_v2_gui_liste_fyll(vcs_status_liste, studio_v2_gui_begrens_liste(studio_v2_gui_vcs_status_linje(vcs_status, aktiv_fil), 4))
+    gui.på_endring(vcs_status_liste, "studio_v2_gui_vcs_status_valg")
+    gui.på_tast(vcs_status_liste, "enter", "studio_v2_gui_vcs_status_valg")
+    gui.tekst(venstre, ui.studio_v2_ui_vcs_status_tittel())
+    la vcs_diff_liste: heltall = gui.liste(venstre)
+    studio_v2_gui_liste_fyll(vcs_diff_liste, studio_v2_gui_begrens_liste(studio_v2_gui_vcs_diff_linje(vcs_diff), 4))
+    gui.tekst(venstre, ui.studio_v2_ui_vcs_diff_tittel())
+    gui.tekst(venstre, ui.studio_v2_ui_vcs_commit_tittel())
+    la vcs_commit_liste: heltall = gui.liste(venstre)
+    studio_v2_gui_liste_fyll(vcs_commit_liste, studio_v2_gui_begrens_liste(studio_v2_gui_vcs_commit_linje(vcs_commit), 3))
+    gui.tekst(venstre, ui.studio_v2_ui_panel_status_overskrift("⌛", ui.studio_v2_ui_label_history(), "", "Commits", tekst_fra_heltall(lengde(vcs_history))))
+    la vcs_history_liste: heltall = gui.liste(venstre)
+    studio_v2_gui_liste_fyll(vcs_history_liste, studio_v2_gui_begrens_liste(studio_v2_gui_vcs_history_linje(vcs_history), 4))
+    la vcs_stage_knapp: heltall = gui.knapp(venstre, "Stage Active")
+    la vcs_unstage_knapp: heltall = gui.knapp(venstre, "Unstage Active")
+    gui.på_klikk(vcs_stage_knapp, "studio_v2_gui_vcs_stage_aktiv")
+    gui.på_klikk(vcs_unstage_knapp, "studio_v2_gui_vcs_unstage_aktiv")
+    gui.tekst(venstre, ui.studio_v2_ui_vcs_hint())
+    gui.tekst(venstre, ui.studio_v2_ui_panel_status_overskrift("★", ui.studio_v2_ui_label_project_access(), "", "Pins", tekst_fra_heltall(lengde(workspace.studio_v2_state_session_favoritter(session_data)))))
+    la prosjekt_access_status: heltall = gui.tekst(venstre, ui.studio_v2_ui_status_chip("Favorites", tekst_fra_heltall(lengde(workspace.studio_v2_state_session_favoritter(session_data)))) + " · " + ui.studio_v2_ui_status_chip("Open", tekst_fra_heltall(lengde(apne_filer))) + " · " + ui.studio_v2_ui_status_chip("Recent", tekst_fra_heltall(lengde(recent_projects))))
+    la prosjekt_access_pin: heltall = gui.knapp(venstre, "Pin Active")
+    gui.på_klikk(prosjekt_access_pin, "studio_v2_gui_oppdater_prosjekt_favoritt_toggle")
+    la prosjekt_access_liste: heltall = gui.liste(venstre)
+    studio_v2_gui_liste_fyll(prosjekt_access_liste, studio_v2_gui_prosjekt_quickaccess_linje(workspace.studio_v2_state_session_favoritter(session_data), apne_filer, recent_projects, aktiv_fil, rot))
+    gui.på_endring(prosjekt_access_liste, "studio_v2_gui_oppdater_prosjekt_quickaccess")
+    gui.på_tast(prosjekt_access_liste, "enter", "studio_v2_gui_oppdater_prosjekt_quickaccess")
+    gui.på_tast(prosjekt_access_liste, "tab", "studio_v2_gui_liste_velg_neste")
+    gui.på_tast(prosjekt_access_liste, "down", "studio_v2_gui_liste_velg_neste")
+    gui.på_tast(prosjekt_access_liste, "shift+tab", "studio_v2_gui_liste_velg_forrige")
+    gui.på_tast(prosjekt_access_liste, "up", "studio_v2_gui_liste_velg_forrige")
+    la midten: heltall = gui.panel(hoved)
+    gui.tekst(midten, ui.studio_v2_ui_panel_status_overskrift("⌘", ui.studio_v2_ui_label_editor(), "", "Tabs", editor.studio_v2_editor_tab_status(tabs)))
+    la tabs_strip: heltall = gui.liste(midten)
+    studio_v2_gui_liste_fyll(tabs_strip, studio_v2_gui_tab_linje(tabs, aktiv_tab))
+    gui.på_endring(tabs_strip, "studio_v2_gui_oppdater_tabvalg")
+    gui.på_tast(tabs_strip, "enter", "studio_v2_gui_oppdater_tabvalg")
+    gui.tekst(midten, ui.studio_v2_ui_editor_hint())
+    gui.tekst(midten, ui.studio_v2_ui_aktiv_chip("Tab", aktiv_tab + " / " + aktiv_fil) + " · " + ui.studio_v2_ui_status_chip("Tab", neste_tab + " / " + forrige_tab) + " · " + ui.studio_v2_ui_status_chip("Buffer", tekst_fra_heltall(editor.studio_v2_editor_buffer_antall_linje(buffer)) + " linjer"))
+    la midten_search_tekst: tekst = ""
+    hvis ikke kompakt_visning da {
+        midten_search_tekst = ui.studio_v2_ui_status_chip("Search", editor.studio_v2_editor_sok_status(buffer, "returner")) + " · " + ui.studio_v2_ui_status_chip("Symbol", symbol_def)
+    }
+    gui.tekst(midten, midten_search_tekst)
+    la editor_widget: heltall = gui.editor(midten, aktiv_innhold)
+    gui.tekst(midten, ui.studio_v2_ui_aktiv_chip("Breakpoints", tekst_fra_heltall(lengde(session_breakpoints))) + " · " + ui.studio_v2_ui_status_chip("Click", "toggle"))
+    la breakpoint_status: heltall = gui.tekst(midten, "Velg en linje for å toggle breakpoint")
+    la breakpoint_liste: heltall = gui.liste(midten)
+    studio_v2_gui_liste_fyll(breakpoint_liste, studio_v2_gui_begrens_liste(editor.studio_v2_editor_breakpoint_oversikt(buffer, session_breakpoints), 5))
+    gui.på_endring(breakpoint_liste, "studio_v2_gui_oppdater_breakpoint")
+    gui.på_tast(breakpoint_liste, "enter", "studio_v2_gui_oppdater_breakpoint")
+    gui.på_tast(breakpoint_liste, "tab", "studio_v2_gui_liste_velg_neste")
+    gui.på_tast(breakpoint_liste, "down", "studio_v2_gui_liste_velg_neste")
+    gui.på_tast(breakpoint_liste, "shift+tab", "studio_v2_gui_liste_velg_forrige")
+    gui.på_tast(breakpoint_liste, "up", "studio_v2_gui_liste_velg_forrige")
+    la breakpoint_valgt: tekst = gui.liste_valgt(breakpoint_liste)
+    la debug_linje_nummer: heltall = workspace.studio_v2_state_session_debug_linje(session_data)
+    hvis debug_linje_nummer < 1 da {
+        debug_linje_nummer = studio_v2_gui_breakpoint_linjenummer(breakpoint_valgt)
+    }
+    hvis debug_linje_nummer < 1 da {
+        debug_linje_nummer = 1
+    }
+    la debug_config: tekst = workspace.studio_v2_state_session_debug_config(session_data)
+    la debug_modus: tekst = workspace.studio_v2_state_session_debug_status(session_data)
+    la debug_handling: tekst = workspace.studio_v2_state_session_debug_handling(session_data)
+    la debug_kontroller: heltall = gui.rad(midten)
+    la debug_step_over_knapp: heltall = gui.knapp(debug_kontroller, "Step Over")
+    la debug_step_into_knapp: heltall = gui.knapp(debug_kontroller, "Step Into")
+    la debug_step_out_knapp: heltall = gui.knapp(debug_kontroller, "Step Out")
+    la debug_resume_knapp: heltall = gui.knapp(debug_kontroller, "Resume")
+    gui.på_klikk(debug_step_over_knapp, "studio_v2_gui_debug_step_over")
+    gui.på_klikk(debug_step_into_knapp, "studio_v2_gui_debug_step_into")
+    gui.på_klikk(debug_step_out_knapp, "studio_v2_gui_debug_step_out")
+    gui.på_klikk(debug_resume_knapp, "studio_v2_gui_debug_resume")
+    gui.tekst(debug_kontroller, ui.studio_v2_ui_aktiv_chip("Cfg", debug_config) + " · " + ui.studio_v2_ui_status_chip("Mode", debug_modus) + " · " + ui.studio_v2_ui_status_chip("Action", debug_handling) + " · " + ui.studio_v2_ui_status_chip("Line", tekst_fra_heltall(debug_linje_nummer)))
+    la debug_stack: liste_tekst = editor.studio_v2_editor_debug_kallstack(buffer, debug_linje_nummer)
+    la debug_locals: liste_tekst = editor.studio_v2_editor_debug_lokale(buffer, debug_linje_nummer)
+    gui.tekst(midten, ui.studio_v2_ui_aktiv_chip("Debug", "linje " + tekst_fra_heltall(debug_linje_nummer)) + " · " + ui.studio_v2_ui_status_chip("Stack", tekst_fra_heltall(lengde(debug_stack))) + " · " + ui.studio_v2_ui_status_chip("Locals", tekst_fra_heltall(lengde(debug_locals))))
+    la debug_stack_liste: heltall = gui.liste(midten)
+    studio_v2_gui_liste_fyll(debug_stack_liste, studio_v2_gui_begrens_liste(debug_stack, 3))
+    la debug_locals_liste: heltall = gui.liste(midten)
+    studio_v2_gui_liste_fyll(debug_locals_liste, studio_v2_gui_begrens_liste(debug_locals, 4))
+    la midten_goto_tekst: tekst = ""
+    hvis ikke kompakt_visning da {
+        midten_goto_tekst = "Goto line preview: " + tekst_fra_heltall(lengde(goto_linje_preview))
+    }
+    gui.tekst(midten, midten_goto_tekst)
+    la goto_linje_liste: heltall = gui.liste(midten)
+    studio_v2_gui_liste_fyll(goto_linje_liste, studio_v2_gui_begrens_liste(goto_linje_preview, 3))
+    la midten_target_tekst: tekst = ""
+    hvis ikke kompakt_visning da {
+        midten_target_tekst = ui.studio_v2_ui_status_chip("Target", studio_v2_gui_split_mål(tabs, aktiv_tab, session_split_fokus)) + " · " + ui.studio_v2_ui_status_chip("Focus", session_split_fokus)
+    }
+    gui.tekst(midten, midten_target_tekst)
+    la split_liste: heltall = gui.liste(midten)
+    hvis studio_v2_gui_split_mål(tabs, aktiv_tab, session_split_fokus) != "" og studio_v2_gui_split_mål(tabs, aktiv_tab, session_split_fokus) != aktiv_tab da {
+        studio_v2_gui_liste_fyll(split_liste, studio_v2_gui_begrens_liste(editor.studio_v2_editor_åpne(workspace.studio_v2_state_fil_innhold(rot, studio_v2_gui_split_mål(tabs, aktiv_tab, session_split_fokus))), 5))
+    } ellers {
+        studio_v2_gui_liste_fyll(split_liste, [ui.studio_v2_ui_tomt_split()])
+    }
+    la høyre: heltall = gui.panel(hoved)
+    gui.tekst(høyre, ui.studio_v2_ui_panel_status_overskrift("⚙", ui.studio_v2_ui_label_settings(), "", "Theme", session_tema))
+    gui.tekst(høyre, ui.studio_v2_ui_brand_chip_linje())
+    gui.tekst(høyre, ui.studio_v2_ui_aktiv_chip("Keymap", session_keymap) + " · " + ui.studio_v2_ui_aktiv_chip("Runtime", session_runtimevalg))
+    la settings_theme_liste: heltall = gui.liste(høyre)
+    studio_v2_gui_liste_fyll(settings_theme_liste, ui.studio_v2_ui_tema_palett())
+    studio_v2_gui_liste_sett(settings_theme_liste, ui.studio_v2_ui_tema_palett())
+    hvis session_tema != "" da {
+        la settings_theme_indeks: heltall = studio_v2_gui_liste_indeks_fra_valgt(ui.studio_v2_ui_tema_palett(), session_tema)
+        hvis settings_theme_indeks >= 0 da {
+            gui.liste_velg(settings_theme_liste, settings_theme_indeks)
+        }
+    }
+    gui.på_endring(settings_theme_liste, "studio_v2_gui_innstillinger_tema_valg")
+    gui.på_tast(settings_theme_liste, "enter", "studio_v2_gui_innstillinger_tema_valg")
+    la settings_keymap_liste: heltall = gui.liste(høyre)
+    studio_v2_gui_liste_fyll(settings_keymap_liste, ui.studio_v2_ui_keymap_palett())
+    studio_v2_gui_liste_sett(settings_keymap_liste, ui.studio_v2_ui_keymap_palett())
+    hvis session_keymap != "" da {
+        la settings_keymap_indeks: heltall = studio_v2_gui_liste_indeks_fra_valgt(ui.studio_v2_ui_keymap_palett(), session_keymap)
+        hvis settings_keymap_indeks >= 0 da {
+            gui.liste_velg(settings_keymap_liste, settings_keymap_indeks)
+        }
+    }
+    gui.på_endring(settings_keymap_liste, "studio_v2_gui_innstillinger_keymap_valg")
+    gui.på_tast(settings_keymap_liste, "enter", "studio_v2_gui_innstillinger_keymap_valg")
+    la settings_runtime_liste: heltall = gui.liste(høyre)
+    studio_v2_gui_liste_fyll(settings_runtime_liste, ui.studio_v2_ui_runtimevalg_palett())
+    studio_v2_gui_liste_sett(settings_runtime_liste, ui.studio_v2_ui_runtimevalg_palett())
+    hvis session_runtimevalg != "" da {
+        la settings_runtime_indeks: heltall = studio_v2_gui_liste_indeks_fra_valgt(ui.studio_v2_ui_runtimevalg_palett(), session_runtimevalg)
+        hvis settings_runtime_indeks >= 0 da {
+            gui.liste_velg(settings_runtime_liste, settings_runtime_indeks)
+        }
+    }
+    gui.på_endring(settings_runtime_liste, "studio_v2_gui_innstillinger_runtimevalg_valg")
+    gui.på_tast(settings_runtime_liste, "enter", "studio_v2_gui_innstillinger_runtimevalg_valg")
+    la settings_reset: heltall = gui.knapp(høyre, "Restore Defaults")
+    gui.på_klikk(settings_reset, "studio_v2_gui_innstillinger_default")
+    gui.tekst(høyre, "Theme, keymap and runtime are saved in the session")
+    gui.tekst(høyre, ui.studio_v2_ui_panel_status_overskrift("⚠", ui.studio_v2_ui_label_problems(), "", "Count", tekst_fra_heltall(lengde(diagnose))))
+    la diagnose_liste: heltall = gui.liste(høyre)
+    studio_v2_gui_liste_fyll(diagnose_liste, studio_v2_gui_begrens_liste(studio_v2_gui_diagnostikk_linjer(diagnose), 4))
+    gui.på_endring(diagnose_liste, "studio_v2_gui_oppdater_diagnostikkvalg")
+    gui.på_tast(diagnose_liste, "enter", "studio_v2_gui_oppdater_diagnostikkvalg")
+    gui.på_tast(diagnose_liste, "tab", "studio_v2_gui_liste_velg_neste")
+    gui.på_tast(diagnose_liste, "down", "studio_v2_gui_liste_velg_neste")
+    gui.på_tast(diagnose_liste, "shift+tab", "studio_v2_gui_liste_velg_forrige")
+    gui.på_tast(diagnose_liste, "up", "studio_v2_gui_liste_velg_forrige")
+    la diagnose_detalj: heltall = gui.tekst(høyre, "Velg en problemrad for detaljer")
+    gui.tekst(høyre, ui.studio_v2_ui_status_chip("Problems", tekst_fra_heltall(lengde(diagnose))))
+    gui.tekst(høyre, ui.studio_v2_ui_panel_status_overskrift("☰", ui.studio_v2_ui_label_structure(), "", "Refs", tekst_fra_heltall(lengde(symbol_referanser))))
+    gui.tekst(høyre, ui.studio_v2_ui_structure_hint())
+    gui.tekst(høyre, ui.studio_v2_ui_status_chip("References", tekst_fra_heltall(lengde(symbol_referanser))))
+    la referanse_liste: heltall = gui.liste(høyre)
+    studio_v2_gui_liste_fyll(referanse_liste, studio_v2_gui_begrens_liste(studio_v2_gui_referanse_linje(symbol_referanser, symbol_referanse_valg), 4))
+    gui.på_endring(referanse_liste, "studio_v2_gui_oppdater_referansevalg")
+    gui.på_tast(referanse_liste, "enter", "studio_v2_gui_oppdater_referansevalg")
+    gui.på_tast(referanse_liste, "tab", "studio_v2_gui_liste_velg_neste")
+    gui.på_tast(referanse_liste, "down", "studio_v2_gui_liste_velg_neste")
+    gui.på_tast(referanse_liste, "shift+tab", "studio_v2_gui_liste_velg_forrige")
+    gui.på_tast(referanse_liste, "up", "studio_v2_gui_liste_velg_forrige")
+    la høyre_valgt_tekst: tekst = ""
+    hvis ikke kompakt_visning da {
+        høyre_valgt_tekst = ui.studio_v2_ui_aktiv_chip("Valgt", symbol_referanse_valg)
+    }
+    gui.tekst(høyre, høyre_valgt_tekst)
+    la referanse_detalj: heltall = gui.tekst(høyre, "Velg en referanse for preview")
+    gui.tekst(høyre, ui.studio_v2_ui_references_hint())
+    gui.tekst(høyre, ui.studio_v2_ui_status_chip("Rename", tekst_fra_heltall(lengde(rename_preview))))
+    la rename_liste: heltall = gui.liste(høyre)
+    studio_v2_gui_liste_fyll(rename_liste, studio_v2_gui_begrens_liste(studio_v2_gui_rename_linje(rename_preview), 4))
+    gui.på_endring(rename_liste, "studio_v2_gui_logg_rename")
+    gui.på_tast(rename_liste, "enter", "studio_v2_gui_logg_rename")
+    gui.på_tast(rename_liste, "tab", "studio_v2_gui_logg_rename")
+    gui.på_tast(rename_liste, "down", "studio_v2_gui_liste_velg_neste")
+    gui.på_tast(rename_liste, "shift+tab", "studio_v2_gui_liste_velg_forrige")
+    gui.på_tast(rename_liste, "up", "studio_v2_gui_liste_velg_forrige")
+    la høyre_rename_hint_tekst: tekst = ""
+    la høyre_rename_apply_hint_tekst: tekst = ""
+    hvis ikke kompakt_visning da {
+        høyre_rename_hint_tekst = ui.studio_v2_ui_rename_hint()
+        høyre_rename_apply_hint_tekst = ui.studio_v2_ui_rename_apply_hint()
+    }
+    gui.tekst(høyre, høyre_rename_hint_tekst)
+    gui.tekst(høyre, høyre_rename_apply_hint_tekst)
+    gui.tekst(høyre, "Rename from")
+    la rename_from: heltall = gui.tekstfelt(høyre, "studio_v2")
+    gui.tekst(høyre, "Rename to")
+    la rename_to: heltall = gui.tekstfelt(høyre, "studio_v2_v2")
+    la rename_apply: heltall = gui.knapp(høyre, "Apply Rename")
+    la høyre_preview_tekst: tekst = ""
+    hvis ikke kompakt_visning da {
+        høyre_preview_tekst = ui.studio_v2_ui_status_chip("Preview", tekst_fra_heltall(lengde(rename_preview)))
+    }
+    gui.tekst(høyre, høyre_preview_tekst)
+    gui.på_tast(rename_from, "enter", "studio_v2_gui_oppdater_rename_appliser")
+    gui.på_tast(rename_to, "enter", "studio_v2_gui_oppdater_rename_appliser")
+    gui.på_klikk(rename_apply, "studio_v2_gui_oppdater_rename_appliser")
+    la tool_window_bar: heltall = gui.rad(rot_panel)
+    la tool_window_problems: heltall = gui.knapp(tool_window_bar, studio_v2_gui_fokus_knapp_tekst("Problems", session_tool_window))
+    la tool_window_references: heltall = gui.knapp(tool_window_bar, studio_v2_gui_fokus_knapp_tekst("References", session_tool_window))
+    la tool_window_structure: heltall = gui.knapp(tool_window_bar, studio_v2_gui_fokus_knapp_tekst("Structure", session_tool_window))
+    la tool_window_terminal: heltall = gui.knapp(tool_window_bar, studio_v2_gui_fokus_knapp_tekst("Terminal", session_tool_window))
+    gui.tekst(tool_window_bar, studio_v2_gui_tool_window_tekst(session_tool_window))
+    gui.på_klikk(tool_window_problems, "studio_v2_gui_tool_window_problems")
+    gui.på_klikk(tool_window_references, "studio_v2_gui_tool_window_references")
+    gui.på_klikk(tool_window_structure, "studio_v2_gui_tool_window_structure")
+    gui.på_klikk(tool_window_terminal, "studio_v2_gui_tool_window_terminal")
+    gui.på_tast(tool_window_bar, "tab", "studio_v2_gui_tool_window_neste_rot")
+    gui.på_tast(tool_window_bar, "shift+tab", "studio_v2_gui_tool_window_forrige_rot")
+    gui.tekst(tool_window_bar, ui.studio_v2_ui_tool_window_hint())
+    gui.tekst(høyre, ui.studio_v2_ui_panel_status_overskrift("🛠", ui.studio_v2_ui_label_tools(), "", "Palette", tekst_fra_heltall(lengde(kommandopalett))))
+    la høyre_palette_tekst: tekst = ""
+    hvis ikke kompakt_visning da {
+        høyre_palette_tekst = ui.studio_v2_ui_status_chip("Palette", tekst_fra_heltall(lengde(kommandopalett)))
+    }
+    gui.tekst(høyre, høyre_palette_tekst)
+    gui.tekst(høyre, "Velg konfigurasjon i paletten under")
+    la palette_panel: heltall = gui.panel(rot_panel)
+    gui.tekst(palette_panel, ui.studio_v2_ui_panel_status_overskrift("⌕", ui.studio_v2_ui_label_command_palette(), "", "State", session_palette_open))
+    gui.tekst(palette_panel, ui.studio_v2_ui_aktiv_chip("Config", session_run_config) + " · " + ui.studio_v2_ui_status_chip("State", session_palette_open))
+    la palette_knapp_tekst: tekst = "Open Palette"
+    hvis session_palette_open == "åpen" da {
+        palette_knapp_tekst = "Close Palette"
+    }
+    la palette_knapp: heltall = gui.knapp(palette_panel, palette_knapp_tekst)
+    gui.på_klikk(palette_knapp, "studio_v2_gui_toggle_palette")
+    hvis session_palette_open == "åpen" da {
+        la palette_query: heltall = gui.tekstfelt(palette_panel, "Filter commands")
+        la palette_liste: heltall = gui.liste(palette_panel)
+        gui.på_endring(palette_query, "studio_v2_gui_oppdater_palette_query")
+        gui.på_endring(palette_liste, "studio_v2_gui_oppdater_palette")
+        gui.på_tast(palette_query, "enter", "studio_v2_gui_oppdater_palette_fra_query")
+        gui.på_tast(palette_query, "esc", "studio_v2_gui_snarvei_lukk_palette")
+        gui.på_tast(palette_liste, "enter", "studio_v2_gui_oppdater_palette")
+        gui.på_tast(palette_liste, "tab", "studio_v2_gui_liste_velg_neste")
+        gui.på_tast(palette_liste, "down", "studio_v2_gui_liste_velg_neste")
+        gui.på_tast(palette_liste, "shift+tab", "studio_v2_gui_liste_velg_forrige")
+        gui.på_tast(palette_liste, "up", "studio_v2_gui_liste_velg_forrige")
+        gui.tekst(palette_panel, ui.studio_v2_ui_palette_hint())
+        studio_v2_gui_palette_panel_status(palette_panel, rot)
+    } ellers {
+        gui.tekst(palette_panel, ui.studio_v2_ui_palette_lukket_hint())
+        studio_v2_gui_palette_panel_status(palette_panel, rot)
+    }
+    la bottom_tools: heltall = gui.panel(rot_panel)
+    la bottom_row: heltall = gui.rad(bottom_tools)
+    la bottom_problems: heltall = gui.panel(bottom_row)
+    gui.tekst(bottom_problems, ui.studio_v2_ui_panel_status_overskrift("⚠", ui.studio_v2_ui_label_problems(), "", "Count", tekst_fra_heltall(lengde(diagnose))))
+    gui.tekst(bottom_problems, ui.studio_v2_ui_brand_chip_linje())
+    gui.tekst(bottom_problems, ui.studio_v2_ui_status_chip("Count", tekst_fra_heltall(lengde(diagnose))))
+    la bottom_problems_list: heltall = gui.liste(bottom_problems)
+    la bottom_problems_linjer: liste_tekst = studio_v2_gui_diagnostikk_linjer(diagnose)
+    hvis lengde(bottom_problems_linjer) == 0 da {
+        studio_v2_gui_liste_fyll(bottom_problems_list, [studio_v2_gui_diagnostikk_tomtilstand(diagnose)])
+    } ellers {
+        studio_v2_gui_liste_fyll(bottom_problems_list, studio_v2_gui_begrens_liste(bottom_problems_linjer, 4))
+    }
+    gui.på_endring(bottom_problems_list, "studio_v2_gui_oppdater_diagnostikkvalg")
+    gui.på_tast(bottom_problems_list, "enter", "studio_v2_gui_oppdater_diagnostikkvalg")
+    la bottom_problems_detalj: heltall = gui.tekst(bottom_problems, "Velg en problemrad for detaljer")
+    gui.tekst(bottom_problems, ui.studio_v2_ui_problems_hint())
+    la bottom_references: heltall = gui.panel(bottom_row)
+    gui.tekst(bottom_references, ui.studio_v2_ui_panel_status_overskrift("↺", ui.studio_v2_ui_label_references(), "", "Count", tekst_fra_heltall(lengde(symbol_referanser))))
+    gui.tekst(bottom_references, ui.studio_v2_ui_brand_chip_linje())
+    gui.tekst(bottom_references, ui.studio_v2_ui_status_chip("Count", tekst_fra_heltall(lengde(symbol_referanser))))
+    la bottom_references_list: heltall = gui.liste(bottom_references)
+    studio_v2_gui_liste_fyll(bottom_references_list, studio_v2_gui_begrens_liste(studio_v2_gui_referanse_linje(symbol_referanser, symbol_referanse_valg), 4))
+    gui.på_endring(bottom_references_list, "studio_v2_gui_oppdater_referansevalg")
+    gui.på_tast(bottom_references_list, "enter", "studio_v2_gui_oppdater_referansevalg")
+    gui.tekst(bottom_references, ui.studio_v2_ui_references_hint())
+    la bottom_terminal: heltall = gui.panel(bottom_row)
+    gui.tekst(bottom_terminal, ui.studio_v2_ui_panel_status_overskrift("▸", ui.studio_v2_ui_label_terminal(), "", "State", actions.studio_v2_actions_terminal_status(rot)))
+    gui.tekst(bottom_terminal, ui.studio_v2_ui_brand_chip_linje())
+    gui.tekst(bottom_terminal, ui.studio_v2_ui_aktiv_chip("State", actions.studio_v2_actions_terminal_status(rot)) + " · " + ui.studio_v2_ui_status_chip("Tool", session_tool_window))
+    la bottom_terminal_list: heltall = gui.liste(bottom_terminal)
+    studio_v2_gui_liste_fyll(bottom_terminal_list, studio_v2_gui_begrens_liste(terminal_kommandoer, 4))
+    gui.på_tast(bottom_terminal_list, "enter", "studio_v2_gui_logg_kommando")
+    gui.tekst(bottom_terminal, ui.studio_v2_ui_terminal_hint())
+    la bunn: heltall = gui.panel(rot_panel)
+    gui.tekst(bunn, ui.studio_v2_ui_seksjon_tittel("Ready") + " · " + ui.studio_v2_ui_status_chip("Session", session_status) + " · " + ui.studio_v2_ui_aktiv_chip("Tool", session_tool_window))
+    gui.tekst(bunn, ui.studio_v2_ui_status_chip("Problems", tekst_fra_heltall(lengde(diagnose))) + " · " + ui.studio_v2_ui_status_chip("References", tekst_fra_heltall(lengde(symbol_referanser))) + " · " + ui.studio_v2_ui_aktiv_chip("Terminal", actions.studio_v2_actions_terminal_status(rot)))
+    gui.vis(vindu_id)
+    returner 0
+}

@@ -1,0 +1,628 @@
+
+
+# Liste standardbibliotek
+
+funksjon legg_til_tall(l: liste_heltall, verdi: heltall) -> heltall {
+    legg_til(l, verdi)
+    returner lengde(l)
+}
+
+funksjon legg_til_tekst(l: liste_tekst, verdi: tekst) -> heltall {
+    legg_til(l, verdi)
+    returner lengde(l)
+}
+
+funksjon siste_tall(l: liste_heltall) -> heltall {
+    returner pop_siste(l)
+}
+
+funksjon siste_tekst(l: liste_tekst) -> tekst {
+    returner pop_siste(l)
+}
+
+funksjon første_tall(l: liste_heltall) -> heltall {
+    returner l[0]
+}
+
+funksjon første_tekst(l: liste_tekst) -> tekst {
+    returner l[0]
+}
+
+funksjon antall_tall(l: liste_heltall) -> heltall {
+    returner lengde(l)
+}
+
+funksjon antall_tekst(l: liste_tekst) -> heltall {
+    returner lengde(l)
+}
+
+funksjon tom_tall(l: liste_heltall) -> bool {
+    returner lengde(l) == 0
+}
+
+funksjon tom_tekst(l: liste_tekst) -> bool {
+    returner lengde(l) == 0
+}
+
+funksjon inneholder_tall(l: liste_heltall, verdi: heltall) -> bool {
+    la i: heltall = 0
+    mens (i < lengde(l)) {
+        hvis l[i] == verdi da {
+            returner sann
+        }
+        i = i + 1
+    }
+    returner usann
+}
+
+funksjon inneholder_tekst(l: liste_tekst, verdi: tekst) -> bool {
+    la i: heltall = 0
+    mens (i < lengde(l)) {
+        hvis l[i] == verdi da {
+            returner sann
+        }
+        i = i + 1
+    }
+    returner usann
+}
+
+funksjon indeks_for_tall(l: liste_heltall, verdi: heltall) -> heltall {
+    la i: heltall = 0
+    mens (i < lengde(l)) {
+        hvis l[i] == verdi da {
+            returner i
+        }
+        i = i + 1
+    }
+    returner -1
+}
+
+funksjon indeks_for_tekst(l: liste_tekst, verdi: tekst) -> heltall {
+    la i: heltall = 0
+    mens (i < lengde(l)) {
+        hvis l[i] == verdi da {
+            returner i
+        }
+        i = i + 1
+    }
+    returner -1
+}
+
+funksjon siste_indeks_for_tall(l: liste_heltall, verdi: heltall) -> heltall {
+    la i: heltall = lengde(l) - 1
+    mens (i >= 0) {
+        hvis l[i] == verdi da {
+            returner i
+        }
+        i = i - 1
+    }
+    returner -1
+}
+
+funksjon siste_indeks_for_tekst(l: liste_tekst, verdi: tekst) -> heltall {
+    la i: heltall = lengde(l) - 1
+    mens (i >= 0) {
+        hvis l[i] == verdi da {
+            returner i
+        }
+        i = i - 1
+    }
+    returner -1
+}
+
+funksjon fjern_tall(l: liste_heltall, indeks: heltall) -> heltall {
+    fjern_indeks(l, indeks)
+    returner lengde(l)
+}
+
+funksjon fjern_tekst(l: liste_tekst, indeks: heltall) -> heltall {
+    fjern_indeks(l, indeks)
+    returner lengde(l)
+}
+
+funksjon fjern_første_tall(l: liste_heltall) -> heltall {
+    fjern_indeks(l, 0)
+    returner lengde(l)
+}
+
+funksjon fjern_første_tekst(l: liste_tekst) -> heltall {
+    fjern_indeks(l, 0)
+    returner lengde(l)
+}
+
+funksjon fjern_siste_tall(l: liste_heltall) -> heltall {
+    fjern_indeks(l, lengde(l) - 1)
+    returner lengde(l)
+}
+
+funksjon fjern_siste_tekst(l: liste_tekst) -> heltall {
+    fjern_indeks(l, lengde(l) - 1)
+    returner lengde(l)
+}
+
+funksjon fjern_verdi_tall(l: liste_heltall, verdi: heltall) -> heltall {
+    la i: heltall = 0
+    mens (i < lengde(l)) {
+        hvis l[i] == verdi da {
+            fjern_indeks(l, i)
+            returner lengde(l)
+        }
+        i = i + 1
+    }
+    returner lengde(l)
+}
+
+funksjon fjern_verdi_tekst(l: liste_tekst, verdi: tekst) -> heltall {
+    la i: heltall = 0
+    mens (i < lengde(l)) {
+        hvis l[i] == verdi da {
+            fjern_indeks(l, i)
+            returner lengde(l)
+        }
+        i = i + 1
+    }
+    returner lengde(l)
+}
+
+funksjon erstatt_verdi_tall(l: liste_heltall, gammel: heltall, ny: heltall) -> heltall {
+    la i: heltall = 0
+    mens (i < lengde(l)) {
+        hvis l[i] == gammel da {
+            sett_inn(l, i, ny)
+            returner lengde(l)
+        }
+        i = i + 1
+    }
+    returner lengde(l)
+}
+
+funksjon erstatt_verdi_tekst(l: liste_tekst, gammel: tekst, ny: tekst) -> heltall {
+    la i: heltall = 0
+    mens (i < lengde(l)) {
+        hvis l[i] == gammel da {
+            sett_inn(l, i, ny)
+            returner lengde(l)
+        }
+        i = i + 1
+    }
+    returner lengde(l)
+}
+
+funksjon erstatt_alle_verdi_tall(l: liste_heltall, gammel: heltall, ny: heltall) -> heltall {
+    la i: heltall = 0
+    mens (i < lengde(l)) {
+        hvis l[i] == gammel da {
+            sett_inn(l, i, ny)
+        }
+        i = i + 1
+    }
+    returner lengde(l)
+}
+
+funksjon erstatt_alle_verdi_tekst(l: liste_tekst, gammel: tekst, ny: tekst) -> heltall {
+    la i: heltall = 0
+    mens (i < lengde(l)) {
+        hvis l[i] == gammel da {
+            sett_inn(l, i, ny)
+        }
+        i = i + 1
+    }
+    returner lengde(l)
+}
+
+funksjon inneholder_alle_tall(l: liste_heltall, verdier: liste_heltall) -> bool {
+    la i: heltall = 0
+    mens (i < lengde(verdier)) {
+        la j: heltall = 0
+        la funnet: bool = usann
+        mens (j < lengde(l)) {
+            hvis l[j] == verdier[i] da {
+                funnet = sann
+            }
+            j = j + 1
+        }
+        hvis ikke funnet da {
+            returner usann
+        }
+        i = i + 1
+    }
+    returner sann
+}
+
+funksjon inneholder_alle_tekst(l: liste_tekst, verdier: liste_tekst) -> bool {
+    la i: heltall = 0
+    mens (i < lengde(verdier)) {
+        la j: heltall = 0
+        la funnet: bool = usann
+        mens (j < lengde(l)) {
+            hvis l[j] == verdier[i] da {
+                funnet = sann
+            }
+            j = j + 1
+        }
+        hvis ikke funnet da {
+            returner usann
+        }
+        i = i + 1
+    }
+    returner sann
+}
+
+funksjon samme_tall(a: liste_heltall, b: liste_heltall) -> bool {
+    hvis lengde(a) != lengde(b) da {
+        returner usann
+    }
+    la i: heltall = 0
+    mens (i < lengde(a)) {
+        hvis a[i] != b[i] da {
+            returner usann
+        }
+        i = i + 1
+    }
+    returner sann
+}
+
+funksjon samme_tekst(a: liste_tekst, b: liste_tekst) -> bool {
+    hvis lengde(a) != lengde(b) da {
+        returner usann
+    }
+    la i: heltall = 0
+    mens (i < lengde(a)) {
+        hvis a[i] != b[i] da {
+            returner usann
+        }
+        i = i + 1
+    }
+    returner sann
+}
+
+funksjon er_unik_tall(l: liste_heltall) -> bool {
+    la i: heltall = 0
+    mens (i < lengde(l)) {
+        la j: heltall = i + 1
+        mens (j < lengde(l)) {
+            hvis l[i] == l[j] da {
+                returner usann
+            }
+            j = j + 1
+        }
+        i = i + 1
+    }
+    returner sann
+}
+
+funksjon er_unik_tekst(l: liste_tekst) -> bool {
+    la i: heltall = 0
+    mens (i < lengde(l)) {
+        la j: heltall = i + 1
+        mens (j < lengde(l)) {
+            hvis l[i] == l[j] da {
+                returner usann
+            }
+            j = j + 1
+        }
+        i = i + 1
+    }
+    returner sann
+}
+
+funksjon har_duplikater_tall(l: liste_heltall) -> bool {
+    la i: heltall = 0
+    mens (i < lengde(l)) {
+        la j: heltall = i + 1
+        mens (j < lengde(l)) {
+            hvis l[j] == l[i] da {
+                returner sann
+            }
+            j = j + 1
+        }
+        i = i + 1
+    }
+    returner usann
+}
+
+funksjon har_duplikater_tekst(l: liste_tekst) -> bool {
+    la i: heltall = 0
+    mens (i < lengde(l)) {
+        la j: heltall = i + 1
+        mens (j < lengde(l)) {
+            hvis l[j] == l[i] da {
+                returner sann
+            }
+            j = j + 1
+        }
+        i = i + 1
+    }
+    returner usann
+}
+
+funksjon fjern_duplikater_tall(l: liste_heltall) -> heltall {
+    la i: heltall = 0
+    mens (i < lengde(l)) {
+        la j: heltall = i + 1
+        mens (j < lengde(l)) {
+            hvis l[j] == l[i] da {
+                fjern_indeks(l, j)
+            } ellers {
+                j = j + 1
+            }
+        }
+        i = i + 1
+    }
+    returner lengde(l)
+}
+
+funksjon fjern_duplikater_tekst(l: liste_tekst) -> heltall {
+    la i: heltall = 0
+    mens (i < lengde(l)) {
+        la j: heltall = i + 1
+        mens (j < lengde(l)) {
+            hvis l[j] == l[i] da {
+                fjern_indeks(l, j)
+            } ellers {
+                j = j + 1
+            }
+        }
+        i = i + 1
+    }
+    returner lengde(l)
+}
+
+funksjon antall_unike_tall(l: liste_heltall) -> heltall {
+    la i: heltall = 0
+    la antall: heltall = 0
+    mens (i < lengde(l)) {
+        la j: heltall = 0
+        la funnet: bool = usann
+        mens (j < i) {
+            hvis l[j] == l[i] da {
+                funnet = sann
+            }
+            j = j + 1
+        }
+        hvis ikke funnet da {
+            antall = antall + 1
+        }
+        i = i + 1
+    }
+    returner antall
+}
+
+funksjon antall_unike_tekst(l: liste_tekst) -> heltall {
+    la i: heltall = 0
+    la antall: heltall = 0
+    mens (i < lengde(l)) {
+        la j: heltall = 0
+        la funnet: bool = usann
+        mens (j < i) {
+            hvis l[j] == l[i] da {
+                funnet = sann
+            }
+            j = j + 1
+        }
+        hvis ikke funnet da {
+            antall = antall + 1
+        }
+        i = i + 1
+    }
+    returner antall
+}
+
+funksjon antall_duplikater_tall(l: liste_heltall) -> heltall {
+    la i: heltall = 0
+    la unike: heltall = 0
+    mens (i < lengde(l)) {
+        la j: heltall = 0
+        la funnet: bool = usann
+        mens (j < i) {
+            hvis l[j] == l[i] da {
+                funnet = sann
+            }
+            j = j + 1
+        }
+        hvis ikke funnet da {
+            unike = unike + 1
+        }
+        i = i + 1
+    }
+    returner lengde(l) - unike
+}
+
+funksjon antall_duplikater_tekst(l: liste_tekst) -> heltall {
+    la i: heltall = 0
+    la unike: heltall = 0
+    mens (i < lengde(l)) {
+        la j: heltall = 0
+        la funnet: bool = usann
+        mens (j < i) {
+            hvis l[j] == l[i] da {
+                funnet = sann
+            }
+            j = j + 1
+        }
+        hvis ikke funnet da {
+            unike = unike + 1
+        }
+        i = i + 1
+    }
+    returner lengde(l) - unike
+}
+
+funksjon gjennomsnitt_tall(l: liste_heltall) -> heltall {
+    hvis lengde(l) == 0 da {
+        returner 0
+    }
+    la i: heltall = 0
+    la sum: heltall = 0
+    mens (i < lengde(l)) {
+        sum = sum + l[i]
+        i = i + 1
+    }
+    returner sum / lengde(l)
+}
+
+funksjon sum_tall(l: liste_heltall) -> heltall {
+    la i: heltall = 0
+    la sum: heltall = 0
+    mens (i < lengde(l)) {
+        sum = sum + l[i]
+        i = i + 1
+    }
+    returner sum
+}
+
+funksjon produkt_tall(l: liste_heltall) -> heltall {
+    la i: heltall = 0
+    la produkt: heltall = 1
+    mens (i < lengde(l)) {
+        produkt = produkt * l[i]
+        i = i + 1
+    }
+    returner produkt
+}
+
+funksjon antall_forekomster_tall(l: liste_heltall, verdi: heltall) -> heltall {
+    la i: heltall = 0
+    la antall: heltall = 0
+    mens (i < lengde(l)) {
+        hvis l[i] == verdi da {
+            antall = antall + 1
+        }
+        i = i + 1
+    }
+    returner antall
+}
+
+funksjon antall_forekomster_tekst(l: liste_tekst, verdi: tekst) -> heltall {
+    la i: heltall = 0
+    la antall: heltall = 0
+    mens (i < lengde(l)) {
+        hvis l[i] == verdi da {
+            antall = antall + 1
+        }
+        i = i + 1
+    }
+    returner antall
+}
+
+funksjon maks_tall(l: liste_heltall) -> heltall {
+    hvis lengde(l) == 0 da {
+        returner 0
+    }
+    la i: heltall = 1
+    la resultat: heltall = l[0]
+    mens (i < lengde(l)) {
+        hvis l[i] > resultat da {
+            resultat = l[i]
+        }
+        i = i + 1
+    }
+    returner resultat
+}
+
+funksjon min_tall(l: liste_heltall) -> heltall {
+    hvis lengde(l) == 0 da {
+        returner 0
+    }
+    la i: heltall = 1
+    la resultat: heltall = l[0]
+    mens (i < lengde(l)) {
+        hvis l[i] < resultat da {
+            resultat = l[i]
+        }
+        i = i + 1
+    }
+    returner resultat
+}
+
+funksjon fjern_alle_verdi_tall(l: liste_heltall, verdi: heltall) -> heltall {
+    la i: heltall = 0
+    mens (i < lengde(l)) {
+        hvis l[i] == verdi da {
+            fjern_indeks(l, i)
+        } ellers {
+            i = i + 1
+        }
+    }
+    returner lengde(l)
+}
+
+funksjon fjern_alle_verdi_tekst(l: liste_tekst, verdi: tekst) -> heltall {
+    la i: heltall = 0
+    mens (i < lengde(l)) {
+        hvis l[i] == verdi da {
+            fjern_indeks(l, i)
+        } ellers {
+            i = i + 1
+        }
+    }
+    returner lengde(l)
+}
+
+funksjon sett_inn_tall(l: liste_heltall, indeks: heltall, verdi: heltall) -> heltall {
+    sett_inn(l, indeks, verdi)
+    returner lengde(l)
+}
+
+funksjon sett_inn_tekst(l: liste_tekst, indeks: heltall, verdi: tekst) -> heltall {
+    sett_inn(l, indeks, verdi)
+    returner lengde(l)
+}
+
+funksjon legg_til_alle_tall(dest: liste_heltall, src: liste_heltall) -> heltall {
+    la i: heltall = 0
+    mens (i < lengde(src)) {
+        legg_til(dest, src[i])
+        i = i + 1
+    }
+    returner lengde(dest)
+}
+
+funksjon legg_til_alle_tekst(dest: liste_tekst, src: liste_tekst) -> heltall {
+    la i: heltall = 0
+    mens (i < lengde(src)) {
+        legg_til(dest, src[i])
+        i = i + 1
+    }
+    returner lengde(dest)
+}
+
+funksjon kopier_tall(src: liste_heltall) -> liste_heltall {
+    la ny: liste_heltall = []
+    la i: heltall = 0
+    mens (i < lengde(src)) {
+        legg_til(ny, src[i])
+        i = i + 1
+    }
+    returner ny
+}
+
+funksjon kopier_tekst(src: liste_tekst) -> liste_tekst {
+    la ny: liste_tekst = []
+    la i: heltall = 0
+    mens (i < lengde(src)) {
+        legg_til(ny, src[i])
+        i = i + 1
+    }
+    returner ny
+}
+
+funksjon omvendt_kopi_tall(src: liste_heltall) -> liste_heltall {
+    la ny: liste_heltall = []
+    la i: heltall = lengde(src) - 1
+    mens (i >= 0) {
+        legg_til(ny, src[i])
+        i = i - 1
+    }
+    returner ny
+}
+
+funksjon omvendt_kopi_tekst(src: liste_tekst) -> liste_tekst {
+    la ny: liste_tekst = []
+    la i: heltall = lengde(src) - 1
+    mens (i >= 0) {
+        legg_til(ny, src[i])
+        i = i - 1
+    }
+    returner ny
+}
