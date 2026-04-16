@@ -68,11 +68,8 @@ class IfNode:
     def __init__(self, condition, then_block, elif_blocks=None, else_block=None):
         self.condition = condition
         self.then_block = then_block
-        self.elif_blocks = elif_blocks or []  # <-- NY
+        self.elif_blocks = elif_blocks or []
         self.else_block = else_block
-
-
-
 
 class IfExprNode:
     def __init__(self, condition, then_expr, else_expr):
@@ -180,14 +177,4 @@ class IndexNode:
 class TestNode:
     def __init__(self, name, body):
         self.name = name
-        self.body = body     
-
-class ListNode:
-    def __init__(self, elements):
-        self.elements = elements
-
-
-class IndexNode:
-    def __init__(self, list_expr, index_expr):
-        self.list_expr = list_expr
-        self.index_expr = index_expr         
+        self.body = body

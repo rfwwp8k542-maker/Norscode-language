@@ -1,0 +1,64 @@
+name: Deploy homepage
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "docs/**"
+      - "website.no"
+      - "std/web.no"
+      - "scripts/serve-site.sh"
+      - "Makefile"
+      - "tests/test_website.no"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+concurrency:
+  group: pages-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install project
+        run: python3 -m pip install -e .
+
+      - name: Run NorCode CI checks
+        run: python3 -m norcode ci --check-names --require-selfhost-ready
+
+      - name: Build homepage
+        run: python3 -m norcode run website.no
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./docs
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

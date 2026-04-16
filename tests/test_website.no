@@ -1,0 +1,91 @@
+bruk website
+
+test "website generator" {
+    la html: tekst = website.hjemmeside_html()
+    assert(tekst_inneholder(html, "Norscode og Norscode Studio"))
+    assert(tekst_inneholder(html, "google-adsense-account"))
+    assert(tekst_inneholder(html, "Last ned Norscode"))
+    assert(tekst_inneholder(html, "Last ned kildekode"))
+    assert(tekst_inneholder(html, "Last ned Studio-kode"))
+    assert(tekst_inneholder(html, "Kildekode"))
+    assert(tekst_inneholder(html, "norscode-studio app.no"))
+    assert(tekst_inneholder(html, "norcode run website.no"))
+    assert(tekst_inneholder(html, "Om Norscode Studio"))
+    assert(tekst_inneholder(html, "Personvern"))
+    assert(tekst_inneholder(html, "Statisk hosting"))
+    assert(tekst_inneholder(html, "Støtte"))
+    assert(tekst_inneholder(html, "Om Norscode"))
+    assert(tekst_inneholder(html, "Kontakt"))
+
+    la css: tekst = website.hjemmeside_css()
+    assert(tekst_inneholder(css, ".hero"))
+    assert(tekst_inneholder(css, ".command"))
+    assert(tekst_inneholder(css, ".table"))
+
+    la privacy: tekst = website.personvern_html()
+    assert(tekst_inneholder(privacy, "Personvern"))
+    assert(tekst_inneholder(privacy, "Originalt innhold"))
+
+    la about: tekst = website.om_norscode_html()
+    assert(tekst_inneholder(about, "Om Norscode"))
+    assert(tekst_inneholder(about, "Norscode Studio"))
+
+    la contact: tekst = website.kontakt_html()
+    assert(tekst_inneholder(contact, "Kontakt"))
+    assert(tekst_inneholder(contact, "GitHub"))
+
+    la support: tekst = website.support_html()
+    assert(tekst_inneholder(support, "Støtteside og full guide"))
+    assert(tekst_inneholder(support, "Funksjoner"))
+    assert(tekst_inneholder(support, "variabler"))
+    assert(tekst_inneholder(support, "GUI"))
+    assert(tekst_inneholder(support, "Web"))
+    assert(tekst_inneholder(support, "norcode run app.no"))
+
+    la source: tekst = website.source_html()
+    assert(tekst_inneholder(source, "Kildekode"))
+    assert(tekst_inneholder(source, "Studio-koden"))
+    assert(tekst_inneholder(source, "Base.html"))
+    assert(tekst_inneholder(source, "main.zip"))
+
+    la base: tekst = website.base_html()
+    assert(tekst_inneholder(base, "Base.html"))
+    assert(tekst_inneholder(base, "Minimal base"))
+    assert(tekst_inneholder(base, "<title>Norscode</title>"))
+    assert(tekst_inneholder(base, "google-adsense-account"))
+    assert(tekst_inneholder(base, "topbar"))
+
+    la template_base: tekst = website.template_base_html()
+    assert(tekst_inneholder(template_base, "block content"))
+    assert(tekst_inneholder(template_base, "site-nav"))
+    assert(tekst_inneholder(template_base, "<title>Norscode</title>"))
+    assert(tekst_inneholder(template_base, "google-adsense-account"))
+
+    la template_index: tekst = website.template_index_html()
+    assert(tekst_inneholder(template_index, "extends \"base.html\""))
+    assert(tekst_inneholder(template_index, "block content"))
+    assert(tekst_inneholder(template_index, "Norscode og Norscode Studio"))
+
+    la template_about: tekst = website.template_about_html()
+    assert(tekst_inneholder(template_about, "extends \"base.html\""))
+
+    la template_contact: tekst = website.template_contact_html()
+    assert(tekst_inneholder(template_contact, "extends \"base.html\""))
+
+    la template_support: tekst = website.template_support_html()
+    assert(tekst_inneholder(template_support, "extends \"base.html\""))
+
+    la template_source: tekst = website.template_source_html()
+    assert(tekst_inneholder(template_source, "extends \"base.html\""))
+    assert(tekst_inneholder(template_source, "Base.html"))
+
+    la template_base_source: tekst = website.template_base_source_html()
+    assert(tekst_inneholder(template_base_source, "extends \"base.html\""))
+
+    la template_privacy: tekst = website.template_privacy_html()
+    assert(tekst_inneholder(template_privacy, "extends \"base.html\""))
+}
+
+funksjon start() -> heltall {
+    returner 0
+}

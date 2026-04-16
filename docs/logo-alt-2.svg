@@ -1,0 +1,6 @@
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96' role='img' aria-label='Norscode logo variant 2'>
+  <rect x='2' y='2' width='92' height='92' rx='18' fill='#1f476e'/>
+  <circle cx='48' cy='48' r='32' fill='none' stroke='#ffd343' stroke-width='4'/>
+  <path d='M30 68V28h9l17 23V28h9v40h-9L39 45v23z' fill='#ffffff'/>
+  <path d='M61 24h6v48h-6z' fill='#ffd343'/>
+</svg>

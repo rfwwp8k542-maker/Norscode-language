@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang='no'>
+<head>
+  <meta charset='utf-8'>
+  <meta name='viewport' content='width=device-width, initial-scale=1'>
+  <meta name='google-adsense-account' content='ca-pub-6367896081847943'>
+  <title>Norscode</title>
+  <meta name='description' content='Norscode er et norsk programmeringsspråk med Studio, støtte, kildekode og web.'>
+  <link rel='stylesheet' href='styles.css'>
+  <link rel='icon' href='logo.svg' type='image/svg+xml'>
+</head>
+<body>
+  <div class='page'>
+    <header class='topbar'>
+      <div class='brand'>
+        <img class='logo' src='logo.svg' alt='Norscode logo'>
+        <span class='brand-copy'>
+          <span class='brand-name'>Norscode</span>
+          <span class='brand-subtitle'>Studio · Web · Kode</span>
+        </span>
+      </div>
+      <a class='toplink' href='#studio-om'>Om Studio</a>
+    </header>
+
+    <nav class='site-nav'>
+      <a href='#last-ned'>Last ned</a>
+      <a href='#kom-i-gang'>Kom i gang</a>
+      <a href='source.html'>Kildekode</a>
+      <a href='support.html'>Støtte</a>
+      <a href='about.html'>Om Norscode</a>
+      <a href='contact.html'>Kontakt</a>
+      <a href='#personvern'>Personvern</a>
+    </nav>
+
+    <header class='hero'>
+      <section class='panel hero-main'>
+        <div class='eyebrow'>Norsk språk · Studio · Web · Kode</div>
+        <h1>Norscode og Norscode Studio</h1>
+        <p class='lead'>Norscode er et norsk programmeringsspråk som kompilerer til C, har et standardbibliotek for GUI og web, og brukes sammen med Norscode Studio for å skrive, søke, refaktorere, teste og bygge prosjekter. Denne hjemmesiden er selv skrevet og generert i Norscode.</p>
+        <div class='actions'>
+          <a class='button primary' href='#last-ned'>Last ned Norscode</a>
+          <a class='button primary' href='#kom-i-gang'>Kom i gang</a>
+          <a class='button secondary' href='#studio'>Se Studio</a>
+          <a class='button secondary' href='source.html'>Kildekode</a>
+          <a class='button secondary' href='support.html'>Støtte</a>
+          <a class='button secondary' href='about.html'>Om Norscode</a>
+          <a class='button secondary' href='contact.html'>Kontakt</a>
+          <a class='button secondary' href='#personvern'>Personvern</a>
+        </div>
+      </section>
+      <aside class='hero-side'>
+        <section class='panel stat'>
+          <h2>Last ned</h2>
+          <p>Installer, bygg og kjør Norscode lokalt. Vi har CLI, standalone binary og en lokal webhost på <code>127.0.0.1:4000</code>.</p>
+        </section>
+        <section class='panel stat'>
+          <h2>Docs</h2>
+          <p>Les støttesiden for funksjoner, variabler, lister, GUI, web og små prosjektmønstre du kan bygge videre på.</p>
+        </section>
+        <section class='panel stat'>
+          <h2>Studio</h2>
+          <p>Bruk Norscode Studio til å redigere, navigere, finne symboler, kjøre tester og holde styr på åpne filer.</p>
+        </section>
+      </aside>
+    </header>
+
+    <section class='panel section' id='last-ned'>
+      <h2>Last ned Norscode</h2>
+      <p>Norscode kan lastes ned og brukes lokalt via ferdigbygde nedlastinger, installasjonsskript eller fra kildekode. Velg den veien som passer best for deg.</p>
+      <div class='grid-3'>
+        <article class='card'><h3>GitHub Releases</h3><p>Last ned siste ferdigbygde versjon fra <a href='https://github.com/rfwwp8k542-maker/Norscode-language/releases/latest'>GitHub Releases</a> når du vil ha en klar pakke.</p></article>
+        <article class='card'><h3>Kildekode</h3><p>Åpne den nye <a href='source.html'>kildesiden</a> for å laste ned hele repoet eller Studio-koden som egne valg.</p></article>
+        <article class='card'><h3>Installer lokalt</h3><p>Bruk <code>sh scripts/install-norscode.sh</code> eller PowerShell-skriptet for å hente og installere Norscode raskt.</p></article>
+      </div>
+      <div class='grid-2' style='margin-top: 18px;'>
+        <div>
+          <h3>Hurtigvalg</h3>
+          <pre class='code'><code>sh scripts/install-norscode.sh
+./studio
+norscode-studio</code></pre>
+        </div>
+        <div>
+          <h3>Bruksområde</h3>
+          <p>Bruk den ferdige binaryen når du bare vil komme i gang, og bruk kildesiden når du vil hente hele repoet eller bare Studio-delen.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class='stack'>
+      <article class='card'><h3>1. Skriv</h3><p>Vi skriver modulene i <code>.no</code>-filer. CLI-navnene er <code>norcode</code>, <code>nor</code>, <code>nc</code>, <code>nl</code> og <code>norsklang</code>, mens Studio bruker <code>norscode-studio</code>, <code>./studio</code> eller <code>./startstudio</code>.</p></article>
+      <article class='card'><h3>2. Kjør</h3><p><code>norcode run</code> kjører programmet. <code>norcode check</code> validerer kildekoden, og <code>norcode test</code> kjører hele testpakken.</p></article>
+      <article class='card'><h3>3. Utforsk</h3><p>Studio gir oss linjenummer, autocomplete, søk/erstatt, <code>Def</code>, <code>Bruk</code>, <code>Rename</code>, terminal, diagnose og historikk.</p></article>
+      <article class='card'><h3>4. Bygg</h3><p><code>make binary</code> lager en standalone binary. Denne siden og web-startmalene ligger i standardbiblioteket og repoet som vanlig kildekode.</p></article>
+    </section>
+
+    <section class='panel section'>
+      <h2>Siste prosjektoppdateringer</h2>
+      <div class='grid-2'>
+        <article class='card'><h3>Støtteside</h3><p>Vi har nå en full guide for funksjoner, variabler, lister, GUI, web og læringssteg i Norscode.</p></article>
+        <article class='card'><h3>Studio</h3><p>Norscode Studio har fått et tydeligere IDE-oppsett med søk, definisjon, bruk, rename og historikk.</p></article>
+        <article class='card'><h3>Web</h3><p>Hjemmesiden er generert i Norscode og kan serveres statisk som vanlige filer.</p></article>
+        <article class='card'><h3>Kjøring</h3><p>Standard preview er satt til <code>127.0.0.1:4000</code> for lokal utvikling og enkel testing.</p></article>
+      </div>
+    </section>
+
+    <section class='panel section'>
+      <h2>Kommende fokusområder</h2>
+      <div class='grid-3'>
+        <div class='notice'><strong>Autocomplete</strong><span>Mer kontekstbaserte forslag og bedre symbolrangering i editoren.</span></div>
+        <div class='notice'><strong>Navigasjon</strong><span>Tryggere <code>Def</code>, <code>Bruk</code> og <code>Rename</code> med tydeligere forhåndsvisning.</span></div>
+        <div class='notice'><strong>Arbeidsflyt</strong><span>Mer komplett terminal og testvisning for daglig utvikling.</span></div>
+      </div>
+    </section>
+
+    <section class='panel section'>
+      <h2>Hvor Norscode passer</h2>
+      <div class='grid-4'>
+        <article class='card'><h3>Små verktøy</h3><p>Lag kommandolinjeverktøy, små konvertere og interne hjelpere.</p></article>
+        <article class='card'><h3>Læresystem</h3><p>Bruk språket til å lære struktur, funksjoner og tydelig kontrollflyt.</p></article>
+        <article class='card'><h3>GUI-apps</h3><p>Bygg enkle lokale vinduer og demos med <code>std.gui</code> og Studio.</p></article>
+        <article class='card'><h3>Web-start</h3><p>Bruk <code>std.web</code> til å lage sider, guider og statisk innhold raskt.</p></article>
+      </div>
+    </section>
+
+    <section class='panel section' id='kom-i-gang'>
+      <h2>Kom i gang</h2>
+      <div class='grid-2'>
+        <div>
+          <h3>Installer</h3>
+          <pre class='code'><code>sh scripts/install-norscode.sh
+# eller på Windows:
+# powershell -ExecutionPolicy Bypass -File scripts/install-norscode.ps1</code></pre>
+          <p>Bruk dette hvis du vil komme raskt i gang uten å bygge selv.</p>
+        </div>
+        <div>
+          <h3>Start Studio</h3>
+          <pre class='code'><code>./studio
+./startstudio
+norscode-studio</code></pre>
+          <p>Studio er det vi anbefaler når du skal skrive og navigere i Norscode-prosjekter.</p>
+        </div>
+      </div>
+      <div class='grid-2' style='margin-top: 18px;'>
+        <div>
+          <h3>Kildekode</h3>
+          <pre class='code'><code>https://github.com/rfwwp8k542-maker/Norscode-language/archive/refs/heads/main.zip</code></pre>
+          <p>På kildesiden finner du også Studio som egen nedlastingsvei.</p>
+        </div>
+        <div>
+          <h3>Ferdig pakke</h3>
+          <p>Hvis du bare vil ha en klar installasjon, bruk GitHub Releases-lenken eller installasjonsskriptet.</p>
+        </div>
+      </div>
+      <div class='grid-2' style='margin-top: 18px;'>
+        <div>
+          <h3>Kjør kode</h3>
+          <pre class='code'><code>norcode run app.no
+norcode check app.no</code></pre>
+        </div>
+        <div>
+          <h3>Test og bygg</h3>
+          <pre class='code'><code>norcode test
+make binary</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section class='panel section' id='bruk'>
+      <h2>Hvordan vi bruker Norscode</h2>
+      <p>Arbeidsflyten vår er enkel: vi skriver i <code>.no</code>, kjører i CLI eller Studio, validerer med tester og bygger til binary når vi skal distribuere. Norscode brukes også til å generere denne hjemmesiden.</p>
+      <div class='grid-2'>
+        <article class='card'><h3>Skriv</h3><p>Vi lager små, lesbare moduler og holder funksjonene korte nok til å forstå på ett blikk.</p></article>
+        <article class='card'><h3>Kjør</h3><p>CLI og Studio brukes sammen for å kjøre, sjekke og følge med på status mens vi utvikler.</p></article>
+        <article class='card'><h3>Utforsk</h3><p>Vi bruker Studio til å hoppe mellom symboler, åpne faner og følge historikk når vi jobber i større filer.</p></article>
+        <article class='card'><h3>Bygg</h3><p>Når vi skal dele noe, bygger vi standalone binary eller statiske sider og bruker det som utgangspunkt for publisering.</p></article>
+      </div>
+    </section>
+
+    <section class='panel section' id='studio'>
+      <h2>Norscode Studio</h2>
+      <p>Studio er et lokalt program skrevet i Norscode for å gjøre utvikling raskere og mer lesbar. Vi bruker det til å holde orden på filer, se symboler, navigere mellom treff og kjøre tester uten å forlate arbeidsflaten.</p>
+      <div class='grid-3'>
+        <article class='card'><h3>Navigasjon</h3><p>Prosjektliste, åpne faner, nylig lukket historikk, <code>Def</code>, <code>Bruk</code> og <code>Hopp</code> gjør det lettere å finne veien.</p></article>
+        <article class='card'><h3>Redigering</h3><p>Linjenummer, aktiv linje, lagret/ulagret-status, autocomplete, søk, erstatt og rename med forhåndsvisning gjør det roligere å jobbe.</p></article>
+        <article class='card'><h3>Kjøring</h3><p>Test-runner, terminal og diagnose holder oss tett på hva som skjer når vi kjører og sjekker prosjekter.</p></article>
+      </div>
+    </section>
+
+    <section class='panel section' id='studio-om'>
+      <h2>Om Norscode Studio</h2>
+      <p>Norscode Studio er arbeidsflaten vår for å skrive, lese og forbedre Norscode. Det er laget for å gjøre navigasjon, feilsøking og refaktorering raskere, samtidig som det holder oversikten ryddig i store prosjekter.</p>
+      <div class='grid-4'>
+        <article class='card'><h3>Åpne filer</h3><p>Prosjektliste, åpne faner og nylig lukket historikk gjør det enkelt å komme tilbake til riktig fil.</p></article>
+        <article class='card'><h3>Symboler</h3><p>Vi bruker <code>Def</code>, <code>Bruk</code> og <code>Rename</code> for å finne definisjoner, se forekomster og endre navn trygt.</p></article>
+        <article class='card'><h3>Lesbarhet</h3><p>Linjenummer, aktiv linje, statuslinje og tydelige paneloverskrifter gjør koden lettere å skanne.</p></article>
+        <article class='card'><h3>Kjøring</h3><p>Test-runner, terminal og diagnose holder oss tett på hva som skjer når vi kjører og sjekker prosjekter.</p></article>
+      </div>
+      <div class='grid-2' style='margin-top: 18px;'>
+        <div>
+          <h3>Start Studio</h3>
+          <pre class='code'><code>./studio
+./startstudio
+norscode-studio</code></pre>
+        </div>
+        <div>
+          <h3>Hva vi anbefaler</h3>
+          <p>Bruk Studio når du vil holde deg i samme arbeidsflate mens du navigerer, søker, tester og bygger. Det er den raskeste veien til å jobbe praktisk med Norscode.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class='panel section' id='sprakkart'>
+      <h2>Det viktigste vi bruker daglig</h2>
+      <div class='table-wrap'>
+        <table class='table'>
+          <thead>
+            <tr><th>Kommando</th><th>Hva den gjør</th><th>Når vi bruker den</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>norcode run app.no</code></td><td>Kjører et program direkte.</td><td>Når vi vil se resultatet eller feilsøke.</td></tr>
+            <tr><td><code>norcode check app.no</code></td><td>Validerer kode uten å fokusere på output.</td><td>Når vi vil sjekke struktur og feil tidlig.</td></tr>
+            <tr><td><code>norcode test</code></td><td>Kjører hele testpakken.</td><td>Når vi vil være sikre på at alt fortsatt er grønt.</td></tr>
+            <tr><td><code>make binary</code></td><td>Lager en standalone binary.</td><td>Når vi skal dele eller kjøre uten Python på målmaskinen.</td></tr>
+            <tr><td><code>./studio</code></td><td>Starter Norscode Studio.</td><td>Når vi skal redigere, navigere eller bruke IDE-flyten.</td></tr>
+            <tr><td><code>norscode-studio app.no</code></td><td>Åpner Studio med en fil direkte.</td><td>Når vi vil hoppe rett til et prosjekt eller en testfil.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class='panel section' id='personvern'>
+      <h2>Personvern og publisering</h2>
+      <p>Hjemmesiden er statisk, bygger originalt innhold i Norscode og bruker en egen personvernside for å holde informasjonen ryddig og lett å forstå.</p>
+      <div class='grid-2'>
+        <div class='notice'><strong>Nettsted</strong><span>Forsiden beskriver Norscode, Studio og hvordan vi bruker språk og verktøy i praksis.</span></div>
+        <div class='notice'><strong>Personvern</strong><span>Den separate personvern-siden samler teksten som forklarer hvordan siden er strukturert og publisert.</span></div>
+        <div class='notice'><strong>Statisk hosting</strong><span>Siden kan serveres som vanlige statiske filer uten å vise deploy-plattformen i brukergrensesnittet.</span></div>
+        <div class='notice'><strong>Originalt innhold</strong><span>Alt innhold er skrevet for Norscode og holder seg til språk, Studio, opplæring og dokumentasjon.</span></div>
+      </div>
+    </section>
+
+    <footer class='footer'>
+      Bygd i Norscode. Kilde for hjemmesiden: <code>website.no</code>. Stil og publisering er gjort klare for statisk hosting. <a href='source.html'>Kildekode</a> · <a href='support.html'>Støtte</a> · <a href='about.html'>Om Norscode</a> · <a href='contact.html'>Kontakt</a> · <a href='privacy.html'>Personvern</a>
+    </footer>
+  </div>
+</body>
+</html>

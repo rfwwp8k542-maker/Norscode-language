@@ -1,0 +1,169 @@
+name: Release binaries
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+concurrency:
+  group: release-binaries-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Create virtualenv
+        run: python3 -m venv .venv
+
+      - name: Install project
+        run: .venv/bin/python -m pip install -e .
+
+      - name: Run NorCode CI checks
+        run: .venv/bin/python -m norcode ci --check-names --require-selfhost-ready
+
+      - name: Install dev dependencies
+        run: .venv/bin/python -m pip install --upgrade pip && .venv/bin/python -m pip install -r requirements-dev.txt
+
+      - name: Build standalone binary
+        run: .venv/bin/python scripts/build-standalone.py
+
+      - name: Verify standalone binary
+        run: dist/norscode test
+
+      - name: Prepare release asset
+        run: |
+          mkdir -p release-assets
+          cp dist/norscode release-assets/norscode-linux
+
+      - name: Upload release asset artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: norscode-linux
+          path: release-assets/norscode-linux
+
+  build-macos:
+    runs-on: macos-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Create virtualenv
+        run: python3 -m venv .venv
+
+      - name: Install project
+        run: .venv/bin/python -m pip install -e .
+
+      - name: Run NorCode CI checks
+        run: .venv/bin/python -m norcode ci --check-names --require-selfhost-ready
+
+      - name: Install dev dependencies
+        run: .venv/bin/python -m pip install --upgrade pip && .venv/bin/python -m pip install -r requirements-dev.txt
+
+      - name: Build standalone binary
+        run: .venv/bin/python scripts/build-standalone.py
+
+      - name: Verify standalone binary
+        run: dist/norscode test
+
+      - name: Prepare release asset
+        run: |
+          mkdir -p release-assets
+          cp dist/norscode release-assets/norscode-macos
+
+      - name: Upload release asset artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: norscode-macos
+          path: release-assets/norscode-macos
+
+  build-windows:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Create virtualenv
+        run: python -m venv .venv
+
+      - name: Install project
+        run: .\.venv\Scripts\python.exe -m pip install -e .
+
+      - name: Run NorCode CI checks
+        run: .\.venv\Scripts\python.exe -m norcode ci --check-names --require-selfhost-ready
+
+      - name: Install dev dependencies
+        run: .\.venv\Scripts\python.exe -m pip install --upgrade pip && .\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
+
+      - name: Build standalone binary
+        run: .\.venv\Scripts\python.exe scripts\build-standalone.py
+
+      - name: Verify standalone binary
+        run: .\dist\norscode.exe test
+
+      - name: Prepare release asset
+        run: |
+          New-Item -ItemType Directory -Force release-assets | Out-Null
+          Copy-Item dist\norscode.exe release-assets\norscode-windows.exe
+
+      - name: Upload release asset artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: norscode-windows
+          path: release-assets/norscode-windows.exe
+
+  publish-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs:
+      - build-linux
+      - build-macos
+      - build-windows
+    permissions:
+      contents: write
+    steps:
+      - name: Download release asset artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: norscode-*
+          path: release-assets
+          merge-multiple: false
+
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            release-assets/**/norscode-linux
+            release-assets/**/norscode-macos
+            release-assets/**/norscode-windows.exe
+          generate_release_notes: true

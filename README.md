@@ -4,12 +4,17 @@
 
 Et norsk programmeringsspråk som kompilerer til C.
 
+Hjemmeside: [docs/index.html](docs/index.html)
+
+Hjemmesiden bygges fra [`website.no`](website.no). Se også [`railway.toml`](railway.toml), `Procfile` og [`scripts/serve-site.sh`](scripts/serve-site.sh) for hvordan vi bygger og serverer siden statisk.
+
 ## ✨ Funksjoner
 
 - Norsk syntaks (funksjon, hvis, ellers, osv.)
 - Statisk typing (heltall, tekst, bool, lister)
 - Modul- og pakke-system
 - Egen standardbibliotek (`std`)
+- GUI-standardbibliotek (`std.gui`)
 - Testsystem med `assert`, `assert_eq`, `assert_ne`
 - Kompilerer til C → rask kjøring
 
@@ -17,7 +22,47 @@ Et norsk programmeringsspråk som kompilerer til C.
 
 ## 📦 Kom i gang
 
+### Kort installasjon
+
+Velg den måten som passer deg best:
+
+1. Automatisk installasjon
+   - macOS/Linux:
+   ```bash
+   sh scripts/install-norscode.sh
+   ```
+   - Windows:
+   ```powershell
+   powershell -ExecutionPolicy Bypass -File scripts/install-norscode.ps1
+   ```
+2. Ferdigbygget binary
+   - Last ned fra siste release på hjemmesiden eller GitHub Releases.
+   - Kjør direkte:
+   ```bash
+   ./dist/norscode --help
+   ```
+   - På Windows:
+   ```powershell
+   .\dist\norscode.exe --help
+   ```
+3. Installer fra kildekode
+   ```bash
+   python3 -m pip install -e .
+   ```
+4. Bygg selv
+   ```bash
+   make binary
+   ```
+
 ### 0. Installer CLI
+
+Bruk den ferdigbygde binæren direkte:
+
+```bash
+./dist/norscode --help
+```
+
+Du kan også legge `dist/` i `PATH` eller kopiere binæren dit du vanligvis har CLI-verktøyene dine.
 
 ```bash
 python3 -m pip install -e .
@@ -77,6 +122,86 @@ Publisering er satt opp i GitHub Actions via `.github/workflows/publish.yml`:
 
 - Push tag `vX.Y.Z` for å trigge build + publisering til PyPI
 - Workflowen bruker Trusted Publisher (`id-token`) for opplasting
+
+### 0c. Bygg standalone-binary
+
+```bash
+# Installer dev-avhengigheter
+python3 -m pip install -r requirements-dev.txt
+
+# Bygg en én-fil-binær i dist/norscode eller dist/norscode.exe
+make binary
+# eller:
+sh scripts/build-standalone.sh
+
+# Kjør den pakkede binæren på Unix/macOS
+./dist/norscode test
+
+# På Windows:
+.\dist\norscode.exe test
+```
+
+### 0d. Norscode Studio
+
+Et lite lokalt studio skrevet i Norscode for å redigere og kjøre Norscode:
+
+```bash
+./studio
+```
+
+eller med aliaset:
+
+```bash
+./startstudio
+```
+
+eller, hvis du har installert pakken:
+
+```bash
+norscode-studio
+```
+
+Fra repoet kan du også starte det slik:
+
+```bash
+make studio
+```
+
+`studio.py` er en tynn bootstrap som starter `studio.no` direkte og sender eventuelle oppstartsargumenter videre. Selve app-logikken ligger i Norscode, og Norscode-programmer kan nå lese oppstartsargumenter via `argv()`.
+
+Du kan også åpne en fil ved oppstart:
+
+```bash
+norscode-studio app.no
+```
+
+Studioet har også små web-startpakker for Bootstrap, CSS og Sass, slik at du raskt kan lage en `index.html` sammen med stilfiler fra samme verktøy. Se også [`std/web.no`](std/web.no) for `bootstrap_html(...)`, `css_startmal()`, `sass_startmal()` og `sass_til_css_tekst(...)`. Sass kan nå også kompilers til CSS med `sass_til_css(...)` i runtime.
+
+### Hjemmeside
+
+Hjemmesiden er skrevet i Norscode i [`website.no`](website.no) og bygger `docs/index.html` og `docs/styles.css`.
+
+```bash
+# Bygg hjemmesiden lokalt
+make site
+
+# Preview lokalt på 127.0.0.1:4000
+make serve-site
+
+# Statisk server mot docs/ på 127.0.0.1:4000
+bash scripts/serve-site.sh
+```
+
+Skriptet bruker `127.0.0.1:4000` som standard lokalt, men du kan overstyre `HOST` og `PORT` ved behov.
+
+### Railway
+
+Prosjektet er klargjort for Railway med [`railway.toml`](railway.toml):
+
+- build: `bash scripts/build-site.sh`
+- start: `bash scripts/serve-site.sh`
+
+Railway bruker `PORT`-variabelen sin ved kjøring, og `scripts/serve-site.sh` binder automatisk til `0.0.0.0` når `PORT` er satt. Lokalt beholder skriptet `127.0.0.1:4000` som standard preview.
 
 ### 1. Kjør program
 
@@ -496,6 +621,32 @@ funksjon start() -> heltall {
 }
 ```
 
+GUI-eksempel:
+
+```no
+bruk std.gui som gui
+
+funksjon start() -> heltall {
+    la vindu_id: heltall = gui.vindu("Norscode Demo")
+    la tekst_id: heltall = gui.tekstfelt(vindu_id, "Hei")
+    gui.sett_tekst(tekst_id, "Oppdatert")
+    gui.vis(vindu_id)
+    returner 0
+}
+```
+
+For å kjøre en GUI-demo med lokal vindus-backend:
+
+```bash
+norcode run --engine python examples/gui_demo.no
+```
+
+Hvis du vil ha ekte vinduer når Tk er tilgjengelig:
+
+```bash
+norcode run --engine python --gui-backend tk examples/gui_demo.no
+```
+
 ---
 
 ## 🧪 Testing
@@ -517,6 +668,12 @@ norcode/
 ├── main.py
 ├── compiler/
 ├── std/
+│   ├── gui.no
+│   ├── io.no
+│   ├── liste.no
+│   ├── math.no
+│   ├── tekst.no
+│   └── web.no
 ├── tests/
 ├── app.no
 └── norcode.toml
@@ -529,7 +686,7 @@ norcode/
 Prosjektet er funksjonelt i god stand per 2026-04-06.
 
 - `norcode test` er grønt
-- `29/29` tester består
+- `28/28` tester består
 - IR snapshot-parity er grønn
 - selfhost-banen dekker nå de nye syntaksene som brukes i testsettet
 
@@ -547,12 +704,14 @@ Vi har startet en tidlig selv-hosting bane i `selfhost/`:
 - `tests/selfhost_parser_m1_cases.json` og `tests/selfhost_parser_m2_cases.json` er i synk med utvidet suite
 - `norcode ci --check-names --require-selfhost-ready` er den relevante CI-gaten for denne delen
 - Workflowene kjører med selfhost-ready-sjekk aktiv
+- Den siste bevisste selfhost-grensen er dokumentert i [docs/SELFHOST_LIMITS.md](/Users/jansteinarsaetre/Documents/VS%20code/norsklang_6i/docs/SELFHOST_LIMITS.md)
 
 #### Neste fokus
 
-- Fortsette å utvide selfhost-parseren kontrollert når nye språkfunksjoner legges til
-- Beholde parity mellom Python- og selfhost-banen når nye konstruksjoner introduseres
-- Holde feilmeldinger og posisjonsinfo konsistente på tvers av motorene
+- Legge nye språkfunksjoner inn via hele kjeden samtidig: parser, semantic, codegen og selfhost-bro
+- Beholde parity mellom hoved- og selfhost-banen når nye konstruksjoner introduseres
+- Utvide testsettet med én tydelig case per ny språkfeature, så regressjoner blir lette å oppdage
+- Behandle member-uttrykk som en fremtidig utvidelse, ikke som en manglende regression i dagens selfhost-lag
 
 ---
 

@@ -1,0 +1,7 @@
+[build]
+buildCommand = "bash scripts/build-site.sh"
+
+[deploy]
+startCommand = "bash scripts/serve-site.sh"
+healthcheckPath = "/"
+healthcheckTimeout = 300

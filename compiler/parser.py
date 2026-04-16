@@ -384,7 +384,10 @@ class Parser:
         if self.current.typ != "ELLERS":
             self.error("hvis-uttrykk mangler 'ellers'")
         self.eat("ELLERS")
-        else_expr = self.expr()
+        if self.current.typ == "HVIS":
+            else_expr = self.if_expr()
+        else:
+            else_expr = self.expr()
         return IfExprNode(cond, then_expr, else_expr)
 
     def logic_or(self):
