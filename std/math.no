@@ -1,0 +1,15 @@
+funksjon pluss(a: heltall, b: heltall) -> heltall {
+    returner a + b
+}
+
+funksjon trekk(a: heltall, b: heltall) -> heltall {
+    returner a - b
+}
+
+funksjon gange(a: heltall, b: heltall) -> heltall {
+    returner a * b
+}
+
+funksjon div(a: heltall, b: heltall) -> heltall {
+    returner a / b
+}

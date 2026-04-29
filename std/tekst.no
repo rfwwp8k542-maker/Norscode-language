@@ -1,0 +1,3 @@
+funksjon hilsen(navn: tekst) -> tekst {
+    returner "Hei, " + navn
+}
